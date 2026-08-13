@@ -8,7 +8,22 @@
  * Este fichero no importa nada. Es la base de la que depende todo lo demás.
  */
 
-export type Currency = 'EUR' | 'USD' | 'GBP'
+export const CURRENCIES = ['EUR', 'USD', 'GBP'] as const
+
+export type Currency = (typeof CURRENCIES)[number]
+
+/** Valida una divisa que viene de la base de datos o de un formulario. */
+export const isCurrency = (value: string): value is Currency =>
+  (CURRENCIES as readonly string[]).includes(value)
+
+/**
+ * La columna `currency` es texto en SQLite: el tipo `Currency` es una promesa al
+ * compilador, no una garantía. Este es el punto donde se comprueba de verdad.
+ */
+export const asCurrency = (value: string): Currency => {
+  if (!isCurrency(value)) throw new TypeError(`Divisa desconocida: ${value}`)
+  return value
+}
 
 /** Importe en unidad mínima. `{ amount: 1234, currency: 'EUR' }` = 12,34 €. */
 export type Money = { readonly amount: number; readonly currency: Currency }
