@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Los scripts de db/ se ejecutan con `node db/seed.ts` (type stripping de
+    // Node 24), y ahí los imports relativos necesitan extensión explícita.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

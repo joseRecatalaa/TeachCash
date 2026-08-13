@@ -12,8 +12,8 @@
     "test:watch": "vitest",
     "test:tz": "cross-env TZ=Pacific/Kiritimati vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node db/migrate.ts",
-    "db:seed": "node db/seed.ts",
+    "db:migrate": "node db/migrate.mts",
+    "db:seed": "node db/seed.mts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

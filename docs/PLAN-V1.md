@@ -263,6 +263,13 @@ porque un fallo aquí corrompe todos los datos aguas abajo.
 fichero `data/finanzas.db` con las categorías; ejecutar `db:seed` dos veces no
 duplica; `drizzle-kit studio` abre y muestra las tablas.
 
+**Los tests NO usan `:memory:`** (comprobado, y cuesta un rato entenderlo): con
+libsql, abrir una transacción sobre una base en memoria estrena conexión, y cada
+conexión a `:memory:` es una base **distinta y vacía**. A mitad del test las
+tablas desaparecen. `db/testing.ts` usa un fichero desechable por test en
+`data/test/`, y lo borra al cerrar — en Windows el handle tarda en soltarse, así
+que el borrado es best-effort y lo que quede lo barre la ejecución siguiente.
+
 ---
 
 ### Fase 3 — `features/accounts`
