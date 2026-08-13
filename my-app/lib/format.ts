@@ -80,6 +80,26 @@ export function formatMoneyCompact(m: Money, locale: string = LOCALE): string {
 }
 
 /**
+ * El importe tal y como debe aparecer dentro de un `<input>`: "1234,56".
+ *
+ * Sin símbolo y SIN separador de miles a propósito — "1.234" es ambiguo al
+ * volver a parsearlo, y este valor está pensado justo para eso: que el usuario
+ * lo edite y se reenvíe.
+ */
+export function formatAmountForInput(m: Money, locale: string = LOCALE): string {
+  const digits = fractionDigitsOf(m.currency)
+  const f = getNumberFormatter(`input:${locale}:${digits}`, () =>
+    new Intl.NumberFormat(locale, {
+      style: 'decimal',
+      useGrouping: false,
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    }),
+  )
+  return f.format(m.amount / scaleOf(m.currency))
+}
+
+/**
  * Parsea lo que escribe una persona ("1.234,56", "1234,56", "1234.56", "12 €")
  * a un importe entero.
  *

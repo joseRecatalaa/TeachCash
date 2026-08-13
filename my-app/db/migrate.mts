@@ -15,6 +15,12 @@ const client = createDbClient()
 const db = createDb(client)
 
 await migrate(db, { migrationsFolder: './db/migrations' })
+
+// WAL permite leer mientras se escribe. Es una propiedad persistente del
+// fichero, así que se fija aquí una sola vez: hacerlo al abrir cada conexión
+// exige un bloqueo exclusivo y revienta con varios procesos a la vez.
+await client.execute('PRAGMA journal_mode = WAL')
+
 client.close()
 
 console.log(`Migraciones aplicadas sobre ${DATABASE_PATH}`)

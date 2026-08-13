@@ -24,11 +24,15 @@ export const createDbClient = (url: string = `file:${DATABASE_PATH}`): Client =>
     mkdirSync(dirname(url.slice('file:'.length)), { recursive: true })
   }
   const client = createClient({ url })
-  // foreign_keys: libsql ya lo trae activado (comprobado), pero es una opción por
-  // conexión y de las que no se quiere descubrir apagada. WAL permite leer
-  // mientras se escribe. Ninguna de las dos afecta al resultado de una consulta,
-  // así que no hace falta esperar a que terminen antes de usar el cliente.
-  void client.executeMultiple('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;')
+  // foreign_keys es una opción POR CONEXIÓN, y de las que no se quiere descubrir
+  // apagada. libsql ya la trae activada, así que si el PRAGMA falla no cambia
+  // nada; por eso no bloquea la creación del cliente.
+  //
+  // journal_mode NO se toca aquí: es una propiedad persistente del fichero y
+  // fijarla exige un bloqueo exclusivo. Durante un build, con varios workers
+  // abriendo la base a la vez, eso da SQLITE_BUSY. Se fija una sola vez, en
+  // db/migrate.mts.
+  client.execute('PRAGMA foreign_keys = ON').catch(() => {})
   return client
 }
 
