@@ -16,9 +16,12 @@
 
   /* Verde ingreso / rojo gasto es lo esperado en España, pero es justo el par
      que no distingue la deuteranopía: en la interfaz SIEMPRE va acompañado del
-     signo − o +, nunca el color solo. */
-  --income: oklch(0.52 0.13 155);
-  --expense: oklch(0.55 0.19 25);
+     signo − o +, nunca el color solo.
+     Valores comprobados con el validador de la skill dataviz sobre esta
+     superficie: ΔE 8,2 en protanopía y 25,7 en visión normal. No los cambies a
+     ojo — vuelve a pasar el script. */
+  --income: #1f7a54;
+  --expense: #c43d2e;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,8 +33,11 @@
     --border: oklch(0.29 0.01 250);
     --accent: oklch(0.68 0.14 255);
     --accent-foreground: oklch(0.17 0.01 250);
-    --income: oklch(0.72 0.15 155);
-    --expense: oklch(0.7 0.17 25);
+    /* El modo oscuro NO es un giro automático del claro: son sus propios pasos,
+       validados contra la superficie oscura. Los tonos del modo claro fallaban
+       aquí la separación CVD. */
+    --income: #2f9c6e;
+    --expense: #db6046;
   }
 }
 

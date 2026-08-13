@@ -10,22 +10,32 @@
  * desechable por test, dentro de data/test/ (ignorado por git).
  */
 
-import { mkdirSync, readdirSync, rmSync } from 'node:fs'
+import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { migrate } from 'drizzle-orm/libsql/migrator'
 import { createDb, createDbClient, type Database } from './client.ts'
 
 const TEST_DB_DIR = './data/test'
 
-/** Borra los ficheros de ejecuciones anteriores que Windows no dejó borrar en su día. */
-const sweepStaleFiles = (keepPrefix: string): void => {
+/** Diez minutos: más de lo que dura cualquier test, menos que la siguiente sesión. */
+const STALE_AFTER_MS = 10 * 60 * 1000
+
+/**
+ * Borra los restos que Windows no dejó borrar en su día.
+ *
+ * Solo toca ficheros con más de diez minutos. Vitest ejecuta cada fichero de
+ * test en un worker distinto y a la vez: borrar "todo lo que no sea mío" hacía
+ * que un worker le quitara la base de datos a otro a mitad de ejecución.
+ */
+const sweepStaleFiles = (): void => {
+  const cutoff = Date.now() - STALE_AFTER_MS
   try {
     for (const name of readdirSync(TEST_DB_DIR)) {
-      if (name.startsWith(keepPrefix)) continue
+      const full = join(TEST_DB_DIR, name)
       try {
-        rmSync(join(TEST_DB_DIR, name), { force: true })
+        if (statSync(full).mtimeMs < cutoff) rmSync(full, { force: true })
       } catch {
-        // Otro test en paralelo lo tiene abierto. Se irá en la siguiente pasada.
+        // Sigue abierto o ya no está. En cualquier caso, no es asunto de este test.
       }
     }
   } catch {
@@ -37,10 +47,9 @@ export type TestDb = { db: Database; close: () => void }
 
 export async function createTestDb(): Promise<TestDb> {
   mkdirSync(TEST_DB_DIR, { recursive: true })
-  const id = crypto.randomUUID()
-  sweepStaleFiles(id)
+  sweepStaleFiles()
 
-  const path = join(TEST_DB_DIR, `${id}.db`)
+  const path = join(TEST_DB_DIR, `${crypto.randomUUID()}.db`)
   const client = createDbClient(`file:${path}`)
   const db = createDb(client)
   await migrate(db, { migrationsFolder: './db/migrations' })

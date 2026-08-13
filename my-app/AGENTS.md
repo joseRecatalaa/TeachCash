@@ -28,8 +28,10 @@ tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
 | Lenguaje | TypeScript 5, `strict` | |
 | Estilos | Tailwind CSS **v4** | Config en CSS (`@theme`), no `tailwind.config.js` |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en `my-app/` |
-| Datos | *(pendiente)* SQLite + Drizzle ORM | Ver "Decisiones abiertas" |
-| Auth | *(pendiente)* | Ver "Decisiones abiertas" |
+| Datos | SQLite + **Drizzle ORM**, driver `@libsql/client` | Fichero local en `data/`. Ver "Decisiones tomadas" |
+| Auth | **Sin login en la v1** | `lib/auth.ts` devuelve un `userId` fijo |
+| Gráficos | **Recharts 3** | Solo datos ya agregados cruzan al cliente |
+| Tests | **Vitest + fast-check** | SQLite real, nunca `:memory:` |
 
 ## Comandos
 
@@ -40,8 +42,15 @@ pnpm dev                  # servidor de desarrollo
 pnpm build                # build de producción
 pnpm start                # servir el build
 pnpm lint                 # ESLint (eslint-config-next)
-pnpm exec tsc --noEmit    # comprobación de tipos (no hay script propio todavía)
+pnpm typecheck            # tsc --noEmit
+pnpm test                 # Vitest
+pnpm test:tz              # la misma suite con TZ=Pacific/Kiritimati
+pnpm db:generate          # genera la migración a partir de db/schema.ts
+pnpm db:migrate           # aplica las migraciones pendientes
+pnpm db:seed              # catálogo de categorías por defecto (idempotente)
 ```
+
+Primer arranque: `pnpm install` → `pnpm db:migrate` → `pnpm db:seed` → `pnpm dev`.
 
 **Usa siempre `pnpm`.** Ejecutar `npm install` o `yarn` aquí corrompe el lockfile.
 
@@ -130,15 +139,36 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 | `finance-charts` | Gráficos financieros (usa además la skill global `dataviz`) |
 | `testing-finance` | Tests, sobre todo de lógica de dinero y de acciones |
 
+## Decisiones tomadas
+
+Resueltas durante la v1. El plan completo y el porqué de cada una están en
+`docs/PLAN-V1.md`.
+
+- **Persistencia**: SQLite + Drizzle ORM con el driver **`@libsql/client`**.
+  `better-sqlite3` se descartó: no hay binario precompilado para Node 24 y
+  compilarlo exige un toolchain de C++ que no está en la máquina. `node:sqlite`
+  tampoco sirve — Drizzle 0.45 no trae driver para él y `sqlite-proxy` no
+  soporta transacciones, que las transferencias necesitan. `@libsql/client`
+  distribuye binarios ya compilados y es el mismo cliente que habla con Turso.
+- **Auth**: sin login en la v1. `lib/auth.ts` devuelve un `userId` fijo desde un
+  `getSession()` asíncrono. **El resto del código se escribe como si el login
+  existiera**: toda consulta filtra por `userId` dentro del `where` y toda acción
+  llama a `getSession()` primero. Cambiar a auth real toca un solo fichero.
+- **Tests**: Vitest + fast-check. La base de test es un **fichero** desechable en
+  `data/test/`, no `:memory:`: con libsql, abrir una transacción sobre una base
+  en memoria estrena conexión, y cada conexión a `:memory:` es una base distinta
+  y vacía. Playwright sigue pendiente.
+- **Gráficos**: Recharts. Los colores de ingreso y gasto están validados con el
+  script de la skill `dataviz` contra cada superficie (claro y oscuro por
+  separado). Si los cambias, vuelve a pasar el validador; no los ajustes a ojo.
+
 ## Decisiones abiertas
 
 Anótalas aquí al resolverlas; no las asumas en silencio.
 
-- **Persistencia**: la propuesta es SQLite + Drizzle ORM (fichero local, cero
-  infraestructura, migrable a Turso o Postgres sin reescribir consultas). No
-  confirmado.
-- **Auth**: sin decidir. Hasta entonces, escribe el código de datos asumiendo
-  que existe un `userId` de sesión y aíslalo tras un único helper
-  (`getSession()`), para que cambiar de proveedor toque un solo fichero.
-- **Tests**: no hay runner instalado. La propuesta es Vitest para `lib/` y
-  Playwright para flujos.
+- **Presupuestos**: diseñados en la skill `finance-data-model`, sin implementar.
+  La tabla `budgets` no existe todavía.
+- **Importación de extractos**: las columnas `import_hash` están, el parser no.
+- **Multidivisa**: los importes ya se agrupan por divisa en todas partes, pero no
+  hay conversión ni tipos de cambio. Una transferencia entre divisas distintas se
+  rechaza.

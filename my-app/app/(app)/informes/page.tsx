@@ -5,6 +5,7 @@ import { abs } from '@/lib/money'
 import { Card, CardTitle, EmptyState, MoneyText, PageHeader, Stat } from '@/components/ui'
 import { getIncomeVsExpense, getMonthTotals, getSpendByCategory } from '@/features/transactions/queries'
 import { PeriodPicker } from '@/features/transactions/components/period-picker'
+import { IncomeExpenseChart } from '@/features/transactions/components/charts'
 
 export default async function InformesPage({ searchParams }: PageProps<'/informes'>) {
   const { periodo } = await searchParams
@@ -91,7 +92,19 @@ export default async function InformesPage({ searchParams }: PageProps<'/informe
               <EmptyState title="Todavía no hay histórico que mostrar." />
             </div>
           ) : (
-            <table className="mt-4 w-full text-sm">
+            <>
+              <div className="mt-4">
+                {/* Solo llegan al navegador los totales por mes, ya agregados
+                    en SQL: nunca los movimientos en crudo. */}
+                <IncomeExpenseChart
+                  data={evolution.map((row) => ({
+                    period: row.period,
+                    income: row.income.amount,
+                    expense: row.expense.amount,
+                  }))}
+                />
+              </div>
+              <table className="mt-6 w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted">
                   <th className="py-2 font-medium">Mes</th>
@@ -115,8 +128,9 @@ export default async function InformesPage({ searchParams }: PageProps<'/informe
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </>
           )}
         </Card>
       </div>

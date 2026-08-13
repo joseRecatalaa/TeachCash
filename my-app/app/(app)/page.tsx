@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireUserId } from '@/lib/auth'
 import { currentPeriod } from '@/lib/dates'
@@ -6,11 +7,28 @@ import { abs, money } from '@/lib/money'
 import { Card, CardTitle, EmptyState, MoneyText, PageHeader, Stat } from '@/components/ui'
 import { getNetWorth, listAccounts } from '@/features/accounts/queries'
 import {
+  getBalanceSeries,
+  getDefaultSeriesRange,
   getMonthTotals,
   getSpendByCategory,
   listTransactions,
 } from '@/features/transactions/queries'
 import { TransactionTable } from '@/features/transactions/components/transaction-table'
+import { BalanceChart } from '@/features/transactions/components/charts'
+
+/**
+ * Se renderiza dentro de un Suspense propio: el saldo de las tarjetas se calcula
+ * en milisegundos y la serie diaria no. Con un loading.tsx global, lo rápido
+ * esperaría a lo lento.
+ */
+async function BalanceSection({ userId }: { userId: string }) {
+  const range = await getDefaultSeriesRange(userId, 12)
+  const series = await getBalanceSeries(userId, range)
+
+  return (
+    <BalanceChart data={series.map((p) => ({ date: p.date, amount: p.balance.amount }))} />
+  )
+}
 
 export default async function DashboardPage() {
   const userId = await requireUserId()
@@ -75,6 +93,17 @@ export default async function DashboardPage() {
             <MoneyText value={totals.net} showSign colored />
           </Stat>
         </div>
+
+        <Card>
+          <CardTitle>Cómo evoluciona tu saldo</CardTitle>
+          <div className="mt-4">
+            <Suspense
+              fallback={<div className="h-64 animate-pulse rounded-lg bg-border/40" />}
+            >
+              <BalanceSection userId={userId} />
+            </Suspense>
+          </div>
+        </Card>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
