@@ -1,3 +1,8 @@
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# pnpm 10 no ejecuta scripts de instalación salvo que se aprueben aquí.
+# esbuild coloca su binario en el postinstall; sin esto, vitest falla al arrancar.
+onlyBuiltDependencies:
+  - esbuild
