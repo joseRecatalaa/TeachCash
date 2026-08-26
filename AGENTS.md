@@ -27,7 +27,7 @@ tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
 | React | **19.2.8** | Server Components por defecto |
 | Lenguaje | TypeScript 5, `strict` | |
 | Estilos | Tailwind CSS **v4** | Config en CSS (`@theme`), no `tailwind.config.js` |
-| Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en `my-app/` |
+| Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
 | Datos | SQLite + **Drizzle ORM**, driver `@libsql/client` | Fichero local en `data/`. Ver "Decisiones tomadas" |
 | Auth | **Sin login en la v1** | `lib/auth.ts` devuelve un `userId` fijo |
 | Gráficos | **Recharts 3** | Solo datos ya agregados cruzan al cliente |
@@ -35,7 +35,7 @@ tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
 
 ## Comandos
 
-Se ejecutan **desde `my-app/`**, no desde la raíz del repo.
+Se ejecutan **desde la raíz del repo**.
 
 ```bash
 pnpm dev                  # servidor de desarrollo
@@ -97,7 +97,7 @@ Detalle en la skill `nextjs-app-conventions`.
 ## Estructura prevista
 
 ```
-my-app/
+.
   app/
     (app)/                  # rutas autenticadas
       cuentas/

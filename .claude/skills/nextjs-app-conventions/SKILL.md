@@ -8,7 +8,7 @@ description: Convenciones de Next.js 16 App Router en este proyecto — qué es 
 ## Antes de escribir código de framework
 
 La documentación de la versión exacta instalada está en
-`my-app/node_modules/next/dist/docs/`. **Léela.** Next 16 tiene cambios que
+`node_modules/next/dist/docs/`. **Léela.** Next 16 tiene cambios que
 contradicen lo que probablemente asumas por versiones anteriores. Los mapas de
 rutas útiles:
 

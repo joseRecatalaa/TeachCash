@@ -1,1 +1,1 @@
-@my-app/AGENTS.md
+@AGENTS.md

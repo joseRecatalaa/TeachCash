@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
-const ROOT = process.argv[2] ?? 'my-app'
+const ROOT = process.argv[2] ?? '.'
 const SKIP = new Set(['node_modules', '.next', '.git', 'dist', 'build', 'coverage'])
 const EXT = /\.(ts|tsx|mts|cts|js|jsx|mjs)$/
 

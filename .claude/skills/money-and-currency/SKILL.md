@@ -198,5 +198,5 @@ un desastre con la coma) y valida en el servidor de todas formas.
 coma flotante. Ejecútalo tras tocar `lib/money.ts` o el esquema:
 
 ```bash
-node .claude/skills/money-and-currency/scripts/audit-money.mjs my-app
+node .claude/skills/money-and-currency/scripts/audit-money.mjs
 ```
