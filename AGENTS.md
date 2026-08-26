@@ -538,6 +538,14 @@ lleve hasta ella.
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
   el orden de las hojas no es el del desarrollo.
+- **Abrir el `dev` por la IP de la red deja la app cargando para siempre.** Next
+  16 bloquea los recursos de desarrollo (`/_next/static/chunks`, `/_next/hmr`)
+  que no vengan de `localhost`: el HTML del servidor llega y la Navbar se pinta,
+  pero ningún chunk de cliente carga, así que Refine nunca arranca y todas las
+  listas se quedan en el spinner. No hay error en la consola del navegador —
+  solo avisos en `.next/dev/logs/next-development.log`. Se arregla añadiendo el
+  host a `allowedDevOrigins` en `next.config.ts`; si la IP de la máquina cambia,
+  hay que actualizarla ahí.
 
 ## Estilo
 
