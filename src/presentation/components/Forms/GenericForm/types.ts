@@ -182,7 +182,13 @@ export interface SectionDefinition {
   title: string
   /** Icono de Tabler. Se referencia, no se instancia: la sección sigue sin JSX. */
   icon?: ComponentType<{ size?: number | string; stroke?: number }>
-  /** Color de Mantine para el borde y el icono de la sección. */
+  /**
+   * @deprecated Ya no se pinta. El acento de la aplicación es uno —el verde del
+   * sistema de diseño— y una sección con su propio color rompía la lectura del
+   * formulario: el ojo saltaba al recuadro más llamativo en vez de bajar por los
+   * campos en orden. Se conserva la propiedad para no romper las secciones ya
+   * escritas; en las nuevas, no la pongas.
+   */
   color?: string
   description?: string
   fields: FieldDefinition[]

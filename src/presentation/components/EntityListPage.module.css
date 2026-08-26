@@ -1,0 +1,72 @@
+/*
+ * Cabecera de una página de listado.
+ *
+ * Es la misma en Cuentas, Movimientos y Categorías, y ese es el objetivo: quien
+ * llega a una lista tiene que reconocerla antes de leer el título.
+ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--sd-ink);
+}
+
+/*
+ * El icono va en una chapa con trazo y sombra, ligeramente torcida. Es la marca
+ * de la sección: lo que hace que Movimientos no se confunda con Cuentas al
+ * llegar de vuelta desde un formulario.
+ */
+.chapa {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+
+  background: var(--sd-accent-wash);
+  color: var(--sd-accent);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  transform: rotate(-2deg);
+}
+
+/* El trazo de rotulador. Fondo y no pseudoelemento: ver `app/page.module.css`. */
+.texto {
+  padding: 0 0.12em 0.08em;
+  background-image: linear-gradient(
+    var(--sd-accent-wash),
+    var(--sd-accent-wash)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 0.38em;
+  background-position: 0 90%;
+}
+
+.descripcion {
+  margin: 0.15rem 0 0;
+  color: var(--sd-ink-muted);
+  font-size: 0.875rem;
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}

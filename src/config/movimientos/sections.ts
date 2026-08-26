@@ -22,7 +22,6 @@ export function movimientoSections({
     {
       title: 'Movimiento',
       icon: IconCash,
-      color: 'teal',
       fields: [
         {
           name: 'cuentaId',
@@ -87,7 +86,6 @@ export function movimientoSections({
     {
       title: 'Notas',
       icon: IconNotes,
-      color: 'gray',
       fields: [
         {
           name: 'notas',
@@ -118,7 +116,6 @@ export function transferenciaSections({
     {
       title: 'Transferencia',
       icon: IconCalendar,
-      color: 'blue',
       description:
         'Mueve dinero entre dos cuentas tuyas. No cuenta como ingreso ni como gasto, así que no aparece en los informes — pero sí cambia el saldo de las dos cuentas.',
       fields: [

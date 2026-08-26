@@ -1,0 +1,235 @@
+/*
+ * Resumen.
+ *
+ * La única página con tarjetas "de portada": el resto de la aplicación es
+ * trabajo (tablas y formularios) y no debe competir con esta.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Cabecera ────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/*
+ * El trazo de rotulador del título.
+ *
+ * Es un `background-image` y NO un pseudoelemento con `z-index: -1`: un `-1`
+ * saca la decoración del contexto de apilamiento del título y acaba tapada por
+ * el fondo del ancestro más cercano que tenga uno. El fondo, en cambio, se pinta
+ * siempre detrás del texto y delante del papel, que es exactamente lo que se
+ * quiere. `background-size` lo estrecha a una franja y `background-position` la
+ * baja hasta la línea base.
+ */
+.title {
+  margin: 0;
+  padding: 0 0.15em 0.1em;
+  font-family: var(--sd-font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+
+  background-image: linear-gradient(
+    var(--sd-accent-wash),
+    var(--sd-accent-wash)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 0.42em;
+  background-position: 0 88%;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ── Rejilla ─────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.colPatrimonio {
+  grid-column: span 12;
+}
+
+.colMes {
+  grid-column: span 12;
+}
+
+.colCuentas {
+  grid-column: span 12;
+}
+
+.colMovimientos {
+  grid-column: span 12;
+}
+
+@media (min-width: 62em) {
+  .colPatrimonio {
+    grid-column: span 4;
+  }
+
+  .colMes {
+    grid-column: span 8;
+  }
+
+  .colCuentas {
+    grid-column: span 5;
+  }
+
+  .colMovimientos {
+    grid-column: span 7;
+  }
+}
+
+/* ── Cifras ──────────────────────────────────────────────────────────────── */
+
+.cifraGrande {
+  font-family: var(--sd-font-mono);
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--sd-ink);
+}
+
+/*
+ * Tres fichas dentro de la tarjeta del mes. `auto-fit` y no tres columnas fijas:
+ * en móvil se apilan solas sin necesidad de otra media query.
+ */
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.estadistica {
+  padding: 0.7rem 0.85rem;
+  background: var(--sd-surface);
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-sm);
+}
+
+.estadisticaEtiqueta {
+  display: block;
+  font-family: var(--sd-font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sd-ink-muted);
+  margin-bottom: 0.2rem;
+}
+
+.estadisticaValor {
+  font-family: var(--sd-font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* El color es la SEGUNDA señal; la primera es el signo del propio importe. */
+.ingreso {
+  color: var(--income);
+}
+
+.gasto {
+  color: var(--expense);
+}
+
+/* ── Listas tipo libreta ─────────────────────────────────────────────────── */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * La línea discontinua entre filas es lo que da el aspecto de libreta. Va en el
+ * borde INFERIOR y se quita en la última: un separador colgando al final de la
+ * lista es la marca de la casa de las listas mal hechas.
+ */
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.15rem;
+  border-bottom: var(--sd-stroke-hair) dashed var(--gris-200);
+  transition: background-color var(--sd-dur) ease;
+}
+
+.fila:last-child {
+  border-bottom: none;
+}
+
+.fila:hover {
+  background: var(--sd-accent-wash-faint);
+}
+
+.filaFecha {
+  flex: 0 0 auto;
+  min-width: 3.6rem;
+  font-family: var(--sd-font-mono);
+  font-size: 0.75rem;
+  color: var(--sd-ink-muted);
+}
+
+.filaTexto {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.filaImporte {
+  flex: 0 0 auto;
+  font-family: var(--sd-font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.vacio {
+  padding: 0.5rem 0;
+  color: var(--sd-ink-muted);
+  font-size: 0.875rem;
+}
+
+.enlace {
+  font-family: var(--sd-font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sd-accent);
+  text-decoration: none;
+  border-bottom: 2px solid var(--sd-accent-wash);
+  transition: var(--sd-transition);
+}
+
+.enlace:hover {
+  border-bottom-color: var(--sd-accent);
+}
+
+.enlace:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: 2px;
+}

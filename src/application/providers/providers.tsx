@@ -14,10 +14,29 @@
 
 import { useMemo } from 'react'
 import { Refine } from '@refinedev/core'
-import { MantineProvider, createTheme } from '@mantine/core'
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Input,
+  InputWrapper,
+  MantineProvider,
+  Menu,
+  Modal,
+  Notification,
+  Paper,
+  Popover,
+  Switch,
+  Title,
+  Tooltip,
+  createTheme,
+} from '@mantine/core'
 import { DatesProvider } from '@mantine/dates'
 import { Notifications } from '@mantine/notifications'
 import 'dayjs/locale/es'
+import sketch from '@/src/presentation/styles/mantine-sketch.module.css'
 import { dataProvider } from './refine-data-provider'
 
 /**
@@ -55,15 +74,89 @@ export const REFINE_RESOURCES = [
   },
 ]
 
+/**
+ * El verde de la aplicación, en los diez pasos que pide Mantine.
+ *
+ * Son los mismos valores que `--verde-*` en `app/globals.css`. Están duplicados
+ * porque Mantine necesita la escala en JavaScript para calcular los estados
+ * (hover, borde, contraste automático) y no sabe leer Custom Properties. Si
+ * cambias uno, cambia el otro: son la misma paleta escrita dos veces.
+ */
+const VERDE_BOSQUE: [
+  string, string, string, string, string,
+  string, string, string, string, string,
+] = [
+  '#edf9f0',
+  '#d8f3dc',
+  '#b7e4c7',
+  '#95d5b2',
+  '#74c69d',
+  '#52b788',
+  '#40916c',
+  '#2d6a4f',
+  '#1b4332',
+  '#0f2e21',
+]
+
+/**
+ * El tema.
+ *
+ * La parte visual del sistema de diseño NO está aquí: está en
+ * `src/presentation/styles/mantine-sketch.module.css`, y se engancha con
+ * `Componente.extend({ classNames })`. Este fichero solo decide QUÉ clase le
+ * toca a cada componente.
+ *
+ * Es lo que hace que un `<Button>` escrito hace tres meses —o el que genere
+ * Plop mañana— salga con el trazo, la sombra dura y el gesto de pulsación sin
+ * que nadie lo toque. Para cambiar el aspecto de TODOS los botones se edita el
+ * módulo CSS; para cambiar el de UNO, se usa su prop `className`.
+ */
 const theme = createTheme({
-  primaryColor: 'teal',
+  colors: { bosque: VERDE_BOSQUE },
+  primaryColor: 'bosque',
+  // Verde bosque sobre papel blanco; musgo sobre papel oscuro. El paso 8 no
+  // tiene contraste suficiente contra el fondo oscuro y el 5 se lava sobre el
+  // claro: cada esquema necesita el suyo.
+  primaryShade: { light: 8, dark: 5 },
   defaultRadius: 'md',
-  fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-  fontFamilyMonospace: 'var(--font-geist-mono), ui-monospace, monospace',
-  headings: { fontWeight: '600' },
+  fontFamily: 'var(--sd-font-body)',
+  fontFamilyMonospace: 'var(--sd-font-mono)',
+  headings: { fontFamily: 'var(--sd-font-display)', fontWeight: '600' },
+  // `focusRing` se queda en 'auto' A PROPÓSITO. Ponerlo en 'never' quitaría el
+  // anillo de Mantine de TODO lo enfocable, y el módulo de arriba solo repone el
+  // de botones e inputs: los enlaces del menú y las filas de la tabla se
+  // quedarían sin indicador de foco, que es lo que usa quien navega con teclado.
   components: {
-    Paper: { defaultProps: { shadow: 'xs', radius: 'md', withBorder: true } },
-    Card: { defaultProps: { radius: 'md', shadow: 'sm' } },
+    Button: Button.extend({ classNames: { root: sketch.button } }),
+    ActionIcon: ActionIcon.extend({ classNames: { root: sketch.actionIcon } }),
+    Paper: Paper.extend({
+      defaultProps: { withBorder: true },
+      classNames: { root: sketch.paper },
+    }),
+    Card: Card.extend({ classNames: { root: sketch.card } }),
+    Modal: Modal.extend({
+      classNames: {
+        content: sketch.modalContent,
+        header: sketch.modalHeader,
+        title: sketch.modalTitle,
+      },
+    }),
+    Alert: Alert.extend({ classNames: { root: sketch.alert } }),
+    Tooltip: Tooltip.extend({ classNames: { tooltip: sketch.tooltip } }),
+    Badge: Badge.extend({ classNames: { root: sketch.badge } }),
+    Title: Title.extend({ classNames: { root: sketch.title } }),
+    Notification: Notification.extend({
+      classNames: { root: sketch.notification },
+    }),
+    Switch: Switch.extend({ classNames: { track: sketch.switchTrack } }),
+    Popover: Popover.extend({ classNames: { dropdown: sketch.dropdown } }),
+    Menu: Menu.extend({ classNames: { dropdown: sketch.dropdown } }),
+    // `Input` e `InputWrapper` son la base de TextInput, Select, DateInput y del
+    // MoneyInput del proyecto: estilarlos aquí los cubre todos de una vez.
+    Input: Input.extend({ classNames: { input: sketch.input } }),
+    InputWrapper: InputWrapper.extend({
+      classNames: { label: sketch.inputLabel, error: sketch.inputError },
+    }),
   },
 })
 

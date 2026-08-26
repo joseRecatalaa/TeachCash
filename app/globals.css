@@ -1,23 +1,237 @@
 /*
- * Estilos globales.
+ * Estilos globales y TOKENS del sistema de diseño "cuaderno".
  *
  * Tailwind se retiró al adoptar Mantine: su `preflight` reescribe los estilos
  * base de todos los elementos y peleaba con los de Mantine por quién manda en
- * un `<button>`. Lo que sí se queda es esto — los tokens de color de los
- * gráficos, que no dependen de ningún framework.
+ * un `<button>`. Lo que hay aquí NO son utilidades: son Custom Properties y
+ * cuatro reglas de elemento. Todo lo demás se estila con CSS Modules
+ * (`*.module.css`) al lado de su componente.
+ *
+ * ORDEN DE IMPORTACIÓN: este fichero se importa en `app/layout.tsx` DESPUÉS de
+ * las hojas de Mantine. Es deliberado — Mantine define sus variables sobre
+ * `:root[data-mantine-color-scheme=...]` y, a igual especificidad, gana quien
+ * se declara último. Aun así los overrides de abajo duplican el `:root` para no
+ * depender solo del orden: si alguien reordena los imports, el tema sigue en pie.
  */
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 1. Paleta cruda
+ *
+ * Nadie consume estos tokens directamente: son la materia prima de los tokens
+ * SEMÁNTICOS del bloque 2, que son los que sí se usan. Cambiar un valor de aquí
+ * cambia el color en todos los sitios donde ese papel tiene sentido; usar
+ * `--verde-700` suelto en un componente rompe esa cadena.
+ * ────────────────────────────────────────────────────────────────────────── */
 :root {
-  /*
-   * Verde ingreso / rojo gasto es lo esperado en España, pero es justo el par
-   * que no distingue la deuteranopía: en la interfaz SIEMPRE va acompañado del
-   * signo − o +, nunca el color solo. Por eso los importes se pintan con
-   * `formatMoneySigned` y no solo coloreados.
-   *
-   * Valores comprobados con el validador de la skill `dataviz` sobre esta
-   * superficie: ΔE 8,2 en protanopía y 25,7 en visión normal. NO LOS CAMBIES A
-   * OJO — vuelve a pasar el script.
+  /* Tinta: el negro del trazo. No es #000 puro — sobre papel blanco cansa. */
+  --negro-tinta: #111111;
+  --negro-carbon: #1a1a1a;
+
+  /* Papel */
+  --papel-puro: #ffffff;
+  --papel-roto: #f9f9fb;
+  --papel-sombra: #eeeef2;
+
+  /* Grises de apoyo */
+  --gris-100: #f2f2f5;
+  --gris-200: #e3e3ea;
+  --gris-400: #b4b4c0;
+  --gris-600: #6b6b7b;
+  --gris-800: #3a3a45;
+
+  /* Verde: el acento. Del bosque al musgo. */
+  --verde-950: #081c15;
+  --verde-900: #0f2e21;
+  --verde-800: #1b4332;
+  --verde-700: #2d6a4f;
+  --verde-600: #40916c;
+  --verde-500: #52b788;
+  --verde-400: #74c69d;
+  --verde-300: #95d5b2;
+  --verde-200: #b7e4c7;
+  --verde-100: #d8f3dc;
+  --verde-050: #edf9f0;
+
+  /* Acentos de estado. Claros y desaturados: el peso visual lo lleva el trazo
+     negro, no el relleno. Un badge rojo saturado gritaría más que el dato. */
+  --ambar-500: #b57503;
+  --ambar-100: #fdf1d6;
+  --teja-500: #c43d2e;
+  --teja-100: #fbe4e0;
+  --azul-500: #2b6cb0;
+  --azul-100: #e2eefb;
+  --lila-500: #6b4ea8;
+  --lila-100: #ece6f9;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 2. Tokens semánticos
+ *
+ * Estos son los que se usan en los `.module.css`. Están definidos por lo que
+ * SIGNIFICAN, no por su color: por eso el modo oscuro solo tiene que redefinir
+ * este bloque y no tocar un solo componente.
+ * ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Superficies */
+  --sd-paper: var(--papel-roto);        /* fondo de la aplicación */
+  --sd-surface: var(--papel-puro);      /* tarjetas, paneles, inputs */
+  --sd-surface-sunken: var(--gris-100); /* zonas hundidas: cabecera de tabla */
+  --sd-surface-muted: var(--papel-sombra);
+
+  /* Tinta */
+  --sd-ink: var(--negro-tinta);
+  --sd-ink-soft: var(--negro-carbon);
+  --sd-ink-muted: var(--gris-600);
+  --sd-ink-inverse: var(--papel-puro);
+
+  /* Acento */
+  --sd-accent: var(--verde-800);
+  --sd-accent-strong: var(--verde-900);
+  --sd-accent-soft: var(--verde-700);
+  --sd-accent-wash: var(--verde-100);
+  --sd-accent-wash-faint: var(--verde-050);
+  --sd-accent-ink: var(--papel-puro); /* texto sobre el acento */
+
+  /* ── El trazo ──────────────────────────────────────────────────────────
+   * Es LO que define este sistema. Dos grosores y ni uno más: 2px para lo
+   * normal, 3px para lo que manda (botón primario, tarjeta destacada). Un
+   * tercer grosor haría que la jerarquía dejara de leerse de un vistazo.
    */
+  --sd-stroke-color: var(--negro-tinta);
+  --sd-stroke: 2px;
+  --sd-stroke-bold: 3px;
+  --sd-stroke-hair: 1.5px; /* solo separadores internos y filas de tabla */
+  --sd-border: var(--sd-stroke) solid var(--sd-stroke-color);
+  --sd-border-bold: var(--sd-stroke-bold) solid var(--sd-stroke-color);
+  --sd-border-hair: var(--sd-stroke-hair) solid var(--sd-stroke-color);
+
+  /* ── Sombra dura ───────────────────────────────────────────────────────
+   * Sin difuminado: es un desplazamiento sólido, como un sello mal alineado.
+   * El desplazamiento y el `translate` del estado :active tienen que sumar lo
+   * mismo (`--sd-press`), o el elemento "flota" al pulsarlo en vez de aterrizar.
+   */
+  --sd-shadow-color: var(--negro-tinta);
+  --sd-shadow-xs: 2px 2px 0 0 var(--sd-shadow-color);
+  --sd-shadow-sm: 3px 3px 0 0 var(--sd-shadow-color);
+  --sd-shadow-md: 5px 5px 0 0 var(--sd-shadow-color);
+  --sd-shadow-lg: 8px 8px 0 0 var(--sd-shadow-color);
+  --sd-shadow-accent: 3px 3px 0 0 var(--sd-accent);
+  --sd-press: 2px;
+  --sd-press-lift: 1px; /* cuánto sube al pasar el ratón, antes de pulsar */
+
+  /* ── Esquinas orgánicas ────────────────────────────────────────────────
+   * La sintaxis con `/` da radios ELÍPTICOS: cada esquina tiene un radio
+   * horizontal y otro vertical distintos, y eso es lo que hace que el borde no
+   * parezca trazado con compás. No lo sustituyas por un `border-radius` de un
+   * solo valor — es justo lo que mata el efecto dibujado a mano.
+   */
+  --sd-radius-doodle: 14px 8px 16px 10px / 10px 16px 8px 14px;
+  --sd-radius-doodle-alt: 9px 16px 10px 15px / 15px 9px 16px 10px;
+  --sd-radius-sm: 8px 6px 9px 7px / 7px 9px 6px 8px;
+  --sd-radius-pill: 999px;
+
+  /* Movimiento. `--sd-ease-pop` sobrepasa a propósito (el 1.4 final): es el
+     rebote que hace que un botón parezca de goma y no de cristal. */
+  --sd-dur-fast: 90ms;
+  --sd-dur: 140ms;
+  --sd-ease-pop: cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  --sd-transition: transform var(--sd-dur-fast) var(--sd-ease-pop),
+    box-shadow var(--sd-dur-fast) var(--sd-ease-pop),
+    background-color var(--sd-dur) ease, border-color var(--sd-dur) ease,
+    color var(--sd-dur) ease;
+
+  /* Foco. Nunca se quita el indicador: se sustituye por uno que se ve más. */
+  --sd-focus-ring: 0 0 0 3px var(--verde-300), 0 0 0 5px var(--sd-stroke-color);
+
+  /* Tipografía. Las familias las inyecta `next/font` en `app/layout.tsx`. */
+  --sd-font-display: var(--font-display), 'Trebuchet MS', 'Segoe UI', system-ui,
+    sans-serif;
+  --sd-font-body: var(--font-body), system-ui, -apple-system, sans-serif;
+  --sd-font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', monospace;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 3. Modo oscuro
+ *
+ * No es una inversión automática. Dos decisiones que hay que respetar:
+ *
+ *   - El TRAZO se vuelve hueso (#e8e6df), no gris: si se oscurece, el sistema
+ *     entero pierde lo único que lo sostiene, que es la línea.
+ *   - La SOMBRA no puede ser negra — sobre papel oscuro no se vería y las
+ *     tarjetas se quedarían planas. Es un tono que queda POR ENCIMA del fondo,
+ *     no por debajo. Es la única regla del sistema que se invierte de verdad.
+ * ────────────────────────────────────────────────────────────────────────── */
+:root:root[data-mantine-color-scheme='dark'] {
+  --sd-paper: #101215;
+  --sd-surface: #1a1d22;
+  --sd-surface-sunken: #23272e;
+  --sd-surface-muted: #23272e;
+
+  --sd-ink: #f0eee6;
+  --sd-ink-soft: #e0ded5;
+  --sd-ink-muted: #9a9aa6;
+  --sd-ink-inverse: #101215;
+
+  --sd-accent: var(--verde-500);
+  --sd-accent-strong: var(--verde-400);
+  --sd-accent-soft: var(--verde-600);
+  --sd-accent-wash: #163a2b;
+  --sd-accent-wash-faint: #12291f;
+  --sd-accent-ink: #06140d;
+
+  --sd-stroke-color: #e8e6df;
+  --sd-shadow-color: #4a5058;
+
+  --sd-focus-ring: 0 0 0 3px var(--verde-700), 0 0 0 5px var(--sd-stroke-color);
+
+  /* Los rellenos claros de los badges no funcionan sobre papel oscuro: se
+     rebajan a lavados profundos que siguen dejando leer el texto en hueso. */
+  --ambar-100: #3b2e10;
+  --ambar-500: #f0b542;
+  --teja-100: #3d1f1a;
+  --teja-500: #e8836f;
+  --azul-100: #16283c;
+  --azul-500: #7db1e8;
+  --lila-100: #2a2140;
+  --lila-500: #b49ce8;
+  --verde-100: #16382a;
+  --gris-100: #23272e;
+  --gris-200: #2e333b;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 4. Puente con Mantine
+ *
+ * Mantine pinta su superficie y su texto con SUS variables. En vez de pelear
+ * componente a componente, se reapuntan a los tokens de arriba: así el body,
+ * los dropdowns, los tooltips y todo lo que no tiene módulo propio quedan
+ * dentro del sistema sin tocar una línea de TSX.
+ * ────────────────────────────────────────────────────────────────────────── */
+:root:root {
+  --mantine-color-body: var(--sd-paper);
+  --mantine-color-text: var(--sd-ink);
+  --mantine-color-dimmed: var(--sd-ink-muted);
+  --mantine-color-default-border: var(--sd-stroke-color);
+  --mantine-font-family: var(--sd-font-body);
+  --mantine-font-family-headings: var(--sd-font-display);
+  --mantine-font-family-monospace: var(--sd-font-mono);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 5. Color del dato (NO es color de marca)
+ *
+ * Verde ingreso / rojo gasto es lo esperado en España, pero es justo el par que
+ * no distingue la deuteranopía: en la interfaz SIEMPRE va acompañado del signo
+ * − o +, nunca el color solo. Por eso los importes se pintan con
+ * `formatMoneySigned` y no solo coloreados.
+ *
+ * Valores comprobados con el validador de la skill `dataviz` sobre esta
+ * superficie: ΔE 8,2 en protanopía y 25,7 en visión normal. NO LOS CAMBIES A
+ * OJO — vuelve a pasar el script. En particular, NO los sustituyas por
+ * `--sd-accent`: el verde bosque de marca es mucho más oscuro y responde a otra
+ * pregunta (¿esto es de la aplicación?) que estos dos (¿esto suma o resta?).
+ * ────────────────────────────────────────────────────────────────────────── */
+:root {
   --income: #1f7a54;
   --expense: #c43d2e;
 }
@@ -35,6 +249,65 @@
 }
 
 /*
+ * Y lo mismo, pero atado al esquema QUE MANDA DE VERDAD.
+ *
+ * Quien decide si la superficie es clara u oscura no es la media query: es el
+ * atributo que pone Mantine, que puede venir de una preferencia guardada y no
+ * del sistema operativo. Con solo la media query, alguien con el sistema en
+ * oscuro y la aplicación en claro vería los importes con los tonos de la
+ * superficie contraria — que es exactamente el caso que la validación CVD no
+ * cubre. Los valores son los mismos de arriba; lo que cambia es cuándo se
+ * aplican. La especificidad (0,3,0) es lo que les deja ganar a la media query.
+ */
+:root:root[data-mantine-color-scheme='light'] {
+  --income: #1f7a54;
+  --expense: #c43d2e;
+}
+
+:root:root[data-mantine-color-scheme='dark'] {
+  --income: #2f9c6e;
+  --expense: #db6046;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 6. Reglas de elemento
+ * ────────────────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--sd-paper);
+  color: var(--sd-ink);
+  font-family: var(--sd-font-body);
+  /*
+   * La retícula del cuaderno. Va en el fondo del body y no en una capa aparte
+   * para que no intercepte clics ni se despegue al hacer scroll. Muy tenue a
+   * propósito: tiene que notarse al mirar, no al leer.
+   */
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--gris-200) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+}
+
+:root:root[data-mantine-color-scheme='dark'] body {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    #262b33 1px,
+    transparent 0
+  );
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--sd-font-display);
+  letter-spacing: -0.01em;
+}
+
+/*
  * Los importes en columna, siempre con cifras de ancho fijo: si no, los dígitos
  * bailan y las cantidades dejan de poder compararse de un vistazo. `AppTable`
  * lo aplica solo a las columnas `money`; esta clase es para los importes
@@ -42,4 +315,19 @@
  */
 .tabular {
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/*
+ * Nadie se marea con una interfaz que rebota. Se conservan los cambios de color
+ * y de sombra —que son los que comunican el estado— y se quita el movimiento.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

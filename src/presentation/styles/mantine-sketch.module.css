@@ -1,0 +1,270 @@
+/*
+ * El puente entre Mantine y el sistema "cuaderno".
+ *
+ * Estas clases NO se importan desde ningún componente: se enganchan una sola
+ * vez en el tema (`src/application/providers/providers.tsx`) con
+ * `Componente.extend({ classNames })`. A partir de ahí, TODO `<Button>`,
+ * `<Paper>` o `<TextInput>` de la aplicación sale ya dibujado a mano, incluidos
+ * los que estaban escritos antes de existir el sistema y los que escriba el
+ * generador de Plop mañana.
+ *
+ * Es la alternativa a reescribir treinta componentes, y por eso es el sitio
+ * donde hay que tocar para cambiar el aspecto de un tipo de control entero.
+ *
+ * ── Dos cosas que hay que saber antes de editar ─────────────────────────────
+ *
+ * 1. LOS SELECTORES VAN DOBLADOS (`.button.button`). No es un descuido: Mantine
+ *    define sus reglas con una sola clase, y a igual especificidad gana la hoja
+ *    que se cargue después. Doblar la clase sube la especificidad a (0,2,0) y
+ *    hace que el tema mande sin depender del orden de los imports.
+ *
+ * 2. EL COLOR NO SE FUERZA. El relleno lo sigue poniendo Mantine desde
+ *    `primaryColor` y desde la prop `color`, así que un `color="red"` sigue
+ *    saliendo rojo. Aquí solo se ponen el TRAZO, la SOMBRA y el GESTO, que es
+ *    lo que hace que todo pertenezca al mismo dibujo.
+ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Botones
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.button.button {
+  --btn-offset: 3px;
+
+  border: var(--sd-stroke) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--btn-offset) var(--btn-offset) 0 0 var(--sd-shadow-color);
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+  transition: var(--sd-transition);
+}
+
+/* Sin `data-variant` es el relleno por defecto: la acción principal. */
+.button.button:not([data-variant]),
+.button.button[data-variant='filled'] {
+  border-width: var(--sd-stroke-bold);
+}
+
+.button.button:hover:not(:disabled, [data-disabled]) {
+  transform: translate(calc(-1 * var(--sd-press-lift)), calc(-1 * var(--sd-press-lift)));
+  box-shadow: calc(var(--btn-offset) + var(--sd-press-lift))
+    calc(var(--btn-offset) + var(--sd-press-lift)) 0 0 var(--sd-shadow-color);
+}
+
+/* Aterriza justo lo que medía su sombra. Ver el comentario de SketchButton. */
+.button.button:active:not(:disabled, [data-disabled]) {
+  transform: translate(var(--btn-offset), var(--btn-offset));
+  box-shadow: 0 0 0 0 var(--sd-shadow-color);
+}
+
+.button.button:focus-visible {
+  outline: none;
+  box-shadow: var(--btn-offset) var(--btn-offset) 0 0 var(--sd-shadow-color),
+    var(--sd-focus-ring);
+}
+
+.button.button:disabled,
+.button.button[data-disabled] {
+  box-shadow: none;
+  transform: none;
+}
+
+/* `subtle` es terciario: no lleva caja hasta que se apunta. */
+.button.button[data-variant='subtle'] {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.button.button[data-variant='subtle']:hover:not(:disabled, [data-disabled]) {
+  border-style: dashed;
+  border-color: var(--sd-stroke-color);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Botones de icono
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.actionIcon.actionIcon {
+  border: var(--sd-stroke) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  transition: var(--sd-transition);
+}
+
+.actionIcon.actionIcon:hover:not(:disabled, [data-disabled]) {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--sd-shadow-sm);
+}
+
+.actionIcon.actionIcon:active:not(:disabled, [data-disabled]) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.actionIcon.actionIcon:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-shadow-xs), var(--sd-focus-ring);
+}
+
+/*
+ * Los iconos de acción de una fila (editar, borrar, filtrar) van sin caja: una
+ * tabla de veinte filas con cuarenta rectángulos con sombra es ilegible. El
+ * trazo aparece al apuntar, que es cuando importa.
+ */
+.actionIcon.actionIcon[data-variant='subtle'] {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.actionIcon.actionIcon[data-variant='subtle']:hover:not(:disabled, [data-disabled]) {
+  border-color: var(--sd-stroke-color);
+  transform: none;
+  box-shadow: var(--sd-shadow-xs);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Superficies
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.paper.paper {
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-md);
+}
+
+.card.card {
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle-alt);
+  box-shadow: var(--sd-shadow-md);
+}
+
+/*
+ * El contenido de un modal ES un `<Paper>` por dentro, así que hereda lo de
+ * arriba. Se le baja el radio: la esquina orgánica se nota mucho más en una caja
+ * de 600px y ahí ya no parece dibujada, parece torcida.
+ */
+.modalContent.modalContent {
+  border: var(--sd-border-bold);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-lg);
+}
+
+.modalHeader.modalHeader {
+  background: var(--sd-surface-sunken);
+  border-bottom: var(--sd-border);
+}
+
+.modalTitle.modalTitle {
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+.alert.alert {
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.tooltip.tooltip {
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  font-family: var(--sd-font-display);
+  font-weight: 500;
+}
+
+.dropdown.dropdown {
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-sm);
+}
+
+.notification.notification {
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-sm);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Entrada de datos
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Los inputs son la parte más delicada del sistema: es donde se escribe dinero.
+ * El campo enfocado se LEVANTA (sombra dura + desplazamiento negativo) en vez de
+ * cambiar de color, para que se distinga del campo con error, que sí es rojo.
+ */
+.input.input {
+  background: var(--sd-surface);
+  border: var(--sd-stroke) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-sm);
+  color: var(--sd-ink);
+  font-family: var(--sd-font-body);
+  transition: var(--sd-transition);
+}
+
+.input.input:focus,
+.input.input:focus-within {
+  outline: none;
+  border-color: var(--sd-accent);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.input.input[data-error] {
+  border-color: var(--expense);
+}
+
+.input.input::placeholder {
+  color: var(--sd-ink-muted);
+  font-style: italic;
+}
+
+.input.input:disabled,
+.input.input[data-disabled] {
+  background: var(--sd-surface-muted);
+  color: var(--sd-ink-muted);
+}
+
+.inputLabel.inputLabel {
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+  color: var(--sd-ink);
+}
+
+.inputError.inputError {
+  font-weight: 600;
+}
+
+.switchTrack.switchTrack {
+  border: var(--sd-border-hair);
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Etiquetas
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Sin versales: un badge en mayúsculas es un grito, y en una tabla de
+ * movimientos hay uno por fila. El trazo ya lo distingue del fondo.
+ */
+.badge.badge {
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-pill);
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.title.title {
+  font-family: var(--sd-font-display);
+  letter-spacing: -0.01em;
+}

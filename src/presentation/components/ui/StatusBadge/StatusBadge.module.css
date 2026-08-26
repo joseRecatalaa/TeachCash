@@ -1,0 +1,107 @@
+/*
+ * Badge de estado.
+ *
+ * Fondo lavado + trazo negro. El trazo es lo que lo hace legible: un badge de
+ * relleno claro SIN borde se pierde sobre el papel blanco, y uno de relleno
+ * saturado pesa más que el dato que acompaña.
+ *
+ * El punto (`.dot`) no es decorativo: es la segunda señal, la que sostiene el
+ * significado cuando el color no llega (daltonismo, impresión en gris). El
+ * texto es la primera. El color es la tercera y nunca va solo.
+ */
+
+.root {
+  --badge-fill: var(--gris-100);
+  --badge-ink: var(--sd-ink);
+  --badge-dot: var(--gris-600);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+
+  padding: 0.2em 0.65em;
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-pill);
+  background: var(--badge-fill);
+  color: var(--badge-ink);
+
+  font-family: var(--sd-font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Con sombra se despega del papel: para el estado que encabeza una ficha. */
+.raised {
+  border: var(--sd-border);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.sm {
+  font-size: 0.6875rem;
+  padding: 0.1em 0.5em;
+}
+
+.lg {
+  font-size: 0.875rem;
+  padding: 0.28em 0.8em;
+}
+
+.dot {
+  flex: 0 0 auto;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--badge-dot);
+  /* El mismo trazo que todo lo demás, a escala. Sin él, el punto parece de otro
+     sistema de diseño. */
+  border: 1px solid var(--sd-stroke-color);
+}
+
+.icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--badge-dot);
+}
+
+/* ── Tonos ───────────────────────────────────────────────────────────────── */
+
+.neutral {
+  --badge-fill: var(--gris-100);
+  --badge-dot: var(--gris-600);
+}
+
+.accent {
+  --badge-fill: var(--sd-accent-wash);
+  --badge-dot: var(--sd-accent);
+}
+
+.positive {
+  --badge-fill: var(--verde-100);
+  --badge-dot: var(--income);
+}
+
+.warning {
+  --badge-fill: var(--ambar-100);
+  --badge-dot: var(--ambar-500);
+}
+
+.danger {
+  --badge-fill: var(--teja-100);
+  --badge-dot: var(--expense);
+}
+
+.info {
+  --badge-fill: var(--azul-100);
+  --badge-dot: var(--azul-500);
+}
+
+.muted {
+  --badge-fill: transparent;
+  --badge-ink: var(--sd-ink-muted);
+  --badge-dot: var(--gris-400);
+  border-style: dashed;
+}

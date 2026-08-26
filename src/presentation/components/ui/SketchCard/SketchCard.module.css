@@ -1,0 +1,258 @@
+/*
+ * La tarjeta: la superficie de la que cuelga todo lo demás.
+ *
+ * Tres decisiones que no son de gusto:
+ *
+ *   1. El `border-radius` es ELÍPTICO y asimétrico (token `--sd-radius-doodle`).
+ *      Un radio único haría que las cuatro esquinas fueran idénticas y el
+ *      conjunto volvería a parecer trazado con compás.
+ *   2. Las tarjetas pares usan el radio alternativo. Es lo que evita que una
+ *      rejilla de seis tarjetas se lea como seis fotocopias de la misma.
+ *   3. La inclinación de `sticker` es de MENOS DE UN GRADO. A partir de ahí
+ *      deja de leerse como un papel apoyado y empieza a leerse como un fallo.
+ */
+
+.root {
+  --card-pad: 1.25rem;
+  --card-tone: var(--sd-accent);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  padding: var(--card-pad);
+  background: var(--sd-surface);
+  color: var(--sd-ink);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-md);
+  transition: var(--sd-transition);
+}
+
+.root:nth-of-type(even) {
+  border-radius: var(--sd-radius-doodle-alt);
+}
+
+/* ── Variantes ───────────────────────────────────────────────────────────── */
+
+/*
+ * La variante por defecto es `paper` y NO tiene clase: es `.root` tal cual. Si
+ * necesitara una, tendría que componer `.root` y el componente aplicaría dos
+ * clases con las mismas reglas.
+ *
+ * Nota sobre el orden: `.tiltLeft` / `.tiltRight` se declaran DESPUÉS de
+ * `.sticker`, así que una inclinación explícita gana a la de la pegatina. Es lo
+ * que se espera: si alguien pide un ángulo, manda el suyo.
+ */
+
+/*
+ * Pegatina: apoyada en la mesa y sujeta con cinta. La cinta es decorativa y va
+ * en un pseudoelemento — nunca en el DOM: no tiene que existir para un lector
+ * de pantalla.
+ */
+.sticker {
+  transform: rotate(-0.5deg);
+}
+
+.sticker::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 74px;
+  height: 20px;
+  transform: translateX(-50%) rotate(-2.5deg);
+  background: var(--sd-accent-wash);
+  border: var(--sd-border-hair);
+  border-radius: 2px;
+  opacity: 0.9;
+}
+
+/* Lo importante de la pantalla. Trazo grueso + fondo lavado del tono. */
+.highlight {
+  border-width: var(--sd-stroke-bold);
+  background: var(--sd-accent-wash-faint);
+}
+
+/* Para anidar dentro de otra tarjeta: sin sombra, no se apilan cajas. */
+.flat {
+  box-shadow: none;
+  border: var(--sd-border-hair);
+}
+
+/* ── Interacción ─────────────────────────────────────────────────────────── */
+
+.interactive {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+}
+
+.interactive:hover {
+  transform: translate(calc(-1 * var(--sd-press-lift)), calc(-1 * var(--sd-press-lift)))
+    rotate(0deg);
+  box-shadow: var(--sd-shadow-lg);
+}
+
+.interactive:active {
+  transform: translate(5px, 5px) rotate(0deg);
+  box-shadow: 0 0 0 0 var(--sd-shadow-color);
+}
+
+.interactive:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-shadow-md), var(--sd-focus-ring);
+}
+
+/* ── Tonos ───────────────────────────────────────────────────────────────── */
+/*
+ * El tono tiñe el filete superior, el epígrafe y el lavado de `highlight`. NUNCA
+ * es el único portador del significado: el texto de la tarjeta lo dice también.
+ * Es la misma regla que sigue el color de ingreso/gasto en los importes.
+ */
+
+.toneNeutral {
+  --card-tone: var(--gris-600);
+  --card-wash: var(--gris-100);
+}
+
+.toneAccent {
+  --card-tone: var(--sd-accent);
+  --card-wash: var(--sd-accent-wash);
+}
+
+.tonePositive {
+  --card-tone: var(--income);
+  --card-wash: var(--verde-100);
+}
+
+.toneWarning {
+  --card-tone: var(--ambar-500);
+  --card-wash: var(--ambar-100);
+}
+
+.toneDanger {
+  --card-tone: var(--expense);
+  --card-wash: var(--teja-100);
+}
+
+.toneInfo {
+  --card-tone: var(--azul-500);
+  --card-wash: var(--azul-100);
+}
+
+.highlight.toneNeutral,
+.highlight.toneAccent,
+.highlight.tonePositive,
+.highlight.toneWarning,
+.highlight.toneDanger,
+.highlight.toneInfo {
+  background: var(--card-wash);
+}
+
+/* El filete: un trazo de rotulador a lo ancho de la tarjeta, bajo la cabecera. */
+.ribbon {
+  position: absolute;
+  top: calc(-1 * var(--sd-stroke));
+  left: 12%;
+  width: 42%;
+  height: 6px;
+  background: var(--card-tone);
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-pill);
+}
+
+/* ── Inclinación ─────────────────────────────────────────────────────────── */
+
+.tiltLeft {
+  transform: rotate(-0.7deg);
+}
+
+.tiltRight {
+  transform: rotate(0.7deg);
+}
+
+/* ── Cabecera y pie ──────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.headings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--sd-font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--card-tone);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--sd-ink);
+}
+
+.icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--card-tone);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/*
+ * El separador del pie es discontinuo: es la línea de puntos por la que se
+ * recorta un cupón. Sólida sería un `<hr>` de formulario y perdería el gesto.
+ */
+.footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: var(--sd-stroke-hair) dashed var(--sd-stroke-color);
+  color: var(--sd-ink-muted);
+  font-size: 0.8125rem;
+}
+
+/* ── Relleno ─────────────────────────────────────────────────────────────── */
+
+.padSm {
+  --card-pad: 0.85rem;
+}
+
+.padLg {
+  --card-pad: 1.75rem;
+}
+
+.padNone {
+  --card-pad: 0rem;
+}

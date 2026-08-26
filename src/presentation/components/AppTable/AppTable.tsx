@@ -40,6 +40,7 @@ import {
 import { formatDate, formatMoney, formatMoneySigned, scaleOf } from '@/lib/format'
 import { asCurrency, isCurrency, type Currency } from '@/lib/money'
 import type { EnumValueDto } from '@/src/types/formMetadata.types'
+import styles from './AppTable.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos
@@ -681,6 +682,9 @@ export function AppTable<T extends object>({
                     // Cifras tabulares: sin esto los importes de una columna no
                     // alinean sus dígitos y cuesta comparar de un vistazo.
                     ff="monospace"
+                    // Lo lee `AppTable.module.css` para forzar cifras de ancho
+                    // fijo en la celda entera. No es un gancho de test.
+                    data-money=""
                     c={col.signed ? (bruto < 0 ? 'red.7' : bruto > 0 ? 'teal.7' : undefined) : undefined}
                   >
                     {col.signed ? formatMoneySigned(importe) : formatMoney(importe)}
@@ -721,7 +725,7 @@ export function AppTable<T extends object>({
 
   return (
     <Stack gap="sm">
-      <Group justify="space-between" wrap="wrap" gap="sm">
+      <div className={styles.toolbar}>
         <TextInput
           placeholder={searchPlaceholder}
           leftSection={<IconSearch size={16} />}
@@ -736,7 +740,7 @@ export function AppTable<T extends object>({
           }
           w={{ base: '100%', sm: 320 }}
         />
-        <Group gap="xs">
+        <div className={styles.toolbarActions}>
           {toolbarActions}
           {exportExcel && (
             <Button
@@ -748,15 +752,25 @@ export function AppTable<T extends object>({
               Excel
             </Button>
           )}
-        </Group>
-      </Group>
+        </div>
+      </div>
 
       <Box>
         <DataTable<T>
           withTableBorder
-          borderRadius="md"
           striped
           highlightOnHover
+          // El aspecto de libreta: trazo negro, renglones discontinuos y
+          // cabecera hundida. Ver `AppTable.module.css`. `borderRadius` de la
+          // librería se deja fuera a propósito — lo pone el módulo con el radio
+          // orgánico del sistema, y los dos juntos se pisan.
+          classNames={{
+            root: styles.root,
+            table: styles.table,
+            header: styles.header,
+            footer: styles.footer,
+            pagination: styles.pagination,
+          }}
           fetching={isLoading}
           records={pagina}
           columns={columnasTabla}

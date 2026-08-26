@@ -13,24 +13,14 @@
 
 import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Alert,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  Group,
-  LoadingOverlay,
-  Paper,
-  Stack,
-  Text,
-  Title,
-} from '@mantine/core'
+import { Alert, Box, Grid, Group, LoadingOverlay, Paper, Stack } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconAlertTriangle, IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-react'
 import type { Currency } from '@/lib/money'
 import { useFormMetadata } from '@/src/application/hooks/useFormMetadata'
+import { SketchButton } from '../../ui'
 import { FieldRenderer } from './FieldRenderer'
+import styles from './GenericForm.module.css'
 import type {
   FieldDefinition,
   FormContext,
@@ -154,7 +144,9 @@ export function GenericForm<TSave>({
 
       <Stack gap="lg">
         <Group justify="space-between" align="center">
-          <Title order={2}>{mode === 'create' ? title.create : title.edit}</Title>
+          <h1 className={styles.titulo}>
+            {mode === 'create' ? title.create : title.edit}
+          </h1>
         </Group>
 
         {mode === 'edit' && !cargando && !data && (
@@ -166,19 +158,19 @@ export function GenericForm<TSave>({
         {seccionesVisibles.map((seccion) => {
           const Icono = seccion.icon
           return (
-            <Paper key={seccion.title} p="lg" withBorder shadow="xs" radius="md">
-              <Group gap="xs" mb="xs">
-                {Icono && <Icono size={20} />}
-                <Title order={4} c={seccion.color}>
-                  {seccion.title}
-                </Title>
-              </Group>
+            <Paper key={seccion.title} p="lg">
+              <div className={styles.seccionCabecera}>
+                {Icono && (
+                  <span className={styles.seccionIcono} aria-hidden>
+                    <Icono size={17} />
+                  </span>
+                )}
+                <h2 className={styles.seccionTitulo}>{seccion.title}</h2>
+              </div>
               {seccion.description && (
-                <Text size="sm" c="dimmed" mb="sm">
-                  {seccion.description}
-                </Text>
+                <p className={styles.seccionDescripcion}>{seccion.description}</p>
               )}
-              <Divider mb="md" color={seccion.color} />
+              <hr className={styles.separador} />
 
               <Grid gap="md">
                 {seccion.fields
@@ -203,23 +195,23 @@ export function GenericForm<TSave>({
 
         {children}
 
-        <Group justify="flex-end">
-          <Button
-            variant="default"
-            leftSection={<IconArrowLeft size={16} />}
+        <div className={styles.acciones}>
+          <SketchButton
+            variant="secondary"
+            leftSection={<IconArrowLeft size={16} stroke={2.2} />}
             onClick={() => router.push(exitTo)}
             disabled={isSubmitting}
           >
             Cancelar
-          </Button>
-          <Button
+          </SketchButton>
+          <SketchButton
             type="submit"
-            leftSection={<IconDeviceFloppy size={16} />}
+            leftSection={<IconDeviceFloppy size={16} stroke={2.2} />}
             loading={isSubmitting}
           >
             Guardar
-          </Button>
-        </Group>
+          </SketchButton>
+        </div>
       </Stack>
     </Box>
   )

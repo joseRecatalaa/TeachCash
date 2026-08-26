@@ -41,6 +41,9 @@ Cada cambio tiene un sitio y solo uno:
 | Cambiar una regla de negocio o una validación | `src/infrastructure/repositories/<entidad>.repository.ts` |
 | Cambiar el aspecto de TODOS los formularios | `src/presentation/components/Forms/GenericForm/` |
 | Cambiar el aspecto de TODAS las tablas | `src/presentation/components/AppTable/` |
+| Cambiar un color, un grosor de trazo, una sombra o una tipografía | `app/globals.css` (los tokens `--sd-*`) |
+| Cambiar el aspecto de TODOS los botones, inputs o paneles de Mantine | `src/presentation/styles/mantine-sketch.module.css` |
+| Cambiar el aspecto de UNA vista concreta | Su `*.module.css` al lado del `.tsx` |
 | Añadir una operación que no es CRUD | Una función en el repositorio + su acción en `entity.actions.ts` + su hook |
 | Añadir una entidad entera | `pnpm generate:crud` |
 
@@ -57,6 +60,8 @@ encontrado la pieza genérica.
 | Lenguaje | TypeScript 5, `strict` | |
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
 | UI | **Mantine v9** + `mantine-datatable` | Iconos: `@tabler/icons-react` |
+| Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" |
+| Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Vía `next/font/google` |
 | Estado de servidor | **React Query v5** | Lo usa Refine por dentro |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
 | Datos | SQLite + **Drizzle ORM**, driver `@libsql/client` | Fichero local en `data/` |
@@ -70,9 +75,40 @@ encontrado la pieza genérica.
 
 **No hay Tailwind.** Se retiró al adoptar Mantine: su `preflight` reescribe los
 estilos base de todos los elementos y peleaba con los de Mantine por quién manda
-en un `<button>`. `app/globals.css` solo conserva los tokens de color de los
-gráficos. Para estilar, usa las props de Mantine (`p`, `gap`, `c`, `fw`…) o
-`style`; no añadas clases de utilidad.
+en un `<button>`. Para estilar hay **CSS Modules** y tokens; no añadas clases de
+utilidad ni vuelvas a meter un framework de CSS.
+
+## El sistema de diseño
+
+La aplicación tiene un aspecto propio —trazo negro, esquinas orgánicas, sombra
+dura, verde bosque— y no es decoración: es lo que la separa de una hoja de
+cálculo. Vive en tres sitios y solo tres:
+
+| Capa | Fichero | Qué es |
+|---|---|---|
+| **Tokens** | `app/globals.css` | Las Custom Properties `--sd-*`: color, trazo, sombra, radio, movimiento, tipografía. La única fuente de verdad |
+| **Puente con Mantine** | `src/presentation/styles/mantine-sketch.module.css` | Se engancha en el tema con `Componente.extend({ classNames })`. Hace que TODO `<Button>`, `<Paper>` o `<TextInput>` ya existente herede el aspecto sin tocarlo |
+| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `StatusBadge`. Solo para lo que Mantine no da |
+
+Las tres reglas de estilo del proyecto:
+
+1. **Un componente se estila con su `*.module.css` al lado**, nunca con `style`
+   en el JSX. Un `style` suelto es un valor que el modo oscuro no sabe traducir.
+2. **Dentro de un módulo, todo color, grosor y sombra sale de un token `--sd-*`.**
+   Si el token no existe, se añade a `app/globals.css`; no se escribe el
+   hexadecimal ahí. Es lo que hace que el modo oscuro sea un bloque de
+   veinte líneas y no una revisión de treinta ficheros.
+3. **Antes de escribir un componente nuevo, mira si Mantine ya lo pinta.** Casi
+   siempre sí, y ya viene con el trazo puesto por el tema.
+
+`app/globals.css` se importa **el último** en `app/layout.tsx`, después de las
+hojas de Mantine: reapunta variables de Mantine (`--mantine-color-body`,
+`--mantine-font-family`) y, a igual especificidad, gana quien se declare después.
+Si sube de sitio, la aplicación vuelve al gris de fábrica.
+
+Los tokens `--income` / `--expense` **no** son parte de la paleta de marca y no
+se sustituyen por `--sd-accent`: responden a otra pregunta (¿esto suma o resta?)
+y sus valores están validados para daltonismo. Ver el bloque 5 de `globals.css`.
 
 ## Comandos
 
@@ -252,6 +288,7 @@ y su propio hook escrito a mano.
 .
   app/                                # rutas, en PascalCase
     page.tsx                          # resumen
+    page.module.css                   # su aspecto: cada vista lleva el suyo
     layout.tsx                        # Providers + Navbar + CSS de Mantine
     Cuentas/                          # una carpeta por entidad
       page.tsx                        # listado
@@ -295,21 +332,33 @@ y su propio hook escrito a mano.
         sections.ts                   # el formulario
         columns.ts                    # el listado
     presentation/
+      styles/
+        mantine-sketch.module.css     # el puente con el tema de Mantine
       components/
+        ui/                           # los primitivos del sistema de diseño
+          index.ts                    # se importan SIEMPRE desde aquí
+          SketchButton/               # <Link> tipado o <button>, con gesto
+          SketchCard/                 # la ficha: cinta, filete, tono
+          StatusBadge/                # estado → tono, en un solo sitio
         Forms/
           GenericForm/
             GenericForm.tsx
+            GenericForm.module.css
             FieldRenderer.tsx         # FieldType → componente de Mantine
             MoneyInput.tsx            # el input de dinero (regla dura 1)
             types.ts                  # el contrato con src/config
           EntityForms/
             <entidad>/                # camelCase SINGULAR
               <Entidad>FormRefine.tsx
-        AppTable/AppTable.tsx         # tabla genérica
+        AppTable/
+          AppTable.tsx                # tabla genérica
+          AppTable.module.css         # su aspecto de libreta
         EntityListPage.tsx            # página de listado genérica
+        EntityListPage.module.css
         ActionsColumn.tsx             # helpers de columna
         Charts/FinanceCharts.tsx
         Navbar.tsx
+        Navbar.module.css
         useEntityId.ts
   lib/
     money.ts                          # tipo Money y aritmética — núcleo, muy testeado
@@ -478,6 +527,17 @@ lleve hasta ella.
   componente cliente. La frontera es `entity.actions.ts`.
 - **El repo es LF.** Un fichero que acabe en CRLF hace que los `modify` del
   generador de Plop no casen y se salten sin avisar.
+- **`app/globals.css` se importa EL ÚLTIMO** en `app/layout.tsx`. Si sube por
+  encima de las hojas de Mantine, sus overrides de `--mantine-*` pierden por
+  orden de cascada y la aplicación vuelve al gris de fábrica. No lanza ningún
+  error: solo se ve mal.
+- **Un hexadecimal dentro de un `*.module.css` es un bug de modo oscuro.** Todo
+  color sale de un token `--sd-*`. El modo claro seguirá viéndose bien, que es
+  justo lo que hace que no se detecte.
+- **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
+  Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
+  los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
+  el orden de las hojas no es el del desarrollo.
 
 ## Estilo
 
@@ -574,6 +634,22 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   seguro es la regla dura 6 — ninguna garantía se sostiene en el cliente.
 - **Tests**: Vitest + fast-check, con fichero SQLite desechable. Playwright sigue
   pendiente.
+- **Sistema de diseño**: dibujado a mano (trazo negro de 2-3 px, esquinas
+  elípticas asimétricas, sombra dura sin difuminar, verde bosque de acento) sobre
+  **CSS Modules** y tokens `--sd-*`. Se descartó estilar con las props de Mantine
+  (`p`, `c`, `fw`, `style`): con ellas, cambiar el grosor del trazo obligaba a
+  revisar cada componente, y no había forma de que un `<Button>` escrito antes
+  del sistema heredara nada. El puente por `classNames` en el tema resuelve eso
+  en un fichero. Se descartó también volver a un framework de utilidades por lo
+  mismo que se retiró Tailwind.
+- **Un solo acento**: el verde. Se retiró el color por entidad (`HeaderConfig.color`,
+  `SectionDefinition.color`): con Cuentas en teal y Categorías en granate, cada
+  lista parecía de un producto distinto y la chapa del icono dejaba de ser
+  reconocible. Lo que distingue una sección de otra es el icono.
+- **Tipografía**: Fredoka para titulares, botones y etiquetas; Nunito para el
+  texto corrido; **Geist Mono para el dinero**, y esta última no es estética: los
+  importes en columna necesitan cifras de ancho fijo para poder compararse, y
+  ninguna tipografía redondeada lo garantiza.
 - **Gráficos**: Recharts. Los colores de ingreso y gasto viven en
   `app/globals.css` (`--income` / `--expense`) y están validados con el script de
   la skill `dataviz` contra cada superficie (claro y oscuro por separado). Si los
