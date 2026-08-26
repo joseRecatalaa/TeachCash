@@ -1,68 +1,45 @@
-@import "tailwindcss";
-
 /*
- * Tailwind v4: la configuración vive aquí, no en tailwind.config.js.
- * Crear ese fichero no serviría de nada — en v4 no se lee salvo que se importe.
+ * Estilos globales.
+ *
+ * Tailwind se retiró al adoptar Mantine: su `preflight` reescribe los estilos
+ * base de todos los elementos y peleaba con los de Mantine por quién manda en
+ * un `<button>`. Lo que sí se queda es esto — los tokens de color de los
+ * gráficos, que no dependen de ningún framework.
  */
 
 :root {
-  --background: oklch(0.99 0.002 250);
-  --surface: oklch(1 0 0);
-  --foreground: oklch(0.21 0.01 250);
-  --muted: oklch(0.52 0.012 250);
-  --border: oklch(0.92 0.005 250);
-  --accent: oklch(0.55 0.16 255);
-  --accent-foreground: oklch(0.99 0 0);
-
-  /* Verde ingreso / rojo gasto es lo esperado en España, pero es justo el par
-     que no distingue la deuteranopía: en la interfaz SIEMPRE va acompañado del
-     signo − o +, nunca el color solo.
-     Valores comprobados con el validador de la skill dataviz sobre esta
-     superficie: ΔE 8,2 en protanopía y 25,7 en visión normal. No los cambies a
-     ojo — vuelve a pasar el script. */
+  /*
+   * Verde ingreso / rojo gasto es lo esperado en España, pero es justo el par
+   * que no distingue la deuteranopía: en la interfaz SIEMPRE va acompañado del
+   * signo − o +, nunca el color solo. Por eso los importes se pintan con
+   * `formatMoneySigned` y no solo coloreados.
+   *
+   * Valores comprobados con el validador de la skill `dataviz` sobre esta
+   * superficie: ΔE 8,2 en protanopía y 25,7 en visión normal. NO LOS CAMBIES A
+   * OJO — vuelve a pasar el script.
+   */
   --income: #1f7a54;
   --expense: #c43d2e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(0.17 0.008 250);
-    --surface: oklch(0.21 0.01 250);
-    --foreground: oklch(0.95 0.003 250);
-    --muted: oklch(0.68 0.012 250);
-    --border: oklch(0.29 0.01 250);
-    --accent: oklch(0.68 0.14 255);
-    --accent-foreground: oklch(0.17 0.01 250);
-    /* El modo oscuro NO es un giro automático del claro: son sus propios pasos,
-       validados contra la superficie oscura. Los tonos del modo claro fallaban
-       aquí la separación CVD. */
+    /*
+     * El modo oscuro NO es un giro automático del claro: son sus propios pasos,
+     * validados contra la superficie oscura. Los tonos del modo claro fallaban
+     * aquí la separación CVD.
+     */
     --income: #2f9c6e;
     --expense: #db6046;
   }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-income: var(--income);
-  --color-expense: var(--expense);
-
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-}
-
-/* Los importes en columna, siempre con cifras de ancho fijo: si no, los dígitos
-   bailan y las cantidades dejan de poder compararse de un vistazo. */
+/*
+ * Los importes en columna, siempre con cifras de ancho fijo: si no, los dígitos
+ * bailan y las cantidades dejan de poder compararse de un vistazo. `AppTable`
+ * lo aplica solo a las columnas `money`; esta clase es para los importes
+ * sueltos (tarjetas de resumen, tooltips de gráficos).
+ */
 .tabular {
   font-variant-numeric: tabular-nums;
 }

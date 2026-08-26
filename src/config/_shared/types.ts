@@ -1,0 +1,34 @@
+/**
+ * Alias comunes de la capa de configuración.
+ *
+ * `src/config/` describe las vistas; `src/presentation/` las pinta. Estos alias
+ * evitan que cada `sections.ts` y cada `columns.ts` importe la ruta larga de
+ * presentation, que es lo que hace que se acabe colando un import de un
+ * componente y con él el JSX que estos ficheros no pueden tener.
+ */
+
+export type {
+  FieldDefinition,
+  FormContext,
+  Option,
+  SectionDefinition,
+  VisiblePredicate,
+} from '@/src/presentation/components/Forms/GenericForm/types'
+
+export type { AppTableColumn } from '@/src/presentation/components/AppTable/AppTable'
+
+/**
+ * Colores por tipo de movimiento, para los badges.
+ *
+ * Se declaran una vez y se usan en todas las tablas: si el gasto es rojo en
+ * Movimientos y naranja en Categorías, la persona tiene que releer la leyenda
+ * cada vez que cambia de pantalla.
+ *
+ * El color NO es la única señal: los importes llevan siempre su signo delante
+ * (`formatMoneySigned`), porque rojo/verde es justo el par que no distingue la
+ * deuteranopía.
+ */
+export const COLOR_POR_SENTIDO: Record<string, string> = {
+  income: 'teal',
+  expense: 'red',
+}

@@ -1,0 +1,42 @@
+'use client'
+
+/**
+ * Hooks de {{pascalCase pluralName}}. La factory genera el CRUD y aquí solo se
+ * reexporta con nombres de dominio, más lo que la entidad tenga de propio.
+ */
+
+import type {
+  {{pascalCase name}}FormDto,
+  {{pascalCase name}}ListDto,
+  {{pascalCase name}}SaveDto,
+} from '@/src/types/{{camelCase name}}.types'
+import { createEntityHooks, type EntityListPagination } from './createEntityHooks'
+
+const {{camelCase name}}Hooks = createEntityHooks<
+  {{pascalCase name}}ListDto,
+  {{pascalCase name}}FormDto,
+  {{pascalCase name}}SaveDto
+>('{{pascalCase pluralName}}')
+
+export const use{{pascalCase name}} = {{camelCase name}}Hooks.useOne
+export const useCreate{{pascalCase name}} = {{camelCase name}}Hooks.useCreate
+export const useUpdate{{pascalCase name}} = {{camelCase name}}Hooks.useUpdate
+export const useDelete{{pascalCase name}} = {{camelCase name}}Hooks.useDelete
+
+/**
+ * `type` y no `interface`: un alias de tipo recibe index signature implícita y
+ * encaja en el `Record<string, string | number | undefined>` que espera la
+ * factory. Con una interface, TypeScript lo rechaza.
+ */
+export type {{pascalCase pluralName}}Filters = {
+  // TODO: los filtros reales de la entidad.
+  nombre?: string
+}
+
+export function use{{pascalCase pluralName}}(
+  filters?: {{pascalCase pluralName}}Filters,
+  pagination?: EntityListPagination,
+  options?: { enabled?: boolean },
+) {
+  return {{camelCase name}}Hooks.useList(filters, pagination, options)
+}

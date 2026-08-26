@@ -1,0 +1,56 @@
+'use client'
+
+/**
+ * Listado de {{pascalCase pluralName}}.
+ *
+ * Una página de lista solo declara sus columnas y su configuración. Todo lo
+ * demás —cabecera, buscador, filtros, paginación, Excel— lo pone
+ * `<EntityListPage>`.
+ */
+
+import { useMemo } from 'react'
+import { IconFileText } from '@tabler/icons-react'
+import { usePaginacion } from '@/src/application/hooks/usePaginacion'
+import {
+  use{{pascalCase pluralName}},
+  type {{pascalCase pluralName}}Filters,
+} from '@/src/application/hooks/use{{pascalCase pluralName}}'
+import { {{camelCase name}}Columns } from '@/src/config/{{dashCase pluralName}}/columns'
+import { EntityListPage } from '@/src/presentation/components/EntityListPage'
+import type { {{pascalCase name}}ListDto } from '@/src/types/{{camelCase name}}.types'
+
+const HEADER = { title: '{{pascalCase pluralName}}', icon: IconFileText, color: 'blue' }
+const CREAR = { label: 'Nuevo {{lowerCase name}}', href: '/{{pascalCase pluralName}}/Create' }
+
+export default function {{pascalCase pluralName}}Page() {
+  // `server: false` = modo cliente: se trae el conjunto completo y la tabla
+  // filtra y ordena en memoria. Es lo correcto para decenas de filas.
+  // Para una tabla que crece sin techo, quita esa opción y el repositorio
+  // pagina en SQL (ver `app/Movimientos/page.tsx`).
+  const { data, query, tableProps } = usePaginacion<
+    {{pascalCase pluralName}}Filters,
+    {{pascalCase name}}ListDto
+  >(use{{pascalCase pluralName}}, {
+    server: false,
+    initialSort: { sortBy: 'nombre', sortDir: 'asc' },
+  })
+
+  const columns = useMemo(() => {{camelCase name}}Columns(), [])
+
+  return (
+    <EntityListPage<{{pascalCase name}}ListDto>
+      header={HEADER}
+      columns={columns}
+      data={data}
+      isLoading={query.isLoading}
+      isError={query.isError}
+      errorMessage="No se han podido cargar los datos"
+      resource="{{pascalCase pluralName}}"
+      exportExcel="{{upperCase pluralName}}"
+      searchPlaceholder="Buscar..."
+      noRecordsText="Todavía no hay registros"
+      create={CREAR}
+      {...tableProps}
+    />
+  )
+}

@@ -1,0 +1,128 @@
+/**
+ * Repositorio de {{pascalCase pluralName}}.
+ *
+ * SOLO SERVIDOR. Importa `@/db`, así que nunca se importa desde un componente
+ * cliente: la frontera es `src/application/actions/entity.actions.ts`.
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ * ESTE FICHERO NO COMPILA TAL CUAL, y es a propósito.
+ *
+ * Apunta a una tabla `{{camelCase pluralName}}` que probablemente no existe
+ * todavía. Créala en `db/schema.ts`, pasa `pnpm db:generate` y `pnpm db:migrate`,
+ * y luego sustituye aquí la tabla y los campos de ejemplo. El resto de ficheros
+ * generados sí compilan.
+ * ────────────────────────────────────────────────────────────────────────────
+ *
+ * ────────────────────────────────────────────────────────────────────────────
+ * NO NEGOCIABLE: el `userId` va DENTRO del `where` de toda consulta, de lectura
+ * y de escritura. No después, no en un `if` sobre el resultado. Es la regla dura
+ * 4 de AGENTS.md, y un `get` que consulta por id y comprueba el dueño luego ya
+ * ha leído el dato ajeno.
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+
+import { and, asc, desc, eq, like } from 'drizzle-orm'
+import { z } from 'zod'
+import { db } from '@/db'
+// TODO: importar la tabla real.
+import { {{camelCase pluralName}} as tabla } from '@/db/schema'
+import type {
+  {{pascalCase name}}FormDto,
+  {{pascalCase name}}ListDto,
+} from '@/src/types/{{camelCase name}}.types'
+import {
+  fromFieldErrors,
+  NOT_FOUND,
+  RepositoryError,
+  type EntityRepository,
+  type ListParams,
+  type ListResult,
+} from './types'
+
+const {{pascalCase name}}Save = z.object({
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
+})
+
+/** Columnas por las que se puede ordenar. Lista blanca: el cliente manda el nombre. */
+const SORTABLE = {
+  nombre: tabla.name,
+} as const
+
+export const {{camelCase pluralName}}Repository: EntityRepository<
+  {{pascalCase name}}ListDto,
+  {{pascalCase name}}FormDto
+> = {
+  async list(userId: string, params: ListParams): Promise<ListResult<{{pascalCase name}}ListDto>> {
+    const search = params.search?.trim()
+    const where = and(
+      eq(tabla.userId, userId),
+      search ? like(tabla.name, `%${search}%`) : undefined,
+    )
+
+    const column = SORTABLE[params.sortBy as keyof typeof SORTABLE] ?? tabla.name
+    const order = params.sortDir === 'desc' ? desc(column) : asc(column)
+
+    const rows = await db
+      .select({ id: tabla.id, nombre: tabla.name })
+      .from(tabla)
+      .where(where)
+      .orderBy(order)
+
+    const total = rows.length
+    if (params.paginate === false) return { data: rows, total }
+
+    const page = params.page ?? 1
+    const pageSize = params.pageSize ?? 20
+    return { data: rows.slice((page - 1) * pageSize, page * pageSize), total }
+  },
+
+  async get(userId: string, id: string): Promise<{{pascalCase name}}FormDto | null> {
+    const rows = await db
+      .select({ id: tabla.id, nombre: tabla.name })
+      .from(tabla)
+      .where(and(eq(tabla.id, id), eq(tabla.userId, userId)))
+      .limit(1)
+
+    return rows[0] ?? null
+  },
+
+  async create(userId: string, values: unknown): Promise<{ id: string }> {
+    const parsed = {{pascalCase name}}Save.safeParse(values)
+    if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
+
+    const id = crypto.randomUUID()
+    await db.insert(tabla).values({
+      id,
+      // El userId sale de la sesión, jamás de `values`.
+      userId,
+      name: parsed.data.nombre,
+      createdAt: new Date(),
+    })
+    return { id }
+  },
+
+  async update(userId: string, id: string, values: unknown): Promise<{ id: string }> {
+    const parsed = {{pascalCase name}}Save.safeParse(values)
+    if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
+
+    const updated = await db
+      .update(tabla)
+      .set({ name: parsed.data.nombre })
+      // La propiedad se comprueba en el WHERE: no hay forma de tocar lo ajeno.
+      .where(and(eq(tabla.id, id), eq(tabla.userId, userId)))
+      .returning({ id: tabla.id })
+
+    if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
+    return { id }
+  },
+
+  async remove(userId: string, id: string): Promise<{ id: string }> {
+    const deleted = await db
+      .delete(tabla)
+      .where(and(eq(tabla.id, id), eq(tabla.userId, userId)))
+      .returning({ id: tabla.id })
+
+    if (deleted.length === 0) throw new RepositoryError(NOT_FOUND)
+    return { id }
+  },
+}

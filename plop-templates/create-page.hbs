@@ -1,0 +1,12 @@
+import { Container, Stack } from '@mantine/core'
+import { {{pascalCase name}}FormRefine } from '@/src/presentation/components/Forms/EntityForms/{{camelCase name}}/{{pascalCase name}}FormRefine'
+
+export default function Create{{pascalCase name}}Page() {
+  return (
+    <Container fluid px="xl" py="xl">
+      <Stack gap="lg">
+        <{{pascalCase name}}FormRefine mode="create" />
+      </Stack>
+    </Container>
+  )
+}

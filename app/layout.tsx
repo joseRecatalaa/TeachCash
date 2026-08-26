@@ -1,8 +1,17 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import Link from 'next/link'
-import { NavLinks } from '@/components/nav-links'
+import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core'
 import './globals.css'
+// El orden importa y no es arbitrario: las reglas dentro de `@layer` pierden
+// siempre frente a las no capadas, y varios detalles de mantine-datatable (el
+// fondo de las celdas, el borde de la cabecera) dependen de ganarle a core. Por
+// eso ninguna de estas hojas se envuelve en una capa.
+import '@mantine/core/styles.css'
+import '@mantine/dates/styles.css'
+import '@mantine/notifications/styles.css'
+import 'mantine-datatable/styles.css'
+import { Providers } from '@/src/application/providers/providers'
+import { Navbar } from '@/src/presentation/components/Navbar'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -13,31 +22,31 @@ export const metadata: Metadata = {
 }
 
 /**
- * Todas las rutas de la aplicación se renderizan en cada petición.
+ * Todas las rutas se renderizan en cada petición.
  *
  * Sin esto, Next prerenderiza estáticamente las páginas que no usan APIs de
- * petición — y el resumen, las cuentas y las categorías quedarían congelados
- * con los datos que hubiera en la base de datos EN EL MOMENTO DEL BUILD. Un
- * saldo que no cambia al anotar un gasto es peor que no tener saldo.
+ * petición. Aunque los datos los pida el cliente vía Refine, el prerender
+ * congelaría el envoltorio y, sobre todo, ejecutaría las Server Actions de
+ * lectura en tiempo de BUILD si algún día una página vuelve a ser Server
+ * Component. Un saldo que no cambia al anotar un gasto es peor que no tenerlo.
  */
 export const dynamic = 'force-dynamic'
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full font-sans">
-        <div className="mx-auto flex min-h-dvh max-w-6xl flex-col px-4 py-6">
-          <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
-            <Link href="/" className="text-lg font-semibold tracking-tight">
-              Finanzas
-            </Link>
-            <NavLinks />
-          </header>
-          <main className="flex-1">{children}</main>
-        </div>
+    // `mantineHtmlProps` añade `suppressHydrationWarning`: el script de tema
+    // toca el <html> antes de que React hidrate, y sin esto avisa en consola.
+    <html lang="es" {...mantineHtmlProps}>
+      <head>
+        {/* Fija el esquema de color ANTES del primer pintado. Sin él hay un
+            fogonazo blanco al entrar en modo oscuro. */}
+        <ColorSchemeScript defaultColorScheme="auto" />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
       </body>
     </html>
   )

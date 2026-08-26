@@ -1,0 +1,28 @@
+/**
+ * DTOs de {{pascalCase name}}. Tres por entidad:
+ *   ListDto  — lo que se pinta en la tabla
+ *   SaveDto  — lo que se edita en el formulario (sin id)
+ *   FormDto  — SaveDto + id, para la edición
+ *
+ * TODO: sustituir el campo `nombre` de ejemplo por los reales.
+ *
+ * Recuerda al declarar campos:
+ *   - Un IMPORTE es un `number` ENTERO EN CÉNTIMOS, nunca decimal, y va
+ *     acompañado de su divisa. → skill `money-and-currency`
+ *   - Una FECHA de movimiento es `CivilDate` ('YYYY-MM-DD'), nunca `Date`.
+ *   - Los campos de enum se tipan como `string`: sus opciones vienen del
+ *     metadata (`metadata.repository.ts`), no se declaran aquí.
+ */
+
+export interface {{pascalCase name}}ListDto {
+  id: string
+  nombre: string
+}
+
+export interface {{pascalCase name}}SaveDto {
+  nombre: string
+}
+
+export interface {{pascalCase name}}FormDto extends {{pascalCase name}}SaveDto {
+  id: string
+}

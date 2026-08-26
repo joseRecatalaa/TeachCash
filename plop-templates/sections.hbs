@@ -1,0 +1,39 @@
+/**
+ * Formulario de {{pascalCase name}}.
+ *
+ * `.ts` SIN JSX: aquí se DESCRIBE la vista, no se pinta. Es una invariante que
+ * impone el compilador — si aparece JSX, deja de compilar. Si un campo necesita
+ * marcado propio, el componente se crea en `EntityForms/{{camelCase name}}/` y se
+ * referencia con `component:`.
+ *
+ * TODO: declarar los campos reales.
+ *
+ * Al declararlos:
+ *   - Un importe es `type: 'money'`, NUNCA `type: 'number'`.
+ *   - Una fecha es `type: 'date'` (cadena 'YYYY-MM-DD', sin huso).
+ *   - Un `select` de enum va SIN `options`: se resuelven desde el metadata.
+ *   - Todo campo `component:`/`render:` lleva su `dependsOn`, o se repinta con
+ *     cada tecla del formulario entero.
+ */
+
+import { IconFileText } from '@tabler/icons-react'
+import type { SectionDefinition } from '@/src/config/_shared/types'
+
+export function {{camelCase name}}Sections(): SectionDefinition[] {
+  return [
+    {
+      title: 'Datos',
+      icon: IconFileText,
+      color: 'blue',
+      fields: [
+        {
+          name: 'nombre',
+          label: 'Nombre',
+          type: 'text',
+          required: true,
+          span: { base: 12, md: 6 },
+        },
+      ],
+    },
+  ]
+}

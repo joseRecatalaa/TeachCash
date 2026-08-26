@@ -1,0 +1,28 @@
+/**
+ * Listado de {{pascalCase pluralName}}.
+ *
+ * `.ts` sin JSX y sin argumentos: los permisos y el borrado se DECLARAN, no se
+ * reciben. Solo lleva parámetro si necesita opciones de un catálogo del usuario
+ * para los filtros (ver `movimientos/columns.ts`).
+ *
+ * TODO: declarar las columnas reales.
+ *
+ * Usa los helpers (`textColumn`, `moneyColumn`, `dateColumn`, `enumColumn`,
+ * `boolColumn`) en vez de escribir el `render` a mano: son los que mantienen
+ * todas las tablas de la aplicación con el mismo aspecto. Un importe SIEMPRE va
+ * con `moneyColumn`, nunca como columna numérica.
+ */
+
+import { actionsColumn, textColumn } from '@/src/presentation/components/ActionsColumn'
+import type { AppTableColumn } from '@/src/config/_shared/types'
+import type { {{pascalCase name}}ListDto } from '@/src/types/{{camelCase name}}.types'
+
+export function {{camelCase name}}Columns(): AppTableColumn<{{pascalCase name}}ListDto>[] {
+  return [
+    textColumn<{{pascalCase name}}ListDto>('nombre', 'Nombre'),
+    actionsColumn<{{pascalCase name}}ListDto>({
+      editPath: '/{{pascalCase pluralName}}',
+      remove: { resource: '{{pascalCase pluralName}}', entityName: 'el registro' },
+    }),
+  ]
+}

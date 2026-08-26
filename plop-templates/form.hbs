@@ -1,0 +1,65 @@
+'use client'
+
+/**
+ * Cableado del formulario de {{pascalCase name}}: hooks, submit y `<GenericForm>`.
+ *
+ * Lo que hace este fichero y lo que no:
+ *   - **Sí**: traer los datos, montar el submit, dar los valores iniciales y la
+ *     validación de cliente.
+ *   - **No**: declarar los campos. Eso vive en
+ *     `src/config/{{dashCase pluralName}}/sections.ts`.
+ */
+
+import { useMemo } from 'react'
+import { {{camelCase name}}Sections } from '@/src/config/{{dashCase pluralName}}/sections'
+import { use{{pascalCase name}} } from '@/src/application/hooks/use{{pascalCase pluralName}}'
+import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
+import type { {{pascalCase name}}SaveDto } from '@/src/types/{{camelCase name}}.types'
+import { GenericForm } from '../../GenericForm'
+
+const TITULO = { create: 'Nuevo {{lowerCase name}}', edit: 'Editar {{lowerCase name}}' }
+
+interface {{pascalCase name}}FormProps {
+  id?: string
+  mode: 'create' | 'edit'
+}
+
+/**
+ * Validación de cliente. Es una cortesía, no la defensa: la de verdad es el
+ * esquema Zod del repositorio, que corre en el servidor y no se puede saltar.
+ *
+ * TODO: ajustar a los campos reales.
+ */
+const validate = {
+  nombre: (value: unknown) => (!String(value ?? '').trim() ? 'El nombre es obligatorio' : null),
+}
+
+export function {{pascalCase name}}FormRefine({ id, mode }: {{pascalCase name}}FormProps) {
+  const { query, result } = use{{pascalCase name}}(id ?? '')
+  const { handleSubmit, isSubmitting, fieldErrors } = useEntityFormSubmit<
+    {{pascalCase name}}SaveDto
+  >({
+    resource: '{{pascalCase pluralName}}',
+    entityName: '{{pascalCase name}}',
+    mode,
+    id,
+  })
+
+  const sections = useMemo(() => {{camelCase name}}Sections(), [])
+
+  return (
+    <GenericForm<{{pascalCase name}}SaveDto>
+      title={TITULO}
+      sections={sections}
+      mode={mode}
+      resource="{{pascalCase pluralName}}"
+      validate={validate}
+      isLoadingData={mode === 'edit' && query.isLoading}
+      isSubmitting={isSubmitting}
+      fieldErrors={fieldErrors}
+      data={result as Partial<{{pascalCase name}}SaveDto> | null}
+      onSubmit={handleSubmit}
+      exitTo="/{{pascalCase pluralName}}"
+    />
+  )
+}
