@@ -9,7 +9,7 @@
  *
  * @example
  * <EntityListPage<CuentaListDto>
- *   header={{ title: 'Cuentas', icon: IconWallet, color: 'blue' }}
+ *   header={{ title: 'Cuentas', icon: IconWallet }}
  *   columns={columns}
  *   data={data}
  *   isLoading={query.isLoading}
@@ -20,23 +20,29 @@
  */
 
 import type { ComponentType, ReactNode } from 'react'
-import Link from 'next/link'
-import { Alert, Button, Container, Group, Paper, Stack, Title } from '@mantine/core'
+import { Alert, Container, Paper, Stack } from '@mantine/core'
 import { IconAlertTriangle, IconPlus } from '@tabler/icons-react'
 import { useFormMetadata } from '@/src/application/hooks/useFormMetadata'
+import { SketchButton } from './ui'
 import {
   AppTable,
   type AppTableColumn,
   type AppTableManualProps,
 } from './AppTable/AppTable'
+import styles from './EntityListPage.module.css'
 
 export interface HeaderConfig {
   title: string
   icon?: ComponentType<{ size?: number | string }>
-  /** Color de Mantine para el icono y el borde. */
-  color?: string
   description?: string
 }
+/*
+ * Aquí había un `color` por entidad (Cuentas en teal, Categorías en granate).
+ * Se retiró al entrar el sistema de diseño: con un color por sección, la chapa
+ * del icono dejaba de ser reconocible como "la chapa de esta aplicación" y cada
+ * lista parecía de un producto distinto. El acento es uno y es el verde; lo que
+ * distingue una sección de otra es el icono.
+ */
 
 export interface CreateConfig {
   label: string
@@ -103,20 +109,32 @@ export function EntityListPage<T extends object>({
       <Stack gap="lg">
         {beforePanel}
 
-        <Paper p="lg" withBorder shadow="xs" radius="md">
-          <Group justify="space-between" mb="md" wrap="wrap" gap="sm">
-            <Group gap="xs">
-              {Icono && <Icono size={24} />}
-              <Title order={2} c={header.color}>
-                {header.title}
-              </Title>
-            </Group>
+        <Paper p="lg">
+          <div className={styles.header}>
+            <div>
+              <h1 className={styles.titulo}>
+                {Icono && (
+                  <span className={styles.chapa} aria-hidden>
+                    <Icono size={20} />
+                  </span>
+                )}
+                <span className={styles.texto}>{header.title}</span>
+              </h1>
+              {header.description && (
+                <p className={styles.descripcion}>{header.description}</p>
+              )}
+            </div>
             {create && (
-              <Button component={Link} href={create.href} leftSection={<IconPlus size={16} />}>
-                {create.label}
-              </Button>
+              <div className={styles.acciones}>
+                <SketchButton
+                  href={create.href}
+                  leftSection={<IconPlus size={16} stroke={2.2} />}
+                >
+                  {create.label}
+                </SketchButton>
+              </div>
             )}
-          </Group>
+          </div>
 
           {isError ? (
             <Alert color="red" icon={<IconAlertTriangle size={18} />} title="Error">

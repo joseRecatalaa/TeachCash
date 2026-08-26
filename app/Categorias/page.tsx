@@ -22,7 +22,7 @@ export default function CategoriasPage() {
 
   return (
     <EntityListPage<CategoriaListDto>
-      header={{ title: 'Categorías', icon: IconTags, color: 'grape' }}
+      header={{ title: 'Categorías', icon: IconTags }}
       columns={columns}
       data={data}
       isLoading={query.isLoading}

@@ -14,7 +14,6 @@ export function cuentaSections(): SectionDefinition[] {
     {
       title: 'Datos de la cuenta',
       icon: IconWallet,
-      color: 'teal',
       fields: [
         {
           name: 'nombre',
@@ -60,7 +59,6 @@ export function cuentaSections(): SectionDefinition[] {
     {
       title: 'Cómo se calcula el saldo',
       icon: IconCoin,
-      color: 'gray',
       description:
         'El saldo no se guarda: se calcula sumando el saldo inicial y todos los movimientos vivos de la cuenta, transferencias incluidas. Por eso siempre cuadra con la lista de movimientos.',
       fields: [],

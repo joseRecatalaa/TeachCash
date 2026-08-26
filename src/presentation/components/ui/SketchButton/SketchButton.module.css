@@ -1,0 +1,199 @@
+/*
+ * El botón del sistema.
+ *
+ * Todo lo que se ve aquí sale de los tokens de `app/globals.css`. Si necesitas
+ * un color, un grosor o una sombra que no exista como token, el sitio donde se
+ * añade es allí — no aquí. Un valor suelto en este fichero es un valor que el
+ * modo oscuro no sabe traducir.
+ *
+ * La microinteracción es el punto: la sombra dura y el `translate` del `:active`
+ * suman EXACTAMENTE lo mismo (`--sd-press`). Eso es lo que hace que el botón
+ * parezca aterrizar sobre el papel en vez de encogerse. Si cambias uno, cambia
+ * el otro.
+ */
+
+.root {
+  /* Cada variante solo redefine estas cuatro. El resto del bloque es común. */
+  --btn-bg: var(--sd-surface);
+  --btn-fg: var(--sd-ink);
+  --btn-stroke: var(--sd-stroke);
+  --btn-shadow-offset: 3px;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+
+  margin: 0;
+  border: var(--btn-stroke) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-sm);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  box-shadow: var(--btn-shadow-offset) var(--btn-shadow-offset) 0 0
+    var(--sd-shadow-color);
+  transition: var(--sd-transition);
+}
+
+/* Se levanta un pelo antes de pulsar: anticipa el gesto. */
+.root:hover:not(:disabled, [aria-disabled='true']) {
+  transform: translate(calc(-1 * var(--sd-press-lift)), calc(-1 * var(--sd-press-lift)));
+  box-shadow: calc(var(--btn-shadow-offset) + var(--sd-press-lift))
+    calc(var(--btn-shadow-offset) + var(--sd-press-lift)) 0 0 var(--sd-shadow-color);
+}
+
+/* Y aterriza: se desplaza justo lo que medía su sombra, que desaparece. */
+.root:active:not(:disabled, [aria-disabled='true']) {
+  transform: translate(var(--btn-shadow-offset), var(--btn-shadow-offset));
+  box-shadow: 0 0 0 0 var(--sd-shadow-color);
+}
+
+/*
+ * El foco NO sustituye a la sombra, se suma a ella: si la reemplazara, el botón
+ * enfocado se vería hundido y parecería pulsado sin estarlo.
+ */
+.root:focus-visible {
+  outline: none;
+  box-shadow: var(--btn-shadow-offset) var(--btn-shadow-offset) 0 0
+      var(--sd-shadow-color),
+    var(--sd-focus-ring);
+}
+
+.root:disabled,
+.root[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+  box-shadow: 0 0 0 0 var(--sd-shadow-color);
+  transform: none;
+}
+
+/* ── Variantes ───────────────────────────────────────────────────────────── */
+
+/* El trazo grueso es lo que lo marca como la acción principal, no el color. */
+.primary {
+  --btn-bg: var(--sd-accent);
+  --btn-fg: var(--sd-accent-ink);
+  --btn-stroke: var(--sd-stroke-bold);
+}
+
+.secondary {
+  --btn-bg: var(--sd-surface);
+  --btn-fg: var(--sd-ink);
+}
+
+.secondary:hover:not(:disabled, [aria-disabled='true']) {
+  --btn-bg: var(--sd-accent-wash-faint);
+}
+
+/*
+ * Sin caja hasta que se necesita. Es para acciones terciarias dentro de una
+ * tarjeta, donde otro rectángulo con borde sería ruido.
+ */
+.ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--sd-ink-muted);
+  --btn-shadow-offset: 0px;
+  border-color: transparent;
+}
+
+.ghost:hover:not(:disabled, [aria-disabled='true']) {
+  --btn-fg: var(--sd-ink);
+  border-color: var(--sd-stroke-color);
+  border-style: dashed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ghost:active:not(:disabled, [aria-disabled='true']) {
+  transform: translate(1px, 1px);
+}
+
+.danger {
+  --btn-bg: var(--teja-500);
+  --btn-fg: #ffffff;
+  --btn-stroke: var(--sd-stroke-bold);
+}
+
+/* ── Tamaños ─────────────────────────────────────────────────────────────── */
+
+.sm {
+  min-height: 32px;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.md {
+  min-height: 40px;
+  padding: 0 1.1rem;
+  font-size: 0.9375rem;
+}
+
+.lg {
+  min-height: 50px;
+  padding: 0 1.6rem;
+  font-size: 1.0625rem;
+}
+
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
+/* ── Contenido ───────────────────────────────────────────────────────────── */
+
+.section {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.label {
+  display: inline-block;
+}
+
+/*
+ * Mientras carga, el texto se queda en su sitio en vez de desaparecer: si se
+ * sustituyera por la ruleta, el botón cambiaría de ancho y la fila entera daría
+ * un salto. Se atenúa y la ruleta se pinta encima.
+ */
+.loadingLabel {
+  opacity: 0.25;
+}
+
+.spinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.spinner::after {
+  content: '';
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  /* El hueco es lo que deja ver que gira, y el trazo discontinuo lo hace
+     parecer dibujado a mano en vez de renderizado. */
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sketchSpin 700ms linear infinite;
+}
+
+@keyframes sketchSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

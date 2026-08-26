@@ -19,7 +19,6 @@ export function categoriaSections({
     {
       title: 'Datos de la categoría',
       icon: IconTag,
-      color: 'grape',
       fields: [
         {
           name: 'nombre',

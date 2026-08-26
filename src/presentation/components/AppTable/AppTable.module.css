@@ -1,0 +1,98 @@
+/*
+ * La tabla, con aspecto de hoja de libreta.
+ *
+ * Se engancha por la prop `classNames` de mantine-datatable, que solo expone
+ * cinco ganchos: `root`, `table`, `header`, `footer` y `pagination`. Todo lo
+ * demás se alcanza por selector de ELEMENTO desde esos cinco (`.header th`,
+ * `.table tbody tr`). No hay `:global` en este fichero y no debería haberlo: un
+ * selector global contra las clases internas de la librería se rompe en la
+ * primera actualización sin que nada avise.
+ *
+ * Los selectores van doblados por lo mismo que en `mantine-sketch.module.css`:
+ * para ganarle a la hoja de la librería sin depender del orden de los imports.
+ */
+
+.root.root {
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-sm);
+  /* Recorta las esquinas de la cabecera y de la última fila contra el radio del
+     contenedor. Sin esto asoman los picos por debajo del borde. */
+  overflow: hidden;
+  background: var(--sd-surface);
+}
+
+/* ── Cabecera ────────────────────────────────────────────────────────────── */
+
+.header.header th {
+  background: var(--sd-surface-sunken);
+  border-bottom: var(--sd-border);
+  color: var(--sd-ink);
+  font-family: var(--sd-font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Filas ───────────────────────────────────────────────────────────────── */
+
+/*
+ * El renglón: discontinuo y fino. Continuo convertiría la tabla en una hoja de
+ * cálculo, que es justo de donde se viene.
+ */
+.table.table tbody tr td {
+  border-bottom: var(--sd-stroke-hair) dashed var(--gris-200);
+  font-size: 0.875rem;
+}
+
+.table.table tbody tr:last-of-type td {
+  border-bottom: none;
+}
+
+.table.table tbody tr:hover td {
+  background: var(--sd-accent-wash-faint);
+}
+
+/*
+ * El dinero, SIEMPRE en cifras de ancho fijo y alineado a la derecha. `AppTable`
+ * ya marca esas celdas con `ff="monospace"`; esto es el cinturón por si alguien
+ * declara una columna de importe con un `render` propio y se olvida.
+ */
+.table.table tbody td:has(> [data-money]) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Pie y paginación ────────────────────────────────────────────────────── */
+
+.pagination.pagination {
+  border-top: var(--sd-border);
+  background: var(--sd-surface-sunken);
+  font-family: var(--sd-font-display);
+  font-size: 0.8125rem;
+}
+
+.footer.footer td {
+  border-top: var(--sd-border);
+  background: var(--sd-surface-sunken);
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+/* ── Barra de herramientas ───────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

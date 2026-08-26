@@ -1,0 +1,137 @@
+/*
+ * La barra de navegación.
+ *
+ * Es lo primero que se ve y lo que fija el tono del resto: si esta barra parece
+ * un panel de administración, da igual lo dibujadas que estén las tarjetas de
+ * dentro.
+ */
+
+.shell {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--sd-surface);
+  /* El borde inferior grueso es la línea del cuaderno: separa la cabecera del
+     contenido sin necesidad de sombra ni de cambio de fondo. */
+  border-bottom: var(--sd-border-bold);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Marca ───────────────────────────────────────────────────────────────── */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: var(--sd-ink);
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  /* Ligeramente torcido, como una pegatina puesta a mano. Menos de un grado y
+     medio: más se lee como un error de maquetación. */
+  transform: rotate(-3deg);
+  transition: var(--sd-transition);
+}
+
+.brand:hover .brandMark {
+  transform: rotate(3deg);
+}
+
+.brandName {
+  font-family: var(--sd-font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ── Enlaces ─────────────────────────────────────────────────────────────── */
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  padding: 0.4rem 0.7rem;
+  border: var(--sd-stroke) solid transparent;
+  border-radius: var(--sd-radius-sm);
+
+  color: var(--sd-ink-muted);
+  font-family: var(--sd-font-display);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+
+  transition: var(--sd-transition);
+}
+
+.link:hover {
+  color: var(--sd-ink);
+  border-color: var(--sd-stroke-color);
+  border-style: dashed;
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+/*
+ * La sección activa va con fondo lavado Y con trazo continuo Y en negrita: tres
+ * señales. Con una sola —el color— la barra dejaría de decir dónde estás en
+ * cuanto alguien la mire en escala de grises o con daltonismo.
+ */
+.active {
+  color: var(--sd-ink);
+  font-weight: 600;
+  background: var(--sd-accent-wash);
+  border-color: var(--sd-stroke-color);
+  border-style: solid;
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.active:hover {
+  border-style: solid;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--sd-shadow-sm);
+}
+
+.icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+/* En móvil el icono ya identifica la sección; el texto se lleva el espacio. */
+@media (max-width: 560px) {
+  .link {
+    padding: 0.4rem 0.55rem;
+  }
+
+  .brandName {
+    display: none;
+  }
+}

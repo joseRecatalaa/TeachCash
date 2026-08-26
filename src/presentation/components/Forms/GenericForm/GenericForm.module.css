@@ -1,0 +1,87 @@
+/*
+ * El formulario genérico.
+ *
+ * Aquí se estila el ANDAMIO —cabecera de sección, separadores, barra de
+ * acciones—, no los campos: los inputs los cubre el tema
+ * (`src/presentation/styles/mantine-sketch.module.css`), que es lo que hace que
+ * el `MoneyInput` del proyecto salga igual que un `TextInput` de Mantine sin que
+ * nadie los sincronice a mano.
+ */
+
+.titulo {
+  margin: 0;
+  padding: 0 0.15em 0.08em;
+  font-family: var(--sd-font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+
+  /* El mismo trazo de rotulador que el resto de títulos. Fondo, no
+     pseudoelemento: ver la nota en `app/page.module.css`. */
+  background-image: linear-gradient(
+    var(--sd-accent-wash),
+    var(--sd-accent-wash)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 0.4em;
+  background-position: 0 90%;
+}
+
+/* ── Cabecera de sección ─────────────────────────────────────────────────── */
+
+.seccionCabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.seccionIcono {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+
+  background: var(--sd-accent-wash);
+  color: var(--sd-accent);
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-sm);
+  transform: rotate(-2deg);
+}
+
+.seccionTitulo {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--sd-ink);
+}
+
+.seccionDescripcion {
+  margin: 0 0 0.6rem;
+  color: var(--sd-ink-muted);
+  font-size: 0.8125rem;
+}
+
+/*
+ * Separador discontinuo: la línea por la que se dobla el papel. Un `<hr>` sólido
+ * devolvía la sección al aspecto de formulario de intranet.
+ */
+.separador {
+  height: 0;
+  margin: 0 0 1rem;
+  border: none;
+  border-top: var(--sd-stroke-hair) dashed var(--sd-stroke-color);
+  opacity: 0.55;
+}
+
+/* ── Barra de acciones ───────────────────────────────────────────────────── */
+
+.acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}

@@ -39,7 +39,7 @@ export default function CuentasPage() {
 
   return (
     <EntityListPage<CuentaListDto>
-      header={{ title: 'Cuentas', icon: IconWallet, color: 'teal' }}
+      header={{ title: 'Cuentas', icon: IconWallet }}
       columns={columns}
       data={data}
       isLoading={query.isLoading}

@@ -70,7 +70,6 @@ function MovimientosContenido() {
       header={{
         title: verBorrados ? 'Movimientos borrados' : 'Movimientos',
         icon: IconArrowsLeftRight,
-        color: verBorrados ? 'gray' : 'blue',
       }}
       columns={columns}
       data={data}
