@@ -9,7 +9,7 @@
  * única `db` compartida, y aquí se cambia por la base desechable del test.
  */
 
-import { accounts, categories, transactions } from '@/db/schema'
+import { categories, transactions } from '@/db/schema'
 import type { Database } from '@/db/client'
 
 /** Estado compartido con el mock de `@/db`. Se rellena en cada `beforeEach`. */
@@ -19,25 +19,6 @@ export const USER_A = 'user-a'
 export const USER_B = 'user-b'
 
 const FECHA_ALTA = new Date('2026-01-01T00:00:00Z')
-
-export async function seedCuenta(
-  db: Database,
-  id: string,
-  userId: string,
-  overrides: Partial<typeof accounts.$inferInsert> = {},
-): Promise<string> {
-  await db.insert(accounts).values({
-    id,
-    userId,
-    name: `Cuenta ${id}`,
-    type: 'checking',
-    currency: 'EUR',
-    openingBalance: 0,
-    createdAt: FECHA_ALTA,
-    ...overrides,
-  })
-  return id
-}
 
 export async function seedCategoria(
   db: Database,
@@ -66,7 +47,6 @@ export async function seedMovimiento(
   await db.insert(transactions).values({
     id,
     userId,
-    accountId: 'cuenta-1',
     categoryId: null,
     amount: -1000,
     date: '2026-03-15',

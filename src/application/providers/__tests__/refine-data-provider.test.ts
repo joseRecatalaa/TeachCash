@@ -40,9 +40,9 @@ vi.mock('@/db', async () => {
 })
 
 import { createTestDb, type TestDb } from '@/db/testing'
-import type { CuentaListDto } from '@/src/types/cuenta.types'
+import type { CategoriaListDto } from '@/src/types/categoria.types'
 import { DataProviderError, dataProvider } from '../refine-data-provider'
-import { seedCuenta, USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
+import { seedCategoria, USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
 
 let ctx: TestDb
 const provider = dataProvider()
@@ -55,49 +55,64 @@ beforeEach(async () => {
 
 afterEach(() => ctx.close())
 
+/**
+ * Categorías hace de recurso de PRUEBA. Aquí no se comprueba nada del dominio
+ * de categorías —eso está en su test de repositorio—: lo que se ejercita es la
+ * traducción genérica de Refine a Server Actions, y para recorrerla entera hace
+ * falta un recurso real del mapa cerrado.
+ */
+const nueva = (overrides: Record<string, unknown> = {}) => ({
+  nombre: 'Comida',
+  tipo: 'expense',
+  padreId: '',
+  icono: '',
+  color: '',
+  ...overrides,
+})
+
 describe('getList', () => {
   test('devuelve datos y total', async () => {
-    await seedCuenta(ctx.db, 'c1', USER_A, { openingBalance: 5000 })
-    await seedCuenta(ctx.db, 'c2', USER_A)
+    await seedCategoria(ctx.db, 'c1', USER_A)
+    await seedCategoria(ctx.db, 'c2', USER_A)
 
-    const res = await provider.getList<CuentaListDto>({ resource: 'Cuentas' })
+    const res = await provider.getList<CategoriaListDto>({ resource: 'Categorias' })
     expect(res.total).toBe(2)
     expect(res.data.map((c) => c.id).sort()).toEqual(['c1', 'c2'])
-    // El importe llega entero, sin pasar por ninguna serialización que lo
+    // El contador llega entero, sin pasar por ninguna serialización que lo
     // convierta en decimal por el camino.
-    expect(res.data.find((c) => c.id === 'c1')!.saldo).toBe(5000)
+    expect(res.data[0].usos).toBe(0)
   })
 
   test('traduce los CrudFilter de Refine al filtro del repositorio', async () => {
-    await seedCuenta(ctx.db, 'corriente', USER_A, { type: 'checking' })
-    await seedCuenta(ctx.db, 'ahorro', USER_A, { type: 'savings' })
+    await seedCategoria(ctx.db, 'gasto', USER_A, { kind: 'expense' })
+    await seedCategoria(ctx.db, 'ingreso', USER_A, { kind: 'income' })
 
-    const res = await provider.getList<CuentaListDto>({
-      resource: 'Cuentas',
-      filters: [{ field: 'tipo', operator: 'eq', value: 'savings' }],
+    const res = await provider.getList<CategoriaListDto>({
+      resource: 'Categorias',
+      filters: [{ field: 'tipo', operator: 'eq', value: 'income' }],
     })
 
     // Si el filtro no se tradujera, esto devolvería las dos y no fallaría nada:
     // por eso el test compara la lista, no solo que no reviente.
-    expect(res.data.map((c) => c.id)).toEqual(['ahorro'])
+    expect(res.data.map((c) => c.id)).toEqual(['ingreso'])
   })
 
   test('descarta los filtros vacíos en vez de filtrar por cadena vacía', async () => {
-    await seedCuenta(ctx.db, 'c1', USER_A)
+    await seedCategoria(ctx.db, 'c1', USER_A)
 
-    const res = await provider.getList<CuentaListDto>({
-      resource: 'Cuentas',
+    const res = await provider.getList<CategoriaListDto>({
+      resource: 'Categorias',
       filters: [{ field: 'tipo', operator: 'eq', value: '' }],
     })
     expect(res.total).toBe(1)
   })
 
   test('la ordenación de `sorters` gana a la de `meta`', async () => {
-    await seedCuenta(ctx.db, 'c1', USER_A, { name: 'Aaa' })
-    await seedCuenta(ctx.db, 'c2', USER_A, { name: 'Zzz' })
+    await seedCategoria(ctx.db, 'c1', USER_A, { name: 'Aaa' })
+    await seedCategoria(ctx.db, 'c2', USER_A, { name: 'Zzz' })
 
-    const res = await provider.getList<CuentaListDto>({
-      resource: 'Cuentas',
+    const res = await provider.getList<CategoriaListDto>({
+      resource: 'Categorias',
       sorters: [{ field: 'nombre', order: 'desc' }],
       meta: { sortBy: 'nombre', sortDir: 'asc' },
     })
@@ -107,11 +122,11 @@ describe('getList', () => {
 
   test('la paginación de `meta` recorta los datos pero no el total', async () => {
     for (let i = 0; i < 5; i++) {
-      await seedCuenta(ctx.db, `c${i}`, USER_A, { name: `Cuenta ${i}` })
+      await seedCategoria(ctx.db, `c${i}`, USER_A, { name: `Categoría ${i}` })
     }
 
-    const res = await provider.getList<CuentaListDto>({
-      resource: 'Cuentas',
+    const res = await provider.getList<CategoriaListDto>({
+      resource: 'Categorias',
       meta: { paginate: true, page: 1, pageSize: 2 },
     })
     expect(res.data).toHaveLength(2)
@@ -119,12 +134,12 @@ describe('getList', () => {
   })
 
   test('la búsqueda global viaja por meta.searchQuery', async () => {
-    await seedCuenta(ctx.db, 'c1', USER_A, { name: 'Nómina BBVA' })
-    await seedCuenta(ctx.db, 'c2', USER_A, { name: 'Ahorro' })
+    await seedCategoria(ctx.db, 'c1', USER_A, { name: 'Alimentación' })
+    await seedCategoria(ctx.db, 'c2', USER_A, { name: 'Transporte' })
 
-    const res = await provider.getList<CuentaListDto>({
-      resource: 'Cuentas',
-      meta: { searchQuery: 'BBVA' },
+    const res = await provider.getList<CategoriaListDto>({
+      resource: 'Categorias',
+      meta: { searchQuery: 'Aliment' },
     })
     expect(res.data.map((c) => c.id)).toEqual(['c1'])
   })
@@ -133,24 +148,24 @@ describe('getList', () => {
 describe('el ciclo completo de escritura', () => {
   test('create → getOne → update → deleteOne', async () => {
     const creada = await provider.create({
-      resource: 'Cuentas',
-      variables: { nombre: 'Nómina', tipo: 'checking', divisa: 'EUR', saldoInicial: 1000 },
+      resource: 'Categorias',
+      variables: nueva({ nombre: 'Comida', color: 'cat-2' }),
     })
     const id = String(creada.data.id)
 
-    const leida = await provider.getOne({ resource: 'Cuentas', id })
-    expect(leida.data).toMatchObject({ nombre: 'Nómina', saldoInicial: 1000 })
+    const leida = await provider.getOne({ resource: 'Categorias', id })
+    expect(leida.data).toMatchObject({ nombre: 'Comida', color: 'cat-2' })
 
     await provider.update({
-      resource: 'Cuentas',
+      resource: 'Categorias',
       id,
-      variables: { nombre: 'Nómina 2', tipo: 'savings', saldoInicial: 2000 },
+      variables: nueva({ nombre: 'Comida y bebida', color: 'cat-5' }),
     })
-    const releida = await provider.getOne({ resource: 'Cuentas', id })
-    expect(releida.data).toMatchObject({ nombre: 'Nómina 2', saldoInicial: 2000 })
+    const releida = await provider.getOne({ resource: 'Categorias', id })
+    expect(releida.data).toMatchObject({ nombre: 'Comida y bebida', color: 'cat-5' })
 
-    await provider.deleteOne({ resource: 'Cuentas', id })
-    const restantes = await provider.getList({ resource: 'Cuentas' })
+    await provider.deleteOne({ resource: 'Categorias', id })
+    const restantes = await provider.getList({ resource: 'Categorias' })
     expect(restantes.total).toBe(0)
   })
 })
@@ -161,8 +176,8 @@ describe('los errores vuelven a ser excepciones en el cliente', () => {
     // que volver a ser una excepción, que es lo que React Query espera.
     const fallo = await provider
       .create({
-        resource: 'Cuentas',
-        variables: { nombre: '', tipo: 'inventado', divisa: 'EUR', saldoInicial: 0 },
+        resource: 'Categorias',
+        variables: nueva({ nombre: '', tipo: 'inventado' }),
       })
       .catch((e) => e)
 
@@ -171,16 +186,16 @@ describe('los errores vuelven a ser excepciones en el cliente', () => {
   })
 
   test('un registro ajeno da "No encontrado", no los datos', async () => {
-    await seedCuenta(ctx.db, 'ajena', USER_B)
+    await seedCategoria(ctx.db, 'ajena', USER_B)
 
-    await expect(provider.getOne({ resource: 'Cuentas', id: 'ajena' })).rejects.toThrow(
+    await expect(provider.getOne({ resource: 'Categorias', id: 'ajena' })).rejects.toThrow(
       'No encontrado',
     )
   })
 
   test('sin sesión, ninguna operación pasa', async () => {
     h.userId = null
-    await expect(provider.getList({ resource: 'Cuentas' })).rejects.toThrow('No autorizado')
+    await expect(provider.getList({ resource: 'Categorias' })).rejects.toThrow('No autorizado')
   })
 
   test('un recurso desconocido no ejecuta nada', async () => {

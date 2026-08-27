@@ -4,17 +4,17 @@
  * La tarjeta-ficha del sistema de diseño.
  *
  * Sustituye al `<Paper>` de Mantine allí donde la tarjeta ES el contenido —una
- * cifra de patrimonio, el resumen de un mes, una cuenta— y no un simple
+ * cifra del saldo, el resumen de un mes, un gráfico— y no un simple
  * contenedor. Para paneles genéricos, el `<Paper>` de Mantine ya hereda el
  * mismo trazo por el tema.
  *
  * @example
- * <SketchCard eyebrow="Patrimonio" tone="accent" variant="highlight">
+ * <SketchCard eyebrow="Saldo" tone="accent" variant="highlight">
  *   <Text className="tabular">{formatMoney(m)}</Text>
  * </SketchCard>
  *
  * @example Tarjeta pulsable (se renderiza como <button>, no como <div> con onClick)
- * <SketchCard title="Cuenta corriente" onClick={abrir} ribbon>…</SketchCard>
+ * <SketchCard title="Este mes" onClick={abrir} ribbon>…</SketchCard>
  */
 
 import type { HTMLAttributes, ReactNode } from 'react'

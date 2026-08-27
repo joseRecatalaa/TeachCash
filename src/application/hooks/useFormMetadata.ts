@@ -8,8 +8,9 @@
  * lugar de su clave cruda).
  *
  * `staleTime: Infinity` porque son conjuntos cerrados que no cambian en
- * ejecución: los tipos de cuenta son los que hay hasta el próximo despliegue.
- * Los CATÁLOGOS (cuentas, categorías) sí cambian y van por `useCatalogos`.
+ * ejecución: el sentido de un movimiento es el que hay hasta el próximo
+ * despliegue. Los CATÁLOGOS (las categorías) sí cambian y van por
+ * `useCatalogos`.
  */
 
 import { useQuery } from '@tanstack/react-query'

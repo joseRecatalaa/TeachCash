@@ -3,9 +3,8 @@
 /**
  * Cableado del formulario de Movimiento.
  *
- * Es el que más trabajo hace de los tres, por una razón concreta: la divisa del
- * importe no está en el formulario, se hereda de la cuenta elegida. Ver
- * `divisaFrom` más abajo.
+ * El reparto es el de siempre: `src/config/movimientos/sections.ts` DESCRIBE los
+ * campos (sin JSX) y este fichero los conecta con los catálogos y el submit.
  */
 
 import { useMemo, useState } from 'react'
@@ -14,19 +13,16 @@ import { useCatalogos } from '@/src/application/hooks/useCatalogos'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import { useMovimiento } from '@/src/application/hooks/useMovimientos'
 import { today } from '@/lib/dates'
-import { asCurrency, isCurrency, type Currency } from '@/lib/money'
+import { uuid } from '@/lib/ids'
 import type { MovimientoSaveDto } from '@/src/types/movimiento.types'
 import { GenericForm } from '../../GenericForm'
 
 interface MovimientoFormProps {
   id?: string
   mode: 'create' | 'edit'
-  /** Cuenta preseleccionada, al crear desde la ficha de una cuenta. */
-  cuentaId?: string
 }
 
 const validate = {
-  cuentaId: (value: unknown) => (!value ? 'Elige una cuenta' : null),
   sentido: (value: unknown) => (!value ? 'Elige si es ingreso o gasto' : null),
   fecha: (value: unknown) => (!value ? 'La fecha es obligatoria' : null),
   descripcion: (value: unknown) =>
@@ -39,10 +35,9 @@ const validate = {
   },
 }
 
-export function MovimientoFormRefine({ id, mode, cuentaId }: MovimientoFormProps) {
+export function MovimientoFormRefine({ id, mode }: MovimientoFormProps) {
   const { query, result } = useMovimiento(id ?? '')
-  const { cuentasOptions, categoriasPorTipo, divisaDeCuenta, isLoadingCatalogos } =
-    useCatalogos()
+  const { categoriasPorTipo, isLoadingCatalogos } = useCatalogos()
 
   const { handleSubmit, isSubmitting, fieldErrors } = useEntityFormSubmit<MovimientoSaveDto>({
     resource: 'Movimientos',
@@ -53,8 +48,8 @@ export function MovimientoFormRefine({ id, mode, cuentaId }: MovimientoFormProps
   })
 
   const sections = useMemo(
-    () => movimientoSections({ cuentasOptions, categoriasPorTipo }),
-    [cuentasOptions, categoriasPorTipo],
+    () => movimientoSections({ categoriasPorTipo }),
+    [categoriasPorTipo],
   )
 
   /**
@@ -64,25 +59,13 @@ export function MovimientoFormRefine({ id, mode, cuentaId }: MovimientoFormProps
    * red que sí llegó— no cree dos movimientos iguales. `useState` con
    * inicializador perezoso: si se generara en el cuerpo del componente, cada
    * repintado daría una clave nueva y no serviría de nada.
-   */
-  const [idempotencyKey] = useState(() => crypto.randomUUID())
-
-  /**
-   * La divisa sale de la cuenta elegida, no de un campo del formulario.
    *
-   * Es la regla dura 2 puesta en la interfaz: el importe no significa nada hasta
-   * que se sabe en qué está, y aquí eso lo decide la cuenta. Mientras no haya
-   * cuenta se cae a EUR — hay que formatear algo — pero el campo de importe está
-   * vacío de todas formas, así que no se le enseña una cifra en la divisa
-   * equivocada a nadie.
+   * `uuid()` y NO `crypto.randomUUID()`: esto corre en el navegador, y ahí
+   * `randomUUID` solo existe en contexto seguro (HTTPS o localhost). Abriendo la
+   * aplicación por la IP de la red —que este proyecto soporta a propósito— la
+   * función no existe y el formulario revienta al montarse. Ver `lib/ids.ts`.
    */
-  const divisaFrom = useMemo(
-    () => (values: Record<string, unknown>): Currency => {
-      const bruto = divisaDeCuenta.get(String(values.cuentaId ?? ''))
-      return bruto && isCurrency(bruto) ? asCurrency(bruto) : 'EUR'
-    },
-    [divisaDeCuenta],
-  )
+  const [idempotencyKey] = useState(() => uuid())
 
   return (
     <GenericForm<MovimientoSaveDto>
@@ -90,10 +73,8 @@ export function MovimientoFormRefine({ id, mode, cuentaId }: MovimientoFormProps
       sections={sections}
       mode={mode}
       resource="Movimientos"
-      divisaFrom={divisaFrom}
       validate={validate}
       initialValues={{
-        cuentaId: cuentaId ?? '',
         sentido: 'expense',
         categoriaId: '',
         // Hoy en el huso del usuario. `today()` es el único punto del proyecto

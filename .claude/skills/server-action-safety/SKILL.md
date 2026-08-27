@@ -1,6 +1,6 @@
 ---
 name: server-action-safety
-description: Plantilla y comprobaciones obligatorias para escribir o revisar Server Actions y formularios en este proyecto — autenticación, verificación de propiedad del recurso, validación con Zod, idempotencia y estados de formulario con useActionState. Úsala siempre que crees un fichero con 'use server', añadas una mutación (crear/editar/borrar movimientos, cuentas, presupuestos), construyas un formulario, o revises código de mutación existente.
+description: Plantilla y comprobaciones obligatorias para escribir o revisar Server Actions y formularios en este proyecto — autenticación, verificación de propiedad del recurso, validación con Zod, idempotencia y estados de formulario con useActionState. Úsala siempre que crees un fichero con 'use server', añadas una mutación (crear/editar/borrar movimientos, categorías, presupuestos), construyas un formulario, o revises código de mutación existente.
 ---
 
 # Seguridad en Server Actions
@@ -38,11 +38,10 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { db } from '@/db'
-import { transactions, accounts } from '@/db/schema'
+import { transactions, categories } from '@/db/schema'
 import { and, eq } from 'drizzle-orm'
 
 const CreateTransaction = z.object({
-  accountId: z.string().uuid(),
   categoryId: z.string().uuid().nullable(),
   // Céntimos. Entero, siempre. Ver skill money-and-currency.
   amount: z.number().int().refine((n) => n !== 0, 'El importe no puede ser cero'),
@@ -57,7 +56,6 @@ export async function createTransaction(_prev: State, formData: FormData): Promi
 
   // 2. Validar
   const parsed = CreateTransaction.safeParse({
-    accountId: formData.get('accountId'),
     categoryId: formData.get('categoryId') || null,
     amount: parseMoney(String(formData.get('amount')))?.amount,
     date: formData.get('date'),
@@ -67,14 +65,18 @@ export async function createTransaction(_prev: State, formData: FormData): Promi
     return { ok: false, fieldErrors: z.flattenError(parsed.error).fieldErrors }
   }
 
-  // 3. Autorizar — la cuenta debe ser DE ESTE usuario.
-  const account = await db.query.accounts.findFirst({
-    where: and(
-      eq(accounts.id, parsed.data.accountId),
-      eq(accounts.userId, session.user.id),   // esta línea es la que importa
-    ),
-  })
-  if (!account) return { ok: false, error: 'Cuenta no encontrada' }
+  // 3. Autorizar — TODO id que venga del cliente se comprueba contra la sesión.
+  //    Aquí solo hay uno, la categoría, y es opcional; el día que haya más, se
+  //    comprueban todos (ver "Comprueba todos los recursos referenciados").
+  if (parsed.data.categoryId) {
+    const category = await db.query.categories.findFirst({
+      where: and(
+        eq(categories.id, parsed.data.categoryId),
+        eq(categories.userId, session.user.id),  // esta línea es la que importa
+      ),
+    })
+    if (!category) return { ok: false, error: 'Categoría no encontrada' }
+  }
 
   // 4. Mutar — userId del servidor, nunca del formulario
   await db.insert(transactions).values({
@@ -124,9 +126,14 @@ borre el `if` en un refactor.
 
 ### Comprueba todos los recursos referenciados
 
-Una transferencia toca dos cuentas: valida **las dos**. Un movimiento con
-categoría toca cuenta y categoría: valida **ambas**. Es el punto que se escapa
-cuando la acción crece.
+Cada id que llega del cliente es un id que hay que validar contra el `userId` de
+la sesión, y **dentro del `where`**, no comprobando el dueño después de leer: un
+`get` por id que comprueba el dueño luego ya ha leído el dato ajeno, y esa
+comprobación se pierde en el primer refactor.
+
+Hoy el formulario de movimiento solo referencia la categoría, así que es una sola
+comprobación. Es justo el punto que se escapa cuando la acción crece: si mañana
+un movimiento apunta a dos cosas, se validan las dos.
 
 ### Un fichero `'use server'` no mezcla lecturas
 

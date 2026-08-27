@@ -12,7 +12,6 @@
  */
 
 import { getSession } from '@/lib/auth'
-import type { Currency } from '@/lib/money'
 import type { CivilDate, Period } from '@/lib/dates'
 import {
   getGastoPorCategoria,
@@ -41,23 +40,20 @@ async function run<T>(operacion: (userId: string) => Promise<T>): Promise<Action
 
 export async function fetchGastoPorCategoria(
   periodo: Period,
-  divisa: Currency = 'EUR',
 ): Promise<ActionResult<GastoPorCategoriaDto[]>> {
-  return run((userId) => getGastoPorCategoria(userId, periodo, divisa))
+  return run((userId) => getGastoPorCategoria(userId, periodo))
 }
 
 export async function fetchIngresosVsGastos(
   meses = 12,
-  divisa: Currency = 'EUR',
 ): Promise<ActionResult<TotalesPeriodoDto[]>> {
-  return run((userId) => getIngresosVsGastos(userId, { meses, divisa }))
+  return run((userId) => getIngresosVsGastos(userId, { meses }))
 }
 
 export async function fetchTotalesDelMes(
   periodo: Period,
-  divisa: Currency = 'EUR',
 ): Promise<ActionResult<TotalesPeriodoDto>> {
-  return run((userId) => getTotalesDelMes(userId, periodo, divisa))
+  return run((userId) => getTotalesDelMes(userId, periodo))
 }
 
 /**
@@ -67,12 +63,7 @@ export async function fetchTotalesDelMes(
  * datos.
  */
 export async function fetchSerieSaldo(
-  options: {
-    desde?: CivilDate
-    hasta?: CivilDate
-    cuentaId?: string
-    divisa?: Currency
-  } = {},
+  options: { desde?: CivilDate; hasta?: CivilDate } = {},
 ): Promise<ActionResult<PuntoSaldoDto[]>> {
   return run(async (userId) => {
     const rango =
@@ -80,10 +71,6 @@ export async function fetchSerieSaldo(
         ? { desde: options.desde, hasta: options.hasta }
         : await getRangoPorDefecto(userId)
 
-    return getSerieSaldo(userId, {
-      ...rango,
-      cuentaId: options.cuentaId,
-      divisa: options.divisa,
-    })
+    return getSerieSaldo(userId, rango)
   })
 }

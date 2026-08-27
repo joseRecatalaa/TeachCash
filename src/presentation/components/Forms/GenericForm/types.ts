@@ -58,9 +58,9 @@ export interface FormContext {
    * Divisa con la que se formatean y parsean los campos `money` del formulario.
    *
    * Es contexto y no un valor más porque un importe SIN divisa no significa
-   * nada (regla dura 2): el mismo entero 1234 son 12,34 € o 1234 ¥ según esto.
-   * En el formulario de movimiento cambia al elegir cuenta, y por eso los
-   * campos `money` llevan `dependsOn: ['cuentaId']`.
+   * nada: el mismo entero 1234 son 12,34 € o 1234 ¥ según esto. Hoy la
+   * aplicación tiene una sola divisa (`DIVISA_APP`) y todos los formularios
+   * heredan esa.
    */
   divisa: Currency
 }
@@ -204,24 +204,14 @@ export interface GenericFormProps<TSave> {
   /** Clave de `REPOSITORIES`. Resuelve las opciones de los `select` vía metadata. */
   resource?: string
   /**
-   * Divisa del formulario, fija. Ver `FormContext.divisa`. Por defecto EUR.
-   * Si el formulario tiene una sola divisa conocida de antemano, basta con esto.
+   * Divisa del formulario. Ver `FormContext.divisa`. Por defecto `DIVISA_APP`.
+   *
+   * Es una prop y no una constante importada porque la escala de un campo
+   * `money` depende de ella (EUR tiene dos decimales; JPY, ninguno) y el día que
+   * haya un formulario en otra divisa tiene que poder decirlo sin tocar el
+   * `GenericForm`.
    */
   divisa?: Currency
-  /**
-   * Divisa DERIVADA de los valores vivos, para los formularios donde cambia
-   * mientras se rellenan. Tiene prioridad sobre `divisa`.
-   *
-   * Hay dos casos y son distintos:
-   *   - **Cuentas**: la divisa es un campo del propio formulario.
-   *     `divisaFrom={(v) => v.divisa}`
-   *   - **Movimientos**: la divisa no está en el formulario, se hereda de la
-   *     cuenta elegida. `divisaFrom={(v) => divisaDeCuenta.get(v.cuentaId)}`
-   *
-   * En ambos, los campos `money` deben declarar el campo del que depende en su
-   * `dependsOn`, o dejarán de reformatearse al cambiar la divisa.
-   */
-  divisaFrom?: (values: Record<string, unknown>) => Currency
   /** Validadores por campo, en el formato de `@mantine/form`. */
   validate?: Record<string, (value: unknown, values: Record<string, unknown>) => string | null>
   /** Valores iniciales. Sin esto, los campos arrancan según su tipo. */

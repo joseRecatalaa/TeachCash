@@ -1,15 +1,20 @@
 /**
- * Repositorio de Movimientos (y de Transferencias, que son dos movimientos).
+ * Repositorio de Movimientos.
  *
- * SOLO SERVIDOR. Ver la nota de `cuentas.repository.ts`.
+ * SOLO SERVIDOR: importa `@/db`, así que no puede aparecer en un componente
+ * cliente. La frontera es `entity.actions.ts`.
+ *
+ * Un movimiento es un gasto o un ingreso de la cuenta única de la aplicación.
+ * No hay cuentas ni transferencias: el saldo es la suma de lo que hay aquí
+ * dentro (regla dura 7 — los saldos son derivados y se calculan en
+ * `informes.repository.ts`).
  */
 
 import { and, asc, desc, eq, gte, isNotNull, isNull, like, lte, sql, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
-import { accounts, categories, transactions } from '@/db/schema'
+import { categories, transactions } from '@/db/schema'
 import { isCivilDate } from '@/lib/dates'
-import { asCurrency } from '@/lib/money'
 import type { MovimientoFormDto, MovimientoListDto } from '@/src/types/movimiento.types'
 import {
   fromFieldErrors,
@@ -29,7 +34,6 @@ const fechaCivil = z.string().refine(isCivilDate, 'Fecha no válida')
 export const SENTIDOS = ['expense', 'income'] as const
 
 const MovimientoSave = z.object({
-  cuentaId: z.string().min(1, 'Elige una cuenta'),
   /** Cadena vacía = sin clasificar, que es un estado válido. */
   categoriaId: z.string(),
   // Céntimos, SIN signo. El signo lo pone `sentido`.
@@ -59,20 +63,6 @@ const MovimientoCreate = MovimientoSave.extend({
   idempotencyKey: z.string().min(1).max(100).optional(),
 })
 
-const TransferenciaSave = z
-  .object({
-    cuentaOrigenId: z.string().min(1, 'Elige la cuenta de origen'),
-    cuentaDestinoId: z.string().min(1, 'Elige la cuenta de destino'),
-    importe: z.number().int('Importe no válido').positive('El importe debe ser mayor que cero'),
-    fecha: fechaCivil,
-    descripcion: z.string().trim().min(1, 'Pon una descripción').max(200),
-    notas: z.string().trim().max(1000),
-  })
-  .refine((d) => d.cuentaOrigenId !== d.cuentaDestinoId, {
-    message: 'El origen y el destino no pueden ser la misma cuenta',
-    path: ['cuentaDestinoId'],
-  })
-
 /** Céntimos con signo a partir del importe sin signo y el sentido. */
 const conSigno = (importe: number, sentido: string): number =>
   sentido === 'expense' ? -importe : importe
@@ -100,7 +90,6 @@ const filtros = (userId: string, params: ListParams): SQL | undefined => {
     verBorrados ? isNotNull(transactions.deletedAt) : isNull(transactions.deletedAt),
     f.desde ? gte(transactions.date, String(f.desde)) : undefined,
     f.hasta ? lte(transactions.date, String(f.hasta)) : undefined,
-    f.cuentaId ? eq(transactions.accountId, String(f.cuentaId)) : undefined,
     f.categoriaId ? eq(transactions.categoryId, String(f.categoriaId)) : undefined,
     search ? like(transactions.description, `%${search}%`) : undefined,
   )
@@ -112,12 +101,9 @@ const SELECT_LIST = {
   descripcion: transactions.description,
   notas: transactions.notes,
   importe: transactions.amount,
-  transferenciaId: transactions.transferId,
-  cuentaId: accounts.id,
-  cuentaNombre: accounts.name,
-  divisa: accounts.currency,
   categoriaId: categories.id,
   categoriaNombre: categories.name,
+  categoriaColor: categories.color,
 } as const
 
 export const movimientosRepository: EntityRepository<MovimientoListDto, MovimientoFormDto> = {
@@ -138,7 +124,6 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     const query = db
       .select(SELECT_LIST)
       .from(transactions)
-      .innerJoin(accounts, eq(accounts.id, transactions.accountId))
       .leftJoin(categories, eq(categories.id, transactions.categoryId))
       .where(where)
       .orderBy(...order)
@@ -157,12 +142,9 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
         fecha: r.fecha,
         descripcion: r.descripcion,
         importe: r.importe,
-        divisa: asCurrency(r.divisa),
-        cuentaId: r.cuentaId,
-        cuentaNombre: r.cuentaNombre,
         categoriaId: r.categoriaId ?? '',
         categoriaNombre: r.categoriaNombre ?? 'Sin categoría',
-        transferenciaId: r.transferenciaId ?? '',
+        categoriaColor: r.categoriaColor ?? '',
         notas: r.notas ?? '',
       })),
       total: total ?? 0,
@@ -177,9 +159,7 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
         descripcion: transactions.description,
         notas: transactions.notes,
         importe: transactions.amount,
-        cuentaId: transactions.accountId,
         categoriaId: transactions.categoryId,
-        transferenciaId: transactions.transferId,
       })
       .from(transactions)
       .where(
@@ -201,7 +181,6 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
       // El formulario trabaja con magnitud + sentido; la base, con signo.
       importe: Math.abs(r.importe),
       sentido: r.importe < 0 ? 'expense' : 'income',
-      cuentaId: r.cuentaId,
       categoriaId: r.categoriaId ?? '',
     }
   },
@@ -211,7 +190,6 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
 
     const d = parsed.data
-    await assertCuentaPropia(userId, d.cuentaId)
     await assertCategoriaCompatible(userId, d.categoriaId, d.sentido)
 
     // Idempotencia: el segundo envío del mismo formulario NO crea dinero nuevo.
@@ -235,7 +213,6 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     await db.insert(transactions).values({
       id,
       userId,
-      accountId: d.cuentaId,
       categoryId: d.categoriaId || null,
       amount: conSigno(d.importe, d.sentido),
       date: d.fecha,
@@ -252,14 +229,11 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
 
     const d = parsed.data
-    await assertNoEsTransferencia(userId, id)
-    await assertCuentaPropia(userId, d.cuentaId)
     await assertCategoriaCompatible(userId, d.categoriaId, d.sentido)
 
     const updated = await db
       .update(transactions)
       .set({
-        accountId: d.cuentaId,
         categoryId: d.categoriaId || null,
         amount: conSigno(d.importe, d.sentido),
         date: d.fecha,
@@ -282,14 +256,11 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
   /**
    * Borrado LÓGICO. Un movimiento borrado de verdad se lleva por delante el
    * cuadre de los meses ya cerrados y no hay forma de recuperarlo.
-   *
-   * Si es una pata de transferencia, se borran las dos: media transferencia
-   * descuadra las dos cuentas a la vez.
    */
   async remove(userId: string, id: string): Promise<{ id: string }> {
-    const rows = await db
-      .select({ transferId: transactions.transferId })
-      .from(transactions)
+    const borrados = await db
+      .update(transactions)
+      .set({ deletedAt: new Date() })
       .where(
         and(
           eq(transactions.id, id),
@@ -297,37 +268,21 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
           isNull(transactions.deletedAt),
         ),
       )
-      .limit(1)
+      .returning({ id: transactions.id })
 
-    const actual = rows[0]
-    if (!actual) throw new RepositoryError(NOT_FOUND)
-
-    const objetivo = actual.transferId
-      ? eq(transactions.transferId, actual.transferId)
-      : eq(transactions.id, id)
-
-    await db
-      .update(transactions)
-      .set({ deletedAt: new Date() })
-      .where(and(eq(transactions.userId, userId), objetivo, isNull(transactions.deletedAt)))
-
+    if (borrados.length === 0) throw new RepositoryError(NOT_FOUND)
     return { id }
   },
 }
 
-/**
- * Deshace un borrado lógico.
- *
- * Como el borrado, va por transferencia entera cuando la fila es una pata: media
- * transferencia restaurada descuadra las dos cuentas.
- */
+/** Deshace un borrado lógico. */
 export async function restaurarMovimiento(
   userId: string,
   id: string,
 ): Promise<{ id: string }> {
-  const rows = await db
-    .select({ transferId: transactions.transferId })
-    .from(transactions)
+  const restaurados = await db
+    .update(transactions)
+    .set({ deletedAt: null })
     .where(
       and(
         eq(transactions.id, id),
@@ -335,103 +290,15 @@ export async function restaurarMovimiento(
         isNotNull(transactions.deletedAt),
       ),
     )
-    .limit(1)
+    .returning({ id: transactions.id })
 
-  const actual = rows[0]
-  if (!actual) throw new RepositoryError(NOT_FOUND)
-
-  const objetivo = actual.transferId
-    ? eq(transactions.transferId, actual.transferId)
-    : eq(transactions.id, id)
-
-  await db
-    .update(transactions)
-    .set({ deletedAt: null })
-    .where(and(eq(transactions.userId, userId), objetivo))
-
+  if (restaurados.length === 0) throw new RepositoryError(NOT_FOUND)
   return { id }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Transferencias
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Crea las DOS patas en la MISMA transacción.
- *
- * Si se escribieran por separado, un fallo entre medias dejaría dinero salido de
- * una cuenta que no ha entrado en ninguna. Es el caso que hizo que el proyecto
- * eligiera `@libsql/client` y no `sqlite-proxy` (ver "Decisiones tomadas").
- */
-export async function crearTransferencia(
-  userId: string,
-  values: unknown,
-): Promise<{ id: string }> {
-  const parsed = TransferenciaSave.safeParse(values)
-  if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
-
-  const d = parsed.data
-  const origen = await cuentaDe(userId, d.cuentaOrigenId)
-  const destino = await cuentaDe(userId, d.cuentaDestinoId)
-
-  // Regla dura 2: nada de sumar importes de divisas distintas. Sin tipos de
-  // cambio, una transferencia entre divisas se RECHAZA (ver "Decisiones abiertas").
-  if (origen.currency !== destino.currency) {
-    throw new RepositoryError(
-      `No se puede transferir entre divisas distintas (${origen.currency} → ${destino.currency})`,
-      { cuentaDestinoId: 'Elige una cuenta en la misma divisa' },
-    )
-  }
-
-  const transferId = crypto.randomUUID()
-  const salidaId = crypto.randomUUID()
-  const entradaId = crypto.randomUUID()
-  const ahora = new Date()
-
-  const comun = {
-    userId,
-    date: d.fecha,
-    description: d.descripcion,
-    notes: d.notas || null,
-    transferId,
-    // Una transferencia NO se clasifica: no es gasto ni ingreso, y si llevara
-    // categoría aparecería en el informe de gasto por categoría.
-    categoryId: null,
-    createdAt: ahora,
-  }
-
-  await db.transaction(async (tx) => {
-    await tx.insert(transactions).values([
-      { ...comun, id: salidaId, accountId: d.cuentaOrigenId, amount: -d.importe },
-      { ...comun, id: entradaId, accountId: d.cuentaDestinoId, amount: d.importe },
-    ])
-  })
-
-  return { id: transferId }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Reglas de dominio
 // ─────────────────────────────────────────────────────────────────────────────
-
-async function cuentaDe(userId: string, cuentaId: string) {
-  const rows = await db
-    .select({ id: accounts.id, currency: accounts.currency })
-    .from(accounts)
-    .where(and(eq(accounts.id, cuentaId), eq(accounts.userId, userId)))
-    .limit(1)
-
-  const cuenta = rows[0]
-  if (!cuenta) throw new RepositoryError(NOT_FOUND, { cuentaId: 'Cuenta no encontrada' })
-  return cuenta
-}
-
-/**
- * La cuenta llega en el body del formulario, así que es un id del cliente: hay
- * que comprobar que es del usuario ANTES de escribir nada (regla dura 4). Sin
- * esto, cualquiera podría meter movimientos en la cuenta de otro.
- */
-const assertCuentaPropia = (userId: string, cuentaId: string) => cuentaDe(userId, cuentaId)
 
 /** Una categoría de gasto en un ingreso descoloca todos los informes. */
 async function assertCategoriaCompatible(
@@ -456,35 +323,4 @@ async function assertCategoriaCompatible(
       categoriaId: sentido === 'expense' ? 'Elige una categoría de gasto' : 'Elige una de ingreso',
     })
   }
-}
-
-/**
- * Una pata de transferencia no se edita suelta: cambiarle el importe a una sola
- * deja las dos cuentas descuadradas entre sí. Se borra la transferencia y se
- * vuelve a crear.
- */
-async function assertNoEsTransferencia(userId: string, id: string): Promise<void> {
-  const rows = await db
-    .select({ transferId: transactions.transferId })
-    .from(transactions)
-    .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
-    .limit(1)
-
-  if (!rows[0]) throw new RepositoryError(NOT_FOUND)
-  if (rows[0].transferId) {
-    throw new RepositoryError(
-      'Esto es una transferencia. Bórrala y vuelve a crearla para cambiarla.',
-    )
-  }
-}
-
-/** Catálogo de cuentas para los `<Select>`. Con divisa, que la UI necesita. */
-export async function listarCatalogoCuentas(
-  userId: string,
-): Promise<{ id: string; nombre: string; divisa: string }[]> {
-  return db
-    .select({ id: accounts.id, nombre: accounts.name, divisa: accounts.currency })
-    .from(accounts)
-    .where(and(eq(accounts.userId, userId), isNull(accounts.archivedAt)))
-    .orderBy(asc(accounts.name))
 }

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Hooks de Categorías. Ver `useCuentas.ts` para el patrón.
+ * Hooks de Categorías. Ver `useMovimientos.ts` para el patrón.
  */
 
 import type {

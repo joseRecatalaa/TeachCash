@@ -3,7 +3,7 @@
 /**
  * Estado de paginación, orden, filtros y búsqueda de una página de listado.
  *
- * La página llama a `usePaginacion(useCuentas)` y esparce `tableProps` en
+ * La página llama a `usePaginacion(useMovimientos)` y esparce `tableProps` en
  * `<EntityListPage>`. Sin esto, cada listado se escribiría su propio `useState`
  * de página y sus propios callbacks, y acabarían comportándose distinto.
  *
@@ -23,7 +23,7 @@ import type {
 
 /**
  * Firma común de los hooks de lista que genera `createEntityHooks`
- * (`useCuentas`, `useMovimientos`...): `(filters?, pagination?, options?)`.
+ * (`useMovimientos`, `useCategorias`...): `(filters?, pagination?, options?)`.
  */
 type EntityListHook<TFilters, TRow extends BaseRecord> = (
   filters?: TFilters,
@@ -32,7 +32,7 @@ type EntityListHook<TFilters, TRow extends BaseRecord> = (
 ) => ReturnType<typeof useList<TRow>>
 
 export interface UsePaginacionConfig<TFilters> {
-  /** Filtro base del contexto de la página (la cuenta que se está mirando...). */
+  /** Filtro base del contexto de la página (el periodo que se está mirando...). */
   baseFilter?: TFilters
   initialPageSize?: number
   initialSort?: { sortBy?: string; sortDir?: 'asc' | 'desc' }
@@ -42,7 +42,7 @@ export interface UsePaginacionConfig<TFilters> {
    * `false` = modo cliente: se trae el conjunto completo y `AppTable` lo procesa
    * en memoria.
    *
-   * Cuentas y Categorías van en modo cliente: son decenas de filas y filtrarlas
+   * Categorías va en modo cliente: son decenas de filas y filtrarlas
    * en memoria da filtros más ricos sin coste. Movimientos va en modo servidor:
    * es la tabla que crece sin techo.
    */

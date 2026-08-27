@@ -1,7 +1,7 @@
 /**
  * Registro de recursos: el mapa `nombre → repositorio`.
  *
- * Es lo que convierte el `resource` que manda el cliente ("Cuentas") en el
+ * Es lo que convierte el `resource` que manda el cliente ("Movimientos") en el
  * código que atiende la consulta.
  *
  * **Que sea un mapa CERRADO no es un detalle de implementación: es lo que
@@ -14,7 +14,6 @@
  */
 
 import { categoriasRepository } from './categorias.repository'
-import { cuentasRepository } from './cuentas.repository'
 import { movimientosRepository } from './movimientos.repository'
 import type { EntityRepository } from './types'
 
@@ -24,7 +23,6 @@ import type { EntityRepository } from './types'
  * tienen que coincidir carácter a carácter.
  */
 export const REPOSITORIES = {
-  Cuentas: cuentasRepository,
   Categorias: categoriasRepository,
   Movimientos: movimientosRepository,
 } satisfies Record<string, EntityRepository>

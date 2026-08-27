@@ -1,85 +1,9 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d8cc0b1a-c036-4656-b61d-eb6bd53d6aea",
+  "id": "ffe248e2-e2b9-4fdc-a9ca-56db12dceb49",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "accounts": {
-      "name": "accounts",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "currency": {
-          "name": "currency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'EUR'"
-        },
-        "opening_balance": {
-          "name": "opening_balance",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "archived_at": {
-          "name": "archived_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "accounts_user_idx": {
-          "name": "accounts_user_idx",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "categories": {
       "name": "categories",
       "columns": {
@@ -180,13 +104,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "account_id": {
-          "name": "account_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "category_id": {
           "name": "category_id",
           "type": "text",
@@ -217,13 +134,6 @@
         },
         "notes": {
           "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "transfer_id": {
-          "name": "transfer_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -267,24 +177,10 @@
           ],
           "isUnique": false
         },
-        "tx_account_idx": {
-          "name": "tx_account_idx",
-          "columns": [
-            "account_id"
-          ],
-          "isUnique": false
-        },
         "tx_category_idx": {
           "name": "tx_category_idx",
           "columns": [
             "category_id"
-          ],
-          "isUnique": false
-        },
-        "tx_transfer_idx": {
-          "name": "tx_transfer_idx",
-          "columns": [
-            "transfer_id"
           ],
           "isUnique": false
         },
@@ -306,19 +202,6 @@
         }
       },
       "foreignKeys": {
-        "transactions_account_id_accounts_id_fk": {
-          "name": "transactions_account_id_accounts_id_fk",
-          "tableFrom": "transactions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "transactions_category_id_categories_id_fk": {
           "name": "transactions_category_id_categories_id_fk",
           "tableFrom": "transactions",

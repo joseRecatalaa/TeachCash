@@ -1,0 +1,71 @@
+/*
+ * Las chapas del selector de color.
+ *
+ * El color de cada una sale de su `data-color`, que es la clave de la paleta.
+ * Escribirlo así —y no con ocho clases— es lo que hace que añadir un noveno
+ * color sea una línea en `globals.css` y otra en `lib/colores.ts`, sin tocar
+ * esto.
+ */
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.35rem;
+}
+
+.chapa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  cursor: pointer;
+  color: var(--sd-ink-inverse);
+  background: var(--chapa-color, var(--sd-surface-muted));
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  /* Cada chapa un poco torcida, y alternando el lado: ocho cuadrados perfectos
+     en fila parecen un selector de sistema, no una caja de rotuladores. */
+  transform: rotate(-2deg);
+  transition: var(--sd-transition);
+}
+
+.chapa:nth-child(even) {
+  transform: rotate(2deg);
+}
+
+.chapa:hover {
+  transform: translate(-1px, -1px) rotate(0deg);
+  box-shadow: var(--sd-shadow-sm);
+}
+
+.chapa:active {
+  transform: translate(2px, 2px) rotate(0deg);
+  box-shadow: none;
+}
+
+.chapa:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+.elegida {
+  border-width: var(--sd-stroke-bold);
+  transform: rotate(0deg) scale(1.06);
+}
+
+.elegida:nth-child(even) {
+  transform: rotate(0deg) scale(1.06);
+}
+
+.chapa[data-color='cat-1'] { --chapa-color: var(--sd-cat-1); }
+.chapa[data-color='cat-2'] { --chapa-color: var(--sd-cat-2); }
+.chapa[data-color='cat-3'] { --chapa-color: var(--sd-cat-3); }
+.chapa[data-color='cat-4'] { --chapa-color: var(--sd-cat-4); }
+.chapa[data-color='cat-5'] { --chapa-color: var(--sd-cat-5); }
+.chapa[data-color='cat-6'] { --chapa-color: var(--sd-cat-6); }
+.chapa[data-color='cat-7'] { --chapa-color: var(--sd-cat-7); }
+.chapa[data-color='cat-8'] { --chapa-color: var(--sd-cat-8); }

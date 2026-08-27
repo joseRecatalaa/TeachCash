@@ -9,7 +9,7 @@
  *
  * Trabaja en dos modos:
  *   - **cliente** (por defecto): recibe el conjunto completo y filtra, ordena y
- *     pagina en memoria. Es lo que usan Cuentas y Categorías.
+ *     pagina en memoria. Es lo que usa Categorías.
  *   - **servidor** (`manual*` + callbacks): la tabla solo avisa de lo que la
  *     persona ha pedido y el repositorio hace el trabajo. Es lo que usa
  *     Movimientos, que es la tabla que crece sin techo.
@@ -38,7 +38,8 @@ import {
   IconX,
 } from '@tabler/icons-react'
 import { formatDate, formatMoney, formatMoneySigned, scaleOf } from '@/lib/format'
-import { asCurrency, isCurrency, type Currency } from '@/lib/money'
+import { asCurrency, DIVISA_APP, isCurrency, type Currency } from '@/lib/money'
+import { CLAVES_COLOR, esClaveColor } from '@/lib/colores'
 import type { EnumValueDto } from '@/src/types/formMetadata.types'
 import styles from './AppTable.module.css'
 
@@ -103,7 +104,7 @@ export type AppTableColumn<T> = Omit<
   enumKey?: string
   /**
    * Opciones COMPLETAS del filtro de una columna `enum` cuyos valores no son un
-   * enum del backend sino un catálogo (una cuenta, una categoría).
+   * enum del backend sino un catálogo (una categoría del usuario).
    *
    * Necesario en modo servidor: sin esto el desplegable solo ofrece los valores
    * de la página visible, no todos los que existen.
@@ -125,13 +126,26 @@ export type AppTableColumn<T> = Omit<
   signed?: boolean
   /** Pinta los valores como `Badge`. Solo si no hay `render` propio. */
   badge?: boolean
-  /** Color fijo para todos los badges de la columna. */
+  /**
+   * Tono fijo para todos los badges de la columna.
+   *
+   * Es una CLAVE del sistema de diseño (`'cat-1'`…`'cat-8'`, `'income'`,
+   * `'expense'`, `'neutral'`), nunca un color ni un nombre de la paleta de
+   * Mantine: el color de verdad lo pone `AppTable.module.css` desde un token, y
+   * es lo que hace que el modo oscuro no haya que tocarlo aquí.
+   */
   badgeColor?: string
   /**
-   * Color por valor: `{ expense: 'red', income: 'teal' }`. Para dar semántica a
-   * un enum, ya que un color por posición no significa nada.
+   * Tono por valor: `{ expense: 'expense', income: 'income' }`. Para dar
+   * semántica a un enum, ya que un color por posición no significa nada.
    */
   badgeColors?: Record<string, string>
+  /**
+   * Campo de la fila del que sale el tono, cuando el color es un DATO y no una
+   * constante de la columna — el color propio de cada categoría. Prioritario
+   * sobre `badgeColors` y `badgeColor`.
+   */
+  badgeColorAccessor?: string
 }
 
 /** Props del modo servidor. */
@@ -229,7 +243,11 @@ const OPERADORES_SERVIDOR: { value: FilterOperator; label: string }[] = [
   { value: 'equals', label: 'Es igual a' },
 ]
 
-const PALETA_BADGE = ['blue', 'teal', 'grape', 'orange', 'cyan', 'lime', 'pink', 'indigo']
+/**
+ * La paleta categórica del sistema, no los colores de fábrica de Mantine: estos
+ * tienen variante de modo oscuro y aquellos no.
+ */
+const PALETA_BADGE = CLAVES_COLOR
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utilidades
@@ -240,15 +258,24 @@ const accessorDe = <T,>(col: AppTableColumn<T>): string => String(col.accessor)
 const valorDe = (row: unknown, accessor: string): unknown =>
   (row as Record<string, unknown>)[accessor]
 
-/** La divisa de una fila para una columna `money`. Cae a EUR y avisa si falta. */
+/**
+ * La divisa de una fila para una columna `money`.
+ *
+ * Lo normal es que la fila no traiga ninguna: la aplicación trabaja en una sola
+ * moneda y los DTOs no la llevan. Solo se busca en la fila si la columna declara
+ * un `divisaAccessor`, y ahí sí un valor inválido es un bug que merece aviso.
+ */
 const divisaDe = <T,>(row: T, col: AppTableColumn<T>): Currency => {
-  const bruto = valorDe(row, col.divisaAccessor ?? 'divisa')
+  if (!col.divisaAccessor) return DIVISA_APP
+
+  const bruto = valorDe(row, col.divisaAccessor)
   if (typeof bruto === 'string' && isCurrency(bruto)) return asCurrency(bruto)
   console.warn(
-    `[AppTable] La columna "${accessorDe(col)}" es de tipo money pero la fila no trae divisa ` +
-      `en "${col.divisaAccessor ?? 'divisa'}". Se formatea como EUR.`,
+    `[AppTable] La columna "${accessorDe(col)}" declara divisaAccessor ` +
+      `"${col.divisaAccessor}" pero la fila no trae ahí una divisa válida. ` +
+      `Se formatea como ${DIVISA_APP}.`,
   )
-  return 'EUR'
+  return DIVISA_APP
 }
 
 /** Texto plano de una celda: para el buscador, los filtros y el Excel. */
@@ -263,8 +290,25 @@ function textoDe<T>(row: T, col: AppTableColumn<T>): string {
   return String(bruto)
 }
 
-/** Color estable de un badge a partir de su valor. */
-const colorBadge = (col: AppTableColumn<unknown>, valor: string): string => {
+/**
+ * TONO de un badge — una clave, no un color. Por orden: el del propio dato, el
+ * declarado para ese valor, el fijo de la columna y, si no hay nada, uno
+ * estable por hash del texto.
+ *
+ * Devolver una clave y no un color es lo que permite que el valor se pinte con
+ * un `data-tono` y que el color salga de un token: escribir aquí el color
+ * obligaría a un `style` inline, y un `style` inline es un valor que el modo
+ * oscuro no sabe traducir.
+ *
+ * El hash es el último recurso y no significa nada: solo garantiza que el mismo
+ * valor salga siempre del mismo tono, que es lo que permite reconocerlo de un
+ * vistazo al recorrer la columna.
+ */
+const tonoBadge = (col: AppTableColumn<unknown>, valor: string, row: unknown): string => {
+  if (col.badgeColorAccessor) {
+    const clave = valorDe(row, col.badgeColorAccessor)
+    if (typeof clave === 'string' && esClaveColor(clave)) return clave
+  }
   if (col.badgeColors?.[valor]) return col.badgeColors[valor]
   if (col.badgeColor) return col.badgeColor
   let hash = 0
@@ -685,7 +729,19 @@ export function AppTable<T extends object>({
                     // Lo lee `AppTable.module.css` para forzar cifras de ancho
                     // fijo en la celda entera. No es un gancho de test.
                     data-money=""
-                    c={col.signed ? (bruto < 0 ? 'red.7' : bruto > 0 ? 'teal.7' : undefined) : undefined}
+                    // Los tokens y no `red.7`/`teal.7`: estos están validados
+                    // para daltonismo y tienen variante oscura; los de Mantine
+                    // no. El color es la SEGUNDA señal — la primera es el signo,
+                    // que `formatMoneySigned` pone siempre.
+                    c={
+                      col.signed
+                        ? bruto < 0
+                          ? 'var(--expense)'
+                          : bruto > 0
+                            ? 'var(--income)'
+                            : undefined
+                        : undefined
+                    }
                   >
                     {col.signed ? formatMoneySigned(importe) : formatMoney(importe)}
                   </Text>
@@ -707,11 +763,12 @@ export function AppTable<T extends object>({
                   : String(bruto)
 
               if (col.badge) {
+                // El tono viaja como `data-tono` y el COLOR lo pone
+                // `AppTable.module.css`. La prop `color` de Mantine solo acepta
+                // nombres de su propia paleta, que no tiene modo oscuro aquí.
+                const tono = tonoBadge(col as AppTableColumn<unknown>, String(bruto), row)
                 return (
-                  <Badge
-                    variant="light"
-                    color={colorBadge(col as AppTableColumn<unknown>, String(bruto))}
-                  >
+                  <Badge variant="light" className={styles.badge} data-tono={tono}>
                     {texto}
                   </Badge>
                 )

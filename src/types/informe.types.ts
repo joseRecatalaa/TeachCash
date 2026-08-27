@@ -8,19 +8,19 @@
  * están en `presentation`. La capa `types` es la única que todas las demás
  * pueden importar.
  *
- * Todos los importes son ENTEROS EN CÉNTIMOS con su divisa al lado, igual que
- * en el resto del proyecto (reglas duras 1 y 2).
+ * Todos los importes son ENTEROS EN CÉNTIMOS (regla dura 1) en la divisa de la
+ * aplicación, que no viaja en el DTO: la pone `DIVISA_APP` al formatear.
  */
 
 import type { CivilDate, Period } from '@/lib/dates'
-import type { Currency } from '@/lib/money'
 
 export interface GastoPorCategoriaDto {
   categoriaId: string
   categoriaNombre: string
+  /** Clave de la paleta ('cat-1'…). Cadena vacía = se reparte por posición. */
+  categoriaColor: string
   /** Céntimos, MAGNITUD POSITIVA. El gráfico pinta barras, no deudas. */
   total: number
-  divisa: Currency
 }
 
 export interface TotalesPeriodoDto {
@@ -31,12 +31,10 @@ export interface TotalesPeriodoDto {
   gastos: number
   /** Céntimos CON SIGNO: ingresos - gastos. */
   neto: number
-  divisa: Currency
 }
 
 export interface PuntoSaldoDto {
   fecha: CivilDate
   /** Céntimos con signo. */
   saldo: number
-  divisa: Currency
 }

@@ -1,5 +1,29 @@
 # Plan de implementación — v1
 
+> ## ⚠️ SUPERADO. Es un documento histórico, no la referencia del código actual.
+>
+> Se escribió el 2026-08-13 y describe una v1 que se implementó y luego se
+> recortó (2026-08-27). **Lo que ya no existe:**
+>
+> - **Cuentas.** No hay tabla `accounts`, ni tipos de cuenta, ni saldo de
+>   apertura, ni archivado. Hay una cuenta implícita y su saldo es la suma de los
+>   movimientos.
+> - **Transferencias.** No hay `transfer_id` ni patas atadas. Un movimiento es un
+>   gasto o un ingreso, y punto.
+> - **Multidivisa.** No hay columna de moneda en ninguna tabla ni campo `divisa`
+>   en ningún DTO: la decide `DIVISA_APP` en `lib/money.ts`.
+> - **Patrimonio y la ruta `/Informes`.** El patrimonio era la suma de las
+>   cuentas; ahora es el saldo, una sola cifra. Los informes se fundieron en la
+>   portada.
+>
+> **Lo que sigue siendo cierto** —y es por lo que este fichero se conserva— es
+> el *porqué* de las decisiones técnicas de fondo: por qué `@libsql/client` y no
+> `better-sqlite3`, por qué Server Actions y no route handlers, por qué las
+> fechas son texto y el dinero un entero. Eso no ha cambiado.
+>
+> **La referencia del código actual es `AGENTS.md`.** Si los dos se contradicen,
+> manda `AGENTS.md`.
+
 Estado: **aprobado, sin empezar**. Fecha: 2026-08-13.
 
 Este documento es la referencia de ejecución. Cada fase tiene ficheros concretos,

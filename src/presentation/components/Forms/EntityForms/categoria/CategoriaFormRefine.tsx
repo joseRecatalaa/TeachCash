@@ -1,8 +1,10 @@
 'use client'
 
 /**
- * Cableado del formulario de Categoría. Ver `CuentaFormRefine.tsx` para el
- * reparto entre este fichero y `src/config/categorias/sections.ts`.
+ * Cableado del formulario de Categoría.
+ *
+ * El reparto es el de siempre: `src/config/categorias/sections.ts` DESCRIBE los
+ * campos (sin JSX) y este fichero los conecta con los datos y con el submit.
  */
 
 import { useMemo } from 'react'
@@ -47,7 +49,7 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
       mode={mode}
       resource="Categorias"
       validate={validate}
-      initialValues={{ tipo: 'expense', padreId: '', icono: '' }}
+      initialValues={{ tipo: 'expense', padreId: '', icono: '', color: '' }}
       isLoadingData={(mode === 'edit' && query.isLoading) || isLoadingCatalogos}
       isSubmitting={isSubmitting}
       fieldErrors={fieldErrors}
@@ -59,6 +61,8 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
           // llama "raíz". La traducción a NULL de base la hace el repositorio.
           padreId: values.padreId ?? '',
           icono: values.icono ?? '',
+          // Cadena vacía = sin color, que es un estado válido.
+          color: values.color ?? '',
         })
       }
       exitTo="/Categorias"

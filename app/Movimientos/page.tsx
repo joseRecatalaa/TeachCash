@@ -8,10 +8,9 @@
  */
 
 import { Suspense, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { Button, Group, Switch } from '@mantine/core'
+import { Group, Switch } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
-import { IconArrowsExchange, IconArrowsLeftRight } from '@tabler/icons-react'
+import { IconArrowsLeftRight } from '@tabler/icons-react'
 import { usePaginacion } from '@/src/application/hooks/usePaginacion'
 import { useCatalogos } from '@/src/application/hooks/useCatalogos'
 import {
@@ -36,7 +35,7 @@ function MovimientosContenido() {
   // conviven movimientos borrados y no borrados tiene totales que no cuadran.
   const [verBorrados, setVerBorrados] = useState(false)
 
-  const { cuentasOptions, categoriasPorTipo } = useCatalogos()
+  const { categoriasPorTipo } = useCatalogos()
   const { restaurar } = useRestaurarMovimiento()
 
   const baseFilter = useMemo<MovimientosFilters>(
@@ -61,8 +60,8 @@ function MovimientosContenido() {
   )
 
   const columns = useMemo(
-    () => movimientoColumns({ cuentasOptions, categoriasOptions, verBorrados, onRestaurar: restaurar }),
-    [cuentasOptions, categoriasOptions, verBorrados, restaurar],
+    () => movimientoColumns({ categoriasOptions, verBorrados, onRestaurar: restaurar }),
+    [categoriasOptions, verBorrados, restaurar],
   )
 
   return (
@@ -103,14 +102,6 @@ function MovimientosContenido() {
             clearable
             w={240}
           />
-          <Button
-            variant="default"
-            component={Link}
-            href="/Movimientos/Transferencia"
-            leftSection={<IconArrowsExchange size={16} />}
-          >
-            Transferencia
-          </Button>
         </Group>
       }
       {...tableProps}

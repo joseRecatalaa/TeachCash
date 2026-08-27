@@ -36,7 +36,7 @@ vi.mock('@/db', async () => {
 })
 
 import { createTestDb, type TestDb } from '@/db/testing'
-import { accounts } from '@/db/schema'
+import { categories } from '@/db/schema'
 import {
   createEntity,
   deleteEntity,
@@ -44,7 +44,7 @@ import {
   listEntity,
   updateEntity,
 } from '../entity.actions'
-import { seedCuenta, USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
+import { seedCategoria, USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
 
 let ctx: TestDb
 
@@ -56,7 +56,13 @@ beforeEach(async () => {
 
 afterEach(() => ctx.close())
 
-const cuenta = { nombre: 'Nómina', tipo: 'checking', divisa: 'EUR', saldoInicial: 0 }
+/**
+ * Categorías hace de recurso de PRUEBA del dispatcher. No se prueba aquí nada
+ * de categorías —eso está en su propio test de repositorio—: lo que se ejercita
+ * es el camino genérico, y hace falta un recurso real del mapa cerrado para
+ * recorrerlo entero hasta SQLite.
+ */
+const categoria = { nombre: 'Nómina', tipo: 'income', padreId: '', icono: '', color: '' }
 
 describe('el recurso se resuelve contra un mapa cerrado', () => {
   test.each(['Usuarios', 'sqlite_master', '../db/schema', ''])(
@@ -77,11 +83,11 @@ describe('el recurso se resuelve contra un mapa cerrado', () => {
 
 describe('la sesión se comprueba siempre', () => {
   test.each([
-    ['listEntity', () => listEntity('Cuentas', {})],
-    ['getEntity', () => getEntity('Cuentas', 'x')],
-    ['createEntity', () => createEntity('Cuentas', cuenta)],
-    ['updateEntity', () => updateEntity('Cuentas', 'x', cuenta)],
-    ['deleteEntity', () => deleteEntity('Cuentas', 'x')],
+    ['listEntity', () => listEntity('Categorias', {})],
+    ['getEntity', () => getEntity('Categorias', 'x')],
+    ['createEntity', () => createEntity('Categorias', categoria)],
+    ['updateEntity', () => updateEntity('Categorias', 'x', categoria)],
+    ['deleteEntity', () => deleteEntity('Categorias', 'x')],
   ])('%s sin sesión no hace nada', async (_nombre, ejecutar) => {
     h.userId = null
 
@@ -89,47 +95,47 @@ describe('la sesión se comprueba siempre', () => {
     expect(resultado.ok).toBe(false)
     if (!resultado.ok) expect(resultado.error).toBe('No autorizado')
 
-    const filas = await ctx.db.select().from(accounts)
+    const filas = await ctx.db.select().from(categories)
     expect(filas).toHaveLength(0)
   })
 })
 
 describe('el userId sale de la sesión, nunca de los argumentos', () => {
   test('un userId en los valores se ignora', async () => {
-    const resultado = await createEntity('Cuentas', { ...cuenta, userId: USER_B })
+    const resultado = await createEntity('Categorias', { ...categoria, userId: USER_B })
     expect(resultado.ok).toBe(true)
 
-    const filas = await ctx.db.select().from(accounts)
+    const filas = await ctx.db.select().from(categories)
     expect(filas[0].userId).toBe(USER_A)
   })
 
   test('no se puede leer el registro de otro usuario', async () => {
-    await seedCuenta(ctx.db, 'ajena', USER_B)
+    await seedCategoria(ctx.db, 'ajena', USER_B)
 
-    const resultado = await getEntity('Cuentas', 'ajena')
+    const resultado = await getEntity('Categorias', 'ajena')
     expect(resultado.ok).toBe(false)
     if (!resultado.ok) expect(resultado.error).toBe('No encontrado')
   })
 
   test('no se puede escribir sobre el registro de otro usuario', async () => {
-    await seedCuenta(ctx.db, 'ajena', USER_B)
+    await seedCategoria(ctx.db, 'ajena', USER_B)
 
-    const resultado = await updateEntity('Cuentas', 'ajena', {
+    const resultado = await updateEntity('Categorias', 'ajena', {
       nombre: 'Secuestrada',
       tipo: 'checking',
       saldoInicial: 0,
     })
     expect(resultado.ok).toBe(false)
 
-    const [fila] = await ctx.db.select().from(accounts)
-    expect(fila.name).toBe('Cuenta ajena')
+    const [fila] = await ctx.db.select().from(categories)
+    expect(fila.name).toBe('Categoría ajena')
   })
 
   test('el listado solo devuelve lo del usuario de la sesión', async () => {
-    await seedCuenta(ctx.db, 'mia', USER_A)
-    await seedCuenta(ctx.db, 'ajena', USER_B)
+    await seedCategoria(ctx.db, 'mia', USER_A)
+    await seedCategoria(ctx.db, 'ajena', USER_B)
 
-    const resultado = await listEntity('Cuentas', { paginate: false })
+    const resultado = await listEntity('Categorias', { paginate: false })
     expect(resultado.ok).toBe(true)
     if (resultado.ok) {
       expect(resultado.data.data).toHaveLength(1)
@@ -140,22 +146,22 @@ describe('el userId sale de la sesión, nunca de los argumentos', () => {
 
 describe('los valores no se esparcen sobre la tabla', () => {
   test('un campo que no está en el esquema se descarta', async () => {
-    const resultado = await createEntity('Cuentas', {
-      ...cuenta,
+    const resultado = await createEntity('Categorias', {
+      ...categoria,
       // Ninguno de estos debe llegar a la fila: el repositorio escribe campo a
       // campo desde lo que devuelve Zod, no desde lo que llegó.
-      archivedAt: new Date(),
+      createdAt: new Date('1999-01-01'),
       id: 'id-elegido-por-el-cliente',
     })
     expect(resultado.ok).toBe(true)
 
-    const [fila] = await ctx.db.select().from(accounts)
-    expect(fila.archivedAt).toBeNull()
+    const [fila] = await ctx.db.select().from(categories)
+    expect(fila.createdAt.getFullYear()).not.toBe(1999)
     expect(fila.id).not.toBe('id-elegido-por-el-cliente')
   })
 
   test('los valores inválidos vuelven con su error por campo', async () => {
-    const resultado = await createEntity('Cuentas', { ...cuenta, tipo: 'inventado' })
+    const resultado = await createEntity('Categorias', { ...categoria, tipo: 'inventado' })
 
     expect(resultado.ok).toBe(false)
     if (!resultado.ok) {
@@ -168,17 +174,17 @@ describe('los valores no se esparcen sobre la tabla', () => {
 
 describe('errores', () => {
   test('un error de negocio conserva su mensaje', async () => {
-    const creada = await createEntity('Cuentas', cuenta)
+    const creada = await createEntity('Categorias', categoria)
     expect(creada.ok).toBe(true)
 
-    // Borrar una cuenta sin movimientos sí funciona; el mensaje de negocio se
-    // comprueba en el test del repositorio. Aquí lo que importa es que el texto
-    // llega intacto hasta el borde.
+    // Borrar una categoría sin movimientos sí funciona; el mensaje de negocio
+    // se comprueba en el test del repositorio. Aquí lo que importa es que el
+    // texto llega intacto hasta el borde.
     const id = creada.ok ? creada.data.id : ''
-    const borrada = await deleteEntity('Cuentas', id)
+    const borrada = await deleteEntity('Categorias', id)
     expect(borrada.ok).toBe(true)
 
-    const otraVez = await deleteEntity('Cuentas', id)
+    const otraVez = await deleteEntity('Categorias', id)
     expect(otraVez.ok).toBe(false)
     if (!otraVez.ok) expect(otraVez.error).toBe('No encontrado')
   })

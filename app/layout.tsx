@@ -17,6 +17,7 @@ import 'mantine-datatable/styles.css'
 import './globals.css'
 import { Providers } from '@/src/application/providers/providers'
 import { Navbar } from '@/src/presentation/components/Navbar'
+import { SplashScreen } from '@/src/presentation/components/Splash/SplashScreen'
 
 /**
  * Las tres familias del sistema, y por qué son tres:
@@ -62,8 +63,23 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         {/* Fija el esquema de color ANTES del primer pintado. Sin él hay un
             fogonazo blanco al entrar en modo oscuro. */}
         <ColorSchemeScript defaultColorScheme="auto" />
+        {/* Y por el mismo motivo que el de arriba: marca el <html> ANTES del
+            primer pintado si la pantalla de carga ya se vio alguna vez en este
+            navegador. El HTML del servidor la trae siempre, así que si la
+            decisión esperase a que React hidrate se vería un fogonazo en cada
+            recarga. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('gf-splash-visto')==='1')document.documentElement.dataset.splash='visto'}catch(e){}`,
+          }}
+        />
       </head>
       <body className={`${display.variable} ${body.variable} ${geistMono.variable}`}>
+        {/* Va FUERA de `Providers` y antes que nada: no necesita Refine ni el
+            tema de Mantine —se pinta con los tokens del sistema— y así puede
+            aparecer en el primer fotograma, mientras la aplicación hidrata por
+            detrás. Se desmonta sola al terminar su animación. */}
+        <SplashScreen />
         <Providers>
           <Navbar />
           {children}

@@ -44,12 +44,9 @@ export const ESTADOS: Record<string, { tone: StatusTone; label: string }> = {
   devuelta: { tone: 'positive', label: 'Devuelta' },
   retenida: { tone: 'danger', label: 'Retenida' },
   // Estados que ya usa la aplicación
-  activa: { tone: 'positive', label: 'Activa' },
-  archivada: { tone: 'muted', label: 'Archivada' },
   conciliado: { tone: 'accent', label: 'Conciliado' },
   income: { tone: 'positive', label: 'Ingreso' },
   expense: { tone: 'danger', label: 'Gasto' },
-  transfer: { tone: 'info', label: 'Transferencia' },
 }
 
 const CLASE_TONO: Record<StatusTone, string> = {
