@@ -1,7 +1,7 @@
 # Gestor de finanzas personales
 
-Aplicación web local para llevar tus cuentas: movimientos, transferencias,
-categorías, patrimonio total y gráficos.
+Aplicación web local para llevar tus gastos e ingresos: movimientos,
+categorías y una portada que resume el mes.
 
 Los datos viven en un fichero SQLite dentro de `data/`, que está ignorado por
 git. No sale nada de tu máquina y no hay ningún servicio externo.
@@ -19,15 +19,18 @@ No hay login: la aplicación asume un único usuario local.
 
 ## Qué hace
 
-- **Cuentas** (corriente, ahorro, tarjeta, efectivo, inversión) con su divisa y
-  saldo derivado de los movimientos.
-- **Movimientos** de gasto e ingreso, con categoría, filtrables por mes, cuenta,
-  categoría y texto.
-- **Transferencias** entre tus cuentas: mueven los dos saldos pero no cuentan
-  como gasto ni como ingreso.
-- **Resumen** con el patrimonio total (una cifra por divisa) y la evolución del
-  saldo.
-- **Informes** mensuales: gasto por categoría e ingresos frente a gastos.
+Tres pantallas y nada más:
+
+- **Inicio** — el saldo, cómo va el mes frente al anterior, la evolución del
+  saldo, en qué se va el dinero y los últimos movimientos.
+- **Movimientos** — anotar un gasto o un ingreso, con categoría y fecha.
+  Filtrables por periodo, categoría y texto, con papelera y exportación a Excel.
+- **Categorías** — de gasto o de ingreso, con emoji y color propio. El color es
+  el que las identifica luego en la tabla y en los gráficos.
+
+Hay **una sola cuenta y una sola moneda**, y no se guardan en ninguna parte: el
+saldo es la suma de los movimientos. Si quieres partir del saldo real de tu
+banco, anótalo como un ingreso más ("Saldo inicial").
 
 ## Comandos
 

@@ -7,20 +7,19 @@
  * `informes.actions.ts`; nada de esto pasa por el dispatcher genérico.
  *
  * ────────────────────────────────────────────────────────────────────────────
- * La regla que atraviesa este fichero entero:
- *   - el SALDO de una cuenta INCLUYE las transferencias;
- *   - los INFORMES (gasto por categoría, ingresos vs gastos, totales del mes)
- *     las EXCLUYEN.
- * Mover 500 € al ahorro no es un gasto, aunque en la tabla se parezca mucho.
+ * La regla que atraviesa este fichero entero (regla dura 7):
+ *   el SALDO NO SE GUARDA. Es la suma de los movimientos vivos, y punto.
+ * Por eso `getSaldoActual` y el último punto de `getSerieSaldo` tienen que dar
+ * exactamente la misma cifra: hay un test que lo comprueba, y si algún día deja
+ * de cumplirse es que alguien ha materializado un saldo por su cuenta.
  * ────────────────────────────────────────────────────────────────────────────
  *
- * Solo se agrega UNA divisa por consulta (regla dura 2). Un eje que suma euros
- * y dólares no significa nada.
+ * Todos los importes son céntimos en la divisa de la aplicación (`DIVISA_APP`).
  */
 
 import { and, asc, eq, gte, isNull, like, lt, lte, sql } from 'drizzle-orm'
 import { db } from '@/db'
-import { accounts, categories, transactions } from '@/db/schema'
+import { categories, transactions } from '@/db/schema'
 import {
   addMonths,
   compareDates,
@@ -31,17 +30,16 @@ import {
   type CivilDate,
   type Period,
 } from '@/lib/dates'
-import type { Currency } from '@/lib/money'
 import type {
   GastoPorCategoriaDto,
   PuntoSaldoDto,
   TotalesPeriodoDto,
 } from '@/src/types/informe.types'
 
-/** Movimientos que cuentan como flujo real: ni transferencias ni borrados. */
-const flujoReal = () => and(isNull(transactions.transferId), isNull(transactions.deletedAt))
-
-/** Movimientos vivos, transferencias incluidas. Para saldos. */
+/**
+ * El único filtro transversal: un movimiento en la papelera no cuenta para
+ * nada. Ni para el saldo ni para los informes.
+ */
 const vivos = () => isNull(transactions.deletedAt)
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -58,25 +56,23 @@ const vivos = () => isNull(transactions.deletedAt)
 export async function getGastoPorCategoria(
   userId: string,
   periodo: Period,
-  divisa: Currency = 'EUR',
 ): Promise<GastoPorCategoriaDto[]> {
   const rows = await db
     .select({
       categoriaId: categories.id,
       categoriaNombre: categories.name,
+      categoriaColor: categories.color,
       total: sql<number>`sum(${transactions.amount})`,
     })
     .from(transactions)
-    .innerJoin(accounts, eq(accounts.id, transactions.accountId))
     .leftJoin(categories, eq(categories.id, transactions.categoryId))
     .where(
       and(
         eq(transactions.userId, userId),
         // 'YYYY-MM-%' sobre una columna de texto: usa el índice (user_id, date).
         like(transactions.date, `${periodo}-%`),
-        eq(accounts.currency, divisa),
         lt(transactions.amount, 0),
-        flujoReal(),
+        vivos(),
       ),
     )
     .groupBy(categories.id)
@@ -86,8 +82,8 @@ export async function getGastoPorCategoria(
   return rows.map((r) => ({
     categoriaId: r.categoriaId ?? '',
     categoriaNombre: r.categoriaNombre ?? 'Sin categoría',
+    categoriaColor: r.categoriaColor ?? '',
     total: Math.abs(r.total ?? 0),
-    divisa,
   }))
 }
 
@@ -100,9 +96,8 @@ export async function getGastoPorCategoria(
  */
 export async function getIngresosVsGastos(
   userId: string,
-  options: { meses?: number; hasta?: Period; divisa?: Currency } = {},
+  options: { meses?: number; hasta?: Period } = {},
 ): Promise<TotalesPeriodoDto[]> {
-  const divisa = options.divisa ?? 'EUR'
   const meses = options.meses ?? 12
   const hasta = options.hasta ?? periodOf(today())
 
@@ -113,8 +108,7 @@ export async function getIngresosVsGastos(
       gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
     })
     .from(transactions)
-    .innerJoin(accounts, eq(accounts.id, transactions.accountId))
-    .where(and(eq(transactions.userId, userId), eq(accounts.currency, divisa), flujoReal()))
+    .where(and(eq(transactions.userId, userId), vivos()))
     .groupBy(sql`substr(${transactions.date}, 1, 7)`)
 
   if (rows.length === 0) return []
@@ -129,16 +123,15 @@ export async function getIngresosVsGastos(
     const row = porPeriodo.get(p)
     const ingresos = row?.ingresos ?? 0
     const gastos = row?.gastos ?? 0
-    resultado.push({ periodo: p, ingresos, gastos, neto: ingresos - gastos, divisa })
+    resultado.push({ periodo: p, ingresos, gastos, neto: ingresos - gastos })
   }
   return resultado
 }
 
-/** Totales de un mes concreto. Sin transferencias. */
+/** Totales de un mes concreto. */
 export async function getTotalesDelMes(
   userId: string,
   periodo: Period,
-  divisa: Currency = 'EUR',
 ): Promise<TotalesPeriodoDto> {
   const [row] = await db
     .select({
@@ -146,19 +139,33 @@ export async function getTotalesDelMes(
       gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
     })
     .from(transactions)
-    .innerJoin(accounts, eq(accounts.id, transactions.accountId))
     .where(
       and(
         eq(transactions.userId, userId),
         like(transactions.date, `${periodo}-%`),
-        eq(accounts.currency, divisa),
-        flujoReal(),
+        vivos(),
       ),
     )
 
   const ingresos = row?.ingresos ?? 0
   const gastos = row?.gastos ?? 0
-  return { periodo, ingresos, gastos, neto: ingresos - gastos, divisa }
+  return { periodo, ingresos, gastos, neto: ingresos - gastos }
+}
+
+/**
+ * El saldo de la cuenta: la suma de todo lo anotado.
+ *
+ * Arranca en cero el día del primer movimiento. Si hace falta partir del saldo
+ * real del banco, se anota como un ingreso más ("Saldo inicial"): no hay un
+ * campo de apertura escondido en ninguna parte, y esa es justo la razón de que
+ * el saldo no pueda divergir de sus movimientos.
+ */
+export async function getSaldoActual(userId: string): Promise<number> {
+  const [row] = await db
+    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+    .from(transactions)
+    .where(and(eq(transactions.userId, userId), vivos()))
+  return row?.total ?? 0
 }
 
 /**
@@ -166,58 +173,43 @@ export async function getTotalesDelMes(
  *
  * Los días sin movimiento heredan el saldo anterior. Una línea con puntos solo
  * donde hubo movimiento dibuja pendientes falsas entre fechas distantes.
- *
- * Aquí SÍ entran las transferencias: mueven el saldo de verdad.
  */
 export async function getSerieSaldo(
   userId: string,
-  options: { desde: CivilDate; hasta: CivilDate; cuentaId?: string; divisa?: Currency },
+  options: { desde: CivilDate; hasta: CivilDate },
 ): Promise<PuntoSaldoDto[]> {
-  const divisa = options.divisa ?? 'EUR'
-  const ambito = options.cuentaId ? eq(accounts.id, options.cuentaId) : undefined
-
-  // Punto de partida: saldos de apertura + todo lo anterior al rango.
-  const [apertura] = await db
-    .select({ total: sql<number>`coalesce(sum(${accounts.openingBalance}), 0)` })
-    .from(accounts)
-    .where(and(eq(accounts.userId, userId), eq(accounts.currency, divisa), ambito))
-
+  // Punto de partida: todo lo anterior al rango. Sin esto, una serie de los
+  // últimos tres meses arrancaría en cero y dibujaría un salto que no existió.
   const [previo] = await db
     .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
     .from(transactions)
-    .innerJoin(accounts, eq(accounts.id, transactions.accountId))
     .where(
       and(
         eq(transactions.userId, userId),
-        eq(accounts.currency, divisa),
         lt(transactions.date, options.desde),
         vivos(),
-        ambito,
       ),
     )
 
   const deltas = await db
     .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})` })
     .from(transactions)
-    .innerJoin(accounts, eq(accounts.id, transactions.accountId))
     .where(
       and(
         eq(transactions.userId, userId),
-        eq(accounts.currency, divisa),
         gte(transactions.date, options.desde),
         lte(transactions.date, options.hasta),
         vivos(),
-        ambito,
       ),
     )
     .groupBy(transactions.date)
 
   const porFecha = new Map(deltas.map((d) => [d.fecha, d.total ?? 0]))
-  let acumulado = (apertura?.total ?? 0) + (previo?.total ?? 0)
+  let acumulado = previo?.total ?? 0
 
   return eachDay(options.desde, options.hasta).map((fecha) => {
     acumulado += porFecha.get(fecha) ?? 0
-    return { fecha, saldo: acumulado, divisa }
+    return { fecha, saldo: acumulado }
   })
 }
 

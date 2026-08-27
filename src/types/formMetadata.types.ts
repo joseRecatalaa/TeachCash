@@ -7,7 +7,7 @@
  *
  * La regla de fondo: **las opciones no se declaran en la vista**. Un `select` de
  * `sections.ts` se escribe SIN `options` y las recibe de aquí, usando el `name`
- * del campo como clave. Así el día que se añade un tipo de cuenta se toca un
+ * del campo como clave. Así el día que se añade un valor a una enumeración se toca un
  * sitio y no cinco.
  */
 
@@ -18,7 +18,7 @@ export interface EnumValueDto {
 }
 
 export interface FormMetadata {
-  /** Campos que el formulario pinta deshabilitados (la divisa de una cuenta ya creada). */
+  /** Campos que el formulario pinta deshabilitados (el tipo de una categoría ya creada). */
   readOnlyFields: string[]
   /** `{ tipo: [...], divisa: [...] }` — indexado por el `name` del campo. */
   enumFields: Record<string, EnumValueDto[]>

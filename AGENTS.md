@@ -12,9 +12,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Gestor de Finanzas Personales
 
-Aplicación web para llevar las finanzas personales: cuentas, movimientos,
-categorías, presupuestos y una visión de patrimonio. Uso individual (uno o pocos
-usuarios), no multi-tenant, no contabilidad de empresa.
+Aplicación web para llevar las finanzas personales: movimientos (gastos e
+ingresos), categorías y una portada que resume el mes. Uso individual (uno o
+pocos usuarios), no multi-tenant, no contabilidad de empresa.
+
+**Hay UNA cuenta y UNA divisa, y ninguna de las dos se guarda.** No existe tabla
+de cuentas, ni columna de moneda, ni transferencias: un movimiento es un gasto o
+un ingreso, y el saldo es la suma de todos ellos.
 
 Fuera de alcance salvo que se diga lo contrario: facturación, IVA/IRPF, modelos
 tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
@@ -45,6 +49,7 @@ Cada cambio tiene un sitio y solo uno:
 | Cambiar el aspecto de TODOS los botones, inputs o paneles de Mantine | `src/presentation/styles/mantine-sketch.module.css` |
 | Cambiar el aspecto de UNA vista concreta | Su `*.module.css` al lado del `.tsx` |
 | Añadir una operación que no es CRUD | Una función en el repositorio + su acción en `entity.actions.ts` + su hook |
+| Cambiar el color de una categoría en tabla y gráficos | La clave en `categories.color`; los tonos, en `app/globals.css` (`--sd-cat-*`) |
 | Añadir una entidad entera | `pnpm generate:crud` |
 
 Si te ves escribiendo un formulario a mano con `<TextInput>` sueltos, o una
@@ -88,7 +93,7 @@ cálculo. Vive en tres sitios y solo tres:
 |---|---|---|
 | **Tokens** | `app/globals.css` | Las Custom Properties `--sd-*`: color, trazo, sombra, radio, movimiento, tipografía. La única fuente de verdad |
 | **Puente con Mantine** | `src/presentation/styles/mantine-sketch.module.css` | Se engancha en el tema con `Componente.extend({ classNames })`. Hace que TODO `<Button>`, `<Paper>` o `<TextInput>` ya existente herede el aspecto sin tocarlo |
-| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `StatusBadge`. Solo para lo que Mantine no da |
+| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `StatusBadge`, `EmptyState`, `AnimatedMoney`. Solo para lo que Mantine no da |
 
 Las tres reglas de estilo del proyecto:
 
@@ -106,9 +111,40 @@ hojas de Mantine: reapunta variables de Mantine (`--mantine-color-body`,
 `--mantine-font-family`) y, a igual especificidad, gana quien se declare después.
 Si sube de sitio, la aplicación vuelve al gris de fábrica.
 
-Los tokens `--income` / `--expense` **no** son parte de la paleta de marca y no
-se sustituyen por `--sd-accent`: responden a otra pregunta (¿esto suma o resta?)
-y sus valores están validados para daltonismo. Ver el bloque 5 de `globals.css`.
+### El color tiene tres trabajos y no se mezclan
+
+| Trabajo | Tokens | Pregunta que responde |
+|---|---|---|
+| **Marca** | `--sd-accent*` | ¿esto es de esta aplicación? |
+| **Dato con signo** | `--income` / `--expense` | ¿esto suma o resta? |
+| **Identidad** | `--sd-cat-1`…`--sd-cat-8` | ¿de qué categoría es esto? |
+
+Ninguno sustituye a otro. `--income` / `--expense` no son parte de la paleta de
+marca y sus valores están validados para daltonismo (bloque 5 de `globals.css`);
+los `--sd-cat-*` son la paleta categórica, se asignan **en orden fijo y no se
+ciclan** generando un noveno tono, y también están validados (bloque 2b). Los dos
+juegos salen del script `validate_palette.js` de la skill `dataviz`: si cambias
+un valor, vuelve a pasarlo en claro y en oscuro por separado.
+
+Y la regla que los sostiene a los tres: **el color nunca es la única señal.** Los
+importes llevan su signo delante, las categorías llevan su nombre, las
+comparaciones dicen "más" o "menos" con palabras.
+
+### Cómo viaja un color de dato
+
+Nunca en el JSX. La clave viaja en un `data-*` y el CSS la traduce:
+
+```tsx
+<span className={styles.chapaColor} data-color={categoria.color} />
+```
+```css
+.chapaColor[data-color='cat-3'] { --chapa-tono: var(--sd-cat-3); }
+```
+
+Es más largo que un `style={{ background: color }}` y es a propósito: un `style`
+inline es un valor que el modo oscuro no sabe traducir, y la regla 1 no tiene
+excepciones. `lib/colores.ts` guarda las claves y sus nombres; los valores, solo
+`globals.css`.
 
 ## Comandos
 
@@ -165,17 +201,22 @@ En la práctica esto son tres piezas concretas, y son obligatorias:
   numérica. Una columna `number` con 123456 dentro pinta "123456" donde deberían
   verse 1.234,56 €.
 
-### 2. Todo importe lleva su divisa asociada
+### 2. La divisa sale de un solo sitio: `DIVISA_APP`
 
-Nunca sumes dos importes sin comprobar que comparten divisa. `lib/money.ts` lanza
-si lo intentas; el resto del código tiene que llevar la divisa al lado:
+La aplicación trabaja en una sola moneda, y por eso la divisa **no es un dato**:
+no hay columna de moneda en ninguna tabla ni campo `divisa` en ningún DTO. La
+decide `DIVISA_APP` en `lib/money.ts`, y ese es el único sitio del que hay que
+tirar el día que haya más de una.
 
-- en los DTOs, en su propio campo (`divisa`);
-- en los formularios, por `FormContext.divisa` (ver `divisaFrom`);
-- en las tablas, por `divisaAccessor` de la fila.
+Lo que NO se ha quitado, y no se quita: `Money` sigue llevando su divisa dentro y
+la aritmética de `lib/money.ts` **sigue lanzando** al operar dos monedas
+distintas. Esa red es barata y es lo que convierte "añadir multidivisa" en un
+cambio localizado en vez de una auditoría de todo el código.
 
-Un total que mezcla divisas no es un total: por eso el patrimonio devuelve **una
-cifra por divisa**, no una sola.
+En la práctica: para formatear se construye `money(importe, DIVISA_APP)`; los
+formularios reciben la divisa por `FormContext.divisa` (prop `divisa` del
+`GenericForm`, que ya cae a `DIVISA_APP`); las columnas `money` de `AppTable`
+usan `DIVISA_APP` salvo que la columna declare un `divisaAccessor`.
 
 ### 3. Toda Server Action verifica sesión y propiedad antes de tocar datos
 
@@ -273,31 +314,35 @@ en excepción **ya en el cliente**, que es donde React Query las espera. Un
 cualquier otro fallo se registra en el servidor y al cliente le llega un texto
 genérico.
 
-**Un recurso son cuatro nombres que tienen que coincidir.** El string `'Cuentas'`
-aparece en `REPOSITORIES`, en `REFINE_RESOURCES` (`providers.tsx`), en el
-`createEntityHooks('Cuentas')` de la entidad y en su `useEntityFormSubmit`. Si
-uno diverge, el DataProvider lanza "Recurso desconocido" en la primera consulta.
+**Un recurso son cuatro nombres que tienen que coincidir.** El string
+`'Movimientos'` aparece en `REPOSITORIES`, en `REFINE_RESOURCES`
+(`providers.tsx`), en el `createEntityHooks('Movimientos')` de la entidad y en su
+`useEntityFormSubmit`. Si uno diverge, el DataProvider lanza "Recurso
+desconocido" en la primera consulta.
 
-**Lo que no encaja en el CRUD no pasa por aquí.** Archivar una cuenta, crear una
-transferencia, restaurar un borrado y los informes tienen su propia Server Action
-y su propio hook escrito a mano.
+**Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo
+y las agregaciones de la portada tienen su propia Server Action y su propio hook
+escrito a mano.
+
+**Todo lo derivado se invalida a mano.** El saldo y los gráficos son sumas de
+movimientos y viven bajo la raíz de queries `['informes']`, de la que Refine no
+sabe nada: cada mutación llama a `useInvalidarDerivados()`. Sin eso se anota un
+gasto y la portada sigue enseñando la cifra de antes, que en una aplicación de
+dinero no parece un error — parece un dato.
 
 ### Estructura de ficheros
 
 ```
 .
   app/                                # rutas, en PascalCase
-    page.tsx                          # resumen
+    page.tsx                          # Inicio: saldo, mes, gráficos y últimos
     page.module.css                   # su aspecto: cada vista lleva el suyo
     layout.tsx                        # Providers + Navbar + CSS de Mantine
-    Cuentas/                          # una carpeta por entidad
+    Movimientos/                      # una carpeta por entidad
       page.tsx                        # listado
       Create/page.tsx
       Edit/page.tsx                   # lee ?id=
-    Movimientos/
-      Transferencia/page.tsx          # formulario propio: NO es un movimiento
     Categorias/
-    Informes/
   src/
     types/
       formMetadata.types.ts
@@ -319,7 +364,7 @@ y su propio hook escrito a mano.
         createEntityHooks.ts          # factory genérica de hooks CRUD
         useEntityFormSubmit.ts        # submit genérico de formulario
         useFormMetadata.ts            # opciones de los select
-        useCatalogos.ts               # cuentas y categorías del usuario
+        useCatalogos.ts               # las categorías del usuario
         usePaginacion.ts              # estado de la tabla
         useInformes.ts
         use<Entidades>.ts             # uno por entidad
@@ -361,7 +406,8 @@ y su propio hook escrito a mano.
         Navbar.module.css
         useEntityId.ts
   lib/
-    money.ts                          # tipo Money y aritmética — núcleo, muy testeado
+    money.ts                          # tipo Money, aritmética y DIVISA_APP
+    colores.ts                        # las claves de la paleta categórica
     format.ts                         # Intl.NumberFormat / fechas, es-ES
     dates.ts                          # fechas civiles, periodos, rangos de mes
     forms.ts
@@ -380,8 +426,8 @@ Es lo más distintivo del proyecto y lo que más sorprende al llegar: **un
 formulario y una tabla no se escriben, se declaran**.
 
 ```
-src/config/cuentas/sections.ts     ──►  <GenericForm sections={…} />
-src/config/cuentas/columns.ts      ──►  <AppTable columns={…} />
+src/config/movimientos/sections.ts ──►  <GenericForm sections={…} />
+src/config/movimientos/columns.ts  ──►  <AppTable columns={…} />
 ```
 
 `src/config` **describe** la vista; `src/presentation` la **pinta**.
@@ -412,26 +458,25 @@ tener presente al escribirlos:
 - **Una fecha es `type: 'date'`**, que aquí significa cadena `'YYYY-MM-DD'`.
 - **Un `select` de enumeración se declara SIN `options`.** Las resuelve el
   `FieldRenderer` desde el metadata usando el `name` del campo como clave, así
-  que el día que se añade un tipo de cuenta se toca un solo sitio
-  (`metadata.repository.ts`). Los CATÁLOGOS —cuentas, categorías— sí van como
-  `options` explícitas, porque son datos del usuario y cambian: se piden con
+  que el día que se añade un valor a una enumeración se toca un solo sitio
+  (`metadata.repository.ts`). El CATÁLOGO —las categorías— sí va como `options`
+  explícitas, porque son datos del usuario y cambian: se piden con
   `useCatalogos` y se le pasan a la función de secciones.
 - **Todo campo con `component:` o `render:` lleva su `dependsOn`.** Sin él se
   repinta con cada tecla del formulario entero; con él, solo cuando cambia lo que
   declara. Si olvidas una dependencia, el campo deja de actualizarse en silencio.
 - `visibleWhen` / `disabledWhen` reciben los valores vivos y el `FormContext`.
 
-El `FormContext` lleva el `mode` y la **divisa**. La divisa puede ser fija
-(`divisa="EUR"`) o derivarse de los valores con `divisaFrom`, que es lo que
-necesitan los dos casos reales:
+El `FormContext` lleva el `mode` y la **divisa**, que es la de la aplicación y no
+se pide: la prop `divisa` del `GenericForm` cae a `DIVISA_APP`. Sigue siendo una
+prop y no una constante importada porque la escala de un campo `money` depende de
+ella (EUR tiene dos decimales; JPY, ninguno), y el día que haya un formulario en
+otra moneda tiene que poder decirlo sin tocar el `GenericForm`.
 
-```ts
-// Cuentas: la divisa es un campo del propio formulario
-divisaFrom={(v) => (v.divisa as Currency) || 'EUR'}
-
-// Movimientos: la divisa se hereda de la cuenta elegida
-divisaFrom={(v) => divisaDeCuenta.get(String(v.cuentaId ?? '')) ?? 'EUR'}
-```
+El ejemplo vivo de campo custom es el **color de una categoría**: es un
+componente propio (`EntityForms/categoria/SelectorColor.tsx`) que la sección
+REFERENCIA con `component:` y su `dependsOn`, porque un desplegable con los
+nombres de ocho colores no enseña los colores.
 
 ### Las columnas de una tabla
 
@@ -439,7 +484,7 @@ divisaFrom={(v) => divisaDeCuenta.get(String(v.cuentaId ?? '')) ?? 'EUR'}
 
 - **Modo cliente** (`usePaginacion(hook, { server: false })`): se trae el
   conjunto completo y filtra, ordena y pagina en memoria. Es lo correcto para
-  decenas de filas — Cuentas y Categorías.
+  decenas de filas — Categorías.
 - **Modo servidor** (por defecto): el repositorio hace el trabajo y la tabla solo
   avisa de lo que se ha pedido. Es lo que usa Movimientos, la tabla que crece sin
   techo.
@@ -517,6 +562,10 @@ lleve hasta ella.
 - **Un `select` de enumeración se declara SIN `options`.** Se resuelven desde
   `metadata.repository.ts`. Si le pones `options` a mano, funciona — y duplicas
   la lista, que es justo lo que este diseño evita.
+- **Una mutación que no invalida `['informes']` deja la portada mintiendo.** El
+  saldo y los gráficos son sumas de movimientos y viven en otro árbol de queries
+  del que Refine no sabe nada: hay que llamar a `useInvalidarDerivados()`. No
+  falla nada visible — la cifra vieja no parece un error, parece un dato.
 - **El nombre de un recurso aparece en cuatro sitios** y tienen que coincidir
   carácter a carácter. Si el DataProvider dice "Recurso desconocido", es esto.
 - **Los campos con `component:` o `render:` necesitan `dependsOn`.** Si lo
@@ -527,17 +576,37 @@ lleve hasta ella.
   componente cliente. La frontera es `entity.actions.ts`.
 - **El repo es LF.** Un fichero que acabe en CRLF hace que los `modify` del
   generador de Plop no casen y se salten sin avisar.
+- **Los tres títulos con trazo de rotulador leen `--sd-underline-alto`.** Ese
+  token existe porque el keyframe `sd-underline` anima `background-size` y tiene
+  que llegar exactamente al alto de reposo. Si escribes el alto a pelo en la
+  regla y no en la variable, el trazo termina la animación en un grosor distinto
+  del que tenía sin ella.
 - **`app/globals.css` se importa EL ÚLTIMO** en `app/layout.tsx`. Si sube por
   encima de las hojas de Mantine, sus overrides de `--mantine-*` pierden por
   orden de cascada y la aplicación vuelve al gris de fábrica. No lanza ningún
   error: solo se ve mal.
 - **Un hexadecimal dentro de un `*.module.css` es un bug de modo oscuro.** Todo
   color sale de un token `--sd-*`. El modo claro seguirá viéndose bien, que es
-  justo lo que hace que no se detecte.
+  justo lo que hace que no se detecte. Lo mismo vale para un `color="red"` o un
+  `c="teal.7"` de Mantine: esa paleta no tiene aquí variante oscura.
+- **Una animación nueva que no se anula en `prefers-reduced-motion` no se ve
+  como un bug.** El bloque está al final de `globals.css` y hace
+  `animation: none`, no una duración de 0,01 ms: una entrada que arranca en
+  `opacity: 0` y se acelera hasta lo instantáneo sigue dando un parpadeo. Y el
+  CSS no llega al JavaScript: `AnimatedMoney` lo comprueba aparte con
+  `matchMedia`.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
   el orden de las hojas no es el del desarrollo.
+- **Abrir el `dev` por la IP de la red deja la app cargando para siempre.** Next
+  16 bloquea los recursos de desarrollo (`/_next/static/chunks`, `/_next/hmr`)
+  que no vengan de `localhost`: el HTML del servidor llega y la Navbar se pinta,
+  pero ningún chunk de cliente carga, así que Refine nunca arranca y todas las
+  listas se quedan en el spinner. No hay error en la consola del navegador —
+  solo avisos en `.next/dev/logs/next-development.log`. Se arregla añadiendo el
+  host a `allowedDevOrigins` en `next.config.ts`; si la IP de la máquina cambia,
+  hay que actualizarla ahí.
 
 ## Estilo
 
@@ -591,8 +660,10 @@ Qué se testea sin excepción:
   que el mensaje no distinga "no existe" de "no es tuyo".
 - **Aritmética de dinero**: signos, redondeos, que un importe con decimales se
   rechace.
-- **Agregaciones**: sobre todo que los informes EXCLUYAN las transferencias y que
-  los saldos las INCLUYAN.
+- **Agregaciones**: que ninguna cuente lo que está en la papelera, y que
+  `getSaldoActual` coincida con el último punto de `getSerieSaldo` — dos caminos
+  distintos hasta la misma cifra son la prueba de que el saldo sigue siendo
+  derivado (regla dura 7).
 - **Reglas de borrado**: qué se puede borrar y qué se archiva.
 
 ## Skills del proyecto
@@ -602,7 +673,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 | Skill | Cuándo |
 |---|---|
 | `money-and-currency` | Cualquier importe: declarar, calcular, formatear, parsear |
-| `finance-data-model` | Esquema, migraciones, consultas, cuentas/movimientos/presupuestos |
+| `finance-data-model` | Esquema, migraciones, consultas, movimientos/categorías |
 | `nextjs-app-conventions` | Rutas, rendering, caché, Server vs Client Components |
 | `server-action-safety` | Escribir o revisar una Server Action o un formulario |
 | `bank-import-es` | Importar extractos bancarios (CSV, Norma 43), dedup, categorización |
@@ -619,8 +690,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   `better-sqlite3` se descartó: no hay binario precompilado para Node 24 y
   compilarlo exige un toolchain de C++ que no está en la máquina. `node:sqlite`
   tampoco sirve — Drizzle 0.45 no trae driver para él y `sqlite-proxy` no
-  soporta transacciones, que las transferencias necesitan. `@libsql/client`
-  distribuye binarios ya compilados y es el mismo cliente que habla con Turso.
+  soporta transacciones. `@libsql/client` distribuye binarios ya compilados y es
+  el mismo cliente que habla con Turso.
 - **Auth**: sin login en la v1. `lib/auth.ts` devuelve un `userId` fijo desde un
   `getSession()` asíncrono. **El resto del código se escribe como si el login
   existiera**: toda consulta filtra por `userId` dentro del `where` y toda acción
@@ -642,10 +713,25 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   del sistema heredara nada. El puente por `classNames` en el tema resuelve eso
   en un fichero. Se descartó también volver a un framework de utilidades por lo
   mismo que se retiró Tailwind.
-- **Un solo acento**: el verde. Se retiró el color por entidad (`HeaderConfig.color`,
-  `SectionDefinition.color`): con Cuentas en teal y Categorías en granate, cada
-  lista parecía de un producto distinto y la chapa del icono dejaba de ser
-  reconocible. Lo que distingue una sección de otra es el icono.
+- **Un solo acento de MARCA, ocho de DATO.** El verde sigue siendo el único
+  acento de la interfaz: se retiró el color por entidad (`HeaderConfig.color`,
+  `SectionDefinition.color`) porque con una sección en teal y otra en granate
+  cada lista parecía de un producto distinto. Lo que distingue una sección de
+  otra es el icono.
+  Aparte de eso está la **paleta categórica** (`--sd-cat-1`…`--sd-cat-8`), que no
+  es color de marca sino color de dato: identifica una categoría concreta en la
+  tabla y en los gráficos. Se guarda la CLAVE en `categories.color`, nunca el
+  color (`lib/colores.ts`), el JSX la pasa como `data-color` y el CSS la traduce
+  a un token — así el modo oscuro sigue siendo un bloque de tokens y no una
+  revisión de cada sitio donde se pinta. **Los ocho valores están validados con
+  el script de `dataviz`**, no elegidos a ojo: el peor par adyacente está en
+  ΔE 9,1 sobre un suelo de 8. Si tocas uno, vuelve a pasarlo.
+- **Movimiento**: tres gestos y ni uno más (`sd-rise`, `sd-pop`, `sd-underline`
+  en `globals.css`), más el conteo de las cifras grandes (`AnimatedMoney`). El
+  escalonado va por `:nth-child()` en CSS y no por una variable inline en el JSX,
+  porque la regla de "ni un `style` suelto" no admite excepciones "solo para un
+  delay". Todo queda anulado por el bloque `prefers-reduced-motion`; en
+  `AnimatedMoney`, que es JavaScript, se comprueba además con `matchMedia`.
 - **Tipografía**: Fredoka para titulares, botones y etiquetas; Nunito para el
   texto corrido; **Geist Mono para el dinero**, y esta última no es estética: los
   importes en columna necesitan cifras de ancho fijo para poder compararse, y
@@ -663,11 +749,20 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Presupuestos**: diseñados en la skill `finance-data-model`, sin implementar.
   La tabla `budgets` no existe todavía.
 - **Importación de extractos**: las columnas `import_hash` están, el parser no.
-- **Multidivisa**: los importes ya se agrupan por divisa en todas partes, pero no
-  hay conversión ni tipos de cambio. Una transferencia entre divisas distintas se
-  rechaza.
+- **Multidivisa**: RETIRADA a propósito, no pendiente. La aplicación tiene una
+  moneda y la decide `DIVISA_APP`. Volver a tenerla es añadir una columna a
+  `transactions` y un campo a los DTOs; la aritmética de `lib/money.ts` ya está
+  preparada y sigue lanzando al mezclar dos monedas.
+- **Cuentas y transferencias**: RETIRADAS. Había una tabla `accounts` y
+  transferencias en dos patas atadas por `transfer_id`; se quitaron enteras
+  porque para llevar las finanzas de una persona sobraban, y eran justo lo que
+  acoplaba el resto (la divisa vivía ahí, y todo listado hacía JOIN contra ella).
+  Si algún día vuelven, el saldo pasa a ser por cuenta y `getSaldoActual` deja de
+  ser una sola cifra.
+- **Saldo de apertura**: no existe. El saldo arranca en cero el día del primer
+  movimiento; para partir del saldo real del banco se anota un ingreso más
+  ("Saldo inicial"). No hace falta esquema para eso, y es lo que mantiene la
+  regla dura 7 sin excepciones.
 - **Filtros de columna en modo servidor**: solo se ofrece "es igual a". Si
   Movimientos necesita operadores ricos, hay que enseñárselos al repositorio
   primero.
-- **Edición de transferencias**: no se pueden editar, solo borrar y rehacer.
-  Cambiarle el importe a una sola pata descuadraría las dos cuentas entre sí.

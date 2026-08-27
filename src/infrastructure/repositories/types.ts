@@ -44,7 +44,7 @@ export interface ListResult<T> {
 /**
  * Un repositorio de entidad. `TList` es lo que devuelve el listado y `TForm` lo
  * que devuelve el detalle: no tienen por qué coincidir, y de hecho casi nunca
- * coinciden (el listado trae el nombre de la cuenta; el formulario, su id).
+ * coinciden (el listado trae el nombre de la categoría; el formulario, su id).
  */
 export interface EntityRepository<TList = unknown, TForm = unknown> {
   list(userId: string, params: ListParams): Promise<ListResult<TList>>
@@ -81,7 +81,7 @@ export const NOT_FOUND = 'No encontrado'
  * Traduce un `ZodError` aplanado al formato de `RepositoryError`.
  *
  * Con UN solo campo mal, el mensaje de cabecera es el de ese campo: "El origen y
- * el destino no pueden ser la misma cuenta" dice qué hacer, y "Revisa los campos
+ * La categoría no corresponde al sentido" dice qué hacer, y "Revisa los campos
  * marcados" obliga a ir a buscarlo. Con varios sí se usa el genérico, porque
  * enseñar uno de tres arbitrariamente es peor que no enseñar ninguno.
  */

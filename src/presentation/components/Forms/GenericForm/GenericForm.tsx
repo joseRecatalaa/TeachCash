@@ -3,7 +3,7 @@
 /**
  * Formulario genérico data-driven.
  *
- * No sabe nada de cuentas, movimientos ni categorías: recibe un
+ * No sabe nada de movimientos ni de categorías: recibe un
  * `SectionDefinition[]` y lo pinta. Todo lo específico de una entidad vive en
  * `src/config/<entidad>/sections.ts`, que es un `.ts` sin JSX.
  *
@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation'
 import { Alert, Box, Grid, Group, LoadingOverlay, Paper, Stack } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconAlertTriangle, IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-react'
-import type { Currency } from '@/lib/money'
+import { DIVISA_APP } from '@/lib/money'
 import { useFormMetadata } from '@/src/application/hooks/useFormMetadata'
 import { SketchButton } from '../../ui'
 import { FieldRenderer } from './FieldRenderer'
@@ -57,8 +57,7 @@ export function GenericForm<TSave>({
   sections,
   mode,
   resource,
-  divisa = 'EUR',
-  divisaFrom,
+  divisa = DIVISA_APP,
   validate,
   initialValues,
   data,
@@ -113,16 +112,10 @@ export function GenericForm<TSave>({
 
   const values = form.values
 
-  // La divisa derivada se recalcula con los valores; la fija, no. El `context`
-  // es una identidad estable mientras no cambie, y de eso depende el memo del
-  // `FieldRenderer`: si se creara un objeto nuevo en cada render, no cortaría
-  // ningún repintado.
-  const divisaEfectiva = divisaFrom ? divisaFrom(values) : (divisa as Currency)
-
-  const context: FormContext = useMemo(
-    () => ({ mode, divisa: divisaEfectiva }),
-    [mode, divisaEfectiva],
-  )
+  // El `context` tiene que ser una identidad estable mientras no cambie: de eso
+  // depende el memo del `FieldRenderer`, y un objeto nuevo en cada render no
+  // cortaría ningún repintado.
+  const context: FormContext = useMemo(() => ({ mode, divisa }), [mode, divisa])
 
   const handleSubmit = form.onSubmit(async (valores) => {
     const resultado = await onSubmit(valores as TSave)

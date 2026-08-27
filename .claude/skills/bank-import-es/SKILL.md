@@ -5,6 +5,18 @@ description: Importación de extractos bancarios españoles a la aplicación —
 
 # Importación de extractos
 
+> **Ojo con el destino.** Esta skill se escribió cuando la aplicación tenía
+> cuentas, y da por hecho que un extracto se importa *a una cuenta*. Ya no las
+> hay: hay una sola cuenta implícita, así que un extracto importado se convierte
+> en movimientos y punto. Todo lo demás de aquí —el parseo, la Norma 43, la
+> deduplicación por `import_hash`, la normalización de conceptos y las reglas de
+> categorización— sigue valiendo tal cual. Cuando el fichero traiga cabecera de
+> cuenta (registro `11` de la Norma 43), su número de cuenta es metadato del
+> extracto, no una entidad de la aplicación.
+>
+> La columna `import_hash` y su índice único siguen en `transactions`; el parser
+> es lo que no está escrito. → "Decisiones abiertas" en `AGENTS.md`
+
 ## El flujo
 
 ```

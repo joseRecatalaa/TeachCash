@@ -44,7 +44,7 @@ export function MoneyInput({ value, onChange, divisa, ...props }: MoneyInputProp
   const [anterior, setAnterior] = useState({ value, divisa })
 
   // El valor puede cambiar por fuera: la carga de datos en modo edición, un
-  // reset del formulario, o un cambio de divisa al elegir otra cuenta. Cuando
+  // reset del formulario, o un cambio de la divisa del contexto. Cuando
   // pasa, el texto se regenera.
   //
   // Se ajusta DURANTE EL RENDER y no en un `useEffect` — es el patrón que

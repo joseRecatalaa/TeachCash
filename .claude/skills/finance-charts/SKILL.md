@@ -1,6 +1,6 @@
 ---
 name: finance-charts
-description: Reglas de dominio para gráficos financieros — evolución de saldo y patrimonio, gasto por categoría, ingresos frente a gastos, progreso de presupuesto y flujo de caja. Cubre elección de forma, tratamiento de signo y color, ejes de dinero, formateo de importes en los gráficos y qué visualizaciones no usar. Úsala junto con la skill global dataviz (que aporta la parte visual y de paleta) siempre que vayas a construir un gráfico de esta aplicación.
+description: Reglas de dominio para gráficos financieros — evolución de saldo, gasto por categoría, ingresos frente a gastos, progreso de presupuesto y flujo de caja. Cubre elección de forma, tratamiento de signo y color, ejes de dinero, formateo de importes en los gráficos y qué visualizaciones no usar. Úsala junto con la skill global dataviz (que aporta la parte visual y de paleta) siempre que vayas a construir un gráfico de esta aplicación.
 ---
 
 # Gráficos financieros
@@ -17,7 +17,6 @@ interacción. Esta skill solo añade lo que es específico de datos de dinero.
 | ¿Ingreso más de lo que gasto? | Barras agrupadas o línea de neto | Dos barras por mes, no apiladas |
 | ¿Cómo voy de presupuesto? | Barra de progreso por categoría | Debe poder pasar del 100% |
 | ¿De dónde a dónde va el dinero? | Waterfall | Rara vez merece la pena |
-| ¿Cómo crece mi patrimonio? | Área apilada por cuenta | Solo si todas son positivas |
 
 ## Reglas duras
 
@@ -28,8 +27,10 @@ eso significa que el usuario toma decisiones sobre una diferencia que parece
 enorme y son doce euros. Es la manipulación visual clásica y aquí es
 particularmente dañina porque el usuario se está evaluando a sí mismo.
 
-**Única excepción**: series de patrimonio a largo plazo donde el mínimo está muy
-lejos de cero. Si truncas, indícalo explícitamente en el gráfico.
+**Única excepción**: la serie de SALDO. Ahí lo que se lee es la variación, y un
+cero lejano la aplasta contra el techo del gráfico — por eso `SerieSaldoChart`
+usa `domain={['auto', 'auto']}`. No vale para gastos ni para ingresos, que son
+magnitudes y siempre arrancan en cero.
 
 ### El color no puede ser la única señal
 
@@ -61,15 +62,22 @@ usuario que pasa el ratón quiere la cifra concreta.
 
 ### Los gráficos no mezclan divisas
 
-Si hay cuentas en varias divisas, o se convierte todo a la divisa base (y se
-indica la tasa y su fecha) o se muestran gráficos separados. Un eje con euros y
-dólares sumados no significa nada.
+Hoy es gratis: hay una sola divisa (`DIVISA_APP`). Si algún día hay más, o se
+convierte todo a la divisa base —indicando la tasa y su fecha— o se muestran
+gráficos separados. Un eje con euros y dólares sumados no significa nada.
 
-### Fuera transferencias
+### Fuera lo que está en la papelera
 
-Los gráficos de gasto e ingreso excluyen transferencias entre cuentas propias
-(`transfer_id IS NULL`). Si no, el usuario ve que "gastó" 2.000 € que solo movió
-al ahorro. → skill `finance-data-model`
+Un movimiento borrado no cuenta en ningún gráfico ni en el saldo:
+`deleted_at IS NULL`, siempre. → skill `finance-data-model`
+
+### El color de una categoría es SUYO, no de su posición
+
+Cada categoría lleva su color guardado (`categories.color`, una clave de la
+paleta) y la agregación lo trae consigo. Asignar el color por índice de la serie
+hace que filtrar el gráfico repinte las categorías que quedan, y entonces el
+color deja de servir para reconocer nada. Solo las categorías sin color asignado
+caen al reparto por posición. → `lib/colores.ts`
 
 ## Detalles que se escapan
 

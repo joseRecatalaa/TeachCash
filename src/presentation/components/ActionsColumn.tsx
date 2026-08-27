@@ -15,6 +15,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ActionIcon, Group, Modal, Button, Text, Tooltip } from '@mantine/core'
 import { useDelete } from '@refinedev/core'
+import { useInvalidarDerivados } from '@/src/application/hooks/useInformes'
 import { notifications } from '@mantine/notifications'
 import { IconArrowBackUp, IconPencil, IconTrash } from '@tabler/icons-react'
 import { extractActionError } from '@/src/application/hooks/useEntityFormSubmit'
@@ -32,22 +33,26 @@ function BotonBorrar({
 }: {
   id: string
   resource: string
-  /** Cómo se llama la fila concreta ("Cuenta corriente"), para el diálogo. */
+  /** Cómo se llama la fila concreta ("Compra semanal"), para el diálogo. */
   displayName: string
-  /** Cómo se llama la entidad ("la cuenta"), para el diálogo. */
+  /** Cómo se llama la entidad ("el movimiento"), para el diálogo. */
   entityName: string
 }) {
   const [abierto, setAbierto] = useState(false)
   const { mutateAsync, mutation } = useDelete()
+  const invalidarDerivados = useInvalidarDerivados()
 
   const borrar = async () => {
     try {
       await mutateAsync({ resource, id })
+      // El saldo y los gráficos son sumas de movimientos y viven en otro árbol
+      // de queries: Refine no los invalida solo.
+      await invalidarDerivados()
       notifications.show({ title: 'Hecho', message: 'Registro eliminado', color: 'teal' })
       setAbierto(false)
     } catch (err) {
-      // El repositorio devuelve mensajes escritos para una persona ("La cuenta
-      // tiene movimientos. Archívala..."), así que se enseñan tal cual.
+      // El repositorio devuelve mensajes escritos para una persona ("La
+      // categoría tiene 3 movimientos..."), así que se enseñan tal cual.
       notifications.show({
         title: 'No se ha podido borrar',
         message: extractActionError(err),
@@ -61,7 +66,9 @@ function BotonBorrar({
       <Tooltip label="Eliminar">
         <ActionIcon
           variant="subtle"
-          color="red"
+          // El token y no `color="red"`: la paleta roja de Mantine no tiene
+          // variante oscura en este proyecto y en modo oscuro se apaga.
+          c="var(--expense)"
           aria-label={`Eliminar ${displayName}`}
           onClick={(e) => {
             e.stopPropagation()
@@ -86,7 +93,7 @@ function BotonBorrar({
           <Button variant="default" onClick={() => setAbierto(false)}>
             Cancelar
           </Button>
-          <Button color="red" loading={mutation.isPending} onClick={borrar}>
+          <Button variant="filled" c="var(--sd-ink-inverse)" bg="var(--expense)" loading={mutation.isPending} onClick={borrar}>
             Eliminar
           </Button>
         </Group>
@@ -100,7 +107,7 @@ function BotonBorrar({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface ActionsColumnConfig<T> {
-  /** Ruta base de la entidad, en PascalCase: `"/Cuentas"`. */
+  /** Ruta base de la entidad, en PascalCase: `"/Movimientos"`. */
   editPath: string
   /** Campo que identifica la fila. Por defecto `'id'`. */
   rowKey?: string
@@ -111,12 +118,12 @@ export interface ActionsColumnConfig<T> {
   remove?: {
     /** Clave de `REPOSITORIES`. */
     resource: string
-    /** Cómo nombrar la entidad en el diálogo: `"la cuenta"`. */
+    /** Cómo nombrar la entidad en el diálogo: `"el movimiento"`. */
     entityName: string
     /** Campo cuyo valor identifica la fila para la persona. Por defecto `'nombre'`. */
     displayName?: string
   }
-  /** Si devuelve false, la fila no ofrece editar (una pata de transferencia). */
+  /** Si devuelve false, la fila no ofrece editar (p. ej. estando en la papelera). */
   canEdit?: (row: T) => boolean
   /**
    * Botón de restaurar, para los listados que enseñan la papelera de un borrado
@@ -132,9 +139,9 @@ export interface ActionsColumnConfig<T> {
  * Columna de acciones. Va siempre la última.
  *
  * @example
- * actionsColumn<CuentaListDto>({
- *   editPath: '/Cuentas',
- *   remove: { resource: 'Cuentas', entityName: 'la cuenta' },
+ * actionsColumn<MovimientoListDto>({
+ *   editPath: '/Movimientos',
+ *   remove: { resource: 'Movimientos', entityName: 'el movimiento' },
  * })
  */
 export function actionsColumn<T extends object>({
@@ -163,7 +170,7 @@ export function actionsColumn<T extends object>({
             <Tooltip label="Restaurar">
               <ActionIcon
                 variant="subtle"
-                color="teal"
+                c="var(--income)"
                 aria-label={`Restaurar ${nombre}`}
                 onClick={() => restore.onRestore(id)}
               >
@@ -204,7 +211,10 @@ export function moneyColumn<T extends object>(
   options: {
     /** Pinta el signo siempre y colorea ingreso/gasto. Para importes con signo. */
     signed?: boolean
-    /** Campo de la fila con la divisa. Por defecto `'divisa'`. */
+    /**
+     * Campo de la fila con la divisa. Sin esto se formatea con `DIVISA_APP`,
+     * que es lo normal: la aplicación trabaja en una sola moneda.
+     */
     divisaAccessor?: string
     sortable?: boolean
     filterable?: boolean

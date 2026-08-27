@@ -98,11 +98,12 @@ Este último es el que se escapa siempre. Ejecuta la suite con `TZ` forzado:
 Si los tests pasan en `Europe/Madrid` pero fallan en UTC+14, hay un `Date` donde
 debería haber una fecha civil. → skill `finance-data-model`
 
-**Transferencias**
-- No aparecen en gasto por categoría
-- Sí afectan al saldo de ambas cuentas
-- Las dos patas suman cero (misma divisa)
-- Borrar una pata no deja la otra huérfana
+**El saldo, que es DERIVADO**
+- Es la suma de los movimientos vivos: lo que está en la papelera no cuenta
+- Restaurar un movimiento lo devuelve al saldo
+- `getSaldoActual` y el último punto de `getSerieSaldo` dan la MISMA cifra. Dos
+  caminos distintos hasta el mismo número es lo que prueba que nadie ha
+  materializado un saldo por su cuenta (regla dura 7)
 
 **Presupuestos**
 - Gasto exactamente igual al límite (¿100% o superado?)
@@ -131,13 +132,14 @@ test('no se puede editar el movimiento de otro usuario', async () => {
 Comprobar solo que la respuesta es un error no basta: una acción puede devolver
 error **después** de haber escrito. Verifica el estado de la base de datos.
 
-Cubre también: pasar un `accountId` ajeno al crear, un `categoryId` ajeno, y una
-transferencia con una cuenta propia y otra ajena.
+Cubre también: pasar un `categoryId` ajeno al crear, y una categoría de ingreso
+en un movimiento de gasto — que el repositorio rechaza porque descolocaría todos
+los informes.
 
 ## Parsers de extracto
 
 Guarda ficheros reales **anonimizados** en `fixtures/`: cambia nombres, números
-de cuenta e importes, pero **preserva la estructura, la codificación y los
+de cuenta bancaria e importes, pero **preserva la estructura, la codificación y los
 finales de línea**. Un fixture reguardado como UTF-8 con `\n` deja de probar el
 bug de Windows-1252 con `\r\n` que tenías.
 
@@ -152,8 +154,8 @@ Por cada banco soportado:
 
 Cuatro, y bien elegidos. Cada uno cuesta mantenimiento:
 
-1. Crear cuenta → añadir movimiento → el saldo refleja el cambio
-2. Transferencia entre cuentas → ambos saldos correctos → no sale como gasto
+1. Añadir movimiento → el saldo de la portada refleja el cambio
+2. Borrarlo → el saldo vuelve atrás → restaurarlo → vuelve a contar
 3. Importar extracto → previsualizar → confirmar → reimportar no duplica
 4. Crear presupuesto → gastar por encima → se ve el exceso
 

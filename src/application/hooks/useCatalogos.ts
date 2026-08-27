@@ -1,31 +1,27 @@
 'use client'
 
 /**
- * Catálogos del usuario: sus cuentas y sus categorías.
+ * El catálogo del usuario: sus categorías.
  *
- * Van aparte del metadata a propósito, y la distinción importa: el metadata son
- * ENUMERACIONES cerradas que no cambian hasta el próximo despliegue (los tipos
- * de cuenta, las divisas), y por eso se cachean para siempre. Esto son DATOS del
- * usuario, que cambian en cuanto crea una cuenta, y por eso se invalidan con
- * cada mutación de Cuentas o Categorías.
- *
- * Los dos se piden en una sola llamada porque el formulario de movimiento
- * necesita ambos: pedirlos por separado son dos peticiones en cascada para
- * pintar un formulario.
+ * Va aparte del metadata a propósito, y la distinción importa: el metadata son
+ * ENUMERACIONES cerradas que no cambian hasta el próximo despliegue (el sentido
+ * de un movimiento, el tipo de una categoría), y por eso se cachean para
+ * siempre. Esto son DATOS del usuario, que cambian en cuanto crea una categoría,
+ * y por eso se invalidan con cada mutación de Categorías.
  */
 
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fetchCatalogos, type CatalogoCategoria, type CatalogoCuenta } from '@/src/application/actions/entity.actions'
+import { fetchCatalogos, type CatalogoCategoria } from '@/src/application/actions/entity.actions'
 import type { Option } from '@/src/presentation/components/Forms/GenericForm/types'
 
-const VACIO = { cuentas: [] as CatalogoCuenta[], categorias: [] as CatalogoCategoria[] }
+const VACIO = { categorias: [] as CatalogoCategoria[] }
 
 export function useCatalogos() {
   const query = useQuery({
     queryKey: ['catalogos'],
     // 5 minutos: cambian poco dentro de una sesión, pero no son inmutables.
-    // La invalidación real la dispara cada mutación de Cuentas o Categorías.
+    // La invalidación real la dispara cada mutación de Categorías.
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const result = await fetchCatalogos()
@@ -35,17 +31,6 @@ export function useCatalogos() {
   })
 
   const data = query.data ?? VACIO
-
-  const cuentasOptions = useMemo<Option[]>(
-    () =>
-      data.cuentas.map((c) => ({
-        value: c.id,
-        // La divisa va en la etiqueta: sin ella, dos cuentas "Ahorro" en euros y
-        // en dólares son indistinguibles en el desplegable.
-        label: `${c.nombre} (${c.divisa})`,
-      })),
-    [data.cuentas],
-  )
 
   /**
    * Las categorías, partidas por tipo. Un movimiento de gasto solo puede
@@ -83,19 +68,21 @@ export function useCatalogos() {
     [data.categorias],
   )
 
-  /** `id → divisa`. Lo necesita el campo de importe para su escala. */
-  const divisaDeCuenta = useMemo(
-    () => new Map(data.cuentas.map((c) => [c.id, c.divisa])),
-    [data.cuentas],
+  /**
+   * `id → clave de color`. Lo usa el badge de categoría de la tabla de
+   * movimientos: el listado trae el color de la fila, pero el filtro y las
+   * vistas que solo tienen el id lo necesitan aparte.
+   */
+  const colorDeCategoria = useMemo(
+    () => new Map(data.categorias.map((c) => [c.id, c.color ?? ''])),
+    [data.categorias],
   )
 
   return {
-    cuentas: data.cuentas,
     categorias: data.categorias,
-    cuentasOptions,
     categoriasPorTipo,
     categoriasRaizOptions,
-    divisaDeCuenta,
+    colorDeCategoria,
     isLoadingCatalogos: query.isLoading,
   }
 }

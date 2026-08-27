@@ -1,13 +1,15 @@
 /**
  * Repositorio de Categorías.
  *
- * SOLO SERVIDOR. Ver la nota de `cuentas.repository.ts`.
+ * SOLO SERVIDOR: importa `@/db`, así que nunca se importa desde un componente
+ * cliente. La frontera es `entity.actions.ts`.
  */
 
 import { and, asc, desc, eq, isNull, like, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions, CATEGORY_KINDS } from '@/db/schema'
+import { CLAVES_COLOR } from '@/lib/colores'
 import type { CategoriaFormDto, CategoriaListDto } from '@/src/types/categoria.types'
 import {
   fromFieldErrors,
@@ -30,6 +32,10 @@ const CategoriaSave = z.object({
   /** Cadena vacía = raíz. La traducción a NULL de base se hace más abajo. */
   padreId: z.string(),
   icono: z.string().trim().max(8, 'Máximo 8 caracteres'),
+  // Se guarda la CLAVE de la paleta, no el color. Ver `lib/colores.ts`: si
+  // mañana se ajusta un tono, las categorías ya guardadas lo heredan solas.
+  // Cadena vacía = sin color asignado, que es válido.
+  color: z.union([z.literal(''), z.enum(CLAVES_COLOR)], { message: 'Color no válido' }),
 })
 
 /** El tipo NO se puede cambiar: los movimientos ya clasificados dependen de él. */
@@ -69,6 +75,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         tipo: categories.kind,
         padreId: categories.parentId,
         icono: categories.icon,
+        color: categories.color,
       })
       .from(categories)
       .where(where)
@@ -93,6 +100,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       padreId: r.padreId ?? '',
       padreNombre: r.padreId ? (nombrePorId.get(r.padreId) ?? null) : null,
       icono: r.icono,
+      color: r.color ?? '',
       usos: usosPorCategoria.get(r.id) ?? 0,
     }))
 
@@ -112,6 +120,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         tipo: categories.kind,
         padreId: categories.parentId,
         icono: categories.icon,
+        color: categories.color,
       })
       .from(categories)
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
@@ -119,7 +128,14 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 
     const r = rows[0]
     if (!r) return null
-    return { id: r.id, nombre: r.nombre, tipo: r.tipo, padreId: r.padreId ?? '', icono: r.icono ?? '' }
+    return {
+      id: r.id,
+      nombre: r.nombre,
+      tipo: r.tipo,
+      padreId: r.padreId ?? '',
+      icono: r.icono ?? '',
+      color: r.color ?? '',
+    }
   },
 
   async create(userId: string, values: unknown): Promise<{ id: string }> {
@@ -138,6 +154,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       kind: parsed.data.tipo,
       parentId: padreId,
       icon: parsed.data.icono || null,
+      color: parsed.data.color || null,
       createdAt: new Date(),
     })
     return { id }
@@ -165,6 +182,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         name: parsed.data.nombre,
         parentId: padreId,
         icon: parsed.data.icono || null,
+        color: parsed.data.color || null,
       })
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
       .returning({ id: categories.id })
@@ -272,13 +290,16 @@ async function assertNombreLibre(
 /** Catálogo para los `<Select>` de categoría. Ordenado y con el tipo al lado. */
 export async function listarCatalogoCategorias(
   userId: string,
-): Promise<{ id: string; nombre: string; tipo: string; padreId: string | null }[]> {
+): Promise<
+  { id: string; nombre: string; tipo: string; padreId: string | null; color: string | null }[]
+> {
   return db
     .select({
       id: categories.id,
       nombre: categories.name,
       tipo: categories.kind,
       padreId: categories.parentId,
+      color: categories.color,
     })
     .from(categories)
     .where(eq(categories.userId, userId))

@@ -7,6 +7,7 @@
  */
 
 import { IconTag } from '@tabler/icons-react'
+import { SelectorColor } from '@/src/presentation/components/Forms/EntityForms/categoria/SelectorColor'
 import type { Option, SectionDefinition } from '@/src/config/_shared/types'
 
 export function categoriaSections({
@@ -65,6 +66,17 @@ export function categoriaSections({
           placeholder: '🍽️',
           span: { base: 12, md: 6 },
           tooltip: 'Un emoji corto. Se muestra junto al nombre en las listas.',
+        },
+        {
+          name: 'color',
+          // Campo custom: se REFERENCIA el componente, no se instancia. Es lo
+          // que permite que este fichero siga siendo `.ts` sin JSX.
+          component: SelectorColor,
+          span: 12,
+          // Solo depende de su propio valor. Sin este `dependsOn` el memo del
+          // FieldRenderer lo repintaría con cada tecla del formulario entero;
+          // con una dependencia de menos, dejaría de repintarse EN SILENCIO.
+          dependsOn: ['color'],
         },
       ],
     },

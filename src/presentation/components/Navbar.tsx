@@ -17,17 +17,16 @@ import { usePathname } from 'next/navigation'
 import { Container } from '@mantine/core'
 import {
   IconArrowsLeftRight,
-  IconChartPie,
+  IconLayoutDashboard,
   IconTags,
   IconWallet,
 } from '@tabler/icons-react'
 import styles from './Navbar.module.css'
 
 const ENLACES = [
-  { href: '/Cuentas', label: 'Cuentas', icon: IconWallet },
+  { href: '/', label: 'Inicio', icon: IconLayoutDashboard },
   { href: '/Movimientos', label: 'Movimientos', icon: IconArrowsLeftRight },
   { href: '/Categorias', label: 'Categorías', icon: IconTags },
-  { href: '/Informes', label: 'Informes', icon: IconChartPie },
 ]
 
 export function Navbar() {
@@ -46,9 +45,14 @@ export function Navbar() {
 
           <div className={styles.links}>
             {ENLACES.map(({ href, label, icon: Icono }) => {
-              // `startsWith` y no igualdad: /Cuentas/Create también debe marcar
-              // Cuentas como sección activa.
-              const activo = pathname === href || pathname.startsWith(`${href}/`)
+              // `startsWith` y no igualdad: /Movimientos/Create también debe
+              // marcar Movimientos como sección activa.
+              //
+              // La raíz es la excepción y hay que tratarla aparte: TODA ruta
+              // empieza por '/', así que con la regla general Inicio saldría
+              // activo en las tres pantallas a la vez.
+              const activo =
+                href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
               return (
                 <Link
                   key={href}

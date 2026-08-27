@@ -26,7 +26,7 @@ vi.mock('@/db', async () => {
 import { createTestDb, type TestDb } from '@/db/testing'
 import { categories } from '@/db/schema'
 import { categoriasRepository as repo } from '../categorias.repository'
-import { seedCategoria, seedCuenta, seedMovimiento, USER_A, USER_B } from './helpers'
+import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 let ctx: TestDb
 
@@ -42,6 +42,7 @@ const nueva = (overrides: Record<string, unknown> = {}) => ({
   tipo: 'expense',
   padreId: '',
   icono: '',
+  color: '',
   ...overrides,
 })
 
@@ -106,7 +107,7 @@ describe('autorización', () => {
     await seedCategoria(ctx.db, 'ajena', USER_B)
 
     await expect(
-      repo.update(USER_A, 'ajena', { nombre: 'Secuestrada', padreId: '', icono: '' }),
+      repo.update(USER_A, 'ajena', { nombre: 'Secuestrada', padreId: '', icono: '', color: '' }),
     ).rejects.toThrow('No encontrado')
 
     const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'ajena'))
@@ -135,6 +136,7 @@ describe('update', () => {
       nombre: 'Renombrada',
       padreId: '',
       icono: '',
+      color: '',
       tipo: 'income',
     })
 
@@ -147,14 +149,13 @@ describe('update', () => {
   test('una categoría no puede ser su propia padre', async () => {
     await seedCategoria(ctx.db, 'c1', USER_A)
     await expect(
-      repo.update(USER_A, 'c1', { nombre: 'C1', padreId: 'c1', icono: '' }),
+      repo.update(USER_A, 'c1', { nombre: 'C1', padreId: 'c1', icono: '', color: '' }),
     ).rejects.toThrow(/su propia padre/)
   })
 })
 
 describe('remove', () => {
   test('no borra una categoría en uso', async () => {
-    await seedCuenta(ctx.db, 'cuenta-1', USER_A)
     await seedCategoria(ctx.db, 'usada', USER_A)
     await seedMovimiento(ctx.db, 'm1', USER_A, { categoryId: 'usada' })
 
@@ -202,7 +203,6 @@ describe('list', () => {
   })
 
   test('cuenta los usos sin contar los borrados', async () => {
-    await seedCuenta(ctx.db, 'cuenta-1', USER_A)
     await seedCategoria(ctx.db, 'c1', USER_A)
     await seedMovimiento(ctx.db, 'vivo', USER_A, { categoryId: 'c1' })
     await seedMovimiento(ctx.db, 'borrado', USER_A, {

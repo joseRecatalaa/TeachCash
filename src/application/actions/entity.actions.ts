@@ -47,15 +47,8 @@ import {
   type ListParams,
   type ListResult,
 } from '@/src/infrastructure/repositories'
-import {
-  archivarCuenta as archivarCuentaRepo,
-  getPatrimonio,
-} from '@/src/infrastructure/repositories/cuentas.repository'
-import {
-  crearTransferencia as crearTransferenciaRepo,
-  listarCatalogoCuentas,
-  restaurarMovimiento as restaurarMovimientoRepo,
-} from '@/src/infrastructure/repositories/movimientos.repository'
+import { restaurarMovimiento as restaurarMovimientoRepo } from '@/src/infrastructure/repositories/movimientos.repository'
+import { getSaldoActual } from '@/src/infrastructure/repositories/informes.repository'
 import { listarCatalogoCategorias } from '@/src/infrastructure/repositories/categorias.repository'
 import { getFormMetadata as getFormMetadataRepo } from '@/src/infrastructure/repositories/metadata.repository'
 import type { FormMetadata } from '@/src/types/formMetadata.types'
@@ -161,45 +154,29 @@ export async function deleteEntity(
 // ─────────────────────────────────────────────────────────────────────────────
 // Operaciones fuera del CRUD
 //
-// Todo lo que no es una de las cinco operaciones CRUD: archivar una cuenta,
-// crear una transferencia, restaurar un borrado. Cada una tiene su hook escrito
-// a mano en `application/hooks/`, no sale de `createEntityHooks`.
+// Todo lo que no es una de las cinco operaciones CRUD. Hoy solo hay una cosa:
+// sacar un movimiento de la papelera. Tiene su hook escrito a mano en
+// `application/hooks/`, no sale de `createEntityHooks`.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function archivarCuenta(
-  id: string,
-  archivar: boolean,
-): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => archivarCuentaRepo(userId, id, archivar))
-  if (resultado.ok) revalidar('Cuentas')
-  return resultado
-}
-
-export async function crearTransferencia(
-  values: unknown,
-): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => crearTransferenciaRepo(userId, values))
-  if (resultado.ok) {
-    revalidar('Movimientos')
-    revalidar('Cuentas')
-  }
-  return resultado
-}
-
-/** Deshace un borrado lógico. Si la fila es una pata, restaura la transferencia. */
+/** Deshace un borrado lógico. */
 export async function restaurarMovimiento(
   id: string,
 ): Promise<ActionResult<{ id: string }>> {
   const resultado = await run((userId) => restaurarMovimientoRepo(userId, id))
-  if (resultado.ok) {
-    revalidar('Movimientos')
-    revalidar('Cuentas')
-  }
+  if (resultado.ok) revalidar('Movimientos')
   return resultado
 }
 
-export async function getPatrimonioTotal() {
-  return run((userId) => getPatrimonio(userId))
+/**
+ * El saldo de la cuenta. Es una suma, no un dato guardado (regla dura 7).
+ *
+ * Va aquí y no en `informes.actions.ts` porque la portada lo pide junto al resto
+ * del CRUD y se invalida con cada mutación de Movimientos, no con un cambio de
+ * periodo.
+ */
+export async function getSaldo(): Promise<ActionResult<number>> {
+  return run((userId) => getSaldoActual(userId))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -217,26 +194,26 @@ export async function fetchFormMetadata(
   return run(async () => getFormMetadataRepo(resource))
 }
 
-export type CatalogoCuenta = { id: string; nombre: string; divisa: string }
 export type CatalogoCategoria = {
   id: string
   nombre: string
   tipo: string
   padreId: string | null
+  color: string | null
 }
 
 /**
- * Los catálogos del usuario, en una sola llamada.
+ * Los catálogos del usuario.
  *
- * Van juntos a propósito: los formularios de movimiento necesitan los dos y
- * pedirlos por separado es una cascada de dos peticiones para pintar un
- * formulario. Se cachean con `staleTime` alto en `useCatalogos`.
+ * Hoy solo hay uno —las categorías—, pero la forma `{ categorias }` se mantiene
+ * a propósito: es lo que hace que añadir un segundo catálogo no obligue a tocar
+ * `useCatalogos` ni a los formularios que ya lo consumen. Se cachea con
+ * `staleTime` alto y se invalida con cada mutación de Categorías.
  */
 export async function fetchCatalogos(): Promise<
-  ActionResult<{ cuentas: CatalogoCuenta[]; categorias: CatalogoCategoria[] }>
+  ActionResult<{ categorias: CatalogoCategoria[] }>
 > {
   return run(async (userId) => ({
-    cuentas: await listarCatalogoCuentas(userId),
     categorias: await listarCatalogoCategorias(userId),
   }))
 }

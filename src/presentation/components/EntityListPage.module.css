@@ -1,7 +1,7 @@
 /*
  * Cabecera de una página de listado.
  *
- * Es la misma en Cuentas, Movimientos y Categorías, y ese es el objetivo: quien
+ * Es la misma en Movimientos y en Categorías, y ese es el objetivo: quien
  * llega a una lista tiene que reconocerla antes de leer el título.
  */
 
@@ -28,7 +28,7 @@
 
 /*
  * El icono va en una chapa con trazo y sombra, ligeramente torcida. Es la marca
- * de la sección: lo que hace que Movimientos no se confunda con Cuentas al
+ * de la sección: lo que hace que Movimientos no se confunda con Categorías al
  * llegar de vuelta desde un formulario.
  */
 .chapa {

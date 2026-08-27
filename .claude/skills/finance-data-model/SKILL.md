@@ -1,6 +1,6 @@
 ---
 name: finance-data-model
-description: Modelo de datos del gestor de finanzas personales — cuentas, movimientos, transferencias, categorías, presupuestos y recurrentes — con las convenciones de esquema y consulta del proyecto (Drizzle ORM). Úsala al diseñar o modificar tablas, escribir migraciones, escribir consultas de agregación (saldos, gasto por categoría, informes por periodo), o al decidir cómo modelar un concepto financiero nuevo. Cubre el aislamiento por usuario y el tratamiento de transferencias en los informes.
+description: Modelo de datos del gestor de finanzas personales — movimientos, categorías y presupuestos — con las convenciones de esquema y consulta del proyecto (Drizzle ORM). Úsala al diseñar o modificar tablas, escribir migraciones, escribir consultas de agregación (saldo, gasto por categoría, totales por periodo), o al decidir cómo modelar un concepto financiero nuevo. Cubre el aislamiento por usuario y por qué el saldo no se guarda.
 ---
 
 # Modelo de datos
@@ -8,29 +8,38 @@ description: Modelo de datos del gestor de finanzas personales — cuentas, movi
 ## Entidades
 
 ```
-User ─┬─< Account ──< Transaction >── Category
-      ├─< Budget    (categoría + periodo + límite)
-      └─< RecurringRule (plantilla que genera Transactions)
+User ─┬─< Transaction >── Category
+      └─< Budget    (categoría + periodo + límite)   ← no implementado
 ```
 
-Cinco tablas cubren el 95% de un gestor personal. Resiste la tentación de
-añadir más antes de que un caso de uso real lo pida.
+**Dos tablas.** `categories` y `transactions`, y ya está.
+
+No hay tabla de cuentas: la aplicación tiene una cuenta implícita y su saldo es
+la suma de los movimientos. No hay columna de moneda: hay una divisa y la decide
+`DIVISA_APP` en `lib/money.ts`. No hay transferencias: un movimiento es un gasto
+o un ingreso.
+
+> Las tres estuvieron y se quitaron a propósito (ver "Decisiones abiertas" en
+> `AGENTS.md`). Si alguien te pide "añadir la cuenta de ahorro" o "registrar un
+> traspaso", no es un campo más: es volver a meter el eje que acoplaba el resto
+> del modelo. Dilo antes de empezar.
+
+Resiste la tentación de añadir tablas antes de que un caso de uso real lo pida.
 
 ## Reglas de esquema
 
 1. **Los importes son `integer`**, en céntimos. Nunca `real`, `float`,
    `numeric` ni `decimal`. → skill `money-and-currency`
-2. **La divisa vive en la cuenta**, no en el movimiento. Un movimiento hereda la
-   divisa de su cuenta. Si algún día hay movimientos en divisa distinta a la de
-   la cuenta, se añaden `originalAmount` + `originalCurrency` + tasa, sin tocar
-   `amount`.
+2. **La divisa no se guarda.** Sale de `DIVISA_APP`. El día que haya más de una,
+   se añade una columna `currency` a `transactions` y un campo a los DTOs; la
+   aritmética de `lib/money.ts` ya está lista y sigue lanzando al mezclar dos.
 3. **Las fechas de movimiento son texto `YYYY-MM-DD`**, no timestamps. "Comí
    fuera el día 30" es una fecha civil; guardarla como instante UTC hace que en
    `Europe/Madrid` salte al mes siguiente. Los timestamps (`createdAt`) sí son
    instantes reales y van en epoch/UTC.
 4. **Toda tabla de datos de usuario tiene `userId`** y toda consulta filtra por
    él **dentro** de la cláusula `where`, nunca filtrando el resultado después.
-5. **Los saldos no se almacenan.** Se derivan de `SUM(amount)`. Con volúmenes de
+5. **El saldo no se almacena.** Se deriva de `SUM(amount)`. Con volúmenes de
    finanzas personales (miles de filas) sobra. Si algún día no sobra, ver
    "Saldos materializados" abajo.
 6. **Borrado lógico en movimientos** (`deletedAt`), no físico: el usuario que
@@ -43,19 +52,6 @@ añadir más antes de que un caso de uso real lo pida.
 // db/schema.ts
 import { sqliteTable, text, integer, index, unique } from 'drizzle-orm/sqlite-core'
 
-export const accounts = sqliteTable('accounts', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
-  name: text('name').notNull(),
-  /** checking | savings | card | cash | investment */
-  type: text('type').notNull(),
-  currency: text('currency').notNull().default('EUR'),
-  /** Saldo al abrir la cuenta en la app, en céntimos. */
-  openingBalance: integer('opening_balance').notNull().default(0),
-  archivedAt: integer('archived_at', { mode: 'timestamp' }),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-}, (t) => [index('accounts_user_idx').on(t.userId)])
-
 export const categories = sqliteTable('categories', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
@@ -65,13 +61,17 @@ export const categories = sqliteTable('categories', {
   /** income | expense — una categoría no puede ser ambas. */
   kind: text('kind').notNull(),
   icon: text('icon'),
+  /** CLAVE de la paleta ('cat-1'…'cat-8'), no un color. Ver `lib/colores.ts`. */
   color: text('color'),
-}, (t) => [unique('categories_user_name').on(t.userId, t.name, t.parentId)])
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+}, (t) => [
+  unique('categories_user_name').on(t.userId, t.name, t.parentId),
+  index('categories_user_idx').on(t.userId),
+])
 
 export const transactions = sqliteTable('transactions', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
-  accountId: text('account_id').notNull().references(() => accounts.id),
   categoryId: text('category_id').references(() => categories.id),
   /** Céntimos con signo: negativo = gasto, positivo = ingreso. */
   amount: integer('amount').notNull(),
@@ -79,19 +79,114 @@ export const transactions = sqliteTable('transactions', {
   date: text('date').notNull(),
   description: text('description').notNull(),
   notes: text('notes'),
-  /** Une las dos patas de una transferencia. Ver "Transferencias". */
-  transferId: text('transfer_id'),
-  /** Hash de deduplicación para movimientos importados. */
+  /** Hash de deduplicación para movimientos importados (v2). */
   importHash: text('import_hash'),
+  /** Clave del cliente: convierte el doble clic en un choque contra el índice. */
+  idempotencyKey: text('idempotency_key'),
   deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 }, (t) => [
   // El índice que sostiene casi todas las consultas: usuario + rango de fechas.
   index('tx_user_date_idx').on(t.userId, t.date),
-  index('tx_account_idx').on(t.accountId),
+  index('tx_category_idx').on(t.categoryId),
   unique('tx_import_hash').on(t.userId, t.importHash),
+  unique('tx_idempotency_key').on(t.userId, t.idempotencyKey),
 ])
+```
 
+Dos índices únicos que parecen decorativos y no lo son:
+
+- `tx_import_hash` hace la deduplicación barata: reimportar el mismo extracto
+  dos veces choca contra el índice en lugar de duplicar. Ver skill
+  `bank-import-es`.
+- `tx_idempotency_key` convierte el doble clic en Guardar en un choque en lugar
+  de en dos movimientos iguales. En una aplicación de dinero eso no es una
+  molestia: es dinero inventado.
+
+Los dos aprovechan que **SQLite trata dos `NULL` como distintos**, así que no
+estorban a los movimientos creados sin clave.
+
+Esa misma propiedad es una trampa en `categories_user_name`: **no impide dos
+categorías raíz con el mismo nombre** (`parent_id` NULL). Esa comprobación está
+en el repositorio y no se puede delegar en la base.
+
+## El saldo es derivado
+
+Es la regla dura 7 y el sitio donde más fácil es romperla sin darse cuenta.
+
+```ts
+// La cifra grande de la portada.
+const [row] = await db
+  .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+  .from(transactions)
+  .where(and(eq(transactions.userId, userId), isNull(transactions.deletedAt)))
+```
+
+No hay saldo de apertura en ninguna parte: el saldo arranca en cero el día del
+primer movimiento. Para partir del saldo real del banco se anota un ingreso más
+("Saldo inicial"). Es una decisión, no un olvido — es lo que hace imposible que
+el saldo diverja de los movimientos que lo explican.
+
+Hay un test que comprueba que `getSaldoActual` y el último punto de
+`getSerieSaldo` dan la misma cifra: dos caminos distintos hasta el mismo número.
+Si alguna vez falla, es que alguien ha materializado un saldo por su cuenta.
+
+## El único filtro transversal
+
+Un movimiento en la papelera no cuenta para nada — ni para el saldo ni para los
+informes. Escríbelo como helper una sola vez, para no acordarte cada vez:
+
+```ts
+const vivos = () => isNull(transactions.deletedAt)
+```
+
+> **Nota histórica.** Cuando había transferencias hacían falta DOS helpers, y la
+> distinción ("el saldo las incluye, los informes las excluyen") era la fuente
+> número uno de informes mal calculados: la cifra salía, solo que estaba mal. Si
+> algún día vuelven las transferencias, vuelve también esa distinción.
+
+## Consultas
+
+Toda consulta arranca por el usuario de la sesión:
+
+```ts
+export async function getGastoPorCategoria(userId: string, periodo: string) {
+  return db
+    .select({
+      categoriaId: categories.id,
+      total: sql<number>`sum(${transactions.amount})`,
+    })
+    .from(transactions)
+    .leftJoin(categories, eq(categories.id, transactions.categoryId))
+    .where(and(
+      eq(transactions.userId, userId),        // primero, siempre
+      like(transactions.date, `${periodo}-%`), // 'YYYY-MM-%' — usa el índice
+      lt(transactions.amount, 0),             // solo gastos
+      vivos(),
+    ))
+    .groupBy(categories.id)
+}
+```
+
+- **`leftJoin` con categorías, nunca `innerJoin`.** Un movimiento sin clasificar
+  es válido, y un `innerJoin` lo dejaría fuera del informe en silencio: el total
+  de gasto por categoría no cuadraría con el total del mes y nadie sabría por qué.
+- **Agrega en SQL, no en JavaScript.** Traerse 5.000 movimientos para sumarlos
+  en memoria funciona hasta que deja de funcionar.
+- `sum()` sobre un conjunto vacío devuelve `NULL`, no `0`. Trátalo
+  (`coalesce`, `?? 0`) o el importe llegará como `null` a la UI.
+- Los `sql<number>` de Drizzle no validan nada en runtime: el tipo es una
+  promesa tuya al compilador. Si la columna fuera float, el tipo diría `number`
+  igual y el bug pasaría.
+- **El color de la categoría viaja con la agregación.** El gráfico no lo inventa
+  por posición: el color sigue a la entidad, así que filtrar no puede repintar
+  las categorías que quedan.
+
+## Presupuestos (diseñado, sin implementar)
+
+La tabla `budgets` no existe todavía. Cuando se implemente:
+
+```ts
 export const budgets = sqliteTable('budgets', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
@@ -103,82 +198,8 @@ export const budgets = sqliteTable('budgets', {
 }, (t) => [unique('budget_unique').on(t.userId, t.categoryId, t.period)])
 ```
 
-`unique('tx_import_hash')` es lo que hace la deduplicación barata: reimportar el
-mismo extracto dos veces choca contra el índice en lugar de duplicar. Ver skill
-`bank-import-es`.
-
-## Transferencias
-
-**El concepto que más informes rompe.** Mover 500 € de la cuenta corriente al
-ahorro no es un gasto ni un ingreso, pero ingenuamente aparece como ambos.
-
-Modelo: **dos movimientos que comparten `transferId`**, uno negativo en origen y
-otro positivo en destino, creados en la misma transacción de base de datos.
-
-```ts
-await db.transaction(async (tx) => {
-  const transferId = crypto.randomUUID()
-  await tx.insert(transactions).values([
-    { ...base, id: crypto.randomUUID(), accountId: from, amount: -amount, transferId },
-    { ...base, id: crypto.randomUUID(), accountId: to,   amount:  amount, transferId },
-  ])
-})
-```
-
-Consecuencias que hay que respetar en **toda** consulta de informe:
-
-- Saldo de una cuenta: **incluye** transferencias.
-- Gasto/ingreso por categoría, totales del mes, presupuestos: **excluyen**
-  transferencias → `WHERE transfer_id IS NULL`.
-
-Escríbelo como helper una sola vez, para no acordarte cada vez:
-
-```ts
-const isRealFlow = () => and(isNull(transactions.transferId), isNull(transactions.deletedAt))
-```
-
-Si la transferencia cruza divisas, las dos patas tienen importes distintos y no
-suman cero. Es correcto: cada pata está en la divisa de su cuenta.
-
-## Consultas
-
-Toda consulta arranca por el usuario de la sesión:
-
-```ts
-// features/transactions/queries.ts
-export async function getMonthlySpendByCategory(userId: string, period: string) {
-  return db
-    .select({
-      categoryId: transactions.categoryId,
-      total: sql<number>`sum(${transactions.amount})`,
-    })
-    .from(transactions)
-    .where(and(
-      eq(transactions.userId, userId),        // primero, siempre
-      like(transactions.date, `${period}-%`), // 'YYYY-MM-%' — usa el índice
-      isNull(transactions.transferId),        // sin transferencias
-      isNull(transactions.deletedAt),
-      lt(transactions.amount, 0),             // solo gastos
-    ))
-    .groupBy(transactions.categoryId)
-}
-```
-
-- **Agrega en SQL, no en JavaScript.** Traerse 5.000 movimientos para sumarlos
-  en memoria funciona hasta que deja de funcionar.
-- `sum()` sobre un conjunto vacío devuelve `NULL`, no `0`. Trátalo
-  (`?? 0`) o el importe llegará como `null` a la UI.
-- Los `sql<number>` de Drizzle no validan nada en runtime: el tipo es una
-  promesa tuya al compilador. Si la columna fuera float, el tipo diría `number`
-  igual y el bug pasaría.
-
-## Presupuestos
-
-Un presupuesto es (categoría, periodo, límite). El "consumido" es derivado:
-
-```
-consumido = |SUM(amount)| de esa categoría en ese periodo, sin transferencias
-```
+El "consumido" es derivado: `|SUM(amount)|` de esa categoría en ese periodo,
+sobre movimientos vivos.
 
 Decisiones que hay que fijar de forma explícita porque no tienen respuesta obvia:
 
@@ -186,20 +207,9 @@ Decisiones que hay que fijar de forma explícita porque no tienen respuesta obvi
   Recomendación: sí, agrega el subárbol. Si no, el usuario tiene que
   presupuestar cada hoja.
 - **Sin presupuesto ≠ presupuesto 0.** Una categoría sin fila en `budgets` no
-  está "al 100% consumida"; no tiene presupuesto. Distínguelo en la UI.
+  está "al 100 % consumida"; no tiene presupuesto. Distínguelo en la UI.
 - **Periodos futuros**: el presupuesto de un mes que aún no ha empezado no debe
   mostrarse como cumplido.
-
-## Recurrentes
-
-Una `RecurringRule` es una plantilla (importe, categoría, cuenta, regla de
-repetición, próxima fecha). **No generes movimientos futuros en la base de
-datos**: proyecta en memoria para las vistas de previsión, y materializa el
-movimiento solo cuando llega su fecha. Si no, editar la regla obliga a limpiar
-filas ya generadas y a decidir qué hacer con las que el usuario ya tocó.
-
-Guarda `lastGeneratedDate` en la regla: es lo que hace la generación idempotente
-si se ejecuta dos veces el mismo día.
 
 ## Migraciones
 

@@ -96,3 +96,73 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* ── Badges de color ─────────────────────────────────────────────────────── */
+
+/*
+ * El tono llega como `data-tono` —una CLAVE, no un color— y aquí se traduce a
+ * un token. Es la única forma de que el color de un dato entre en el sistema
+ * sin un `style` inline en el JSX, que sería un valor que el modo oscuro no
+ * sabría traducir.
+ *
+ * El TEXTO va en tinta, no en el color de la serie. Tres de los ocho tonos
+ * quedan por debajo de 3:1 de contraste sobre el papel (ver el bloque 2b de
+ * `globals.css`), y el color no puede ser la única señal: quien no distingue
+ * dos tonos sigue leyendo el nombre de la categoría.
+ */
+/* TRIPLE, no doble: `mantine-sketch.module.css` ya estila `.badge.badge` con
+   (0,2,0) y a igual especificidad ganaría quien se cargue después, que en
+   producción no es el mismo orden que en desarrollo. */
+.badge.badge.badge {
+  color: var(--sd-ink);
+  background: var(--badge-wash, var(--sd-surface-muted));
+  border: var(--sd-stroke-hair) solid var(--badge-tono, var(--sd-stroke-color));
+  /* El punto de color a la izquierda: es lo que hace reconocible la categoría
+     de un vistazo sin teñir el texto. */
+  padding-left: 1.55em;
+  position: relative;
+}
+
+.badge.badge.badge::before {
+  content: '';
+  position: absolute;
+  left: 0.55em;
+  top: 50%;
+  width: 0.5em;
+  height: 0.5em;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--badge-tono, var(--sd-ink-muted));
+  border: 1px solid var(--sd-stroke-color);
+}
+
+.badge[data-tono='income'] { --badge-tono: var(--income); --badge-wash: var(--verde-100); }
+.badge[data-tono='expense'] { --badge-tono: var(--expense); --badge-wash: var(--teja-100); }
+.badge[data-tono='neutral'] { --badge-tono: var(--sd-ink-muted); --badge-wash: var(--sd-surface-muted); }
+
+.badge[data-tono='cat-1'] { --badge-tono: var(--sd-cat-1); --badge-wash: var(--sd-cat-1-wash); }
+.badge[data-tono='cat-2'] { --badge-tono: var(--sd-cat-2); --badge-wash: var(--sd-cat-2-wash); }
+.badge[data-tono='cat-3'] { --badge-tono: var(--sd-cat-3); --badge-wash: var(--sd-cat-3-wash); }
+.badge[data-tono='cat-4'] { --badge-tono: var(--sd-cat-4); --badge-wash: var(--sd-cat-4-wash); }
+.badge[data-tono='cat-5'] { --badge-tono: var(--sd-cat-5); --badge-wash: var(--sd-cat-5-wash); }
+.badge[data-tono='cat-6'] { --badge-tono: var(--sd-cat-6); --badge-wash: var(--sd-cat-6-wash); }
+.badge[data-tono='cat-7'] { --badge-tono: var(--sd-cat-7); --badge-wash: var(--sd-cat-7-wash); }
+.badge[data-tono='cat-8'] { --badge-tono: var(--sd-cat-8); --badge-wash: var(--sd-cat-8-wash); }
+
+/* ── Entrada de las filas ────────────────────────────────────────────────── */
+
+/*
+ * Solo las primeras filas y muy corto: una tabla es trabajo, no una portada.
+ * Escalonar veinte filas convertiría cada cambio de página en una espera.
+ */
+.table.table tbody tr:nth-child(-n + 8) {
+  animation: sd-rise 260ms var(--sd-ease-out) backwards;
+}
+
+.table.table tbody tr:nth-child(2) { animation-delay: 25ms; }
+.table.table tbody tr:nth-child(3) { animation-delay: 50ms; }
+.table.table tbody tr:nth-child(4) { animation-delay: 75ms; }
+.table.table tbody tr:nth-child(5) { animation-delay: 100ms; }
+.table.table tbody tr:nth-child(6) { animation-delay: 125ms; }
+.table.table tbody tr:nth-child(7) { animation-delay: 150ms; }
+.table.table tbody tr:nth-child(8) { animation-delay: 175ms; }

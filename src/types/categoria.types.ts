@@ -1,5 +1,9 @@
 /**
- * DTOs de Categoría. Ver `cuenta.types.ts` para la convención de los tres DTOs.
+ * DTOs de Categoría.
+ *
+ * La convención del proyecto son tres por entidad: `ListDto` (lo que ve una
+ * tabla), `SaveDto` (lo que manda un formulario) y `FormDto` (lo que rellena un
+ * formulario de edición: el `SaveDto` más el id).
  */
 
 export interface CategoriaListDto {
@@ -11,6 +15,12 @@ export interface CategoriaListDto {
   padreId: string
   padreNombre: string | null
   icono: string | null
+  /**
+   * CLAVE de la paleta ('cat-1'…'cat-8'), no un color. Cadena vacía = sin
+   * asignar. Ver `lib/colores.ts`: guardar la clave y no el hexadecimal es lo
+   * que hace que el modo oscuro y un cambio de tono no toquen los datos.
+   */
+  color: string
   /** Nº de movimientos que la usan. Decide si se puede borrar. */
   usos: number
 }
@@ -25,6 +35,7 @@ export interface CategoriaSaveDto {
    */
   padreId: string
   icono: string
+  color: string
 }
 
 export interface CategoriaFormDto extends CategoriaSaveDto {

@@ -29,8 +29,8 @@
 
   /* Papel */
   --papel-puro: #ffffff;
-  --papel-roto: #f9f9fb;
-  --papel-sombra: #eeeef2;
+  --papel-roto: #faf7f0;
+  --papel-sombra: #efeadf;
 
   /* Grises de apoyo */
   --gris-100: #f2f2f5;
@@ -148,6 +148,122 @@
     sans-serif;
   --sd-font-body: var(--font-body), system-ui, -apple-system, sans-serif;
   --sd-font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', monospace;
+
+  /* El texto que va ENCIMA de un relleno saturado (botón de peligro, chapa de
+     color). No es `--sd-ink-inverse`: ese sigue al modo y en oscuro es casi
+     negro, que sobre un rojo fuerte no se lee. */
+  --sd-on-fill: #ffffff;
+
+  /* La retícula del papel. Token propio y no `--gris-200` porque su trabajo es
+     otro: tiene que notarse al mirar la página, no al leer una tabla. */
+  --sd-grid-color: #e6e2d6;
+  --sd-grid-size: 22px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 2b. La paleta categórica: el color como DATO
+ *
+ * Ocho tonos para distinguir una categoría de otra, en la tabla y en los
+ * gráficos. No son color de marca —el acento sigue siendo uno, el verde— ni
+ * color de estado: son identidad, y por eso se asignan en orden fijo y NUNCA
+ * se ciclan generando un noveno tono.
+ *
+ * **Los valores están validados, no elegidos a ojo.** Salen del script
+ * `validate_palette.js` de la skill `dataviz` contra las tres superficies del
+ * proyecto (tarjeta clara, papel crema y superficie oscura): banda de
+ * luminosidad, suelo de croma, separación en protanopía/deuteranopía/tritanopía
+ * y suelo de visión normal. Si tocas uno, vuelve a pasarlo — el peor par
+ * adyacente está en ΔE 9,1 y el margen sobre el suelo de 8 es de un punto.
+ *
+ * Tres tonos claros quedan por debajo de 3:1 de contraste sobre el papel. Es la
+ * "relief rule" y se cumple: la barra del gráfico lleva SIEMPRE el nombre de la
+ * categoría en el eje, y el badge de la tabla lleva el texto en tinta, no en el
+ * color de la serie. El color nunca va solo.
+ *
+ * `-wash` es el mismo tono al 13 % sobre el papel: es fondo, no marca, así que
+ * no entra en la validación.
+ * ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --sd-cat-1: #2a78d6; /* azul */
+  --sd-cat-2: #eb6834; /* naranja */
+  --sd-cat-3: #1baf7a; /* agua */
+  --sd-cat-4: #eda100; /* amarillo */
+  --sd-cat-5: #e87ba4; /* magenta */
+  --sd-cat-6: #008300; /* verde */
+  --sd-cat-7: #4a3aa7; /* violeta */
+  --sd-cat-8: #e34948; /* rojo */
+
+  --sd-cat-1-wash: #e3edfa;
+  --sd-cat-2-wash: #fcebe5;
+  --sd-cat-3-wash: #e1f5ee;
+  --sd-cat-4-wash: #fdf3de;
+  --sd-cat-5-wash: #fceef3;
+  --sd-cat-6-wash: #deefde;
+  --sd-cat-7-wash: #e7e5f4;
+  --sd-cat-8-wash: #fbe7e7;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 2c. Movimiento
+ *
+ * La aplicación entra en pantalla, no aparece de golpe. Son tres gestos y ni
+ * uno más: subir, dar un golpe y dibujar un trazo.
+ *
+ * El escalonado va por `:nth-child()` en cada módulo, NO por una variable
+ * inline en el JSX: un `style` suelto es un valor que el modo oscuro no sabe
+ * traducir, y la regla no admite excepciones "solo para un delay".
+ *
+ * Todo esto lo anula el bloque de `prefers-reduced-motion` del final. Si añades
+ * una animación nueva, compruébalo ahí: una animación que no se puede apagar es
+ * un fallo de accesibilidad, no un detalle.
+ * ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --sd-dur-slow: 420ms;
+  --sd-stagger: 55ms;
+  --sd-ease-out: cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+
+/*
+ * Estos dos animan las propiedades sueltas `translate` y `scale`, NO `transform`.
+ *
+ * No es un detalle de estilo: media portada está torcida a propósito con
+ * `transform: rotate()` (las tarjetas `sticker`, los `tilt`, las chapas). Un
+ * keyframe sobre `transform` SUSTITUYE ese rotate mientras dura la animación,
+ * así que la tarjeta entraría recta y daría un tirón hasta su inclinación en el
+ * último fotograma. `translate` y `scale` son propiedades independientes y
+ * COMPONEN con el `transform` que ya tenga el elemento.
+ */
+@keyframes sd-rise {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes sd-pop {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* El trazo de rotulador se dibuja de izquierda a derecha. Anima
+   `background-size`, que es lo que ya usan los títulos para pintarlo. */
+@keyframes sd-underline {
+  from {
+    background-size: 0% var(--sd-underline-alto, 0.4em);
+  }
+  to {
+    background-size: 100% var(--sd-underline-alto, 0.4em);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -183,6 +299,29 @@
   --sd-shadow-color: #4a5058;
 
   --sd-focus-ring: 0 0 0 3px var(--verde-700), 0 0 0 5px var(--sd-stroke-color);
+
+  --sd-grid-color: #262b33;
+
+  /* La paleta categórica NO se invierte: son los mismos ocho tonos vueltos a
+     escalonar contra la superficie oscura, y están validados aparte. Un flip
+     automático los sacaría de la banda de luminosidad. */
+  --sd-cat-1: #3987e5;
+  --sd-cat-2: #d95926;
+  --sd-cat-3: #199e70;
+  --sd-cat-4: #c98500;
+  --sd-cat-5: #d55181;
+  --sd-cat-6: #008300;
+  --sd-cat-7: #9085e9;
+  --sd-cat-8: #e66767;
+
+  --sd-cat-1-wash: #203249;
+  --sd-cat-2-wash: #402923;
+  --sd-cat-3-wash: #1a3732;
+  --sd-cat-4-wash: #3d321b;
+  --sd-cat-5-wash: #3f2735;
+  --sd-cat-6-wash: #15311b;
+  --sd-cat-7-wash: #32324a;
+  --sd-cat-8-wash: #432c30;
 
   /* Los rellenos claros de los badges no funcionan sobre papel oscuro: se
      rebajan a lavados profundos que siguen dejando leer el texto en hueso. */
@@ -278,23 +417,24 @@ body {
   font-family: var(--sd-font-body);
   /*
    * La retícula del cuaderno. Va en el fondo del body y no en una capa aparte
-   * para que no intercepte clics ni se despegue al hacer scroll. Muy tenue a
-   * propósito: tiene que notarse al mirar, no al leer.
+   * para que no intercepte clics ni se despegue al hacer scroll.
+   *
+   * Son DOS capas y el orden importa: primero los puntos, y detrás un halo muy
+   * abierto que aclara el centro de la pantalla. El halo es lo que evita que
+   * una página larga se lea como un rectángulo plano de color; sin él, subir la
+   * retícula para que se note obliga a subirla hasta molestar al leer.
    */
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    var(--gris-200) 1px,
-    transparent 0
-  );
-  background-size: 22px 22px;
-}
-
-:root:root[data-mantine-color-scheme='dark'] body {
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    #262b33 1px,
-    transparent 0
-  );
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--sd-grid-color) 1px, transparent 0),
+    radial-gradient(
+      ellipse 100% 60% at 50% 0%,
+      var(--sd-surface) 0%,
+      transparent 70%
+    );
+  background-size:
+    var(--sd-grid-size) var(--sd-grid-size),
+    100% 100%;
+  background-attachment: scroll, fixed;
 }
 
 h1,
@@ -319,15 +459,47 @@ h6 {
 }
 
 /*
+ * Entrada escalonada, para una rejilla o una lista corta.
+ *
+ * Es global —como `.tabular`— porque la usan varias vistas y duplicar los
+ * `nth-child` en cada módulo garantiza que un día dejen de coincidir. El
+ * escalonado llega hasta el octavo hijo: a partir de ahí el retardo acumulado
+ * ya se nota como lentitud, así que el resto entra a la vez.
+ *
+ * `backwards` es lo que evita el parpadeo: sin él, el elemento se pinta opaco
+ * durante el frame que va del montaje al inicio de la animación.
+ */
+.sd-enter > * {
+  animation: sd-rise var(--sd-dur-slow) var(--sd-ease-out) backwards;
+}
+
+.sd-enter > *:nth-child(1) { animation-delay: 0ms; }
+.sd-enter > *:nth-child(2) { animation-delay: calc(var(--sd-stagger) * 1); }
+.sd-enter > *:nth-child(3) { animation-delay: calc(var(--sd-stagger) * 2); }
+.sd-enter > *:nth-child(4) { animation-delay: calc(var(--sd-stagger) * 3); }
+.sd-enter > *:nth-child(5) { animation-delay: calc(var(--sd-stagger) * 4); }
+.sd-enter > *:nth-child(6) { animation-delay: calc(var(--sd-stagger) * 5); }
+.sd-enter > *:nth-child(7) { animation-delay: calc(var(--sd-stagger) * 6); }
+.sd-enter > *:nth-child(n + 8) { animation-delay: calc(var(--sd-stagger) * 7); }
+
+/*
  * Nadie se marea con una interfaz que rebota. Se conservan los cambios de color
  * y de sombra —que son los que comunican el estado— y se quita el movimiento.
+ *
+ * `animation: none` y no solo una duración de 0,01 ms: una animación de entrada
+ * arranca en `opacity: 0`, y acelerarla hasta lo instantáneo deja igualmente un
+ * parpadeo. Anulándola, el elemento sale directamente en su estado final.
+ *
+ * El `transform` también se neutraliza: las chapas y las tarjetas están
+ * torcidas a propósito, pero quien pide menos movimiento suele pedirlo por
+ * razones vestibulares y una rejilla inclinada entra en el mismo saco.
  */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

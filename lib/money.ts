@@ -12,6 +12,18 @@ export const CURRENCIES = ['EUR', 'USD', 'GBP'] as const
 
 export type Currency = (typeof CURRENCIES)[number]
 
+/**
+ * La divisa de la aplicación.
+ *
+ * No se guarda en ninguna tabla: hay una sola cuenta y una sola moneda, así que
+ * la divisa no es un dato, es una constante. Todo lo demás —la aritmética de
+ * abajo, `lib/format.ts`, el `MoneyInput`— sigue trabajando con `Money`, que
+ * lleva su divisa dentro y LANZA al mezclar dos. Esa red se queda puesta a
+ * propósito: es lo que hace que el día que haya más de una divisa, este sea el
+ * único sitio del que hay que tirar.
+ */
+export const DIVISA_APP: Currency = 'EUR'
+
 /** Valida una divisa que viene de la base de datos o de un formulario. */
 export const isCurrency = (value: string): value is Currency =>
   (CURRENCIES as readonly string[]).includes(value)

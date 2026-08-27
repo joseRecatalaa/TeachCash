@@ -52,13 +52,6 @@ import { dataProvider } from './refine-data-provider'
  */
 export const REFINE_RESOURCES = [
   {
-    name: 'Cuentas',
-    list: '/Cuentas',
-    create: '/Cuentas/Create',
-    edit: '/Cuentas/Edit',
-    meta: { label: 'Cuentas' },
-  },
-  {
     name: 'Movimientos',
     list: '/Movimientos',
     create: '/Movimientos/Create',

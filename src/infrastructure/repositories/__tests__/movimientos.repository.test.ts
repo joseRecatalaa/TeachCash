@@ -1,8 +1,8 @@
 /**
- * Repositorio de Movimientos y Transferencias.
+ * Repositorio de Movimientos.
  *
  * Es el fichero de test más importante del proyecto: aquí viven el signo del
- * importe, la atomicidad de la transferencia y el borrado lógico. Un fallo en
+ * importe, el aislamiento por usuario y el borrado lógico. Un fallo en
  * cualquiera de los tres es dinero mal contado, no una molestia de interfaz.
  */
 
@@ -25,27 +25,20 @@ vi.mock('@/db', async () => {
 
 import { createTestDb, type TestDb } from '@/db/testing'
 import { transactions } from '@/db/schema'
-import {
-  crearTransferencia,
-  movimientosRepository as repo,
-  restaurarMovimiento,
-} from '../movimientos.repository'
-import { cuentasRepository } from '../cuentas.repository'
-import { seedCategoria, seedCuenta, seedMovimiento, USER_A, USER_B } from './helpers'
+import { movimientosRepository as repo, restaurarMovimiento } from '../movimientos.repository'
+import { getSaldoActual } from '../informes.repository'
+import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 let ctx: TestDb
 
 beforeEach(async () => {
   ctx = await createTestDb()
   h.db = ctx.db
-  await seedCuenta(ctx.db, 'cuenta-1', USER_A)
-  await seedCuenta(ctx.db, 'cuenta-2', USER_A)
 })
 
 afterEach(() => ctx.close())
 
 const nuevo = (overrides: Record<string, unknown> = {}) => ({
-  cuentaId: 'cuenta-1',
   categoriaId: '',
   importe: 4590,
   sentido: 'expense',
@@ -127,13 +120,6 @@ describe('create', () => {
 })
 
 describe('autorización', () => {
-  test('no se puede usar la cuenta de otro usuario', async () => {
-    await seedCuenta(ctx.db, 'ajena', USER_B)
-    await expect(repo.create(USER_A, nuevo({ cuentaId: 'ajena' }))).rejects.toThrow(
-      'No encontrado',
-    )
-  })
-
   test('no se puede usar la categoría de otro usuario', async () => {
     await seedCategoria(ctx.db, 'ajena', USER_B, { kind: 'expense' })
     await expect(repo.create(USER_A, nuevo({ categoriaId: 'ajena' }))).rejects.toThrow(
@@ -142,122 +128,25 @@ describe('autorización', () => {
   })
 
   test('no se puede editar el movimiento de otro usuario', async () => {
-    await seedCuenta(ctx.db, 'cuenta-b', USER_B)
-    await seedMovimiento(ctx.db, 'ajeno', USER_B, { accountId: 'cuenta-b', amount: -100 })
+    await seedMovimiento(ctx.db, 'ajeno', USER_B, { amount: -100 })
 
     await expect(repo.update(USER_A, 'ajeno', nuevo())).rejects.toThrow('No encontrado')
     expect((await filaDe('ajeno')).amount).toBe(-100)
   })
 
   test('no se puede borrar el movimiento de otro usuario', async () => {
-    await seedCuenta(ctx.db, 'cuenta-b', USER_B)
-    await seedMovimiento(ctx.db, 'ajeno', USER_B, { accountId: 'cuenta-b' })
+    await seedMovimiento(ctx.db, 'ajeno', USER_B)
 
     await expect(repo.remove(USER_A, 'ajeno')).rejects.toThrow('No encontrado')
     expect((await filaDe('ajeno')).deletedAt).toBeNull()
   })
 
   test('los listados no cruzan usuarios', async () => {
-    await seedCuenta(ctx.db, 'cuenta-b', USER_B)
     await seedMovimiento(ctx.db, 'mio', USER_A)
-    await seedMovimiento(ctx.db, 'ajeno', USER_B, { accountId: 'cuenta-b' })
+    await seedMovimiento(ctx.db, 'ajeno', USER_B)
 
     const { data } = await repo.list(USER_A, { paginate: false })
     expect(data.map((m) => m.id)).toEqual(['mio'])
-  })
-})
-
-describe('transferencias', () => {
-  const transferencia = (overrides: Record<string, unknown> = {}) => ({
-    cuentaOrigenId: 'cuenta-1',
-    cuentaDestinoId: 'cuenta-2',
-    importe: 50000,
-    fecha: '2026-03-20',
-    descripcion: 'Traspaso al ahorro',
-    notas: '',
-    ...overrides,
-  })
-
-  test('crea dos patas que suman cero', async () => {
-    await crearTransferencia(USER_A, transferencia())
-
-    const { data } = await repo.list(USER_A, { paginate: false })
-    expect(data).toHaveLength(2)
-    expect(data.reduce((s, m) => s + m.importe, 0)).toBe(0)
-    // Las dos comparten `transferId`: es lo que permite borrarlas juntas.
-    expect(new Set(data.map((m) => m.transferenciaId)).size).toBe(1)
-  })
-
-  test('mueve el saldo de las dos cuentas', async () => {
-    await crearTransferencia(USER_A, transferencia({ importe: 50000 }))
-
-    const { data } = await cuentasRepository.list(USER_A, { paginate: false })
-    const porId = new Map(data.map((c) => [c.id, c.saldo]))
-    expect(porId.get('cuenta-1')).toBe(-50000)
-    expect(porId.get('cuenta-2')).toBe(50000)
-  })
-
-  test('no se clasifica: no es gasto ni ingreso', async () => {
-    await crearTransferencia(USER_A, transferencia())
-    const { data } = await repo.list(USER_A, { paginate: false })
-    // Si llevara categoría, aparecería en el informe de gasto por categoría.
-    expect(data.every((m) => m.categoriaId === '')).toBe(true)
-  })
-
-  test('rechaza transferir a la misma cuenta', async () => {
-    await expect(
-      crearTransferencia(USER_A, transferencia({ cuentaDestinoId: 'cuenta-1' })),
-    ).rejects.toThrow(/misma cuenta/)
-  })
-
-  test('rechaza transferir entre divisas distintas', async () => {
-    await seedCuenta(ctx.db, 'dolares', USER_A, { currency: 'USD' })
-    // Sin tipos de cambio, convertir sería inventarse un importe. Ver
-    // "Decisiones abiertas" en AGENTS.md.
-    await expect(
-      crearTransferencia(USER_A, transferencia({ cuentaDestinoId: 'dolares' })),
-    ).rejects.toThrow(/divisas distintas/)
-  })
-
-  test('una cuenta ajena no crea nada, ni media pata', async () => {
-    await seedCuenta(ctx.db, 'ajena', USER_B)
-    await expect(
-      crearTransferencia(USER_A, transferencia({ cuentaDestinoId: 'ajena' })),
-    ).rejects.toThrow('No encontrado')
-
-    const { total } = await repo.list(USER_A, { paginate: false })
-    expect(total).toBe(0)
-  })
-
-  test('una pata no se puede editar por separado', async () => {
-    await crearTransferencia(USER_A, transferencia())
-    const { data } = await repo.list(USER_A, { paginate: false })
-
-    // Cambiarle el importe a una sola descuadraría las dos cuentas entre sí.
-    await expect(repo.update(USER_A, data[0].id, nuevo())).rejects.toThrow(
-      /transferencia/i,
-    )
-  })
-
-  test('borrar una pata borra las dos', async () => {
-    await crearTransferencia(USER_A, transferencia())
-    const { data } = await repo.list(USER_A, { paginate: false })
-
-    await repo.remove(USER_A, data[0].id)
-
-    const vivos = await repo.list(USER_A, { paginate: false })
-    expect(vivos.total).toBe(0)
-  })
-
-  test('restaurar una pata restaura las dos', async () => {
-    await crearTransferencia(USER_A, transferencia())
-    const { data } = await repo.list(USER_A, { paginate: false })
-    await repo.remove(USER_A, data[0].id)
-
-    await restaurarMovimiento(USER_A, data[0].id)
-
-    const vivos = await repo.list(USER_A, { paginate: false })
-    expect(vivos.total).toBe(2)
   })
 })
 
@@ -289,11 +178,7 @@ describe('borrado lógico', () => {
   })
 
   test('no se puede restaurar el movimiento de otro usuario', async () => {
-    await seedCuenta(ctx.db, 'cuenta-b', USER_B)
-    await seedMovimiento(ctx.db, 'ajeno', USER_B, {
-      accountId: 'cuenta-b',
-      deletedAt: new Date(),
-    })
+    await seedMovimiento(ctx.db, 'ajeno', USER_B, { deletedAt: new Date() })
 
     await expect(restaurarMovimiento(USER_A, 'ajeno')).rejects.toThrow('No encontrado')
   })
@@ -302,8 +187,18 @@ describe('borrado lógico', () => {
     const { id } = await repo.create(USER_A, nuevo({ importe: 10000 }))
     await repo.remove(USER_A, id)
 
-    const { data } = await cuentasRepository.list(USER_A, { paginate: false })
-    expect(data.find((c) => c.id === 'cuenta-1')!.saldo).toBe(0)
+    // El saldo es una SUMA de los movimientos vivos (regla dura 7): lo que está
+    // en la papelera no puede seguir contando, o la cifra de la portada deja de
+    // cuadrar con la lista que la explica.
+    expect(await getSaldoActual(USER_A)).toBe(0)
+  })
+
+  test('restaurar devuelve el movimiento al saldo', async () => {
+    const { id } = await repo.create(USER_A, nuevo({ sentido: 'income', importe: 10000 }))
+    await repo.remove(USER_A, id)
+    await restaurarMovimiento(USER_A, id)
+
+    expect(await getSaldoActual(USER_A)).toBe(10000)
   })
 })
 

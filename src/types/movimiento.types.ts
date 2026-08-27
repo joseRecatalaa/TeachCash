@@ -1,15 +1,18 @@
 /**
- * DTOs de Movimiento. Ver `cuenta.types.ts` para la convención de los tres DTOs.
+ * DTOs de Movimiento. Ver `categoria.types.ts` para la convención de los tres.
  *
  * Dos reglas duras del proyecto se ven aquí:
  *   - `importe` es un entero en céntimos (regla 1).
  *   - `fecha` es una fecha civil 'YYYY-MM-DD', nunca un `Date` ni un instante
  *     (regla 5). Un `Date` aquí haría que un gasto del día 1 saltase al mes
  *     anterior según el huso de quien lo mire.
+ *
+ * No llevan divisa: la aplicación trabaja en una sola y la decide `DIVISA_APP`
+ * en `lib/money.ts`. Es el único sitio del que hay que tirar si algún día hay
+ * más de una.
  */
 
 import type { CivilDate } from '@/lib/dates'
-import type { Currency } from '@/lib/money'
 
 export interface MovimientoListDto {
   id: string
@@ -17,13 +20,10 @@ export interface MovimientoListDto {
   descripcion: string
   /** Céntimos CON SIGNO: negativo = gasto, positivo = ingreso. */
   importe: number
-  divisa: Currency
-  cuentaId: string
-  cuentaNombre: string
   categoriaId: string
   categoriaNombre: string
-  /** No vacío = es una pata de transferencia. No se edita como movimiento suelto. */
-  transferenciaId: string
+  /** Clave de la paleta de la categoría. Cadena vacía = sin asignar. */
+  categoriaColor: string
   notas: string
 }
 
@@ -35,7 +35,6 @@ export interface MovimientoListDto {
  * El signo lo resuelve el repositorio: `importe * (sentido === 'expense' ? -1 : 1)`.
  */
 export interface MovimientoSaveDto {
-  cuentaId: string
   categoriaId: string
   /** Céntimos, SIEMPRE POSITIVO. El signo lo pone `sentido`. */
   importe: number
@@ -54,19 +53,4 @@ export interface MovimientoSaveDto {
 
 export interface MovimientoFormDto extends MovimientoSaveDto {
   id: string
-}
-
-/**
- * Una transferencia no es un movimiento: es DOS, atadas por `transferId`, que se
- * escriben en la misma transacción. Por eso tiene su propio DTO y su propia
- * acción, en vez de colgar de `MovimientoSaveDto`.
- */
-export interface TransferenciaSaveDto {
-  cuentaOrigenId: string
-  cuentaDestinoId: string
-  /** Céntimos, siempre positivo: cada pata le pone su signo. */
-  importe: number
-  fecha: CivilDate
-  descripcion: string
-  notas: string
 }

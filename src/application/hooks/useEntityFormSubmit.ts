@@ -18,11 +18,12 @@ import { useCallback, useState } from 'react'
 import { useCreate, useUpdate, type BaseRecord, type HttpError } from '@refinedev/core'
 import { notifications } from '@mantine/notifications'
 import { DataProviderError } from '@/src/application/providers/refine-data-provider'
+import { useInvalidarDerivados } from './useInformes'
 
 interface UseEntityFormSubmitConfig {
   /** Clave de `REPOSITORIES`. Debe coincidir exactamente. */
   resource: string
-  /** Nombre en singular para los mensajes: "Cuenta creada correctamente". */
+  /** Nombre en singular para los mensajes: "Categoría creada correctamente". */
   entityName: string
   mode: 'create' | 'edit'
   id?: string
@@ -57,6 +58,10 @@ export function useEntityFormSubmit<TSave>({
 }: UseEntityFormSubmitConfig) {
   const createMutation = useCreate<BaseRecord, HttpError, TSave>()
   const updateMutation = useUpdate<BaseRecord, HttpError, TSave>()
+  // Refine invalida su propio cache del recurso, pero el saldo y los gráficos
+  // viven en otro árbol de queries y no se enteran. Sin esto, se anota un gasto
+  // y la portada sigue enseñando la cifra de antes.
+  const invalidarDerivados = useInvalidarDerivados()
 
   /**
    * Errores por campo del último intento. Se guardan en estado en vez de leerse
@@ -74,6 +79,7 @@ export function useEntityFormSubmit<TSave>({
       try {
         if (mode === 'create') {
           const res = await createMutation.mutateAsync({ resource, values })
+          await invalidarDerivados()
           notifications.show({
             title: 'Hecho',
             message: `${entityName} ${participio} correctamente`,
@@ -89,6 +95,7 @@ export function useEntityFormSubmit<TSave>({
         }
 
         const res = await updateMutation.mutateAsync({ resource, id, values })
+        await invalidarDerivados()
         notifications.show({
           title: 'Hecho',
           message: `${entityName} ${participioEdit} correctamente`,
@@ -106,7 +113,7 @@ export function useEntityFormSubmit<TSave>({
         return undefined
       }
     },
-    [createMutation, updateMutation, resource, entityName, mode, id, genero],
+    [createMutation, updateMutation, invalidarDerivados, resource, entityName, mode, id, genero],
   )
 
   return {

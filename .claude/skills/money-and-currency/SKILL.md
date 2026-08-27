@@ -71,8 +71,13 @@ export const mul = (a: Money, factor: number, round = Math.round): Money =>
   money(round(a.amount * factor), a.currency)
 ```
 
-**Nunca sumes importes de divisas distintas.** Un `reduce` sobre movimientos de
-cuentas mixtas debe agrupar por divisa, no acumular en una variable suelta.
+**Nunca sumes importes de divisas distintas.** Un `reduce` sobre importes de
+procedencias mixtas debe agrupar por divisa, no acumular en una variable suelta.
+
+En este proyecto hoy hay **una sola divisa** y la decide `DIVISA_APP`. La red de
+`lib/money.ts` —que LANZA al operar dos monedas— se conserva igualmente: es lo
+que convierte "añadir multidivisa" en un cambio localizado en vez de en una
+auditoría de todo el código.
 
 ### Sumar una lista
 
@@ -189,7 +194,7 @@ un desastre con la coma) y valida en el servidor de todas formas.
 | Descuadres de 1 céntimo en totales | Redondear cada línea en vez de repartir el resto |
 | Importes que cambian al recargar | `float` almacenado en la base de datos |
 | `NaN €` en pantalla | `parseFloat("1.234,56")` → `1.234` o `NaN` |
-| Suma de cuentas en divisas mezcladas | `reduce` sin comprobar divisa |
+| Suma de importes en divisas mezcladas | `reduce` sin comprobar divisa |
 | Total ≠ suma de sus partes | `allocate` implementado con `Math.round` por parte |
 
 ## Auditoría

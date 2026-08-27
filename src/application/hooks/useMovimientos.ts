@@ -1,21 +1,20 @@
 'use client'
 
 /**
- * Hooks de Movimientos. Ver `useCuentas.ts` para el patrón.
+ * Hooks de Movimientos.
+ *
+ * Los cinco del CRUD salen de `createEntityHooks`; lo que no es CRUD —restaurar
+ * un borrado— se escribe a mano aquí abajo.
  */
 
 import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { notifications } from '@mantine/notifications'
-import {
-  crearTransferencia,
-  restaurarMovimiento as restaurarMovimientoAction,
-} from '@/src/application/actions/entity.actions'
+import { restaurarMovimiento as restaurarMovimientoAction } from '@/src/application/actions/entity.actions'
 import type {
   MovimientoFormDto,
   MovimientoListDto,
   MovimientoSaveDto,
-  TransferenciaSaveDto,
 } from '@/src/types/movimiento.types'
 import { createEntityHooks, type EntityListPagination } from './createEntityHooks'
 
@@ -43,7 +42,6 @@ export type MovimientosFilters = {
   /** Fecha civil 'YYYY-MM-DD', ambas inclusive. */
   desde?: string
   hasta?: string
-  cuentaId?: string
   categoriaId?: string
   /** `'1'` enseña SOLO la papelera, no la mezcla con los vivos. */
   borrados?: string
@@ -55,48 +53,6 @@ export function useMovimientos(
   options?: { enabled?: boolean },
 ) {
   return movimientoHooks.useList(filters, pagination, options)
-}
-
-/**
- * Crear una transferencia.
- *
- * Fuera de la factory porque no es un `create` de Movimiento: escribe DOS filas
- * en una sola transacción. Invalida también Cuentas — una transferencia cambia
- * el saldo de las dos.
- */
-export function useCrearTransferencia() {
-  const queryClient = useQueryClient()
-  const [isPending, setIsPending] = useState(false)
-
-  const crear = useCallback(
-    async (values: TransferenciaSaveDto): Promise<boolean> => {
-      setIsPending(true)
-      try {
-        const result = await crearTransferencia(values)
-        if (!result.ok) {
-          notifications.show({
-            title: 'No se ha podido guardar',
-            message: result.error,
-            color: 'red',
-          })
-          return false
-        }
-        await queryClient.invalidateQueries({ queryKey: ['default', 'Movimientos'] })
-        await queryClient.invalidateQueries({ queryKey: ['default', 'Cuentas'] })
-        notifications.show({
-          title: 'Hecho',
-          message: 'Transferencia registrada',
-          color: 'teal',
-        })
-        return true
-      } finally {
-        setIsPending(false)
-      }
-    },
-    [queryClient],
-  )
-
-  return { crear, isPending }
 }
 
 /**
@@ -120,7 +76,9 @@ export function useRestaurarMovimiento() {
           return false
         }
         await queryClient.invalidateQueries({ queryKey: ['default', 'Movimientos'] })
-        await queryClient.invalidateQueries({ queryKey: ['default', 'Cuentas'] })
+        // El saldo y los gráficos son sumas de movimientos: si no se invalidan,
+        // la portada sigue enseñando la cifra de antes de restaurar.
+        await queryClient.invalidateQueries({ queryKey: ['informes'] })
         notifications.show({ title: 'Hecho', message: 'Movimiento restaurado', color: 'teal' })
         return true
       } finally {

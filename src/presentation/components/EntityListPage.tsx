@@ -8,13 +8,13 @@
  * define sus columnas y su configuración.
  *
  * @example
- * <EntityListPage<CuentaListDto>
- *   header={{ title: 'Cuentas', icon: IconWallet }}
+ * <EntityListPage<CategoriaListDto>
+ *   header={{ title: 'Categorías', icon: IconTags }}
  *   columns={columns}
  *   data={data}
  *   isLoading={query.isLoading}
  *   isError={query.isError}
- *   create={{ label: 'Nueva cuenta', href: '/Cuentas/Create' }}
+ *   create={{ label: 'Nueva categoría', href: '/Categorias/Create' }}
  *   {...tableProps}
  * />
  */
@@ -37,7 +37,7 @@ export interface HeaderConfig {
   description?: string
 }
 /*
- * Aquí había un `color` por entidad (Cuentas en teal, Categorías en granate).
+ * Aquí había un `color` por entidad (una sección en teal, otra en granate).
  * Se retiró al entrar el sistema de diseño: con un color por sección, la chapa
  * del icono dejaba de ser reconocible como "la chapa de esta aplicación" y cada
  * lista parecía de un producto distinto. El acento es uno y es el verde; lo que
