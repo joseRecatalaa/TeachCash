@@ -44,9 +44,17 @@
   color: var(--sd-ink-muted);
 }
 
-/* ── Ficha de ingresos ──────────────────────────────────────────────────── */
+/* ── Fichas de ingresos y gastos ─────────────────────────────────────────── */
 
-.ingresos {
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.ingresos,
+.gastos {
+  flex: 1 1 18rem;
   max-width: 22rem;
 }
 
@@ -58,6 +66,17 @@
   line-height: 1.1;
   letter-spacing: -0.03em;
   color: var(--income);
+}
+
+/* Gasto acumulado del mes: mismo peso visual que ingresos, tono de gasto. */
+.cifraGastos {
+  display: block;
+  font-family: var(--sd-font-mono);
+  font-size: clamp(1.7rem, 1.2rem + 1.6vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--expense);
 }
 
 /* ── Rejilla de categorías ───────────────────────────────────────────────── */

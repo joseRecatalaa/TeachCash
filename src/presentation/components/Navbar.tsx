@@ -26,9 +26,9 @@ import styles from './Navbar.module.css'
 
 const ENLACES = [
   { href: '/', label: 'Inicio', icon: IconLayoutDashboard },
-  { href: '/Movimientos', label: 'Movimientos', icon: IconArrowsLeftRight },
-  { href: '/Categorias', label: 'Categorías', icon: IconTags },
   { href: '/Planificacion', label: 'Planificación', icon: IconCalendarStats },
+  { href: '/Categorias', label: 'Categorías', icon: IconTags },
+  { href: '/Movimientos', label: 'Movimientos', icon: IconArrowsLeftRight },
 ]
 
 export function Navbar() {
@@ -42,7 +42,7 @@ export function Navbar() {
             <span className={styles.brandMark} aria-hidden>
               <IconWallet size={19} stroke={2.2} />
             </span>
-            <span className={styles.brandName}>Finanzas</span>
+            <span className={styles.brandName}>TeachCash</span>
           </Link>
 
           <div className={styles.links}>

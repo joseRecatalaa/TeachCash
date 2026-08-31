@@ -66,18 +66,33 @@ export default function PlanificacionPage() {
           </div>
         </header>
 
-        <SketchCard
-          className={styles.ingresos}
-          variant="highlight"
-          tone="positive"
-          ribbon
-          eyebrow="Ingresos del mes"
-        >
-          <AnimatedMoney
-            valor={totales.data?.ingresos}
-            className={`${styles.cifraIngresos} tabular`}
-          />
-        </SketchCard>
+        <div className={styles.resumen}>
+          <SketchCard
+            className={styles.ingresos}
+            variant="highlight"
+            tone="positive"
+            ribbon
+            eyebrow="Ingresos del mes"
+          >
+            <AnimatedMoney
+              valor={totales.data?.ingresos}
+              className={`${styles.cifraIngresos} tabular`}
+            />
+          </SketchCard>
+
+          <SketchCard
+            className={styles.gastos}
+            variant="highlight"
+            tone="danger"
+            ribbon
+            eyebrow="Gastos del mes"
+          >
+            <AnimatedMoney
+              valor={totales.data?.gastos}
+              className={`${styles.cifraGastos} tabular`}
+            />
+          </SketchCard>
+        </div>
 
         {!categoriasQuery.isLoading && categorias.length === 0 ? (
           <EmptyState

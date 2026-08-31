@@ -5,9 +5,6 @@
  *
  * Reglas que se cumplen aquí y conviene no romper al tocarlos:
  *
- *   - **Los ticks del eje van compactos ("1,2 mil €"), los tooltips completos.**
- *     Quien pasa el ratón quiere el importe exacto; el eje solo necesita dar
- *     escala.
  *   - **El color nunca es la única señal.** Los importes llevan su signo, las
  *     series llevan leyenda y cada barra de categoría lleva su nombre en el eje.
  *     Esto último no es cosmético: tres de los ocho tonos de la paleta
@@ -22,23 +19,35 @@
  *   - **El color sigue a la ENTIDAD, no a su posición.** Una categoría se pinta
  *     con el color que tiene guardado; solo las que no tienen ninguno caen al
  *     reparto por índice. Filtrar el gráfico no puede repintar las que quedan.
+ *
+ * Sin tooltip de Mantine, a propósito: sus esquinas redondeadas y su sombra
+ * difusa no pasan por un componente dibujado a mano. Las barras se iluminan
+ * al pasar el ratón con puro CSS sobre el `<path>` que ya pinta Recharts
+ * (`FinanceCharts.module.css`), sin caja ni cifra flotante — el eje ya da la
+ * escala y el importe exacto está en la tabla de Movimientos.
+ *
+ * La única excepción es `SerieSaldoChart`: con un punto por día, el eje no
+ * basta para leer el importe de un día concreto, así que ahí sí hay un
+ * tooltip — pero reducido a la cifra sola (`content` propio, sin fondo ni
+ * borde) y sin la transición de posición por defecto (`isAnimationActive`
+ * en `false`), para que aparezca en su sitio en vez de deslizarse.
  */
 
 import { useMemo } from 'react'
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
   Legend,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
-import { Paper, Text } from '@mantine/core'
+import type { TooltipContentProps } from 'recharts'
 import { formatDate, formatMoney, formatMoneyCompact, formatPeriodShort } from '@/lib/format'
 import { colorDeCategoria } from '@/lib/colores'
 import { DIVISA_APP, money } from '@/lib/money'
@@ -48,38 +57,12 @@ import type {
   PuntoSaldoDto,
   TotalesPeriodoDto,
 } from '@/src/types/informe.types'
+import styles from './FinanceCharts.module.css'
 
 const COLOR_INGRESO = 'var(--income)'
 const COLOR_GASTO = 'var(--expense)'
 
 const tickImporte = (valor: number) => formatMoneyCompact(money(Math.round(valor), DIVISA_APP))
-
-/** Tooltip común: importe completo, nunca compacto. */
-function TooltipImporte({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean
-  payload?: { name?: string; value?: number; color?: string }[]
-  label?: string
-}) {
-  if (!active || !payload?.length) return null
-  return (
-    <Paper p="xs" withBorder shadow="md">
-      {label && (
-        <Text size="xs" fw={600} mb={4}>
-          {label}
-        </Text>
-      )}
-      {payload.map((p, i) => (
-        <Text key={i} size="xs" className="tabular">
-          {p.name}: {formatMoney(money(Math.round(p.value ?? 0), DIVISA_APP))}
-        </Text>
-      ))}
-    </Paper>
-  )
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -109,17 +92,18 @@ export function IngresosVsGastosChart({ datos }: { datos: TotalesPeriodoDto[] })
   }
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={filas} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-        <XAxis dataKey="periodo" tickLine={false} fontSize={12} />
-        <YAxis tickFormatter={tickImporte} tickLine={false} fontSize={12} width={70} />
-        <Tooltip content={<TooltipImporte />} cursor={{ opacity: 0.1 }} />
-        <Legend />
-        <Bar dataKey="Ingresos" fill={COLOR_INGRESO} radius={[4, 4, 0, 0]} />
-        <Bar dataKey="Gastos" fill={COLOR_GASTO} radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className={styles.chartWrap}>
+      <ResponsiveContainer width="100%" height={260}>
+        <BarChart data={filas} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+          <XAxis dataKey="periodo" tickLine={false} fontSize={12} />
+          <YAxis tickFormatter={tickImporte} tickLine={false} fontSize={12} width={70} />
+          <Legend />
+          <Bar dataKey="Ingresos" fill={COLOR_INGRESO} radius={[4, 4, 0, 0]} />
+          <Bar dataKey="Gastos" fill={COLOR_GASTO} radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -149,20 +133,33 @@ export function GastoPorCategoriaChart({ datos }: { datos: GastoPorCategoriaDto[
   }
 
   return (
-    <ResponsiveContainer width="100%" height={Math.max(200, filas.length * 34)}>
-      <BarChart data={filas} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
-        <XAxis type="number" tickFormatter={tickImporte} fontSize={12} />
-        <YAxis type="category" dataKey="nombre" width={130} tickLine={false} fontSize={12} />
-        <Tooltip content={<TooltipImporte />} cursor={{ opacity: 0.1 }} />
-        <Bar dataKey="total" name="Gasto" radius={[0, 4, 4, 0]}>
-          {filas.map((f) => (
-            <Cell key={f.nombre} fill={f.color} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div className={styles.chartWrap}>
+      <ResponsiveContainer width="100%" height={Math.max(200, filas.length * 34)}>
+        <BarChart data={filas} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
+          <XAxis type="number" tickFormatter={tickImporte} fontSize={12} />
+          <YAxis type="category" dataKey="nombre" width={130} tickLine={false} fontSize={12} />
+          <Bar dataKey="total" name="Gasto" radius={[0, 4, 4, 0]}>
+            {filas.map((f) => (
+              <Cell key={f.nombre} fill={f.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   )
+}
+
+/**
+ * Sustituye al `content` por defecto del `Tooltip`: solo la cifra, sin la
+ * caja de Recharts (fondo, borde, sombra) que no encaja con el sistema de
+ * diseño. `formatMoney` y no `tickImporte`: quien pasa el ratón por un punto
+ * concreto quiere el importe exacto, no la versión compacta del eje.
+ */
+function EtiquetaSaldo({ active, payload }: TooltipContentProps) {
+  const valor = payload?.[0]?.value
+  if (!active || typeof valor !== 'number') return null
+  return <span className={styles.saldoEtiqueta}>{formatMoney(money(Math.round(valor), DIVISA_APP))}</span>
 }
 
 export function SerieSaldoChart({ datos }: { datos: PuntoSaldoDto[] }) {
@@ -183,41 +180,61 @@ export function SerieSaldoChart({ datos }: { datos: PuntoSaldoDto[] }) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <LineChart data={filas} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-        <XAxis
-          dataKey="fecha"
-          tickFormatter={(f: string) => formatDate(f).slice(0, 5)}
-          // Un punto por día son muchos ticks: se pinta uno de cada quince.
-          interval={Math.max(0, Math.floor(filas.length / 15))}
-          tickLine={false}
-          fontSize={12}
-        />
-        <YAxis
-          tickFormatter={tickImporte}
-          tickLine={false}
-          fontSize={12}
-          width={70}
-          // El eje de un saldo NO empieza forzosamente en cero: la variación es
-          // lo que se quiere leer, y un cero lejano la aplasta contra el techo.
-          domain={['auto', 'auto']}
-        />
-        <Tooltip
-          content={<TooltipImporte />}
-          labelFormatter={(f) => (typeof f === 'string' ? formatDate(f) : f)}
-          cursor={{ opacity: 0.2 }}
-        />
-        <Line
-          type="monotone"
-          dataKey="saldo"
-          name="Saldo"
-          stroke="var(--sd-accent)"
-          strokeWidth={2}
-          // Un punto por día: los marcadores taparían la línea entera.
-          dot={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className={styles.chartWrap}>
+      <ResponsiveContainer width="100%" height={260}>
+        <AreaChart data={filas} margin={{ top: 24, right: 8, left: 8, bottom: 0 }}>
+          {/*
+           * El degradado bajo la línea es lo que distingue "una serie" de "un
+           * indicador financiero": ancla la línea al lienzo en vez de dejarla
+           * flotando sobre la rejilla. Se desvanece a transparente y no a un
+           * segundo tono para no inventar un token nuevo solo para esto.
+           */}
+          <defs>
+            <linearGradient id="saldoGradiente" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--sd-accent)" stopOpacity={0.32} />
+              <stop offset="100%" stopColor="var(--sd-accent)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+          <XAxis
+            dataKey="fecha"
+            tickFormatter={(f: string) => formatDate(f).slice(0, 5)}
+            // Un punto por día son muchos ticks: se pinta uno de cada quince.
+            interval={Math.max(0, Math.floor(filas.length / 15))}
+            tickLine={false}
+            fontSize={12}
+          />
+          <YAxis
+            tickFormatter={tickImporte}
+            tickLine={false}
+            fontSize={12}
+            width={70}
+            // El eje de un saldo NO empieza forzosamente en cero: la variación es
+            // lo que se quiere leer, y un cero lejano la aplasta contra el techo.
+            domain={['auto', 'auto']}
+          />
+          <Tooltip
+            content={EtiquetaSaldo}
+            // Sin la transición de posición por defecto: la cifra tiene que
+            // aparecer en el punto, no deslizarse hasta él.
+            isAnimationActive={false}
+            cursor={{ stroke: 'var(--sd-ink-muted)', strokeDasharray: '3 3' }}
+            wrapperStyle={{ outline: 'none', pointerEvents: 'none' }}
+          />
+          <Area
+            type="monotone"
+            dataKey="saldo"
+            name="Saldo"
+            stroke="var(--sd-accent)"
+            strokeWidth={2.5}
+            fill="url(#saldoGradiente)"
+            // Un punto por día: los marcadores taparían la línea entera. Solo
+            // se ve el del punto activo, al pasar el ratón.
+            dot={false}
+            activeDot={{ r: 5, stroke: 'var(--sd-surface)', strokeWidth: 2, fill: 'var(--sd-accent)' }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }

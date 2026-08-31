@@ -39,7 +39,7 @@ const body = Nunito({ variable: '--font-body', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Finanzas',
+  title: 'TeachCash',
   description: 'Gestor de finanzas personales',
 }
 

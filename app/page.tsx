@@ -22,13 +22,7 @@
 
 import Link from 'next/link'
 import { Container } from '@mantine/core'
-import {
-  IconArrowDownRight,
-  IconArrowUpRight,
-  IconChartPie,
-  IconPlus,
-  IconWallet,
-} from '@tabler/icons-react'
+import { IconChartPie, IconPlus, IconWallet } from '@tabler/icons-react'
 import { useMovimientos } from '@/src/application/hooks/useMovimientos'
 import {
   useGastoPorCategoria,
@@ -48,65 +42,17 @@ import {
   SketchButton,
   SketchCard,
 } from '@/src/presentation/components/ui'
-import { addMonths, currentPeriod, monthRange } from '@/lib/dates'
+import { currentPeriod, monthRange } from '@/lib/dates'
 import { formatDate, formatMoney, formatPercent, formatPeriod } from '@/lib/format'
 import { DIVISA_APP, money } from '@/lib/money'
 import styles from './page.module.css'
 
-/**
- * Variación entre dos importes, para el pie de las fichas del mes.
- *
- * Devuelve `null` cuando el mes anterior fue cero: "ha subido un infinito por
- * ciento" no es información, es ruido. En ese caso la ficha simplemente no
- * enseña comparación.
- */
-function variacion(actual: number, anterior: number): { ratio: number; sube: boolean } | null {
-  if (anterior === 0) return null
-  const ratio = (actual - anterior) / Math.abs(anterior)
-  if (ratio === 0) return null
-  return { ratio: Math.abs(ratio), sube: ratio > 0 }
-}
-
-/**
- * El pie de una ficha del mes.
- *
- * `bueno` dice si subir es una buena noticia, y por eso lo decide quien llama:
- * en ingresos subir es bueno y en gastos no. Sin ese parámetro, la flecha verde
- * hacia arriba estaría felicitando por gastar más.
- */
-function Comparacion({
-  actual,
-  anterior,
-  bueno,
-}: {
-  actual: number
-  anterior: number | undefined
-  bueno: 'sube' | 'baja'
-}) {
-  if (anterior === undefined) return null
-  const v = variacion(actual, anterior)
-  if (!v) return <span className={styles.compaNeutra}>igual que el mes pasado</span>
-
-  const positivo = bueno === 'sube' ? v.sube : !v.sube
-  const Icono = v.sube ? IconArrowUpRight : IconArrowDownRight
-
-  return (
-    <span className={positivo ? styles.compaBuena : styles.compaMala}>
-      <Icono size={13} stroke={2.6} aria-hidden />
-      {/* El texto dice la dirección; el color y la flecha solo la refuerzan. */}
-      {formatPercent(v.ratio)} {v.sube ? 'más' : 'menos'} que el mes pasado
-    </span>
-  )
-}
-
 export default function InicioPage() {
   const periodo = currentPeriod()
-  const anterior = addMonths(periodo, -1)
   const rango = monthRange(periodo)
 
   const saldo = useSaldo()
   const totales = useTotalesDelMes(periodo)
-  const totalesAnterior = useTotalesDelMes(anterior)
   const gasto = useGastoPorCategoria(periodo)
   const ingresosVsGastos = useIngresosVsGastos(12)
   const serie = useSerieSaldo()
@@ -116,7 +62,6 @@ export default function InicioPage() {
   )
 
   const t = totales.data
-  const prev = totalesAnterior.data
   const listaGasto = gasto.data ?? []
   const listaMovimientos = ultimos.result.data ?? []
 
@@ -138,22 +83,18 @@ export default function InicioPage() {
             variant="highlight"
             tone="accent"
             ribbon
-            eyebrow="Saldo"
+            eyebrow="Patrimonio"
             icon={<IconWallet size={18} stroke={2.2} />}
           >
-            {/* Una sola cifra: una cuenta y una divisa. El saldo NO está
-                guardado en ninguna parte, es la suma de los movimientos
-                (regla dura 7). */}
-            <AnimatedMoney
-              valor={saldo.data}
-              signed
-              className={`${styles.cifraGrande} tabular`}
-            />
-            <p className={styles.pieSaldo}>
-              {saldo.data === undefined
-                ? 'Calculando…'
-                : 'Suma de todo lo anotado hasta hoy.'}
-            </p>
+            {/* Una sola cifra, sin nada alrededor: el patrimonio ES el saldo
+                (misma cifra, regla dura 7) y no necesita más contexto que su
+                propio importe. Sin signo: aquí no hay "más o menos que qué". */}
+            <div className={styles.patrimonioWrap}>
+              <AnimatedMoney
+                valor={saldo.data}
+                className={`${styles.cifraGrande} tabular`}
+              />
+            </div>
           </SketchCard>
 
           <SketchCard
@@ -170,9 +111,6 @@ export default function InicioPage() {
                   valor={t?.ingresos}
                   className={`${styles.estadisticaValor} ${styles.ingreso} tabular`}
                 />
-                {t && (
-                  <Comparacion actual={t.ingresos} anterior={prev?.ingresos} bueno="sube" />
-                )}
               </div>
               <div className={styles.estadistica} data-tono="gasto">
                 <span className={styles.estadisticaEtiqueta}>Gastos</span>
@@ -180,7 +118,6 @@ export default function InicioPage() {
                   valor={t?.gastos}
                   className={`${styles.estadisticaValor} ${styles.gasto} tabular`}
                 />
-                {t && <Comparacion actual={t.gastos} anterior={prev?.gastos} bueno="baja" />}
               </div>
               <div className={styles.estadistica} data-tono="neto">
                 <span className={styles.estadisticaEtiqueta}>Neto</span>
@@ -191,7 +128,6 @@ export default function InicioPage() {
                   signed
                   className={`${styles.estadisticaValor} tabular`}
                 />
-                {t && <Comparacion actual={t.neto} anterior={prev?.neto} bueno="sube" />}
               </div>
             </div>
           </SketchCard>
