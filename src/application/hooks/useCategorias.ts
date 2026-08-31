@@ -6,6 +6,7 @@
 
 import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useInvalidate } from '@refinedev/core'
 import { notifications } from '@mantine/notifications'
 import {
   activarCategoria as activarCategoriaAction,
@@ -46,8 +47,14 @@ export function useCategorias(
  * Activa una categoría oculta. Tras éxito invalida el listado de Categorías Y
  * el catálogo (`useCatalogos`): sin esto, una categoría recién activada no
  * aparecería todavía en el `<Select>` de un movimiento nuevo.
+ *
+ * La invalidación del listado usa `useInvalidate` de Refine y no una clave a
+ * mano: la clave real de una query de Refine lleva un prefijo `['data',
+ * dataProviderName, ...]` que no es obvio desde fuera, y una clave que no
+ * coincide no invalida nada — ni avisa de que no lo ha hecho.
  */
 export function useActivarCategoria() {
+  const invalidate = useInvalidate()
   const queryClient = useQueryClient()
   const [isPending, setIsPending] = useState(false)
 
@@ -60,7 +67,7 @@ export function useActivarCategoria() {
           notifications.show({ title: 'No se ha podido', message: result.error, color: 'red' })
           return false
         }
-        await queryClient.invalidateQueries({ queryKey: ['default', 'Categorias'] })
+        await invalidate({ resource: 'Categorias', invalidates: ['list', 'many'] })
         await queryClient.invalidateQueries({ queryKey: ['catalogos'] })
         notifications.show({ title: 'Hecho', message: 'Categoría activada', color: 'teal' })
         return true
@@ -68,7 +75,7 @@ export function useActivarCategoria() {
         setIsPending(false)
       }
     },
-    [queryClient],
+    [invalidate, queryClient],
   )
 
   return { activar, isPending }
@@ -76,6 +83,7 @@ export function useActivarCategoria() {
 
 /** Oculta una categoría sin borrarla. Mismo patrón de invalidación que `useActivarCategoria`. */
 export function useOcultarCategoria() {
+  const invalidate = useInvalidate()
   const queryClient = useQueryClient()
   const [isPending, setIsPending] = useState(false)
 
@@ -88,7 +96,7 @@ export function useOcultarCategoria() {
           notifications.show({ title: 'No se ha podido', message: result.error, color: 'red' })
           return false
         }
-        await queryClient.invalidateQueries({ queryKey: ['default', 'Categorias'] })
+        await invalidate({ resource: 'Categorias', invalidates: ['list', 'many'] })
         await queryClient.invalidateQueries({ queryKey: ['catalogos'] })
         notifications.show({ title: 'Hecho', message: 'Categoría ocultada', color: 'teal' })
         return true
@@ -96,7 +104,7 @@ export function useOcultarCategoria() {
         setIsPending(false)
       }
     },
-    [queryClient],
+    [invalidate, queryClient],
   )
 
   return { ocultar, isPending }

@@ -9,6 +9,7 @@
 
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { categoriaSections } from '@/src/config/categorias/sections'
 import { useCategoria, useOcultarCategoria } from '@/src/application/hooks/useCategorias'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
@@ -32,6 +33,7 @@ const validate = {
 
 export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { query, result } = useCategoria(id ?? '')
   const { handleSubmit, isSubmitting, fieldErrors } = useEntityFormSubmit<CategoriaSaveDto>({
     resource: 'Categorias',
@@ -57,15 +59,20 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
       isSubmitting={isSubmitting}
       fieldErrors={fieldErrors}
       data={result as Partial<CategoriaSaveDto> | null}
-      onSubmit={(values) =>
-        handleSubmit({
+      onSubmit={async (values) => {
+        const resultado = await handleSubmit({
           ...values,
           icono: values.icono ?? '',
           // Cadena vacía = sin color, que es un estado válido.
           color: values.color ?? '',
           presupuesto: values.presupuesto ?? null,
         })
-      }
+        // El catálogo (`useCatalogos`) alimenta el <Select> de categoría de un
+        // movimiento nuevo: sin invalidarlo aquí, una categoría recién creada o
+        // renombrada no aparecería hasta recargar.
+        if (resultado) await queryClient.invalidateQueries({ queryKey: ['catalogos'] })
+        return resultado
+      }}
       exitTo="/Categorias"
     >
       {mode === 'edit' && (
