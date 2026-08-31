@@ -1,21 +1,12 @@
 /**
  * Formulario de Categoría. `.ts` sin JSX.
- *
- * Lleva parámetro porque las opciones de "categoría padre" son un CATÁLOGO (los
- * datos del usuario), no una enumeración: no pueden venir del metadata. El
- * `FormRefine` las saca de `useCatalogos` y las pasa aquí, memoizadas.
  */
 
 import { IconTag } from '@tabler/icons-react'
 import { SelectorColor } from '@/src/presentation/components/Forms/EntityForms/categoria/SelectorColor'
-import type { Option, SectionDefinition } from '@/src/config/_shared/types'
+import type { SectionDefinition } from '@/src/config/_shared/types'
 
-export function categoriaSections({
-  categoriasRaizOptions,
-}: {
-  /** Solo las categorías de primer nivel: la jerarquía es de un nivel. */
-  categoriasRaizOptions: Option[]
-}): SectionDefinition[] {
+export function categoriaSections(): SectionDefinition[] {
   return [
     {
       title: 'Datos de la categoría',
@@ -41,23 +32,6 @@ export function categoriaSections({
           disabledWhen: (_values, context) => context.mode === 'edit',
           tooltip:
             'Una categoría es de ingreso o de gasto, nunca las dos. No se puede cambiar después.',
-        },
-        {
-          name: 'padreId',
-          label: 'Categoría padre',
-          type: 'select',
-          clearable: true,
-          span: { base: 12, md: 6 },
-          // Opciones estáticas y no del metadata: son datos del usuario.
-          // `optionsFrom` filtra las que no encajan con el tipo elegido — una
-          // subcategoría de gasto colgando de una de ingreso no tiene sentido, y
-          // el repositorio la rechaza de todas formas.
-          optionsFrom: (values) => {
-            const propioId = String(values.id ?? '')
-            // Una categoría no puede ser su propia padre.
-            return categoriasRaizOptions.filter((o) => o.value !== propioId)
-          },
-          tooltip: 'Déjala vacía para una categoría de primer nivel.',
         },
         {
           name: 'icono',

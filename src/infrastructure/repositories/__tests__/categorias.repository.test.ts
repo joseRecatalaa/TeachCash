@@ -1,9 +1,9 @@
 /**
  * Repositorio de Categorías.
  *
- * El grueso son las reglas de jerarquía y de nombre único, porque la base NO
- * puede imponerlas por sí sola: en SQLite dos NULL son distintos, así que el
- * UNIQUE del esquema no impide dos categorías raíz con el mismo nombre.
+ * El grueso son la unicidad de nombre por usuario, el presupuesto obligatorio
+ * en gasto, y activar/ocultar — que son las tres reglas que la base NO puede
+ * imponer por sí sola o que no existen en absoluto a nivel de columna.
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -45,7 +45,6 @@ afterEach(() => ctx.close())
 const nueva = (overrides: Record<string, unknown> = {}) => ({
   nombre: 'Comida',
   tipo: 'expense',
-  padreId: '',
   icono: '',
   color: '',
   presupuesto: 500,
@@ -53,58 +52,26 @@ const nueva = (overrides: Record<string, unknown> = {}) => ({
 })
 
 describe('create', () => {
-  test('crea una categoría raíz', async () => {
+  test('crea una categoría', async () => {
     const { id } = await repo.create(USER_A, nueva())
     const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, id))
 
     expect(fila.userId).toBe(USER_A)
     expect(fila.name).toBe('Comida')
-    // Cadena vacía en el DTO ↔ NULL en la base. La traducción vive en el repo.
-    expect(fila.parentId).toBeNull()
     // Céntimos, tal cual: sin redondeos ni escalado en el repositorio.
     expect(fila.monthlyBudget).toBe(500)
     // Nace visible: solo las de fábrica nacen ocultas, y eso lo decide el seed.
     expect(fila.hidden).toBe(false)
   })
 
-  test('rechaza un nombre duplicado en la raíz', async () => {
+  test('rechaza un nombre duplicado', async () => {
     await repo.create(USER_A, nueva())
-    // El UNIQUE del esquema NO caza este caso (dos NULL son distintos en SQLite):
-    // si esta comprobación desaparece del repositorio, el duplicado entra.
     await expect(repo.create(USER_A, nueva())).rejects.toThrow(/Ya existe/)
   })
 
-  test('permite el mismo nombre bajo padres distintos', async () => {
-    const casa = await repo.create(USER_A, nueva({ nombre: 'Casa' }))
-    const coche = await repo.create(USER_A, nueva({ nombre: 'Coche' }))
-
-    await repo.create(USER_A, nueva({ nombre: 'Otros', padreId: casa.id }))
-    await expect(
-      repo.create(USER_A, nueva({ nombre: 'Otros', padreId: coche.id })),
-    ).resolves.toBeDefined()
-  })
-
-  test('rechaza una categoría padre de otro usuario', async () => {
-    await seedCategoria(ctx.db, 'ajena', USER_B)
-    await expect(
-      repo.create(USER_A, nueva({ padreId: 'ajena' })),
-    ).rejects.toThrow(/no existe/)
-  })
-
-  test('rechaza colgar un gasto de una categoría de ingresos', async () => {
-    await seedCategoria(ctx.db, 'nomina', USER_A, { kind: 'income' })
-    await expect(
-      repo.create(USER_A, nueva({ tipo: 'expense', padreId: 'nomina' })),
-    ).rejects.toThrow(/mismo tipo/)
-  })
-
-  test('rechaza el segundo nivel de anidamiento', async () => {
-    await seedCategoria(ctx.db, 'padre', USER_A)
-    await seedCategoria(ctx.db, 'hija', USER_A, { parentId: 'padre' })
-
-    await expect(
-      repo.create(USER_A, nueva({ nombre: 'Nieta', padreId: 'hija' })),
-    ).rejects.toThrow(/un solo nivel/)
+  test('permite el mismo nombre para usuarios distintos', async () => {
+    await repo.create(USER_A, nueva())
+    await expect(repo.create(USER_B, nueva())).resolves.toBeDefined()
   })
 
   test('rechaza un tipo inventado', async () => {
@@ -137,7 +104,6 @@ describe('autorización', () => {
     await expect(
       repo.update(USER_A, 'ajena', {
         nombre: 'Secuestrada',
-        padreId: '',
         icono: '',
         color: '',
         presupuesto: 500,
@@ -168,7 +134,6 @@ describe('update', () => {
 
     await repo.update(USER_A, 'c1', {
       nombre: 'Renombrada',
-      padreId: '',
       icono: '',
       color: '',
       presupuesto: 500,
@@ -181,25 +146,11 @@ describe('update', () => {
     expect(fila.name).toBe('Renombrada')
   })
 
-  test('una categoría no puede ser su propia padre', async () => {
-    await seedCategoria(ctx.db, 'c1', USER_A)
-    await expect(
-      repo.update(USER_A, 'c1', {
-        nombre: 'C1',
-        padreId: 'c1',
-        icono: '',
-        color: '',
-        presupuesto: 500,
-      }),
-    ).rejects.toThrow(/su propia padre/)
-  })
-
   test('exige un presupuesto positivo al editar una categoría de gasto', async () => {
     await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'expense', monthlyBudget: 500 })
     await expect(
       repo.update(USER_A, 'c1', {
         nombre: 'C1',
-        padreId: '',
         icono: '',
         color: '',
         presupuesto: null,
@@ -211,7 +162,6 @@ describe('update', () => {
     await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'expense', monthlyBudget: 500 })
     await repo.update(USER_A, 'c1', {
       nombre: 'C1',
-      padreId: '',
       icono: '',
       color: '',
       presupuesto: 1500,
@@ -224,7 +174,6 @@ describe('update', () => {
     await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'income' })
     await repo.update(USER_A, 'c1', {
       nombre: 'C1',
-      padreId: '',
       icono: '',
       color: '',
       presupuesto: 999,
@@ -312,13 +261,6 @@ describe('remove', () => {
     expect(filas).toHaveLength(1)
   })
 
-  test('no borra una categoría con subcategorías', async () => {
-    await seedCategoria(ctx.db, 'padre', USER_A)
-    await seedCategoria(ctx.db, 'hija', USER_A, { parentId: 'padre' })
-
-    await expect(repo.remove(USER_A, 'padre')).rejects.toThrow(/subcategorías/)
-  })
-
   test('borra una categoría suelta', async () => {
     await seedCategoria(ctx.db, 'suelta', USER_A)
     await repo.remove(USER_A, 'suelta')
@@ -335,18 +277,6 @@ describe('list', () => {
 
     const { data } = await repo.list(USER_A, { paginate: false, filters: { tipo: 'income' } })
     expect(data.map((c) => c.id)).toEqual(['ingreso'])
-  })
-
-  test('trae el nombre del padre resuelto', async () => {
-    await seedCategoria(ctx.db, 'padre', USER_A, { name: 'Casa' })
-    await seedCategoria(ctx.db, 'hija', USER_A, { name: 'Luz', parentId: 'padre' })
-
-    const { data } = await repo.list(USER_A, { paginate: false })
-    const hija = data.find((c) => c.id === 'hija')!
-    expect(hija.padreNombre).toBe('Casa')
-
-    const padre = data.find((c) => c.id === 'padre')!
-    expect(padre.padreNombre).toBeNull()
   })
 
   test('cuenta los usos sin contar los borrados', async () => {

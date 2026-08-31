@@ -23,8 +23,6 @@ export const categories = sqliteTable(
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
     name: text('name').notNull(),
-    /** Jerarquía de un solo nivel: null = categoría raíz. */
-    parentId: text('parent_id'),
     /** income | expense — una categoría no puede ser las dos cosas. */
     kind: text('kind').notNull(),
     icon: text('icon'),
@@ -47,11 +45,8 @@ export const categories = sqliteTable(
     hidden: integer('hidden', { mode: 'boolean' }).notNull().default(false),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
-  // OJO: SQLite considera dos NULL como distintos, así que este UNIQUE no impide
-  // dos categorías raíz con el mismo nombre (parent_id NULL). La comprobación de
-  // duplicados en la raíz se hace en la acción, no se puede delegar aquí.
   (t) => [
-    unique('categories_user_name').on(t.userId, t.name, t.parentId),
+    unique('categories_user_name').on(t.userId, t.name),
     index('categories_user_idx').on(t.userId),
   ],
 )

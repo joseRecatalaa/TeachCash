@@ -64,7 +64,6 @@ afterEach(() => ctx.close())
 const nueva = (overrides: Record<string, unknown> = {}) => ({
   nombre: 'Comida',
   tipo: 'expense',
-  padreId: '',
   icono: '',
   color: '',
   presupuesto: 500,

@@ -10,7 +10,6 @@
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { categoriaSections } from '@/src/config/categorias/sections'
-import { useCatalogos } from '@/src/application/hooks/useCatalogos'
 import { useCategoria, useOcultarCategoria } from '@/src/application/hooks/useCategorias'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import { SketchButton } from '@/src/presentation/components/ui'
@@ -34,7 +33,6 @@ const validate = {
 export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
   const router = useRouter()
   const { query, result } = useCategoria(id ?? '')
-  const { categoriasRaizOptions, isLoadingCatalogos } = useCatalogos()
   const { handleSubmit, isSubmitting, fieldErrors } = useEntityFormSubmit<CategoriaSaveDto>({
     resource: 'Categorias',
     entityName: 'Categoría',
@@ -43,12 +41,9 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
   })
   const { ocultar, isPending: isOcultando } = useOcultarCategoria()
 
-  // Memoizado sobre las opciones: sin esto se construiría un array de secciones
-  // nuevo en cada tecla y el memo del `FieldRenderer` no cortaría nada.
-  const sections = useMemo(
-    () => categoriaSections({ categoriasRaizOptions }),
-    [categoriasRaizOptions],
-  )
+  // Memoizado: sin esto se construiría un array de secciones nuevo en cada
+  // tecla y el memo del `FieldRenderer` no cortaría nada.
+  const sections = useMemo(() => categoriaSections(), [])
 
   return (
     <GenericForm<CategoriaSaveDto>
@@ -57,17 +52,14 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
       mode={mode}
       resource="Categorias"
       validate={validate}
-      initialValues={{ tipo: 'expense', padreId: '', icono: '', color: '', presupuesto: null }}
-      isLoadingData={(mode === 'edit' && query.isLoading) || isLoadingCatalogos}
+      initialValues={{ tipo: 'expense', icono: '', color: '', presupuesto: null }}
+      isLoadingData={mode === 'edit' && query.isLoading}
       isSubmitting={isSubmitting}
       fieldErrors={fieldErrors}
       data={result as Partial<CategoriaSaveDto> | null}
       onSubmit={(values) =>
         handleSubmit({
           ...values,
-          // El `<Select>` limpio devuelve '' y eso es exactamente lo que el DTO
-          // llama "raíz". La traducción a NULL de base la hace el repositorio.
-          padreId: values.padreId ?? '',
           icono: values.icono ?? '',
           // Cadena vacía = sin color, que es un estado válido.
           color: values.color ?? '',

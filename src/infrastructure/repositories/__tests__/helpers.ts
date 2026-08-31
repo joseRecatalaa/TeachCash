@@ -31,7 +31,6 @@ export async function seedCategoria(
     userId,
     name: `Categoría ${id}`,
     kind: 'expense',
-    parentId: null,
     createdAt: FECHA_ALTA,
     ...overrides,
   })

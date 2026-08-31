@@ -1,9 +1,7 @@
 /**
  * Catálogo de categorías por defecto.  `pnpm db:seed`
  *
- * Idempotente: si el usuario ya tiene categorías, no toca nada. No se puede
- * delegar en ON CONFLICT porque el UNIQUE incluye `parent_id`, y SQLite trata
- * dos NULL como valores distintos: las categorías raíz no chocarían nunca.
+ * Idempotente: si el usuario ya tiene categorías, no toca nada.
  */
 
 import { eq } from 'drizzle-orm'
@@ -65,13 +63,12 @@ if (existing.length > 0) {
       id: crypto.randomUUID(),
       userId: LOCAL_USER_ID,
       name: c.name,
-      parentId: null,
       kind: c.kind,
       icon: c.icon,
       color: c.color,
-      // Nacen ocultas: el usuario arranca sin categorías y las activa desde el
-      // catálogo de predefinidas en Categorías, poniendo su presupuesto si son
-      // de gasto.
+      // Nacen ocultas: el usuario arranca sin categorías y las elige desde
+      // «Nueva categoría» → «Elegir una predefinida», poniendo su presupuesto
+      // si son de gasto.
       hidden: true,
       createdAt: now,
     })),

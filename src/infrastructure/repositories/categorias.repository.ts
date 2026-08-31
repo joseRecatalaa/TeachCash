@@ -29,8 +29,6 @@ const CategoriaSave = z.object({
   // Una categoría es de ingreso o de gasto, nunca las dos: es lo que permite
   // filtrar el selector de categorías según el sentido del movimiento.
   tipo: z.enum(CATEGORY_KINDS, { message: 'Tipo no válido' }),
-  /** Cadena vacía = raíz. La traducción a NULL de base se hace más abajo. */
-  padreId: z.string(),
   icono: z.string().trim().max(8, 'Máximo 8 caracteres'),
   // Se guarda la CLAVE de la paleta, no el color. Ver `lib/colores.ts`: si
   // mañana se ajusta un tono, las categorías ya guardadas lo heredan solas.
@@ -45,9 +43,6 @@ const CategoriaSave = z.object({
 /** El tipo NO se puede cambiar: los movimientos ya clasificados dependen de él. */
 const CategoriaUpdate = CategoriaSave.omit({ tipo: true })
 
-/** `''` en el DTO ↔ `null` en la base. Un solo sitio donde se traduce. */
-const toDbParent = (padreId: string): string | null => padreId || null
-
 /**
  * El presupuesto mensual es obligatorio en una categoría de gasto: es lo que
  * hace que Planificación mensual no tenga que distinguir "sin planificar" de
@@ -59,6 +54,31 @@ function assertPresupuestoValido(tipo: string, presupuesto: number | null): void
       'El presupuesto mensual es obligatorio para una categoría de gasto',
       { presupuesto: 'Indica cuánto planeas gastar al mes' },
     )
+  }
+}
+
+/**
+ * Ya existe una categoría con ese nombre para este usuario.
+ *
+ * Sin jerarquía, el nombre es único por usuario y punto: no hace falta
+ * comprobar "en el mismo nivel", así que el UNIQUE del esquema
+ * (`categories_user_name`) sí puede imponerlo, pero se comprueba aquí primero
+ * para devolver un error de campo legible en vez de una excepción de SQLite.
+ */
+async function assertNombreLibre(
+  userId: string,
+  nombre: string,
+  excluirId: string | null,
+): Promise<void> {
+  const rows = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(and(eq(categories.userId, userId), eq(categories.name, nombre)))
+
+  if (rows.some((r) => r.id !== excluirId)) {
+    throw new RepositoryError('Ya existe una categoría con ese nombre', {
+      nombre: 'Ya existe una categoría con ese nombre',
+    })
   }
 }
 
@@ -79,8 +99,6 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       eq(categories.userId, userId),
       search ? like(categories.name, `%${search}%`) : undefined,
       params.filters?.tipo ? eq(categories.kind, String(params.filters.tipo)) : undefined,
-      // 'root' y no '' porque un filtro vacío es "sin filtrar", no "las raíz".
-      params.filters?.padreId === 'root' ? isNull(categories.parentId) : undefined,
       params.filters?.oculta !== undefined
         ? eq(categories.hidden, String(params.filters.oculta) === 'true')
         : undefined,
@@ -94,7 +112,6 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         id: categories.id,
         nombre: categories.name,
         tipo: categories.kind,
-        padreId: categories.parentId,
         icono: categories.icon,
         color: categories.color,
         presupuesto: categories.monthlyBudget,
@@ -112,16 +129,11 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       .groupBy(transactions.categoryId)
 
     const usosPorCategoria = new Map(usos.map((u) => [u.categoryId, u.total]))
-    // El nombre del padre sale del propio conjunto ya cargado: la jerarquía es
-    // de un solo nivel y son decenas de filas, no un árbol que haya que recorrer.
-    const nombrePorId = new Map(rows.map((r) => [r.id, r.nombre]))
 
     const data = rows.map((r) => ({
       id: r.id,
       nombre: r.nombre,
       tipo: r.tipo,
-      padreId: r.padreId ?? '',
-      padreNombre: r.padreId ? (nombrePorId.get(r.padreId) ?? null) : null,
       icono: r.icono,
       color: r.color ?? '',
       presupuesto: r.presupuesto ?? null,
@@ -143,7 +155,6 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         id: categories.id,
         nombre: categories.name,
         tipo: categories.kind,
-        padreId: categories.parentId,
         icono: categories.icon,
         color: categories.color,
         presupuesto: categories.monthlyBudget,
@@ -158,7 +169,6 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       id: r.id,
       nombre: r.nombre,
       tipo: r.tipo,
-      padreId: r.padreId ?? '',
       icono: r.icono ?? '',
       color: r.color ?? '',
       presupuesto: r.presupuesto ?? null,
@@ -169,9 +179,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     const parsed = CategoriaSave.safeParse(values)
     if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
 
-    const padreId = toDbParent(parsed.data.padreId)
-    await assertPadreValido(userId, padreId, parsed.data.tipo)
-    await assertNombreLibre(userId, parsed.data.nombre, padreId, null)
+    await assertNombreLibre(userId, parsed.data.nombre, null)
     assertPresupuestoValido(parsed.data.tipo, parsed.data.presupuesto)
 
     const id = crypto.randomUUID()
@@ -180,7 +188,6 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       userId,
       name: parsed.data.nombre,
       kind: parsed.data.tipo,
-      parentId: padreId,
       icon: parsed.data.icono || null,
       color: parsed.data.color || null,
       // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
@@ -198,21 +205,13 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     const actual = await this.get(userId, id)
     if (!actual) throw new RepositoryError(NOT_FOUND)
 
-    const padreId = toDbParent(parsed.data.padreId)
-    if (padreId === id) {
-      throw new RepositoryError('Una categoría no puede ser su propia padre', {
-        padreId: 'Elige otra categoría',
-      })
-    }
-    await assertPadreValido(userId, padreId, actual.tipo)
-    await assertNombreLibre(userId, parsed.data.nombre, padreId, id)
+    await assertNombreLibre(userId, parsed.data.nombre, id)
     assertPresupuestoValido(actual.tipo, parsed.data.presupuesto)
 
     const updated = await db
       .update(categories)
       .set({
         name: parsed.data.nombre,
-        parentId: padreId,
         icon: parsed.data.icono || null,
         color: parsed.data.color || null,
         monthlyBudget: actual.tipo === 'expense' ? parsed.data.presupuesto : null,
@@ -240,15 +239,6 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       )
     }
 
-    const [{ count: hijas }] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(categories)
-      .where(and(eq(categories.parentId, id), eq(categories.userId, userId)))
-
-    if (hijas > 0) {
-      throw new RepositoryError('La categoría tiene subcategorías. Bórralas o muévelas primero.')
-    }
-
     const deleted = await db
       .delete(categories)
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
@@ -260,68 +250,11 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Reglas de dominio
+// Catálogos y operaciones fuera del CRUD
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** La jerarquía es de UN solo nivel y padre e hija comparten tipo. */
-async function assertPadreValido(
-  userId: string,
-  padreId: string | null,
-  tipo: string,
-): Promise<void> {
-  if (!padreId) return
-
-  const rows = await db
-    .select({ kind: categories.kind, parentId: categories.parentId })
-    .from(categories)
-    .where(and(eq(categories.id, padreId), eq(categories.userId, userId)))
-    .limit(1)
-
-  const padre = rows[0]
-  if (!padre) throw new RepositoryError('La categoría padre no existe', { padreId: NOT_FOUND })
-  if (padre.parentId !== null) {
-    throw new RepositoryError('La jerarquía es de un solo nivel', {
-      padreId: 'Esa categoría ya es una subcategoría',
-    })
-  }
-  if (padre.kind !== tipo) {
-    throw new RepositoryError('El padre debe ser del mismo tipo', {
-      padreId: 'El tipo no coincide con el de la categoría',
-    })
-  }
-}
-
 /**
- * SQLite considera dos NULL como distintos, así que el UNIQUE del esquema NO
- * impide dos categorías raíz con el mismo nombre. Esa comprobación tiene que
- * hacerse aquí; no se puede delegar en la base.
- */
-async function assertNombreLibre(
-  userId: string,
-  nombre: string,
-  padreId: string | null,
-  excluirId: string | null,
-): Promise<void> {
-  const rows = await db
-    .select({ id: categories.id })
-    .from(categories)
-    .where(
-      and(
-        eq(categories.userId, userId),
-        eq(categories.name, nombre),
-        padreId === null ? isNull(categories.parentId) : eq(categories.parentId, padreId),
-      ),
-    )
-
-  if (rows.some((r) => r.id !== excluirId)) {
-    throw new RepositoryError('Ya existe una categoría con ese nombre', {
-      nombre: 'Ya existe una categoría con ese nombre en el mismo nivel',
-    })
-  }
-}
-
-/**
- * Catálogo para los `<Select>` de categoría. Ordenado y con el tipo al lado.
+ * Catálogo para los `<Select>` de categoría. Ordenado.
  *
  * Solo categorías VISIBLES: una oculta no debe poder elegirse en un
  * movimiento nuevo, aunque siga siendo un destino válido para los que ya la
@@ -329,15 +262,12 @@ async function assertNombreLibre(
  */
 export async function listarCatalogoCategorias(
   userId: string,
-): Promise<
-  { id: string; nombre: string; tipo: string; padreId: string | null; color: string | null }[]
-> {
+): Promise<{ id: string; nombre: string; tipo: string; color: string | null }[]> {
   return db
     .select({
       id: categories.id,
       nombre: categories.name,
       tipo: categories.kind,
-      padreId: categories.parentId,
       color: categories.color,
     })
     .from(categories)

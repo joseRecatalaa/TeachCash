@@ -30,8 +30,6 @@ export const useDeleteCategoria = categoriaHooks.useDelete
 export type CategoriasFilters = {
   /** income | expense */
   tipo?: string
-  /** `'root'` = solo las de primer nivel. Vacío = todas. */
-  padreId?: string
   /** `'true'`/`'false'`. Vacío = todas, visibles y ocultas mezcladas. */
   oculta?: string
 }

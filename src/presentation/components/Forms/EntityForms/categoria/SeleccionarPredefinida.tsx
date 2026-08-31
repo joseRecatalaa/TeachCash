@@ -1,28 +1,35 @@
 'use client'
 
 /**
- * Catálogo de categorías ocultas: las de fábrica sin activar todavía, y
- * cualquiera que el propio usuario haya ocultado antes.
+ * Elegir una categoría predefinida en vez de crearla desde cero.
  *
- * Activar una de gasto sin presupuesto pide el importe ahí mismo — no tiene
- * sentido dejarla entrar en Planificación mensual sin uno, y es justo el
- * momento en el que la persona ya está pensando en esa categoría.
+ * Vive dentro de `/Categorias/Create`, como alternativa al formulario
+ * personalizado: es la rama "de las que ya tenemos definidas" del alta de
+ * categoría. Activar una fila reutiliza la fila (predefinida y oculta desde
+ * el seed) — no crea un registro nuevo, solo la hace visible — y si es de
+ * gasto sin presupuesto todavía, lo pide ahí mismo.
  */
 
 import { useState } from 'react'
-import { Group, Modal, Stack, Text } from '@mantine/core'
+import { Group, Stack, Text } from '@mantine/core'
 import { useActivarCategoria, useCategorias } from '@/src/application/hooks/useCategorias'
 import { MoneyInput } from '@/src/presentation/components/Forms/GenericForm/MoneyInput'
 import { EmptyState, SketchButton } from '@/src/presentation/components/ui'
 import { DIVISA_APP } from '@/lib/money'
 import type { CategoriaListDto } from '@/src/types/categoria.types'
-import styles from './CatalogoPredefinidasModal.module.css'
+import styles from './SeleccionarPredefinida.module.css'
 
-interface CatalogoPredefinidasModalProps {
-  onClose: () => void
+interface SeleccionarPredefinidaProps {
+  onActivada: () => void
 }
 
-function FilaCategoria({ categoria }: { categoria: CategoriaListDto }) {
+function FilaCategoria({
+  categoria,
+  onActivada,
+}: {
+  categoria: CategoriaListDto
+  onActivada: () => void
+}) {
   const { activar, isPending } = useActivarCategoria()
   // Solo una de gasto sin presupuesto todavía necesita que se lo pidan aquí:
   // una de ingreso no lo usa, y una que ya tuvo uno (se ocultó y se reactiva)
@@ -58,35 +65,37 @@ function FilaCategoria({ categoria }: { categoria: CategoriaListDto }) {
           variant="secondary"
           loading={isPending}
           disabled={bloqueada}
-          onClick={() => activar(categoria.id, presupuesto)}
+          onClick={async () => {
+            if (await activar(categoria.id, presupuesto)) onActivada()
+          }}
         >
-          Activar
+          Añadir
         </SketchButton>
       </Group>
     </Group>
   )
 }
 
-export function CatalogoPredefinidasModal({ onClose }: CatalogoPredefinidasModalProps) {
+export function SeleccionarPredefinida({ onActivada }: SeleccionarPredefinidaProps) {
   const { result, query } = useCategorias({ oculta: 'true' }, { paginate: false })
   const categorias = result.data ?? []
 
+  if (!query.isLoading && categorias.length === 0) {
+    return (
+      <EmptyState
+        compacto
+        dibujo="etiquetas"
+        titulo="No queda ninguna predefinida"
+        descripcion="Ya has añadido todas. Prueba a crear una nueva personalizada."
+      />
+    )
+  }
+
   return (
-    <Modal opened onClose={onClose} title="Categorías predefinidas" size="lg" centered>
-      {!query.isLoading && categorias.length === 0 ? (
-        <EmptyState
-          compacto
-          dibujo="etiquetas"
-          titulo="No hay categorías por activar"
-          descripcion="Todas las predefinidas ya están activas, o las has ocultado. Crea una nueva desde «Nueva categoría»."
-        />
-      ) : (
-        <Stack gap={0}>
-          {categorias.map((c) => (
-            <FilaCategoria key={c.id} categoria={c} />
-          ))}
-        </Stack>
-      )}
-    </Modal>
+    <Stack gap={0}>
+      {categorias.map((c) => (
+        <FilaCategoria key={c.id} categoria={c} onActivada={onActivada} />
+      ))}
+    </Stack>
   )
 }

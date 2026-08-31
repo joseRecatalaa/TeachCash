@@ -65,7 +65,6 @@ afterEach(() => ctx.close())
 const categoria = {
   nombre: 'Nómina',
   tipo: 'income',
-  padreId: '',
   icono: '',
   color: '',
   presupuesto: null,

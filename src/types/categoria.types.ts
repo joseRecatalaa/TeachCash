@@ -11,9 +11,6 @@ export interface CategoriaListDto {
   nombre: string
   /** income | expense. Enum como string: las opciones vienen del metadata. */
   tipo: string
-  /** Jerarquía de un solo nivel. Cadena vacía = categoría raíz. */
-  padreId: string
-  padreNombre: string | null
   icono: string | null
   /**
    * CLAVE de la paleta ('cat-1'…'cat-8'), no un color. Cadena vacía = sin
@@ -35,12 +32,6 @@ export interface CategoriaListDto {
 export interface CategoriaSaveDto {
   nombre: string
   tipo: string
-  /**
-   * Cadena vacía = raíz, no `null`. Un `<Select>` de Mantine con valor `null`
-   * es "sin tocar"; con cadena vacía es "elegida la opción raíz". La conversión
-   * a NULL de base la hace el repositorio, que es donde vive esa semántica.
-   */
-  padreId: string
   icono: string
   color: string
   /** Obligatorio si `tipo === 'expense'`; el repositorio lo ignora en ingreso. */

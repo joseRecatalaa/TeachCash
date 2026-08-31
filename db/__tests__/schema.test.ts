@@ -135,7 +135,6 @@ describe('esquema', () => {
     })
     const [cat] = await ctx.db.select().from(categories)
     expect(cat.kind).toBe('expense')
-    expect(cat.parentId).toBeNull()
     expect(cat.color).toBeNull()
   })
 })

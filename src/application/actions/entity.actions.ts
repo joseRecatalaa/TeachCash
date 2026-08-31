@@ -219,7 +219,6 @@ export type CatalogoCategoria = {
   id: string
   nombre: string
   tipo: string
-  padreId: string | null
   color: string | null
 }
 
