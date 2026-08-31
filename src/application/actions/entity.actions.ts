@@ -47,7 +47,6 @@ import {
   type ListParams,
   type ListResult,
 } from '@/src/infrastructure/repositories'
-import { restaurarMovimiento as restaurarMovimientoRepo } from '@/src/infrastructure/repositories/movimientos.repository'
 import { getSaldoActual } from '@/src/infrastructure/repositories/informes.repository'
 import {
   activarCategoria as activarCategoriaRepo,
@@ -157,20 +156,7 @@ export async function deleteEntity(
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Operaciones fuera del CRUD
-//
-// Todo lo que no es una de las cinco operaciones CRUD. Hoy solo hay una cosa:
-// sacar un movimiento de la papelera. Tiene su hook escrito a mano en
-// `application/hooks/`, no sale de `createEntityHooks`.
 // ─────────────────────────────────────────────────────────────────────────────
-
-/** Deshace un borrado lógico. */
-export async function restaurarMovimiento(
-  id: string,
-): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => restaurarMovimientoRepo(userId, id))
-  if (resultado.ok) revalidar('Movimientos')
-  return resultado
-}
 
 /** Activa una categoría oculta (predefinida o propia), fijando su presupuesto si es de gasto. */
 export async function activarCategoria(

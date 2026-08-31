@@ -7,9 +7,11 @@
  *   `DIVISA_APP` en `lib/money.ts`. Por eso no hay columna de moneda en ninguna
  *   tabla — el día que haya más de una, se añade aquí y allí a la vez.
  * - Las fechas de movimiento son texto 'YYYY-MM-DD' (fecha civil).
- *   Los timestamps (createdAt, deletedAt) sí son instantes reales.
+ *   Los timestamps (createdAt) sí son instantes reales.
  * - Toda tabla de datos de usuario lleva `userId`.
- * - Los movimientos se borran de forma lógica (`deletedAt`), no física.
+ * - Los movimientos se borran de forma FÍSICA. No hay papelera ni deshacer:
+ *   el modal de confirmación es la única red, y por eso es obligatorio.
+ * - Todo movimiento tiene categoría. No existe el movimiento sin clasificar.
  *
  * No hay tabla de cuentas: hay UNA cuenta implícita y su saldo es la suma de los
  * movimientos (regla dura 7 — los saldos son derivados, no se guardan).
@@ -56,8 +58,8 @@ export const transactions = sqliteTable(
   {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
-    /** Nullable: un movimiento sin clasificar es válido. */
-    categoryId: text('category_id').references(() => categories.id),
+    /** Obligatoria: todo movimiento está clasificado, sin estado intermedio. */
+    categoryId: text('category_id').notNull().references(() => categories.id),
     /** Céntimos CON SIGNO: negativo = gasto, positivo = ingreso. */
     amount: integer('amount').notNull(),
     /** Fecha civil 'YYYY-MM-DD'. Nunca un timestamp. */
@@ -68,7 +70,6 @@ export const transactions = sqliteTable(
     importHash: text('import_hash'),
     /** Clave del cliente: convierte el doble clic en un choque contra el índice. */
     idempotencyKey: text('idempotency_key'),
-    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (t) => [

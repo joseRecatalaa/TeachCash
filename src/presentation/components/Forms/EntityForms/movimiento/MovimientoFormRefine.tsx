@@ -24,6 +24,7 @@ interface MovimientoFormProps {
 
 const validate = {
   sentido: (value: unknown) => (!value ? 'Elige si es ingreso o gasto' : null),
+  categoriaId: (value: unknown) => (!value ? 'Elige una categoría' : null),
   fecha: (value: unknown) => (!value ? 'La fecha es obligatoria' : null),
   descripcion: (value: unknown) =>
     !String(value ?? '').trim() ? 'Pon una descripción' : null,

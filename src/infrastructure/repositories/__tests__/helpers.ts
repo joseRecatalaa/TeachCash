@@ -9,6 +9,7 @@
  * única `db` compartida, y aquí se cambia por la base desechable del test.
  */
 
+import { eq } from 'drizzle-orm'
 import { categories, transactions } from '@/db/schema'
 import type { Database } from '@/db/client'
 
@@ -37,21 +38,45 @@ export async function seedCategoria(
   return id
 }
 
+/**
+ * Sin `categoryId` explícito en `overrides`, crea (si hace falta) y usa una
+ * categoría por defecto del mismo usuario: un movimiento siempre necesita una
+ * categoría, y a la mayoría de estos tests no les importa cuál.
+ */
 export async function seedMovimiento(
   db: Database,
   id: string,
   userId: string,
   overrides: Partial<typeof transactions.$inferInsert> = {},
 ): Promise<string> {
+  const categoryId = overrides.categoryId ?? `cat-default-${userId}`
+
+  if (!overrides.categoryId) {
+    const existe = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(eq(categories.id, categoryId))
+      .limit(1)
+    if (existe.length === 0) {
+      await db.insert(categories).values({
+        id: categoryId,
+        userId,
+        name: 'Categoría por defecto',
+        kind: 'expense',
+        createdAt: FECHA_ALTA,
+      })
+    }
+  }
+
   await db.insert(transactions).values({
     id,
     userId,
-    categoryId: null,
     amount: -1000,
     date: '2026-03-15',
     description: `Movimiento ${id}`,
     createdAt: FECHA_ALTA,
     ...overrides,
+    categoryId,
   })
   return id
 }

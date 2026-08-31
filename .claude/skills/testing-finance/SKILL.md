@@ -99,8 +99,8 @@ Si los tests pasan en `Europe/Madrid` pero fallan en UTC+14, hay un `Date` donde
 debería haber una fecha civil. → skill `finance-data-model`
 
 **El saldo, que es DERIVADO**
-- Es la suma de los movimientos vivos: lo que está en la papelera no cuenta
-- Restaurar un movimiento lo devuelve al saldo
+- Es la suma de los movimientos que quedan: borrar uno (borrado físico, sin
+  papelera) lo saca del saldo para siempre
 - `getSaldoActual` y el último punto de `getSerieSaldo` dan la MISMA cifra. Dos
   caminos distintos hasta el mismo número es lo que prueba que nadie ha
   materializado un saldo por su cuenta (regla dura 7)

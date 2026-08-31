@@ -8,16 +8,12 @@
  */
 
 import { Suspense, useMemo, useState } from 'react'
-import { Group, Switch } from '@mantine/core'
+import { Group } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
 import { IconArrowsLeftRight } from '@tabler/icons-react'
 import { usePaginacion } from '@/src/application/hooks/usePaginacion'
 import { useCatalogos } from '@/src/application/hooks/useCatalogos'
-import {
-  useMovimientos,
-  useRestaurarMovimiento,
-  type MovimientosFilters,
-} from '@/src/application/hooks/useMovimientos'
+import { useMovimientos, type MovimientosFilters } from '@/src/application/hooks/useMovimientos'
 import { movimientoColumns } from '@/src/config/movimientos/columns'
 import { EntityListPage } from '@/src/presentation/components/EntityListPage'
 import { currentPeriod, monthRange } from '@/lib/dates'
@@ -31,20 +27,14 @@ function MovimientosContenido() {
     return [from, to]
   })
 
-  // La papelera se enseña APARTE, no mezclada con los vivos: una lista donde
-  // conviven movimientos borrados y no borrados tiene totales que no cuadran.
-  const [verBorrados, setVerBorrados] = useState(false)
-
   const { categoriasPorTipo } = useCatalogos()
-  const { restaurar } = useRestaurarMovimiento()
 
   const baseFilter = useMemo<MovimientosFilters>(
     () => ({
       desde: rango[0] ?? undefined,
       hasta: rango[1] ?? undefined,
-      borrados: verBorrados ? '1' : undefined,
     }),
-    [rango, verBorrados],
+    [rango],
   )
 
   const { data, query, tableProps } = usePaginacion<MovimientosFilters, MovimientoListDto>(
@@ -60,16 +50,13 @@ function MovimientosContenido() {
   )
 
   const columns = useMemo(
-    () => movimientoColumns({ categoriasOptions, verBorrados, onRestaurar: restaurar }),
-    [categoriasOptions, verBorrados, restaurar],
+    () => movimientoColumns({ categoriasOptions }),
+    [categoriasOptions],
   )
 
   return (
     <EntityListPage<MovimientoListDto>
-      header={{
-        title: verBorrados ? 'Movimientos borrados' : 'Movimientos',
-        icon: IconArrowsLeftRight,
-      }}
+      header={{ title: 'Movimientos', icon: IconArrowsLeftRight }}
       columns={columns}
       data={data}
       isLoading={query.isLoading}
@@ -78,21 +65,10 @@ function MovimientosContenido() {
       resource="Movimientos"
       exportExcel="MOVIMIENTOS"
       searchPlaceholder="Buscar por descripción..."
-      noRecordsText={
-        verBorrados ? 'No hay movimientos borrados' : 'No hay movimientos en este periodo'
-      }
-      create={
-        verBorrados
-          ? undefined
-          : { label: 'Nuevo movimiento', href: '/Movimientos/Create' }
-      }
+      noRecordsText="No hay movimientos en este periodo"
+      create={{ label: 'Nuevo movimiento', href: '/Movimientos/Create' }}
       extraToolbarActions={
         <Group gap="sm">
-          <Switch
-            label="Ver borrados"
-            checked={verBorrados}
-            onChange={(e) => setVerBorrados(e.currentTarget.checked)}
-          />
           <DatePickerInput
             type="range"
             value={rango}

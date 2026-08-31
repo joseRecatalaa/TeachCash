@@ -24,7 +24,7 @@ vi.mock('@/db', async () => {
 })
 
 import { createTestDb, type TestDb } from '@/db/testing'
-import { categories } from '@/db/schema'
+import { categories, transactions } from '@/db/schema'
 import {
   activarCategoria,
   categoriasRepository as repo,
@@ -251,14 +251,38 @@ describe('ocultarCategoria', () => {
 })
 
 describe('remove', () => {
-  test('no borra una categoría en uso', async () => {
+  test('borrar una categoría en uso se lleva por delante sus movimientos', async () => {
     await seedCategoria(ctx.db, 'usada', USER_A)
     await seedMovimiento(ctx.db, 'm1', USER_A, { categoryId: 'usada' })
+    await seedMovimiento(ctx.db, 'm2', USER_A, { categoryId: 'usada' })
 
-    await expect(repo.remove(USER_A, 'usada')).rejects.toThrow(/Reclasifícalos/)
+    await repo.remove(USER_A, 'usada')
 
-    const filas = await ctx.db.select().from(categories).where(eq(categories.id, 'usada'))
-    expect(filas).toHaveLength(1)
+    const categoriaFilas = await ctx.db.select().from(categories).where(eq(categories.id, 'usada'))
+    expect(categoriaFilas).toHaveLength(0)
+
+    // Ni papelera ni "sin clasificar": una categoría es obligatoria en todo
+    // movimiento, así que sin ella el movimiento tampoco puede quedarse.
+    const movimientos = await ctx.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, USER_A))
+    expect(movimientos).toHaveLength(0)
+  })
+
+  test('no toca los movimientos de otras categorías', async () => {
+    await seedCategoria(ctx.db, 'usada', USER_A)
+    await seedCategoria(ctx.db, 'otra', USER_A)
+    await seedMovimiento(ctx.db, 'm1', USER_A, { categoryId: 'usada' })
+    await seedMovimiento(ctx.db, 'm2', USER_A, { categoryId: 'otra' })
+
+    await repo.remove(USER_A, 'usada')
+
+    const movimientos = await ctx.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, USER_A))
+    expect(movimientos.map((m) => m.id)).toEqual(['m2'])
   })
 
   test('borra una categoría suelta', async () => {
@@ -279,16 +303,13 @@ describe('list', () => {
     expect(data.map((c) => c.id)).toEqual(['ingreso'])
   })
 
-  test('cuenta los usos sin contar los borrados', async () => {
+  test('cuenta los usos', async () => {
     await seedCategoria(ctx.db, 'c1', USER_A)
-    await seedMovimiento(ctx.db, 'vivo', USER_A, { categoryId: 'c1' })
-    await seedMovimiento(ctx.db, 'borrado', USER_A, {
-      categoryId: 'c1',
-      deletedAt: new Date(),
-    })
+    await seedMovimiento(ctx.db, 'm1', USER_A, { categoryId: 'c1' })
+    await seedMovimiento(ctx.db, 'm2', USER_A, { categoryId: 'c1' })
 
     const { data } = await repo.list(USER_A, { paginate: false })
-    expect(data[0].usos).toBe(1)
+    expect(data[0].usos).toBe(2)
   })
 
   test('se puede filtrar por oculta', async () => {

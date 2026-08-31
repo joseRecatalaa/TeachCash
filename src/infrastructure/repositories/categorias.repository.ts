@@ -5,7 +5,7 @@
  * cliente. La frontera es `entity.actions.ts`.
  */
 
-import { and, asc, desc, eq, isNull, like, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions, CATEGORY_KINDS } from '@/db/schema'
@@ -125,7 +125,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     const usos = await db
       .select({ categoryId: transactions.categoryId, total: sql<number>`count(*)` })
       .from(transactions)
-      .where(and(eq(transactions.userId, userId), isNull(transactions.deletedAt)))
+      .where(eq(transactions.userId, userId))
       .groupBy(transactions.categoryId)
 
     const usosPorCategoria = new Map(usos.map((u) => [u.categoryId, u.total]))
@@ -224,28 +224,26 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
   },
 
   /**
-   * No se borra una categoría en uso: los movimientos que la usan perderían su
-   * clasificación y los informes de meses cerrados cambiarían solos.
+   * Borrar una categoría se propaga a sus movimientos: no hay estado
+   * "sin clasificar" a donde reubicarlos (la categoría es obligatoria en un
+   * movimiento) ni papelera donde archivarlos (el borrado es físico), así que
+   * se borran con ella. En una transacción: sin los movimientos fuera de en
+   * medio, el `delete` de la categoría chocaría contra su FK.
    */
   async remove(userId: string, id: string): Promise<{ id: string }> {
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(transactions)
-      .where(and(eq(transactions.categoryId, id), eq(transactions.userId, userId)))
+    return db.transaction(async (tx) => {
+      await tx
+        .delete(transactions)
+        .where(and(eq(transactions.categoryId, id), eq(transactions.userId, userId)))
 
-    if (count > 0) {
-      throw new RepositoryError(
-        `La categoría tiene ${count} movimiento(s). Reclasifícalos antes de borrarla.`,
-      )
-    }
+      const deleted = await tx
+        .delete(categories)
+        .where(and(eq(categories.id, id), eq(categories.userId, userId)))
+        .returning({ id: categories.id })
 
-    const deleted = await db
-      .delete(categories)
-      .where(and(eq(categories.id, id), eq(categories.userId, userId)))
-      .returning({ id: categories.id })
-
-    if (deleted.length === 0) throw new RepositoryError(NOT_FOUND)
-    return { id }
+      if (deleted.length === 0) throw new RepositoryError(NOT_FOUND)
+      return { id }
+    })
   },
 }
 

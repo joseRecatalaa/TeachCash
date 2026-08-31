@@ -41,13 +41,12 @@ export function movimientoSections({
           name: 'categoriaId',
           label: 'Categoría',
           type: 'select',
-          clearable: true,
+          required: true,
           span: { base: 12, md: 6 },
           // Solo las categorías del sentido elegido. Una categoría de gasto en
           // un ingreso descoloca todos los informes, y el repositorio la
           // rechaza: mejor no ofrecerla.
           optionsFrom: (values) => categoriasPorTipo[String(values.sentido ?? '')] ?? [],
-          tooltip: 'Opcional. Un movimiento sin clasificar es válido.',
         },
         {
           name: 'fecha',

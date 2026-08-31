@@ -24,7 +24,8 @@ Tres pantallas y nada más:
 - **Inicio** — el saldo, cómo va el mes frente al anterior, la evolución del
   saldo, en qué se va el dinero y los últimos movimientos.
 - **Movimientos** — anotar un gasto o un ingreso, con categoría y fecha.
-  Filtrables por periodo, categoría y texto, con papelera y exportación a Excel.
+  Filtrables por periodo, categoría y texto, y exportables a Excel. El borrado
+  es permanente: no hay papelera.
 - **Categorías** — de gasto o de ingreso, con emoji y color propio. El color es
   el que las identifica luego en la tabla y en los gráficos.
 
