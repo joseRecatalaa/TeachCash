@@ -47,6 +47,11 @@ export function movimientoSections({
           // un ingreso descoloca todos los informes, y el repositorio la
           // rechaza: mejor no ofrecerla.
           optionsFrom: (values) => categoriasPorTipo[String(values.sentido ?? '')] ?? [],
+          // `optionsFrom` lee `sentido`, así que necesita `dependsOn` igual que
+          // un campo `component`/`render`: sin esto el memo de `FieldRenderer`
+          // no repinta el select al cambiar el sentido y las opciones se quedan
+          // congeladas con las del primer render.
+          dependsOn: ['sentido'],
         },
         {
           name: 'fecha',
@@ -75,6 +80,53 @@ export function movimientoSections({
           label: 'Notas',
           type: 'textarea',
           rows: 3,
+          span: 12,
+        },
+      ],
+    },
+  ]
+}
+
+/**
+ * Alta rápida desde el listado de Movimientos: sentido, categoría e importe.
+ *
+ * `fecha`, `descripcion` y `notas` NO se declaran aquí — a diferencia de
+ * `movimientoRapidoSections`, aquí la categoría no se conoce de antemano (la
+ * elige la persona en el propio modal), así que el `onSubmit` del modal
+ * resuelve `descripcion` a partir de la categoría elegida y fija `fecha` a
+ * hoy antes de enviar.
+ */
+export function movimientoModalSections({
+  categoriasPorTipo,
+}: {
+  categoriasPorTipo: Record<string, Option[]>
+}): SectionDefinition[] {
+  return [
+    {
+      title: 'Movimiento',
+      icon: IconCash,
+      fields: [
+        {
+          name: 'sentido',
+          label: 'Sentido',
+          type: 'select',
+          required: true,
+          span: 12,
+        },
+        {
+          name: 'categoriaId',
+          label: 'Categoría',
+          type: 'select',
+          required: true,
+          span: 12,
+          optionsFrom: (values) => categoriasPorTipo[String(values.sentido ?? '')] ?? [],
+          dependsOn: ['sentido'],
+        },
+        {
+          name: 'importe',
+          label: 'Importe',
+          type: 'money',
+          required: true,
           span: 12,
         },
       ],

@@ -16,6 +16,7 @@ import { useCatalogos } from '@/src/application/hooks/useCatalogos'
 import { useMovimientos, type MovimientosFilters } from '@/src/application/hooks/useMovimientos'
 import { movimientoColumns } from '@/src/config/movimientos/columns'
 import { EntityListPage } from '@/src/presentation/components/EntityListPage'
+import { NuevoMovimientoModal } from '@/src/presentation/components/Forms/EntityForms/movimiento/NuevoMovimientoModal'
 import { currentPeriod, monthRange } from '@/lib/dates'
 import type { MovimientoListDto } from '@/src/types/movimiento.types'
 
@@ -26,6 +27,11 @@ function MovimientosContenido() {
     const { from, to } = monthRange(currentPeriod())
     return [from, to]
   })
+
+  // "Nuevo movimiento" abre un modal en vez de navegar a /Movimientos/Create:
+  // anotar un gasto es la acción más frecuente de la aplicación y no debería
+  // costar un cambio de página.
+  const [modalAbierto, setModalAbierto] = useState(false)
 
   const { categoriasPorTipo } = useCatalogos()
 
@@ -55,33 +61,36 @@ function MovimientosContenido() {
   )
 
   return (
-    <EntityListPage<MovimientoListDto>
-      header={{ title: 'Movimientos', icon: IconArrowsLeftRight }}
-      columns={columns}
-      data={data}
-      isLoading={query.isLoading}
-      isError={query.isError}
-      errorMessage="No se han podido cargar los movimientos"
-      resource="Movimientos"
-      exportExcel="MOVIMIENTOS"
-      searchPlaceholder="Buscar por descripción..."
-      noRecordsText="No hay movimientos en este periodo"
-      create={{ label: 'Nuevo movimiento', href: '/Movimientos/Create' }}
-      extraToolbarActions={
-        <Group gap="sm">
-          <DatePickerInput
-            type="range"
-            value={rango}
-            onChange={setRango}
-            valueFormat="DD/MM/YYYY"
-            placeholder="Periodo"
-            clearable
-            w={240}
-          />
-        </Group>
-      }
-      {...tableProps}
-    />
+    <>
+      <EntityListPage<MovimientoListDto>
+        header={{ title: 'Movimientos', icon: IconArrowsLeftRight }}
+        columns={columns}
+        data={data}
+        isLoading={query.isLoading}
+        isError={query.isError}
+        errorMessage="No se han podido cargar los movimientos"
+        resource="Movimientos"
+        exportExcel="MOVIMIENTOS"
+        searchPlaceholder="Buscar por descripción..."
+        noRecordsText="No hay movimientos en este periodo"
+        create={{ label: 'Nuevo movimiento', onClick: () => setModalAbierto(true) }}
+        extraToolbarActions={
+          <Group gap="sm">
+            <DatePickerInput
+              type="range"
+              value={rango}
+              onChange={setRango}
+              valueFormat="DD/MM/YYYY"
+              placeholder="Periodo"
+              clearable
+              w={240}
+            />
+          </Group>
+        }
+        {...tableProps}
+      />
+      {modalAbierto && <NuevoMovimientoModal onClose={() => setModalAbierto(false)} />}
+    </>
   )
 }
 

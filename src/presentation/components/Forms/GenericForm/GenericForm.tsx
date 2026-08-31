@@ -54,6 +54,7 @@ const spanDe = (field: FieldDefinition) =>
 
 export function GenericForm<TSave>({
   title,
+  hideTitle = false,
   sections,
   mode,
   resource,
@@ -139,11 +140,13 @@ export function GenericForm<TSave>({
       <LoadingOverlay visible={cargando} zIndex={100} />
 
       <Stack gap="lg">
-        <Group justify="space-between" align="center">
-          <h1 className={styles.titulo}>
-            {mode === 'create' ? title.create : title.edit}
-          </h1>
-        </Group>
+        {!hideTitle && (
+          <Group justify="space-between" align="center">
+            <h1 className={styles.titulo}>
+              {mode === 'create' ? title.create : title.edit}
+            </h1>
+          </Group>
+        )}
 
         {mode === 'edit' && !cargando && !data && (
           <Alert color="red" icon={<IconAlertTriangle size={18} />} title="No encontrado">

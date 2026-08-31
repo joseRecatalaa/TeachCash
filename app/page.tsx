@@ -130,13 +130,6 @@ export default function InicioPage() {
             <h1 className={styles.title}>Inicio</h1>
             <p className={styles.subtitulo}>{formatPeriod(periodo)}</p>
           </div>
-          <SketchButton
-            href="/Movimientos/Create"
-            size="lg"
-            leftSection={<IconPlus size={18} stroke={2.4} />}
-          >
-            Nuevo movimiento
-          </SketchButton>
         </header>
 
         <div className={`${styles.grid} sd-enter`}>
