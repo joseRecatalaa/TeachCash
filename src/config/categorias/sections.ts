@@ -68,6 +68,19 @@ export function categoriaSections({
           tooltip: 'Un emoji corto. Se muestra junto al nombre en las listas.',
         },
         {
+          name: 'presupuesto',
+          label: 'Presupuesto mensual',
+          type: 'money',
+          required: true,
+          span: { base: 12, md: 6 },
+          // Solo tiene sentido en gasto: "planificar" un ingreso no es lo mismo
+          // que fijar un objetivo de gasto, y Planificación mensual solo pinta
+          // fichas de categorías de gasto.
+          visibleWhen: (values) => values.tipo === 'expense',
+          tooltip:
+            'Cuánto planeas gastar al mes en esta categoría. Se compara con lo gastado en Planificación mensual.',
+        },
+        {
           name: 'color',
           // Campo custom: se REFERENCIA el componente, no se instancia. Es lo
           // que permite que este fichero siga siendo `.ts` sin JSX.

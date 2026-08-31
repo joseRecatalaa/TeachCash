@@ -82,3 +82,28 @@ export function movimientoSections({
     },
   ]
 }
+
+/**
+ * Alta rápida desde Planificación mensual: un único campo.
+ *
+ * `categoriaId`, `sentido`, `fecha` y `descripcion` NO se declaran aquí — el
+ * modal que usa esta sección los fija en `initialValues` del `GenericForm`, y
+ * como ningún campo los sobrescribe, viajan igual en el `onSubmit`.
+ */
+export function movimientoRapidoSections(): SectionDefinition[] {
+  return [
+    {
+      title: 'Nuevo gasto',
+      icon: IconCash,
+      fields: [
+        {
+          name: 'importe',
+          label: 'Importe',
+          type: 'money',
+          required: true,
+          span: 12,
+        },
+      ],
+    },
+  ]
+}

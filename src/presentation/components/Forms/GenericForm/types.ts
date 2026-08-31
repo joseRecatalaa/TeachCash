@@ -223,8 +223,18 @@ export interface GenericFormProps<TSave> {
   /** Errores por campo del último intento de guardado (del servidor). */
   fieldErrors?: Record<string, string>
   onSubmit: (values: TSave) => Promise<unknown>
-  /** A dónde se vuelve al guardar o cancelar. */
-  exitTo: string
+  /**
+   * A dónde se vuelve al guardar o cancelar. Obligatorio salvo que se pase
+   * `onSuccess` — un formulario embebido en un modal no navega a ningún sitio,
+   * simplemente se cierra.
+   */
+  exitTo?: string
+  /**
+   * Alternativa a `exitTo`: se llama al guardar con éxito y al cancelar, en
+   * vez de navegar. Es lo que usa un formulario dentro de un `Modal` (por
+   * ejemplo, el alta rápida de un movimiento desde Planificación mensual).
+   */
+  onSuccess?: () => void
   /** Contenido extra bajo las secciones (avisos, paneles). */
   children?: ReactNode
 }

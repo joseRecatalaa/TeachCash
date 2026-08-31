@@ -8,10 +8,12 @@
  */
 
 import { useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { categoriaSections } from '@/src/config/categorias/sections'
 import { useCatalogos } from '@/src/application/hooks/useCatalogos'
-import { useCategoria } from '@/src/application/hooks/useCategorias'
+import { useCategoria, useOcultarCategoria } from '@/src/application/hooks/useCategorias'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
+import { SketchButton } from '@/src/presentation/components/ui'
 import type { CategoriaSaveDto } from '@/src/types/categoria.types'
 import { GenericForm } from '../../GenericForm'
 
@@ -23,9 +25,14 @@ interface CategoriaFormProps {
 const validate = {
   nombre: (value: unknown) => (!String(value ?? '').trim() ? 'El nombre es obligatorio' : null),
   tipo: (value: unknown) => (!value ? 'Elige si es de ingreso o de gasto' : null),
+  presupuesto: (value: unknown, values: Record<string, unknown>) =>
+    values.tipo === 'expense' && (value === null || value === undefined || (value as number) <= 0)
+      ? 'El presupuesto mensual es obligatorio para una categoría de gasto'
+      : null,
 }
 
 export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
+  const router = useRouter()
   const { query, result } = useCategoria(id ?? '')
   const { categoriasRaizOptions, isLoadingCatalogos } = useCatalogos()
   const { handleSubmit, isSubmitting, fieldErrors } = useEntityFormSubmit<CategoriaSaveDto>({
@@ -34,6 +41,7 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
     mode,
     id,
   })
+  const { ocultar, isPending: isOcultando } = useOcultarCategoria()
 
   // Memoizado sobre las opciones: sin esto se construiría un array de secciones
   // nuevo en cada tecla y el memo del `FieldRenderer` no cortaría nada.
@@ -49,7 +57,7 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
       mode={mode}
       resource="Categorias"
       validate={validate}
-      initialValues={{ tipo: 'expense', padreId: '', icono: '', color: '' }}
+      initialValues={{ tipo: 'expense', padreId: '', icono: '', color: '', presupuesto: null }}
       isLoadingData={(mode === 'edit' && query.isLoading) || isLoadingCatalogos}
       isSubmitting={isSubmitting}
       fieldErrors={fieldErrors}
@@ -63,9 +71,23 @@ export function CategoriaFormRefine({ id, mode }: CategoriaFormProps) {
           icono: values.icono ?? '',
           // Cadena vacía = sin color, que es un estado válido.
           color: values.color ?? '',
+          presupuesto: values.presupuesto ?? null,
         })
       }
       exitTo="/Categorias"
-    />
+    >
+      {mode === 'edit' && (
+        <SketchButton
+          type="button"
+          variant="ghost"
+          loading={isOcultando}
+          onClick={async () => {
+            if (await ocultar(id ?? '')) router.push('/Categorias')
+          }}
+        >
+          Ocultar esta categoría
+        </SketchButton>
+      )}
+    </GenericForm>
   )
 }

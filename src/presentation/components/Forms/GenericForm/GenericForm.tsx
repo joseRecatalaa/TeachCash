@@ -66,6 +66,7 @@ export function GenericForm<TSave>({
   fieldErrors,
   onSubmit,
   exitTo,
+  onSuccess,
   children,
 }: GenericFormProps<TSave>) {
   const router = useRouter()
@@ -121,7 +122,9 @@ export function GenericForm<TSave>({
     const resultado = await onSubmit(valores as TSave)
     // `undefined` = el submit falló y ya ha avisado. No se navega: la persona
     // tiene que poder corregir sobre lo que escribió.
-    if (resultado !== undefined) router.push(exitTo)
+    if (resultado === undefined) return
+    if (onSuccess) onSuccess()
+    else router.push(exitTo!)
   })
 
   const seccionesVisibles = useMemo(
@@ -192,7 +195,7 @@ export function GenericForm<TSave>({
           <SketchButton
             variant="secondary"
             leftSection={<IconArrowLeft size={16} stroke={2.2} />}
-            onClick={() => router.push(exitTo)}
+            onClick={() => (onSuccess ? onSuccess() : router.push(exitTo!))}
             disabled={isSubmitting}
           >
             Cancelar

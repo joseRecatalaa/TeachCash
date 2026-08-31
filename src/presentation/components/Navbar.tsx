@@ -17,6 +17,7 @@ import { usePathname } from 'next/navigation'
 import { Container } from '@mantine/core'
 import {
   IconArrowsLeftRight,
+  IconCalendarStats,
   IconLayoutDashboard,
   IconTags,
   IconWallet,
@@ -27,6 +28,7 @@ const ENLACES = [
   { href: '/', label: 'Inicio', icon: IconLayoutDashboard },
   { href: '/Movimientos', label: 'Movimientos', icon: IconArrowsLeftRight },
   { href: '/Categorias', label: 'Categorías', icon: IconTags },
+  { href: '/Planificacion', label: 'Planificación', icon: IconCalendarStats },
 ]
 
 export function Navbar() {
