@@ -49,7 +49,11 @@ import {
 } from '@/src/infrastructure/repositories'
 import { restaurarMovimiento as restaurarMovimientoRepo } from '@/src/infrastructure/repositories/movimientos.repository'
 import { getSaldoActual } from '@/src/infrastructure/repositories/informes.repository'
-import { listarCatalogoCategorias } from '@/src/infrastructure/repositories/categorias.repository'
+import {
+  activarCategoria as activarCategoriaRepo,
+  listarCatalogoCategorias,
+  ocultarCategoria as ocultarCategoriaRepo,
+} from '@/src/infrastructure/repositories/categorias.repository'
 import { getFormMetadata as getFormMetadataRepo } from '@/src/infrastructure/repositories/metadata.repository'
 import type { FormMetadata } from '@/src/types/formMetadata.types'
 
@@ -165,6 +169,23 @@ export async function restaurarMovimiento(
 ): Promise<ActionResult<{ id: string }>> {
   const resultado = await run((userId) => restaurarMovimientoRepo(userId, id))
   if (resultado.ok) revalidar('Movimientos')
+  return resultado
+}
+
+/** Activa una categoría oculta (predefinida o propia), fijando su presupuesto si es de gasto. */
+export async function activarCategoria(
+  id: string,
+  presupuesto?: number | null,
+): Promise<ActionResult<{ id: string }>> {
+  const resultado = await run((userId) => activarCategoriaRepo(userId, id, presupuesto))
+  if (resultado.ok) revalidar('Categorias')
+  return resultado
+}
+
+/** Oculta una categoría sin borrarla. */
+export async function ocultarCategoria(id: string): Promise<ActionResult<{ id: string }>> {
+  const resultado = await run((userId) => ocultarCategoriaRepo(userId, id))
+  if (resultado.ok) revalidar('Categorias')
   return resultado
 }
 

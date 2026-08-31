@@ -30,6 +30,21 @@ export const categories = sqliteTable(
     icon: text('icon'),
     /** Clave de la paleta categórica: 'cat-1'…'cat-8'. Ver `lib/colores.ts`. */
     color: text('color'),
+    /**
+     * Céntimos, positivo. Obligatorio si `kind = 'expense'`; siempre `null` en
+     * ingreso. Nullable a nivel de columna a propósito: las categorías creadas
+     * antes de esta funcionalidad no tienen uno hasta que alguien las edita —
+     * la obligatoriedad es una regla de negocio del repositorio, no una
+     * constraint de base.
+     */
+    monthlyBudget: integer('monthly_budget'),
+    /**
+     * Una categoría oculta no se ofrece en los `<Select>` de movimiento ni
+     * aparece en Planificación mensual, pero sigue siendo el destino válido de
+     * los movimientos que ya la usan. Las categorías de fábrica nacen ocultas
+     * (ver `db/seed.mts`); las que crea el usuario, visibles.
+     */
+    hidden: integer('hidden', { mode: 'boolean' }).notNull().default(false),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   // OJO: SQLite considera dos NULL como distintos, así que este UNIQUE no impide

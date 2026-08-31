@@ -62,7 +62,14 @@ afterEach(() => ctx.close())
  * es el camino genérico, y hace falta un recurso real del mapa cerrado para
  * recorrerlo entero hasta SQLite.
  */
-const categoria = { nombre: 'Nómina', tipo: 'income', padreId: '', icono: '', color: '' }
+const categoria = {
+  nombre: 'Nómina',
+  tipo: 'income',
+  padreId: '',
+  icono: '',
+  color: '',
+  presupuesto: null,
+}
 
 describe('el recurso se resuelve contra un mapa cerrado', () => {
   test.each(['Usuarios', 'sqlite_master', '../db/schema', ''])(

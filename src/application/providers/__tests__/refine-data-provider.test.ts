@@ -67,6 +67,7 @@ const nueva = (overrides: Record<string, unknown> = {}) => ({
   padreId: '',
   icono: '',
   color: '',
+  presupuesto: 500,
   ...overrides,
 })
 

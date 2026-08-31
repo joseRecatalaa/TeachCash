@@ -25,7 +25,12 @@ vi.mock('@/db', async () => {
 
 import { createTestDb, type TestDb } from '@/db/testing'
 import { categories } from '@/db/schema'
-import { categoriasRepository as repo } from '../categorias.repository'
+import {
+  activarCategoria,
+  categoriasRepository as repo,
+  listarCatalogoCategorias,
+  ocultarCategoria,
+} from '../categorias.repository'
 import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 let ctx: TestDb
@@ -43,6 +48,7 @@ const nueva = (overrides: Record<string, unknown> = {}) => ({
   padreId: '',
   icono: '',
   color: '',
+  presupuesto: 500,
   ...overrides,
 })
 
@@ -55,6 +61,10 @@ describe('create', () => {
     expect(fila.name).toBe('Comida')
     // Cadena vacía en el DTO ↔ NULL en la base. La traducción vive en el repo.
     expect(fila.parentId).toBeNull()
+    // Céntimos, tal cual: sin redondeos ni escalado en el repositorio.
+    expect(fila.monthlyBudget).toBe(500)
+    // Nace visible: solo las de fábrica nacen ocultas, y eso lo decide el seed.
+    expect(fila.hidden).toBe(false)
   })
 
   test('rechaza un nombre duplicado en la raíz', async () => {
@@ -100,6 +110,24 @@ describe('create', () => {
   test('rechaza un tipo inventado', async () => {
     await expect(repo.create(USER_A, nueva({ tipo: 'traspaso' }))).rejects.toThrow()
   })
+
+  test('exige un presupuesto positivo en una categoría de gasto', async () => {
+    await expect(
+      repo.create(USER_A, nueva({ presupuesto: null })),
+    ).rejects.toThrow(/presupuesto mensual es obligatorio/)
+    await expect(
+      repo.create(USER_A, nueva({ presupuesto: 0 })),
+    ).rejects.toThrow(/presupuesto mensual es obligatorio/)
+  })
+
+  test('ignora el presupuesto en una categoría de ingreso', async () => {
+    const { id } = await repo.create(
+      USER_A,
+      nueva({ nombre: 'Nómina', tipo: 'income', presupuesto: 999 }),
+    )
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, id))
+    expect(fila.monthlyBudget).toBeNull()
+  })
 })
 
 describe('autorización', () => {
@@ -107,7 +135,13 @@ describe('autorización', () => {
     await seedCategoria(ctx.db, 'ajena', USER_B)
 
     await expect(
-      repo.update(USER_A, 'ajena', { nombre: 'Secuestrada', padreId: '', icono: '', color: '' }),
+      repo.update(USER_A, 'ajena', {
+        nombre: 'Secuestrada',
+        padreId: '',
+        icono: '',
+        color: '',
+        presupuesto: 500,
+      }),
     ).rejects.toThrow('No encontrado')
 
     const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'ajena'))
@@ -137,6 +171,7 @@ describe('update', () => {
       padreId: '',
       icono: '',
       color: '',
+      presupuesto: 500,
       tipo: 'income',
     })
 
@@ -149,8 +184,120 @@ describe('update', () => {
   test('una categoría no puede ser su propia padre', async () => {
     await seedCategoria(ctx.db, 'c1', USER_A)
     await expect(
-      repo.update(USER_A, 'c1', { nombre: 'C1', padreId: 'c1', icono: '', color: '' }),
+      repo.update(USER_A, 'c1', {
+        nombre: 'C1',
+        padreId: 'c1',
+        icono: '',
+        color: '',
+        presupuesto: 500,
+      }),
     ).rejects.toThrow(/su propia padre/)
+  })
+
+  test('exige un presupuesto positivo al editar una categoría de gasto', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'expense', monthlyBudget: 500 })
+    await expect(
+      repo.update(USER_A, 'c1', {
+        nombre: 'C1',
+        padreId: '',
+        icono: '',
+        color: '',
+        presupuesto: null,
+      }),
+    ).rejects.toThrow(/presupuesto mensual es obligatorio/)
+  })
+
+  test('actualiza el presupuesto de una categoría de gasto', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'expense', monthlyBudget: 500 })
+    await repo.update(USER_A, 'c1', {
+      nombre: 'C1',
+      padreId: '',
+      icono: '',
+      color: '',
+      presupuesto: 1500,
+    })
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    expect(fila.monthlyBudget).toBe(1500)
+  })
+
+  test('ignora el presupuesto al editar una categoría de ingreso', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'income' })
+    await repo.update(USER_A, 'c1', {
+      nombre: 'C1',
+      padreId: '',
+      icono: '',
+      color: '',
+      presupuesto: 999,
+    })
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    expect(fila.monthlyBudget).toBeNull()
+  })
+})
+
+describe('activarCategoria', () => {
+  test('activa una categoría oculta y fija el presupuesto recibido', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'expense', hidden: true })
+    await activarCategoria(USER_A, 'c1', 2500)
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    expect(fila.hidden).toBe(false)
+    expect(fila.monthlyBudget).toBe(2500)
+  })
+
+  test('conserva el presupuesto ya fijado si no se manda uno nuevo', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, {
+      kind: 'expense',
+      hidden: true,
+      monthlyBudget: 800,
+    })
+    await activarCategoria(USER_A, 'c1')
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    expect(fila.hidden).toBe(false)
+    expect(fila.monthlyBudget).toBe(800)
+  })
+
+  test('rechaza activar una categoría de gasto sin presupuesto', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'expense', hidden: true })
+    await expect(activarCategoria(USER_A, 'c1')).rejects.toThrow(/presupuesto mensual/)
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    // No se activa a medias: si falla la validación, se queda oculta.
+    expect(fila.hidden).toBe(true)
+  })
+
+  test('activar una categoría de ingreso no pide presupuesto', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { kind: 'income', hidden: true })
+    await activarCategoria(USER_A, 'c1')
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    expect(fila.hidden).toBe(false)
+  })
+
+  test('no se puede activar la categoría oculta de otro usuario', async () => {
+    await seedCategoria(ctx.db, 'ajena', USER_B, { kind: 'expense', hidden: true })
+    await expect(activarCategoria(USER_A, 'ajena', 500)).rejects.toThrow('No encontrado')
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'ajena'))
+    expect(fila.hidden).toBe(true)
+  })
+})
+
+describe('ocultarCategoria', () => {
+  test('oculta una categoría sin borrarla', async () => {
+    await seedCategoria(ctx.db, 'c1', USER_A, { hidden: false })
+    await ocultarCategoria(USER_A, 'c1')
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'c1'))
+    expect(fila.hidden).toBe(true)
+  })
+
+  test('no se puede ocultar la categoría de otro usuario', async () => {
+    await seedCategoria(ctx.db, 'ajena', USER_B, { hidden: false })
+    await expect(ocultarCategoria(USER_A, 'ajena')).rejects.toThrow('No encontrado')
+
+    const [fila] = await ctx.db.select().from(categories).where(eq(categories.id, 'ajena'))
+    expect(fila.hidden).toBe(false)
   })
 })
 
@@ -212,5 +359,26 @@ describe('list', () => {
 
     const { data } = await repo.list(USER_A, { paginate: false })
     expect(data[0].usos).toBe(1)
+  })
+
+  test('se puede filtrar por oculta', async () => {
+    await seedCategoria(ctx.db, 'activa', USER_A, { hidden: false })
+    await seedCategoria(ctx.db, 'oculta', USER_A, { hidden: true })
+
+    const visibles = await repo.list(USER_A, { paginate: false, filters: { oculta: 'false' } })
+    expect(visibles.data.map((c) => c.id)).toEqual(['activa'])
+
+    const ocultas = await repo.list(USER_A, { paginate: false, filters: { oculta: 'true' } })
+    expect(ocultas.data.map((c) => c.id)).toEqual(['oculta'])
+  })
+})
+
+describe('listarCatalogoCategorias', () => {
+  test('excluye las categorías ocultas', async () => {
+    await seedCategoria(ctx.db, 'activa', USER_A, { hidden: false })
+    await seedCategoria(ctx.db, 'oculta', USER_A, { hidden: true })
+
+    const catalogo = await listarCatalogoCategorias(USER_A)
+    expect(catalogo.map((c) => c.id)).toEqual(['activa'])
   })
 })

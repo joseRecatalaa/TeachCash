@@ -69,6 +69,10 @@ if (existing.length > 0) {
       kind: c.kind,
       icon: c.icon,
       color: c.color,
+      // Nacen ocultas: el usuario arranca sin categorías y las activa desde el
+      // catálogo de predefinidas en Categorías, poniendo su presupuesto si son
+      // de gasto.
+      hidden: true,
       createdAt: now,
     })),
   )

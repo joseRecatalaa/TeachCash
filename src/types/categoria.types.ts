@@ -21,6 +21,13 @@ export interface CategoriaListDto {
    * que hace que el modo oscuro y un cambio de tono no toquen los datos.
    */
   color: string
+  /**
+   * Céntimos, positivo. `null` en una categoría de ingreso, o en una de gasto
+   * que todavía no lo tiene fijado (categorías anteriores a esta funcionalidad).
+   */
+  presupuesto: number | null
+  /** Oculta = no se ofrece en Movimientos ni aparece en Planificación mensual. */
+  oculta: boolean
   /** Nº de movimientos que la usan. Decide si se puede borrar. */
   usos: number
 }
@@ -36,6 +43,8 @@ export interface CategoriaSaveDto {
   padreId: string
   icono: string
   color: string
+  /** Obligatorio si `tipo === 'expense'`; el repositorio lo ignora en ingreso. */
+  presupuesto: number | null
 }
 
 export interface CategoriaFormDto extends CategoriaSaveDto {

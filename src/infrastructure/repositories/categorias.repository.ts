@@ -36,6 +36,10 @@ const CategoriaSave = z.object({
   // mañana se ajusta un tono, las categorías ya guardadas lo heredan solas.
   // Cadena vacía = sin color asignado, que es válido.
   color: z.union([z.literal(''), z.enum(CLAVES_COLOR)], { message: 'Color no válido' }),
+  // Obligatorio en gasto, ignorado en ingreso: lo comprueba
+  // `assertPresupuestoValido`, no este esquema, porque en `update` el tipo no
+  // viaja en el payload (es inmutable) y hay que mirar el de la fila actual.
+  presupuesto: z.number().int('Importe no válido').nonnegative('El importe no puede ser negativo').nullable(),
 })
 
 /** El tipo NO se puede cambiar: los movimientos ya clasificados dependen de él. */
@@ -43,6 +47,20 @@ const CategoriaUpdate = CategoriaSave.omit({ tipo: true })
 
 /** `''` en el DTO ↔ `null` en la base. Un solo sitio donde se traduce. */
 const toDbParent = (padreId: string): string | null => padreId || null
+
+/**
+ * El presupuesto mensual es obligatorio en una categoría de gasto: es lo que
+ * hace que Planificación mensual no tenga que distinguir "sin planificar" de
+ * "planificado a cero". En ingreso se ignora siempre, aunque llegue uno.
+ */
+function assertPresupuestoValido(tipo: string, presupuesto: number | null): void {
+  if (tipo === 'expense' && (presupuesto === null || presupuesto <= 0)) {
+    throw new RepositoryError(
+      'El presupuesto mensual es obligatorio para una categoría de gasto',
+      { presupuesto: 'Indica cuánto planeas gastar al mes' },
+    )
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Consultas
@@ -63,6 +81,9 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       params.filters?.tipo ? eq(categories.kind, String(params.filters.tipo)) : undefined,
       // 'root' y no '' porque un filtro vacío es "sin filtrar", no "las raíz".
       params.filters?.padreId === 'root' ? isNull(categories.parentId) : undefined,
+      params.filters?.oculta !== undefined
+        ? eq(categories.hidden, String(params.filters.oculta) === 'true')
+        : undefined,
     )
 
     const column = SORTABLE[params.sortBy as keyof typeof SORTABLE] ?? categories.name
@@ -76,6 +97,8 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         padreId: categories.parentId,
         icono: categories.icon,
         color: categories.color,
+        presupuesto: categories.monthlyBudget,
+        oculta: categories.hidden,
       })
       .from(categories)
       .where(where)
@@ -101,6 +124,8 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       padreNombre: r.padreId ? (nombrePorId.get(r.padreId) ?? null) : null,
       icono: r.icono,
       color: r.color ?? '',
+      presupuesto: r.presupuesto ?? null,
+      oculta: r.oculta,
       usos: usosPorCategoria.get(r.id) ?? 0,
     }))
 
@@ -121,6 +146,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         padreId: categories.parentId,
         icono: categories.icon,
         color: categories.color,
+        presupuesto: categories.monthlyBudget,
       })
       .from(categories)
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
@@ -135,6 +161,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       padreId: r.padreId ?? '',
       icono: r.icono ?? '',
       color: r.color ?? '',
+      presupuesto: r.presupuesto ?? null,
     }
   },
 
@@ -145,6 +172,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     const padreId = toDbParent(parsed.data.padreId)
     await assertPadreValido(userId, padreId, parsed.data.tipo)
     await assertNombreLibre(userId, parsed.data.nombre, padreId, null)
+    assertPresupuestoValido(parsed.data.tipo, parsed.data.presupuesto)
 
     const id = crypto.randomUUID()
     await db.insert(categories).values({
@@ -155,6 +183,9 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       parentId: padreId,
       icon: parsed.data.icono || null,
       color: parsed.data.color || null,
+      // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
+      monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
+      hidden: false,
       createdAt: new Date(),
     })
     return { id }
@@ -175,6 +206,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     }
     await assertPadreValido(userId, padreId, actual.tipo)
     await assertNombreLibre(userId, parsed.data.nombre, padreId, id)
+    assertPresupuestoValido(actual.tipo, parsed.data.presupuesto)
 
     const updated = await db
       .update(categories)
@@ -183,6 +215,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         parentId: padreId,
         icon: parsed.data.icono || null,
         color: parsed.data.color || null,
+        monthlyBudget: actual.tipo === 'expense' ? parsed.data.presupuesto : null,
       })
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
       .returning({ id: categories.id })
@@ -287,7 +320,13 @@ async function assertNombreLibre(
   }
 }
 
-/** Catálogo para los `<Select>` de categoría. Ordenado y con el tipo al lado. */
+/**
+ * Catálogo para los `<Select>` de categoría. Ordenado y con el tipo al lado.
+ *
+ * Solo categorías VISIBLES: una oculta no debe poder elegirse en un
+ * movimiento nuevo, aunque siga siendo un destino válido para los que ya la
+ * usan (esos se leen por id, no por este catálogo).
+ */
 export async function listarCatalogoCategorias(
   userId: string,
 ): Promise<
@@ -302,6 +341,50 @@ export async function listarCatalogoCategorias(
       color: categories.color,
     })
     .from(categories)
-    .where(eq(categories.userId, userId))
+    .where(and(eq(categories.userId, userId), eq(categories.hidden, false)))
     .orderBy(asc(categories.name))
+}
+
+/**
+ * Activa una categoría oculta (predefinida sin usar todavía, o una que el
+ * propio usuario ocultó antes). Si es de gasto, el presupuesto tiene que
+ * quedar fijado al terminar: se acepta el que llega, o si no se manda ninguno
+ * se conserva el que ya tuviera de una activación anterior.
+ */
+export async function activarCategoria(
+  userId: string,
+  id: string,
+  presupuesto?: number | null,
+): Promise<{ id: string }> {
+  const actual = await categoriasRepository.get(userId, id)
+  if (!actual) throw new RepositoryError(NOT_FOUND)
+
+  const nuevoPresupuesto =
+    actual.tipo === 'expense' ? (presupuesto ?? actual.presupuesto) : null
+  assertPresupuestoValido(actual.tipo, nuevoPresupuesto)
+
+  const updated = await db
+    .update(categories)
+    .set({ hidden: false, monthlyBudget: nuevoPresupuesto })
+    .where(and(eq(categories.id, id), eq(categories.userId, userId)))
+    .returning({ id: categories.id })
+
+  if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
+  return { id }
+}
+
+/**
+ * Oculta una categoría sin borrarla: deja de ofrecerse en los `<Select>` de
+ * movimiento y en Planificación mensual, pero los movimientos que ya la usan
+ * la conservan sin cambios.
+ */
+export async function ocultarCategoria(userId: string, id: string): Promise<{ id: string }> {
+  const updated = await db
+    .update(categories)
+    .set({ hidden: true })
+    .where(and(eq(categories.id, id), eq(categories.userId, userId)))
+    .returning({ id: categories.id })
+
+  if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
+  return { id }
 }
