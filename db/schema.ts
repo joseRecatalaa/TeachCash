@@ -7,9 +7,11 @@
  *   `DIVISA_APP` en `lib/money.ts`. Por eso no hay columna de moneda en ninguna
  *   tabla — el día que haya más de una, se añade aquí y allí a la vez.
  * - Las fechas de movimiento son texto 'YYYY-MM-DD' (fecha civil).
- *   Los timestamps (createdAt, deletedAt) sí son instantes reales.
+ *   Los timestamps (createdAt) sí son instantes reales.
  * - Toda tabla de datos de usuario lleva `userId`.
- * - Los movimientos se borran de forma lógica (`deletedAt`), no física.
+ * - Los movimientos se borran de forma FÍSICA. No hay papelera ni deshacer:
+ *   el modal de confirmación es la única red, y por eso es obligatorio.
+ * - Todo movimiento tiene categoría. No existe el movimiento sin clasificar.
  *
  * No hay tabla de cuentas: hay UNA cuenta implícita y su saldo es la suma de los
  * movimientos (regla dura 7 — los saldos son derivados, no se guardan).
@@ -23,20 +25,30 @@ export const categories = sqliteTable(
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
     name: text('name').notNull(),
-    /** Jerarquía de un solo nivel: null = categoría raíz. */
-    parentId: text('parent_id'),
     /** income | expense — una categoría no puede ser las dos cosas. */
     kind: text('kind').notNull(),
     icon: text('icon'),
     /** Clave de la paleta categórica: 'cat-1'…'cat-8'. Ver `lib/colores.ts`. */
     color: text('color'),
+    /**
+     * Céntimos, positivo. Obligatorio si `kind = 'expense'`; siempre `null` en
+     * ingreso. Nullable a nivel de columna a propósito: las categorías creadas
+     * antes de esta funcionalidad no tienen uno hasta que alguien las edita —
+     * la obligatoriedad es una regla de negocio del repositorio, no una
+     * constraint de base.
+     */
+    monthlyBudget: integer('monthly_budget'),
+    /**
+     * Una categoría oculta no se ofrece en los `<Select>` de movimiento ni
+     * aparece en Planificación mensual, pero sigue siendo el destino válido de
+     * los movimientos que ya la usan. Las categorías de fábrica nacen ocultas
+     * (ver `db/seed.mts`); las que crea el usuario, visibles.
+     */
+    hidden: integer('hidden', { mode: 'boolean' }).notNull().default(false),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
-  // OJO: SQLite considera dos NULL como distintos, así que este UNIQUE no impide
-  // dos categorías raíz con el mismo nombre (parent_id NULL). La comprobación de
-  // duplicados en la raíz se hace en la acción, no se puede delegar aquí.
   (t) => [
-    unique('categories_user_name').on(t.userId, t.name, t.parentId),
+    unique('categories_user_name').on(t.userId, t.name),
     index('categories_user_idx').on(t.userId),
   ],
 )
@@ -46,8 +58,8 @@ export const transactions = sqliteTable(
   {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
-    /** Nullable: un movimiento sin clasificar es válido. */
-    categoryId: text('category_id').references(() => categories.id),
+    /** Obligatoria: todo movimiento está clasificado, sin estado intermedio. */
+    categoryId: text('category_id').notNull().references(() => categories.id),
     /** Céntimos CON SIGNO: negativo = gasto, positivo = ingreso. */
     amount: integer('amount').notNull(),
     /** Fecha civil 'YYYY-MM-DD'. Nunca un timestamp. */
@@ -58,7 +70,6 @@ export const transactions = sqliteTable(
     importHash: text('import_hash'),
     /** Clave del cliente: convierte el doble clic en un choque contra el índice. */
     idempotencyKey: text('idempotency_key'),
-    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
   (t) => [

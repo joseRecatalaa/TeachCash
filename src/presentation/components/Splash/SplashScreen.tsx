@@ -53,13 +53,14 @@ const SALIDA_MS = 420
 const TRAMO_BARRA = 0.7
 
 /**
- * La pantalla se ve UNA SOLA VEZ en este navegador, y nunca más: ni al
- * recargar, ni en una pestaña nueva, ni al volver mañana. Por eso la bandera
- * va en `localStorage` y no en `sessionStorage` — `sessionStorage` es por
- * pestaña, así que cada pestaña nueva volvería a soltar la animación.
+ * La pantalla se ve UNA VEZ POR SESIÓN de navegador: se repite al cerrar y
+ * volver a abrir la aplicación, pero no en cada recarga dentro de la misma
+ * visita. Por eso la bandera va en `sessionStorage` y no en `localStorage`:
+ * `localStorage` sobrevive a cerrar el navegador, y eso la dejaría sin
+ * enseñarse nunca más después de la primera vez.
  *
- * Para volver a verla (desarrollo), desde la consola del navegador:
- *   localStorage.removeItem('gf-splash-visto')
+ * Para volver a verla sin cerrar la pestaña, desde la consola del navegador:
+ *   sessionStorage.removeItem('gf-splash-visto')
  *
  * Quien LEE la bandera antes del primer pintado es el script del `<head>` en
  * `app/layout.tsx`, que marca `<html data-splash="visto">`. Tiene que ser así:
@@ -71,7 +72,7 @@ const CLAVE_VISTO = 'gf-splash-visto'
 
 function marcarVisto(): void {
   try {
-    window.localStorage.setItem(CLAVE_VISTO, '1')
+    window.sessionStorage.setItem(CLAVE_VISTO, '1')
   } catch {
     // Modo privado o almacenamiento bloqueado. Se volverá a ver, y no pasa
     // nada: es mejor enseñarla de más que romper la aplicación por esto.
@@ -79,9 +80,9 @@ function marcarVisto(): void {
 }
 
 /**
- * Si la pantalla ya se vio en este navegador.
+ * Si la pantalla ya se vio en esta sesión del navegador.
  *
- * Se lee del atributo del `<html>` y no de `localStorage` porque el atributo
+ * Se lee del atributo del `<html>` y no de `sessionStorage` porque el atributo
  * NO cambia durante la vida de la página: `useSyncExternalStore` exige que la
  * instantánea sea estable, y la bandera sí cambia (se escribe al terminar).
  * Leer la bandera directamente haría que la pantalla se esfumara a media

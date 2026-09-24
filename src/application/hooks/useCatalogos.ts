@@ -38,18 +38,10 @@ export function useCatalogos() {
    * que el desplegable no debe ofrecer las otras.
    */
   const categoriasPorTipo = useMemo<Record<string, Option[]>>(() => {
-    const nombrePorId = new Map(data.categorias.map((c) => [c.id, c.nombre]))
     const porTipo: Record<string, Option[]> = { income: [], expense: [] }
 
     for (const c of data.categorias) {
-      // La subcategoría se muestra con su padre delante: "Casa › Luz". Sin eso,
-      // tres "Otros" colgando de padres distintos son el mismo texto.
-      const padre = c.padreId ? nombrePorId.get(c.padreId) : undefined
-      const option: Option = {
-        value: c.id,
-        label: padre ? `${padre} › ${c.nombre}` : c.nombre,
-      }
-      porTipo[c.tipo]?.push(option)
+      porTipo[c.tipo]?.push({ value: c.id, label: c.nombre })
     }
 
     for (const lista of Object.values(porTipo)) {
@@ -57,16 +49,6 @@ export function useCatalogos() {
     }
     return porTipo
   }, [data.categorias])
-
-  /** Categorías raíz, para elegir padre. La jerarquía es de un solo nivel. */
-  const categoriasRaizOptions = useMemo<Option[]>(
-    () =>
-      data.categorias
-        .filter((c) => c.padreId === null)
-        .map((c) => ({ value: c.id, label: c.nombre }))
-        .sort((a, b) => a.label.localeCompare(b.label, 'es')),
-    [data.categorias],
-  )
 
   /**
    * `id → clave de color`. Lo usa el badge de categoría de la tabla de
@@ -81,7 +63,6 @@ export function useCatalogos() {
   return {
     categorias: data.categorias,
     categoriasPorTipo,
-    categoriasRaizOptions,
     colorDeCategoria,
     isLoadingCatalogos: query.isLoading,
   }

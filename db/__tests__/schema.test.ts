@@ -30,6 +30,7 @@ describe('esquema', () => {
     await ctx.db.insert(transactions).values({
       id: 'tx-1',
       userId: 'user-a',
+      categoryId: 'cat-1',
       amount: -100,
       date: '2026-08-13',
       description: 'Compra',
@@ -40,9 +41,11 @@ describe('esquema', () => {
   })
 
   test('los importes viajan como enteros de ida y vuelta', async () => {
+    await seedCategoria('cat-1')
     await ctx.db.insert(transactions).values({
       id: 'tx-1',
       userId: 'user-a',
+      categoryId: 'cat-1',
       amount: -123456,
       date: '2026-08-13',
       description: 'Compra',
@@ -55,9 +58,11 @@ describe('esquema', () => {
   })
 
   test('la fecha se guarda como texto, no como instante', async () => {
+    await seedCategoria('cat-1')
     await ctx.db.insert(transactions).values({
       id: 'tx-1',
       userId: 'user-a',
+      categoryId: 'cat-1',
       amount: -100,
       date: '2026-01-01',
       description: 'Uvas',
@@ -85,24 +90,28 @@ describe('esquema', () => {
     ).rejects.toThrow()
   })
 
-  test('un movimiento sin categoría es válido', async () => {
-    // Un gasto sin clasificar tiene que poder anotarse: obligar a categorizar en
-    // el momento es lo que hace que la gente deje de anotar.
-    await ctx.db.insert(transactions).values({
-      id: 'tx-1',
-      userId: 'user-a',
-      amount: -100,
-      date: '2026-08-13',
-      description: 'Sin clasificar',
-      createdAt: now,
-    })
-    const [tx] = await ctx.db.select().from(transactions)
-    expect(tx.categoryId).toBeNull()
+  test('un movimiento sin categoría no es válido', async () => {
+    // La categoría es obligatoria: no existe el estado "sin clasificar". El
+    // tipo ya lo impide en compilación (`categoryId` es requerido en el
+    // insert); el `as never` fuerza el caso para comprobar que la base
+    // también lo rechaza en runtime, no solo el compilador.
+    await expect(
+      ctx.db.insert(transactions).values({
+        id: 'tx-1',
+        userId: 'user-a',
+        amount: -100,
+        date: '2026-08-13',
+        description: 'Sin clasificar',
+        createdAt: now,
+      } as never),
+    ).rejects.toThrow()
   })
 
   test('la clave de idempotencia impide el movimiento duplicado', async () => {
+    await seedCategoria('cat-1')
     const base = {
       userId: 'user-a',
+      categoryId: 'cat-1',
       amount: -5000,
       date: '2026-08-13',
       description: 'Doble clic',
@@ -118,9 +127,10 @@ describe('esquema', () => {
   test('varios movimientos sin clave de idempotencia conviven', async () => {
     // SQLite trata dos NULL como distintos, así que el UNIQUE no estorba a los
     // movimientos creados sin clave (importaciones, semillas, scripts).
+    await seedCategoria('cat-1')
     await ctx.db.insert(transactions).values([
-      { id: 'tx-1', userId: 'user-a', amount: -1, date: '2026-08-13', description: 'A', createdAt: now },
-      { id: 'tx-2', userId: 'user-a', amount: -2, date: '2026-08-13', description: 'B', createdAt: now },
+      { id: 'tx-1', userId: 'user-a', categoryId: 'cat-1', amount: -1, date: '2026-08-13', description: 'A', createdAt: now },
+      { id: 'tx-2', userId: 'user-a', categoryId: 'cat-1', amount: -2, date: '2026-08-13', description: 'B', createdAt: now },
     ])
     expect(await ctx.db.select().from(transactions)).toHaveLength(2)
   })
@@ -135,7 +145,6 @@ describe('esquema', () => {
     })
     const [cat] = await ctx.db.select().from(categories)
     expect(cat.kind).toBe('expense')
-    expect(cat.parentId).toBeNull()
     expect(cat.color).toBeNull()
   })
 })

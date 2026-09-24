@@ -13,9 +13,15 @@ import { EntityListPage } from '@/src/presentation/components/EntityListPage'
 import type { CategoriaListDto } from '@/src/types/categoria.types'
 
 export default function CategoriasPage() {
+  // La tabla principal solo enseña las categorías ACTIVAS: las predefinidas
+  // sin activar se eligen desde «Nueva categoría».
   const { data, query, tableProps } = usePaginacion<CategoriasFilters, CategoriaListDto>(
     useCategorias,
-    { server: false, initialSort: { sortBy: 'nombre', sortDir: 'asc' } },
+    {
+      server: false,
+      baseFilter: { oculta: 'false' },
+      initialSort: { sortBy: 'nombre', sortDir: 'asc' },
+    },
   )
 
   const columns = useMemo(() => categoriaColumns(), [])
@@ -31,7 +37,7 @@ export default function CategoriasPage() {
       resource="Categorias"
       exportExcel="CATEGORIAS"
       searchPlaceholder="Buscar por nombre..."
-      noRecordsText="Todavía no hay ninguna categoría"
+      noRecordsText="Todavía no hay ninguna categoría activa"
       create={{ label: 'Nueva categoría', href: '/Categorias/Create' }}
       {...tableProps}
     />

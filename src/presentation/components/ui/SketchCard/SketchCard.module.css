@@ -83,17 +83,24 @@
 
 /* ── Interacción ─────────────────────────────────────────────────────────── */
 
+/*
+ * Toda tarjeta se levanta al pasar el ratón por encima, sea o no pulsable: es
+ * el mismo gesto que ya tenía la ficha pulsable de Planificación, generalizado
+ * a `.root` para que también lo tengan los paneles de Inicio que no hacen
+ * nada al clicarlos. Como `SketchCard` solo vive en Inicio y Planificación,
+ * tocar `.root` no se escapa a ninguna otra vista.
+ */
+.root:hover {
+  transform: translate(calc(-1 * var(--sd-press-lift)), calc(-1 * var(--sd-press-lift)))
+    rotate(0deg);
+  box-shadow: var(--sd-shadow-lg);
+}
+
 .interactive {
   cursor: pointer;
   text-align: left;
   width: 100%;
   font: inherit;
-}
-
-.interactive:hover {
-  transform: translate(calc(-1 * var(--sd-press-lift)), calc(-1 * var(--sd-press-lift)))
-    rotate(0deg);
-  box-shadow: var(--sd-shadow-lg);
 }
 
 .interactive:active {
@@ -224,11 +231,21 @@
   flex: 0 0 auto;
 }
 
+/*
+ * `flex: 1 1 auto` + `min-height: 0`: cuando la rejilla estira la tarjeta más
+ * alta que su contenido (dos tarjetas en la misma fila, una más corta que la
+ * otra), el hueco sobrante cae aquí en vez de quedar en blanco bajo el `body`.
+ * Un hijo que quiera aprovecharlo (el envoltorio de un gráfico) solo tiene que
+ * pedir su propio `flex: 1`; el resto de tarjetas sigue exactamente igual,
+ * porque ese hueco ya estaba ahí — antes se perdía, ahora se ofrece.
+ */
 .body {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: 0.5rem;
   min-width: 0;
+  min-height: 0;
 }
 
 /*

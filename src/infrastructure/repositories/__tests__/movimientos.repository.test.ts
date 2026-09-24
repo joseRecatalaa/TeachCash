@@ -2,7 +2,7 @@
  * Repositorio de Movimientos.
  *
  * Es el fichero de test más importante del proyecto: aquí viven el signo del
- * importe, el aislamiento por usuario y el borrado lógico. Un fallo en
+ * importe, el aislamiento por usuario y el borrado físico. Un fallo en
  * cualquiera de los tres es dinero mal contado, no una molestia de interfaz.
  */
 
@@ -25,21 +25,26 @@ vi.mock('@/db', async () => {
 
 import { createTestDb, type TestDb } from '@/db/testing'
 import { transactions } from '@/db/schema'
-import { movimientosRepository as repo, restaurarMovimiento } from '../movimientos.repository'
+import { movimientosRepository as repo } from '../movimientos.repository'
 import { getSaldoActual } from '../informes.repository'
 import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 let ctx: TestDb
 
+const CAT_GASTO = 'cat-gasto'
+const CAT_INGRESO = 'cat-ingreso'
+
 beforeEach(async () => {
   ctx = await createTestDb()
   h.db = ctx.db
+  await seedCategoria(ctx.db, CAT_GASTO, USER_A, { kind: 'expense' })
+  await seedCategoria(ctx.db, CAT_INGRESO, USER_A, { kind: 'income' })
 })
 
 afterEach(() => ctx.close())
 
 const nuevo = (overrides: Record<string, unknown> = {}) => ({
-  categoriaId: '',
+  categoriaId: CAT_GASTO,
   importe: 4590,
   sentido: 'expense',
   fecha: '2026-03-15',
@@ -60,7 +65,10 @@ describe('create', () => {
   })
 
   test('un ingreso se guarda con importe positivo', async () => {
-    const { id } = await repo.create(USER_A, nuevo({ sentido: 'income', importe: 200000 }))
+    const { id } = await repo.create(
+      USER_A,
+      nuevo({ sentido: 'income', categoriaId: CAT_INGRESO, importe: 200000 }),
+    )
     expect((await filaDe(id)).amount).toBe(200000)
   })
 
@@ -101,9 +109,9 @@ describe('create', () => {
     ).rejects.toThrow(/categoría/i)
   })
 
-  test('un movimiento sin categoría es válido', async () => {
-    const { id } = await repo.create(USER_A, nuevo({ categoriaId: '' }))
-    expect((await filaDe(id)).categoryId).toBeNull()
+  test('rechaza un movimiento sin categoría', async () => {
+    // No existe el movimiento sin clasificar: la categoría es obligatoria.
+    await expect(repo.create(USER_A, nuevo({ categoriaId: '' }))).rejects.toThrow()
   })
 
   test('la clave de idempotencia evita el duplicado por doble clic', async () => {
@@ -138,7 +146,7 @@ describe('autorización', () => {
     await seedMovimiento(ctx.db, 'ajeno', USER_B)
 
     await expect(repo.remove(USER_A, 'ajeno')).rejects.toThrow('No encontrado')
-    expect((await filaDe('ajeno')).deletedAt).toBeNull()
+    expect(await filaDe('ajeno')).toBeDefined()
   })
 
   test('los listados no cruzan usuarios', async () => {
@@ -150,55 +158,26 @@ describe('autorización', () => {
   })
 })
 
-describe('borrado lógico', () => {
-  test('desaparece del listado pero sigue en la tabla', async () => {
+describe('borrado físico', () => {
+  test('desaparece del listado y de la tabla, sin papelera', async () => {
     const { id } = await repo.create(USER_A, nuevo())
     await repo.remove(USER_A, id)
 
-    const vivos = await repo.list(USER_A, { paginate: false })
-    expect(vivos.total).toBe(0)
+    const restantes = await repo.list(USER_A, { paginate: false })
+    expect(restantes.total).toBe(0)
 
-    // La fila sigue ahí: un borrado físico se llevaría por delante el cuadre de
-    // los meses ya cerrados y no habría forma de recuperarlo.
-    const fila = await filaDe(id)
-    expect(fila).toBeDefined()
-    expect(fila.deletedAt).not.toBeNull()
-  })
-
-  test('el filtro `borrados` enseña solo la papelera', async () => {
-    const vivo = await repo.create(USER_A, nuevo({ descripcion: 'Vivo' }))
-    const muerto = await repo.create(USER_A, nuevo({ descripcion: 'Muerto' }))
-    await repo.remove(USER_A, muerto.id)
-
-    const papelera = await repo.list(USER_A, { paginate: false, filters: { borrados: '1' } })
-    expect(papelera.data.map((m) => m.id)).toEqual([muerto.id])
-
-    const normales = await repo.list(USER_A, { paginate: false })
-    expect(normales.data.map((m) => m.id)).toEqual([vivo.id])
-  })
-
-  test('no se puede restaurar el movimiento de otro usuario', async () => {
-    await seedMovimiento(ctx.db, 'ajeno', USER_B, { deletedAt: new Date() })
-
-    await expect(restaurarMovimiento(USER_A, 'ajeno')).rejects.toThrow('No encontrado')
+    // Sin fila que recuperar: el borrado es permanente y el modal de
+    // confirmación de la interfaz es la única red.
+    expect(await filaDe(id)).toBeUndefined()
   })
 
   test('un movimiento borrado no cuenta en el saldo', async () => {
     const { id } = await repo.create(USER_A, nuevo({ importe: 10000 }))
     await repo.remove(USER_A, id)
 
-    // El saldo es una SUMA de los movimientos vivos (regla dura 7): lo que está
-    // en la papelera no puede seguir contando, o la cifra de la portada deja de
-    // cuadrar con la lista que la explica.
+    // El saldo es una SUMA de los movimientos que quedan (regla dura 7): uno
+    // borrado ya no puede seguir contando.
     expect(await getSaldoActual(USER_A)).toBe(0)
-  })
-
-  test('restaurar devuelve el movimiento al saldo', async () => {
-    const { id } = await repo.create(USER_A, nuevo({ sentido: 'income', importe: 10000 }))
-    await repo.remove(USER_A, id)
-    await restaurarMovimiento(USER_A, id)
-
-    expect(await getSaldoActual(USER_A)).toBe(10000)
   })
 })
 

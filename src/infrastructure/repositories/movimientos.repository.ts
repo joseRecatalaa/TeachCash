@@ -10,7 +10,7 @@
  * `informes.repository.ts`).
  */
 
-import { and, asc, desc, eq, gte, isNotNull, isNull, like, lte, sql, type SQL } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, like, lte, sql, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions } from '@/db/schema'
@@ -34,8 +34,7 @@ const fechaCivil = z.string().refine(isCivilDate, 'Fecha no válida')
 export const SENTIDOS = ['expense', 'income'] as const
 
 const MovimientoSave = z.object({
-  /** Cadena vacía = sin clasificar, que es un estado válido. */
-  categoriaId: z.string(),
+  categoriaId: z.string().min(1, 'Elige una categoría'),
   // Céntimos, SIN signo. El signo lo pone `sentido`.
   importe: z
     .number()
@@ -80,14 +79,9 @@ const SORTABLE = {
 const filtros = (userId: string, params: ListParams): SQL | undefined => {
   const f = params.filters ?? {}
   const search = params.search?.trim()
-  // `borrados: '1'` invierte el filtro y enseña SOLO la papelera. No los mezcla
-  // con los vivos: una lista donde conviven movimientos borrados y no borrados
-  // tiene totales que no cuadran con nada.
-  const verBorrados = f.borrados === '1'
   return and(
     // Primero, siempre: la consulta no puede devolver algo ajeno.
     eq(transactions.userId, userId),
-    verBorrados ? isNotNull(transactions.deletedAt) : isNull(transactions.deletedAt),
     f.desde ? gte(transactions.date, String(f.desde)) : undefined,
     f.hasta ? lte(transactions.date, String(f.hasta)) : undefined,
     f.categoriaId ? eq(transactions.categoryId, String(f.categoriaId)) : undefined,
@@ -162,13 +156,7 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
         categoriaId: transactions.categoryId,
       })
       .from(transactions)
-      .where(
-        and(
-          eq(transactions.id, id),
-          eq(transactions.userId, userId),
-          isNull(transactions.deletedAt),
-        ),
-      )
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
       .limit(1)
 
     const r = rows[0]
@@ -181,7 +169,7 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
       // El formulario trabaja con magnitud + sentido; la base, con signo.
       importe: Math.abs(r.importe),
       sentido: r.importe < 0 ? 'expense' : 'income',
-      categoriaId: r.categoriaId ?? '',
+      categoriaId: r.categoriaId,
     }
   },
 
@@ -213,7 +201,7 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     await db.insert(transactions).values({
       id,
       userId,
-      categoryId: d.categoriaId || null,
+      categoryId: d.categoriaId,
       amount: conSigno(d.importe, d.sentido),
       date: d.fecha,
       description: d.descripcion,
@@ -234,19 +222,13 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     const updated = await db
       .update(transactions)
       .set({
-        categoryId: d.categoriaId || null,
+        categoryId: d.categoriaId,
         amount: conSigno(d.importe, d.sentido),
         date: d.fecha,
         description: d.descripcion,
         notes: d.notas || null,
       })
-      .where(
-        and(
-          eq(transactions.id, id),
-          eq(transactions.userId, userId),
-          isNull(transactions.deletedAt),
-        ),
-      )
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
       .returning({ id: transactions.id })
 
     if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
@@ -254,46 +236,18 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
   },
 
   /**
-   * Borrado LÓGICO. Un movimiento borrado de verdad se lleva por delante el
-   * cuadre de los meses ya cerrados y no hay forma de recuperarlo.
+   * Borrado FÍSICO. No hay papelera: el modal de confirmación del formulario
+   * es la única red, y por eso es obligatorio en toda la interfaz.
    */
   async remove(userId: string, id: string): Promise<{ id: string }> {
     const borrados = await db
-      .update(transactions)
-      .set({ deletedAt: new Date() })
-      .where(
-        and(
-          eq(transactions.id, id),
-          eq(transactions.userId, userId),
-          isNull(transactions.deletedAt),
-        ),
-      )
+      .delete(transactions)
+      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
       .returning({ id: transactions.id })
 
     if (borrados.length === 0) throw new RepositoryError(NOT_FOUND)
     return { id }
   },
-}
-
-/** Deshace un borrado lógico. */
-export async function restaurarMovimiento(
-  userId: string,
-  id: string,
-): Promise<{ id: string }> {
-  const restaurados = await db
-    .update(transactions)
-    .set({ deletedAt: null })
-    .where(
-      and(
-        eq(transactions.id, id),
-        eq(transactions.userId, userId),
-        isNotNull(transactions.deletedAt),
-      ),
-    )
-    .returning({ id: transactions.id })
-
-  if (restaurados.length === 0) throw new RepositoryError(NOT_FOUND)
-  return { id }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -306,8 +260,6 @@ async function assertCategoriaCompatible(
   categoriaId: string,
   sentido: string,
 ): Promise<void> {
-  if (!categoriaId) return
-
   const rows = await db
     .select({ kind: categories.kind })
     .from(categories)

@@ -1,16 +1,9 @@
 'use client'
 
 /**
- * Hooks de Movimientos.
- *
- * Los cinco del CRUD salen de `createEntityHooks`; lo que no es CRUD —restaurar
- * un borrado— se escribe a mano aquí abajo.
+ * Hooks de Movimientos. Los cinco del CRUD salen de `createEntityHooks`.
  */
 
-import { useCallback, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { notifications } from '@mantine/notifications'
-import { restaurarMovimiento as restaurarMovimientoAction } from '@/src/application/actions/entity.actions'
 import type {
   MovimientoFormDto,
   MovimientoListDto,
@@ -43,8 +36,6 @@ export type MovimientosFilters = {
   desde?: string
   hasta?: string
   categoriaId?: string
-  /** `'1'` enseña SOLO la papelera, no la mezcla con los vivos. */
-  borrados?: string
 }
 
 export function useMovimientos(
@@ -53,40 +44,4 @@ export function useMovimientos(
   options?: { enabled?: boolean },
 ) {
   return movimientoHooks.useList(filters, pagination, options)
-}
-
-/**
- * Deshace un borrado lógico.
- *
- * Existe porque el borrado de un movimiento es lógico y no físico: sin esto, la
- * fila seguiría en la tabla para siempre sin forma de recuperarla, que es lo
- * peor de los dos mundos.
- */
-export function useRestaurarMovimiento() {
-  const queryClient = useQueryClient()
-  const [isPending, setIsPending] = useState(false)
-
-  const restaurar = useCallback(
-    async (id: string): Promise<boolean> => {
-      setIsPending(true)
-      try {
-        const result = await restaurarMovimientoAction(id)
-        if (!result.ok) {
-          notifications.show({ title: 'No se ha podido', message: result.error, color: 'red' })
-          return false
-        }
-        await queryClient.invalidateQueries({ queryKey: ['default', 'Movimientos'] })
-        // El saldo y los gráficos son sumas de movimientos: si no se invalidan,
-        // la portada sigue enseñando la cifra de antes de restaurar.
-        await queryClient.invalidateQueries({ queryKey: ['informes'] })
-        notifications.show({ title: 'Hecho', message: 'Movimiento restaurado', color: 'teal' })
-        return true
-      } finally {
-        setIsPending(false)
-      }
-    },
-    [queryClient],
-  )
-
-  return { restaurar, isPending }
 }

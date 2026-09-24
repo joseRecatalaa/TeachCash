@@ -69,22 +69,8 @@ describe('gasto por categoría', () => {
     expect(fila.categoriaColor).toBe('cat-4')
   })
 
-  test('los movimientos sin categoría se agrupan aparte', async () => {
-    await seedMovimiento(ctx.db, 'a', USER_A, { categoryId: null, amount: -500 })
-
-    const filas = await getGastoPorCategoria(USER_A, '2026-03')
-    expect(filas).toHaveLength(1)
-    expect(filas[0].categoriaNombre).toBe('Sin categoría')
-    expect(filas[0].categoriaId).toBe('')
-    expect(filas[0].categoriaColor).toBe('')
-  })
-
-  test('NO cuenta los ingresos ni los borrados', async () => {
+  test('NO cuenta los ingresos', async () => {
     await seedMovimiento(ctx.db, 'ingreso', USER_A, { amount: 200000 })
-    await seedMovimiento(ctx.db, 'borrado', USER_A, {
-      amount: -70000,
-      deletedAt: new Date(),
-    })
     await seedMovimiento(ctx.db, 'gasto', USER_A, { amount: -1000 })
 
     const filas = await getGastoPorCategoria(USER_A, '2026-03')
@@ -117,17 +103,6 @@ describe('totales del mes', () => {
 
     const t = await getTotalesDelMes(USER_A, '2026-03')
     expect(t.gastos).toBe(300)
-  })
-
-  test('NO cuenta los borrados', async () => {
-    await seedMovimiento(ctx.db, 'g', USER_A, { amount: -1000 })
-    await seedMovimiento(ctx.db, 'papelera', USER_A, {
-      amount: -50000,
-      deletedAt: new Date(),
-    })
-
-    const t = await getTotalesDelMes(USER_A, '2026-03')
-    expect(t.gastos).toBe(1000)
   })
 
   test('un mes sin datos da ceros, no null', async () => {
@@ -168,13 +143,9 @@ describe('ingresos frente a gastos', () => {
 })
 
 describe('saldo', () => {
-  test('es la suma de los movimientos vivos', async () => {
+  test('es la suma de los movimientos', async () => {
     await seedMovimiento(ctx.db, 'i', USER_A, { amount: 200000 })
     await seedMovimiento(ctx.db, 'g', USER_A, { amount: -50000 })
-    await seedMovimiento(ctx.db, 'papelera', USER_A, {
-      amount: -900000,
-      deletedAt: new Date(),
-    })
 
     expect(await getSaldoActual(USER_A)).toBe(150000)
   })
@@ -214,17 +185,6 @@ describe('serie de saldo', () => {
     // Una serie de los últimos meses que arrancara en cero dibujaría un salto
     // que no ocurrió.
     expect(serie[0].saldo).toBe(80000)
-  })
-
-  test('no cuenta los borrados', async () => {
-    await seedMovimiento(ctx.db, 'papelera', USER_A, {
-      date: '2026-03-01',
-      amount: -50000,
-      deletedAt: new Date(),
-    })
-
-    const serie = await getSerieSaldo(USER_A, { desde: '2026-03-01', hasta: '2026-03-01' })
-    expect(serie[0].saldo).toBe(0)
   })
 
   test('no cruza usuarios', async () => {

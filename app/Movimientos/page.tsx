@@ -8,18 +8,15 @@
  */
 
 import { Suspense, useMemo, useState } from 'react'
-import { Group, Switch } from '@mantine/core'
+import { Group } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
 import { IconArrowsLeftRight } from '@tabler/icons-react'
 import { usePaginacion } from '@/src/application/hooks/usePaginacion'
 import { useCatalogos } from '@/src/application/hooks/useCatalogos'
-import {
-  useMovimientos,
-  useRestaurarMovimiento,
-  type MovimientosFilters,
-} from '@/src/application/hooks/useMovimientos'
+import { useMovimientos, type MovimientosFilters } from '@/src/application/hooks/useMovimientos'
 import { movimientoColumns } from '@/src/config/movimientos/columns'
 import { EntityListPage } from '@/src/presentation/components/EntityListPage'
+import { NuevoMovimientoModal } from '@/src/presentation/components/Forms/EntityForms/movimiento/NuevoMovimientoModal'
 import { currentPeriod, monthRange } from '@/lib/dates'
 import type { MovimientoListDto } from '@/src/types/movimiento.types'
 
@@ -31,20 +28,19 @@ function MovimientosContenido() {
     return [from, to]
   })
 
-  // La papelera se enseña APARTE, no mezclada con los vivos: una lista donde
-  // conviven movimientos borrados y no borrados tiene totales que no cuadran.
-  const [verBorrados, setVerBorrados] = useState(false)
+  // "Nuevo movimiento" abre un modal en vez de navegar a /Movimientos/Create:
+  // anotar un gasto es la acción más frecuente de la aplicación y no debería
+  // costar un cambio de página.
+  const [modalAbierto, setModalAbierto] = useState(false)
 
   const { categoriasPorTipo } = useCatalogos()
-  const { restaurar } = useRestaurarMovimiento()
 
   const baseFilter = useMemo<MovimientosFilters>(
     () => ({
       desde: rango[0] ?? undefined,
       hasta: rango[1] ?? undefined,
-      borrados: verBorrados ? '1' : undefined,
     }),
-    [rango, verBorrados],
+    [rango],
   )
 
   const { data, query, tableProps } = usePaginacion<MovimientosFilters, MovimientoListDto>(
@@ -60,52 +56,41 @@ function MovimientosContenido() {
   )
 
   const columns = useMemo(
-    () => movimientoColumns({ categoriasOptions, verBorrados, onRestaurar: restaurar }),
-    [categoriasOptions, verBorrados, restaurar],
+    () => movimientoColumns({ categoriasOptions }),
+    [categoriasOptions],
   )
 
   return (
-    <EntityListPage<MovimientoListDto>
-      header={{
-        title: verBorrados ? 'Movimientos borrados' : 'Movimientos',
-        icon: IconArrowsLeftRight,
-      }}
-      columns={columns}
-      data={data}
-      isLoading={query.isLoading}
-      isError={query.isError}
-      errorMessage="No se han podido cargar los movimientos"
-      resource="Movimientos"
-      exportExcel="MOVIMIENTOS"
-      searchPlaceholder="Buscar por descripción..."
-      noRecordsText={
-        verBorrados ? 'No hay movimientos borrados' : 'No hay movimientos en este periodo'
-      }
-      create={
-        verBorrados
-          ? undefined
-          : { label: 'Nuevo movimiento', href: '/Movimientos/Create' }
-      }
-      extraToolbarActions={
-        <Group gap="sm">
-          <Switch
-            label="Ver borrados"
-            checked={verBorrados}
-            onChange={(e) => setVerBorrados(e.currentTarget.checked)}
-          />
-          <DatePickerInput
-            type="range"
-            value={rango}
-            onChange={setRango}
-            valueFormat="DD/MM/YYYY"
-            placeholder="Periodo"
-            clearable
-            w={240}
-          />
-        </Group>
-      }
-      {...tableProps}
-    />
+    <>
+      <EntityListPage<MovimientoListDto>
+        header={{ title: 'Movimientos', icon: IconArrowsLeftRight }}
+        columns={columns}
+        data={data}
+        isLoading={query.isLoading}
+        isError={query.isError}
+        errorMessage="No se han podido cargar los movimientos"
+        resource="Movimientos"
+        exportExcel="MOVIMIENTOS"
+        searchPlaceholder="Buscar por descripción..."
+        noRecordsText="No hay movimientos en este periodo"
+        create={{ label: 'Nuevo movimiento', onClick: () => setModalAbierto(true) }}
+        extraToolbarActions={
+          <Group gap="sm">
+            <DatePickerInput
+              type="range"
+              value={rango}
+              onChange={setRango}
+              valueFormat="DD/MM/YYYY"
+              placeholder="Periodo"
+              clearable
+              w={240}
+            />
+          </Group>
+        }
+        {...tableProps}
+      />
+      {modalAbierto && <NuevoMovimientoModal onClose={() => setModalAbierto(false)} />}
+    </>
   )
 }
 

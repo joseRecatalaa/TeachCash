@@ -18,13 +18,8 @@ import type { MovimientoListDto } from '@/src/types/movimiento.types'
 
 export function movimientoColumns({
   categoriasOptions,
-  verBorrados = false,
-  onRestaurar,
 }: {
   categoriasOptions: Option[]
-  /** La vista está enseñando la papelera: se ofrece restaurar, no editar. */
-  verBorrados?: boolean
-  onRestaurar?: (id: string) => void
 }): AppTableColumn<MovimientoListDto>[] {
   return [
     dateColumn<MovimientoListDto>('fecha', 'Fecha'),
@@ -55,11 +50,6 @@ export function movimientoColumns({
         entityName: 'el movimiento',
         displayName: 'descripcion',
       },
-      // En la papelera no se edita nada: primero se restaura.
-      canEdit: () => !verBorrados,
-      restore: onRestaurar
-        ? { onRestore: onRestaurar, canRestore: () => verBorrados }
-        : undefined,
     }),
   ]
 }

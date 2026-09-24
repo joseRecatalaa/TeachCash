@@ -42,9 +42,14 @@ Resiste la tentación de añadir tablas antes de que un caso de uso real lo pida
 5. **El saldo no se almacena.** Se deriva de `SUM(amount)`. Con volúmenes de
    finanzas personales (miles de filas) sobra. Si algún día no sobra, ver
    "Saldos materializados" abajo.
-6. **Borrado lógico en movimientos** (`deletedAt`), no físico: el usuario que
-   borra sin querer un movimiento importado quiere recuperarlo, y el borrado
-   duro rompe la deduplicación de importaciones.
+6. **Borrado FÍSICO en movimientos**, no lógico: no hay `deletedAt` ni papelera.
+   El modal de confirmación de la interfaz es la única red — si algún día hace
+   falta deshacer un borrado por error, eso es una papelera nueva, no un intento
+   de recuperar la fila.
+7. **Todo movimiento tiene categoría.** `categoryId` es `NOT NULL`: no existe el
+   estado "sin clasificar". Por eso el repositorio de categorías borra en cascada:
+   borrar una categoría en uso borra también sus movimientos, porque no hay a
+   dónde reclasificarlos ni papelera donde archivarlos.
 
 ## Esquema
 
@@ -56,8 +61,6 @@ export const categories = sqliteTable('categories', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
-  /** Jerarquía de un solo nivel: null = categoría raíz. */
-  parentId: text('parent_id'),
   /** income | expense — una categoría no puede ser ambas. */
   kind: text('kind').notNull(),
   icon: text('icon'),
@@ -65,14 +68,15 @@ export const categories = sqliteTable('categories', {
   color: text('color'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 }, (t) => [
-  unique('categories_user_name').on(t.userId, t.name, t.parentId),
+  unique('categories_user_name').on(t.userId, t.name),
   index('categories_user_idx').on(t.userId),
 ])
 
 export const transactions = sqliteTable('transactions', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
-  categoryId: text('category_id').references(() => categories.id),
+  /** Obligatoria: no existe el movimiento sin clasificar (regla 7). */
+  categoryId: text('category_id').notNull().references(() => categories.id),
   /** Céntimos con signo: negativo = gasto, positivo = ingreso. */
   amount: integer('amount').notNull(),
   /** Fecha civil YYYY-MM-DD. Ver regla 3. */
@@ -83,7 +87,6 @@ export const transactions = sqliteTable('transactions', {
   importHash: text('import_hash'),
   /** Clave del cliente: convierte el doble clic en un choque contra el índice. */
   idempotencyKey: text('idempotency_key'),
-  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 }, (t) => [
   // El índice que sostiene casi todas las consultas: usuario + rango de fechas.
@@ -106,10 +109,6 @@ Dos índices únicos que parecen decorativos y no lo son:
 Los dos aprovechan que **SQLite trata dos `NULL` como distintos**, así que no
 estorban a los movimientos creados sin clave.
 
-Esa misma propiedad es una trampa en `categories_user_name`: **no impide dos
-categorías raíz con el mismo nombre** (`parent_id` NULL). Esa comprobación está
-en el repositorio y no se puede delegar en la base.
-
 ## El saldo es derivado
 
 Es la regla dura 7 y el sitio donde más fácil es romperla sin darse cuenta.
@@ -119,7 +118,7 @@ Es la regla dura 7 y el sitio donde más fácil es romperla sin darse cuenta.
 const [row] = await db
   .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
   .from(transactions)
-  .where(and(eq(transactions.userId, userId), isNull(transactions.deletedAt)))
+  .where(eq(transactions.userId, userId))
 ```
 
 No hay saldo de apertura en ninguna parte: el saldo arranca en cero el día del
@@ -131,19 +130,15 @@ Hay un test que comprueba que `getSaldoActual` y el último punto de
 `getSerieSaldo` dan la misma cifra: dos caminos distintos hasta el mismo número.
 Si alguna vez falla, es que alguien ha materializado un saldo por su cuenta.
 
-## El único filtro transversal
-
-Un movimiento en la papelera no cuenta para nada — ni para el saldo ni para los
-informes. Escríbelo como helper una sola vez, para no acordarte cada vez:
-
-```ts
-const vivos = () => isNull(transactions.deletedAt)
-```
-
-> **Nota histórica.** Cuando había transferencias hacían falta DOS helpers, y la
-> distinción ("el saldo las incluye, los informes las excluyen") era la fuente
-> número uno de informes mal calculados: la cifra salía, solo que estaba mal. Si
-> algún día vuelven las transferencias, vuelve también esa distinción.
+> **Nota histórica.** Hasta que el borrado pasó a ser físico, había un filtro
+> transversal (`isNull(transactions.deletedAt)`) que tenía que ir en TODA
+> consulta de saldo o informe. Y antes de eso, con transferencias, hacían falta
+> DOS de esos filtros, y la distinción ("el saldo las incluye, los informes las
+> excluyen") era la fuente número uno de informes mal calculados: la cifra
+> salía, solo que estaba mal. Hoy no hace falta ninguno — una fila en
+> `transactions` siempre cuenta — pero si algún día vuelve un estado que hay que
+> excluir (una papelera, transferencias), vuelve también ese filtro y hay que
+> aplicarlo en TODAS las agregaciones, sin excepciones.
 
 ## Consultas
 
@@ -162,15 +157,15 @@ export async function getGastoPorCategoria(userId: string, periodo: string) {
       eq(transactions.userId, userId),        // primero, siempre
       like(transactions.date, `${periodo}-%`), // 'YYYY-MM-%' — usa el índice
       lt(transactions.amount, 0),             // solo gastos
-      vivos(),
     ))
     .groupBy(categories.id)
 }
 ```
 
-- **`leftJoin` con categorías, nunca `innerJoin`.** Un movimiento sin clasificar
-  es válido, y un `innerJoin` lo dejaría fuera del informe en silencio: el total
-  de gasto por categoría no cuadraría con el total del mes y nadie sabría por qué.
+- **`leftJoin` con categorías, no `innerJoin`.** `categoryId` es `NOT NULL` y la
+  FK garantiza que la categoría existe, así que un `innerJoin` sería igual de
+  correcto hoy — pero un `leftJoin` no puede dejar una fila fuera del informe en
+  silencio, y esa garantía cuesta cero.
 - **Agrega en SQL, no en JavaScript.** Traerse 5.000 movimientos para sumarlos
   en memoria funciona hasta que deja de funcionar.
 - `sum()` sobre un conjunto vacío devuelve `NULL`, no `0`. Trátalo

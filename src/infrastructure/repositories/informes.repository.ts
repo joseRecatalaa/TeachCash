@@ -17,7 +17,7 @@
  * Todos los importes son céntimos en la divisa de la aplicación (`DIVISA_APP`).
  */
 
-import { and, asc, eq, gte, isNull, like, lt, lte, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, like, lt, lte, sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { categories, transactions } from '@/db/schema'
 import {
@@ -35,12 +35,6 @@ import type {
   PuntoSaldoDto,
   TotalesPeriodoDto,
 } from '@/src/types/informe.types'
-
-/**
- * El único filtro transversal: un movimiento en la papelera no cuenta para
- * nada. Ni para el saldo ni para los informes.
- */
-const vivos = () => isNull(transactions.deletedAt)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Consultas
@@ -72,7 +66,6 @@ export async function getGastoPorCategoria(
         // 'YYYY-MM-%' sobre una columna de texto: usa el índice (user_id, date).
         like(transactions.date, `${periodo}-%`),
         lt(transactions.amount, 0),
-        vivos(),
       ),
     )
     .groupBy(categories.id)
@@ -108,7 +101,7 @@ export async function getIngresosVsGastos(
       gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
     })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), vivos()))
+    .where(eq(transactions.userId, userId))
     .groupBy(sql`substr(${transactions.date}, 1, 7)`)
 
   if (rows.length === 0) return []
@@ -139,13 +132,7 @@ export async function getTotalesDelMes(
       gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
     })
     .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        like(transactions.date, `${periodo}-%`),
-        vivos(),
-      ),
-    )
+    .where(and(eq(transactions.userId, userId), like(transactions.date, `${periodo}-%`)))
 
   const ingresos = row?.ingresos ?? 0
   const gastos = row?.gastos ?? 0
@@ -164,7 +151,7 @@ export async function getSaldoActual(userId: string): Promise<number> {
   const [row] = await db
     .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), vivos()))
+    .where(eq(transactions.userId, userId))
   return row?.total ?? 0
 }
 
@@ -183,13 +170,7 @@ export async function getSerieSaldo(
   const [previo] = await db
     .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
     .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        lt(transactions.date, options.desde),
-        vivos(),
-      ),
-    )
+    .where(and(eq(transactions.userId, userId), lt(transactions.date, options.desde)))
 
   const deltas = await db
     .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})` })
@@ -199,7 +180,6 @@ export async function getSerieSaldo(
         eq(transactions.userId, userId),
         gte(transactions.date, options.desde),
         lte(transactions.date, options.hasta),
-        vivos(),
       ),
     )
     .groupBy(transactions.date)
@@ -218,7 +198,7 @@ export async function getPrimeraFecha(userId: string): Promise<CivilDate | null>
   const [row] = await db
     .select({ fecha: sql<string | null>`min(${transactions.date})` })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), vivos()))
+    .where(eq(transactions.userId, userId))
   return row?.fecha ?? null
 }
 

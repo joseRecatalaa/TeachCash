@@ -660,11 +660,11 @@ Qué se testea sin excepción:
   que el mensaje no distinga "no existe" de "no es tuyo".
 - **Aritmética de dinero**: signos, redondeos, que un importe con decimales se
   rechace.
-- **Agregaciones**: que ninguna cuente lo que está en la papelera, y que
-  `getSaldoActual` coincida con el último punto de `getSerieSaldo` — dos caminos
-  distintos hasta la misma cifra son la prueba de que el saldo sigue siendo
-  derivado (regla dura 7).
-- **Reglas de borrado**: qué se puede borrar y qué se archiva.
+- **Agregaciones**: que `getSaldoActual` coincida con el último punto de
+  `getSerieSaldo` — dos caminos distintos hasta la misma cifra son la prueba de
+  que el saldo sigue siendo derivado (regla dura 7).
+- **Reglas de borrado**: que sea permanente y que se propague donde toque (p. ej.
+  borrar una categoría se lleva por delante sus movimientos).
 
 ## Skills del proyecto
 

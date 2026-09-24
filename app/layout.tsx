@@ -39,7 +39,7 @@ const body = Nunito({ variable: '--font-body', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Finanzas',
+  title: 'TeachCash',
   description: 'Gestor de finanzas personales',
 }
 
@@ -64,13 +64,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             fogonazo blanco al entrar en modo oscuro. */}
         <ColorSchemeScript defaultColorScheme="auto" />
         {/* Y por el mismo motivo que el de arriba: marca el <html> ANTES del
-            primer pintado si la pantalla de carga ya se vio alguna vez en este
+            primer pintado si la pantalla de carga ya se vio en esta sesión del
             navegador. El HTML del servidor la trae siempre, así que si la
             decisión esperase a que React hidrate se vería un fogonazo en cada
             recarga. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('gf-splash-visto')==='1')document.documentElement.dataset.splash='visto'}catch(e){}`,
+            __html: `try{if(sessionStorage.getItem('gf-splash-visto')==='1')document.documentElement.dataset.splash='visto'}catch(e){}`,
           }}
         />
       </head>

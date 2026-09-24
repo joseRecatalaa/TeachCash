@@ -5,7 +5,7 @@
 import {
   actionsColumn,
   enumColumn,
-  textColumn,
+  moneyColumn,
 } from '@/src/presentation/components/ActionsColumn'
 import { COLOR_POR_SENTIDO, type AppTableColumn } from '@/src/config/_shared/types'
 import type { CategoriaListDto } from '@/src/types/categoria.types'
@@ -35,7 +35,7 @@ export function categoriaColumns(): AppTableColumn<CategoriaListDto>[] {
     // Los colores se declaran, no se dejan a la paleta automática: esa asigna
     // por POSICIÓN del valor, y aquí "gasto" tiene que ser rojo siempre.
     enumColumn<CategoriaListDto>('tipo', 'Tipo', { badgeColors: COLOR_POR_SENTIDO }),
-    textColumn<CategoriaListDto>('padreNombre', 'Padre', { searchable: false }),
+    moneyColumn<CategoriaListDto>('presupuesto', 'Presupuesto', { filterable: false }),
     {
       accessor: 'usos',
       title: 'Movimientos',

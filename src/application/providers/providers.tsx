@@ -28,6 +28,7 @@ import {
   Notification,
   Paper,
   Popover,
+  Progress,
   Switch,
   Title,
   Tooltip,
@@ -142,6 +143,9 @@ const theme = createTheme({
       classNames: { root: sketch.notification },
     }),
     Switch: Switch.extend({ classNames: { track: sketch.switchTrack } }),
+    Progress: Progress.extend({
+      classNames: { root: sketch.progressRoot, section: sketch.progressSection },
+    }),
     Popover: Popover.extend({ classNames: { dropdown: sketch.dropdown } }),
     Menu: Menu.extend({ classNames: { dropdown: sketch.dropdown } }),
     // `Input` e `InputWrapper` son la base de TextInput, Select, DateInput y del

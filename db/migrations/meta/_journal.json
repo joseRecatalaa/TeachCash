@@ -8,6 +8,27 @@
       "when": 1787841793765,
       "tag": "0000_ambitious_devos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788197125691,
+      "tag": "0001_dear_magik",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788201242493,
+      "tag": "0002_blushing_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788203734739,
+      "tag": "0003_movimientos_sin_papelera",
+      "breakpoints": true
     }
   ]
 }

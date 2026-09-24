@@ -119,20 +119,30 @@
 
 /* ── Cifras ──────────────────────────────────────────────────────────────── */
 
+/*
+ * El patrimonio no lleva nada alrededor —ni pie, ni fecha—, así que es la
+ * cifra la que tiene que llenar la tarjeta. `patrimonioWrap` crece dentro del
+ * `body` (ver SketchCard.module.css) y centra la cifra en el alto que le deje
+ * la fila de la rejilla, en vez de dejarla arriba con un hueco debajo.
+ */
+.patrimonioWrap {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0.5rem 0;
+}
+
 .cifraGrande {
   display: block;
   font-family: var(--sd-font-mono);
-  font-size: clamp(1.9rem, 1.2rem + 2.4vw, 2.9rem);
+  font-size: clamp(2.2rem, 1.3rem + 2.6vw, 3.6rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.05;
   letter-spacing: -0.03em;
   color: var(--sd-ink);
-}
-
-.pieSaldo {
-  margin: 0.5rem 0 0;
-  font-size: 0.8125rem;
-  color: var(--sd-ink-muted);
+  text-align: center;
 }
 
 /*
@@ -207,36 +217,6 @@
 
 .gasto {
   color: var(--expense);
-}
-
-/* ── Comparación con el mes anterior ─────────────────────────────────────── */
-
-/*
- * El texto ya dice "más" o "menos": el color y la flecha solo lo refuerzan.
- * Verde no significa "subió", significa "buena noticia" — y en la ficha de
- * gastos la buena noticia es bajar.
- */
-.compaBuena,
-.compaMala,
-.compaNeutra {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-  margin-top: 0.3rem;
-  font-size: 0.6875rem;
-  line-height: 1.3;
-}
-
-.compaBuena {
-  color: var(--income);
-}
-
-.compaMala {
-  color: var(--expense);
-}
-
-.compaNeutra {
-  color: var(--sd-ink-muted);
 }
 
 /* ── Top de categorías ───────────────────────────────────────────────────── */

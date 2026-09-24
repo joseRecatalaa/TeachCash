@@ -212,7 +212,11 @@ function FieldRendererBase({
  * Un campo depende de su propio valor, de su propio error y de lo que declare en
  * `dependsOn`. Los campos `component`/`render` sin `dependsOn` no se pueden
  * memoizar — no hay forma de saber qué leen — así que se repintan siempre; es
- * justo el caso que la documentación de `dependsOn` pide evitar.
+ * justo el caso que la documentación de `dependsOn` pide evitar. Un `select`
+ * con `optionsFrom` SÍ se memoiza por defecto, y por eso necesita `dependsOn`
+ * declarado a mano si su `optionsFrom` lee otro campo (ver `categoriaId` en
+ * `movimientos/sections.ts`): de lo contrario este comparador no tiene forma
+ * de saber que tiene que repintarlo.
  */
 export const FieldRenderer = memo(FieldRendererBase, (prev, next) => {
   if (prev.field !== next.field) return false

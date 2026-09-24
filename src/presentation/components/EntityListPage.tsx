@@ -46,7 +46,10 @@ export interface HeaderConfig {
 
 export interface CreateConfig {
   label: string
-  href: string
+  /** Navega a una página propia de alta. Alternativa a `onClick`. */
+  href?: string
+  /** Abre un modal de alta en lugar de navegar. Alternativa a `href`. */
+  onClick?: () => void
 }
 
 export interface EntityListPageProps<T> extends AppTableManualProps<T> {
@@ -126,12 +129,21 @@ export function EntityListPage<T extends object>({
             </div>
             {create && (
               <div className={styles.acciones}>
-                <SketchButton
-                  href={create.href}
-                  leftSection={<IconPlus size={16} stroke={2.2} />}
-                >
-                  {create.label}
-                </SketchButton>
+                {create.href ? (
+                  <SketchButton
+                    href={create.href}
+                    leftSection={<IconPlus size={16} stroke={2.2} />}
+                  >
+                    {create.label}
+                  </SketchButton>
+                ) : (
+                  <SketchButton
+                    onClick={create.onClick}
+                    leftSection={<IconPlus size={16} stroke={2.2} />}
+                  >
+                    {create.label}
+                  </SketchButton>
+                )}
               </div>
             )}
           </div>
