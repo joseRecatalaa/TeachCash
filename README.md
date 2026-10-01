@@ -1,7 +1,7 @@
-# Gestor de finanzas personales
+# TeachCash
 
-Aplicación web local para llevar tus gastos e ingresos: movimientos,
-categorías y una portada que resume el mes.
+Gestor de finanzas personales. Aplicación web local para llevar tus gastos e
+ingresos: movimientos, categorías y una portada que resume el mes.
 
 Los datos viven en un fichero SQLite dentro de `data/`, que está ignorado por
 git. No sale nada de tu máquina y no hay ningún servicio externo.

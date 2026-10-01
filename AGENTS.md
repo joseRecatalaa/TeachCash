@@ -10,11 +10,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 > El bloque de arriba lo regenera `next dev`. **No lo edites ni lo borres.** Todo lo que sigue es documentación del proyecto y sí se mantiene a mano.
 
-# Gestor de Finanzas Personales
+# TeachCash
 
-Aplicación web para llevar las finanzas personales: movimientos (gastos e
-ingresos), categorías y una portada que resume el mes. Uso individual (uno o
-pocos usuarios), no multi-tenant, no contabilidad de empresa.
+Gestor de finanzas personales. Aplicación web para llevar las finanzas
+personales: movimientos (gastos e ingresos), categorías y una portada que
+resume el mes. Uso individual (uno o pocos usuarios), no multi-tenant, no
+contabilidad de empresa.
 
 **Hay UNA cuenta y UNA divisa, y ninguna de las dos se guarda.** No existe tabla
 de cuentas, ni columna de moneda, ni transferencias: un movimiento es un gasto o
