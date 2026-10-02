@@ -18,6 +18,24 @@ const obligatoria = (nombre: string, valor: string | undefined): string => {
 export const supabaseUrl = (): string =>
   obligatoria('NEXT_PUBLIC_SUPABASE_URL', process.env.NEXT_PUBLIC_SUPABASE_URL)
 
+/**
+ * Cómo se guardan las cookies de la sesión.
+ *
+ * `httpOnly` NO es el valor por defecto de `@supabase/ssr`: lo deja apagado
+ * para que su cliente de navegador pueda leer la sesión. Aquí no hay cliente
+ * de navegador —todo pasa por el servidor—, así que se enciende: un script
+ * inyectado en la página no puede leer ni robar el token.
+ *
+ * `secure` solo en producción: en desarrollo la app va por http://localhost, y
+ * una cookie `secure` sobre http el navegador la tira.
+ */
+export const opcionesCookie = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: process.env.NODE_ENV === 'production',
+  path: '/',
+}
+
 export const supabasePublishableKey = (): string =>
   obligatoria(
     'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',

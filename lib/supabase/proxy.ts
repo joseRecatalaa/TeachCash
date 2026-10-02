@@ -12,12 +12,13 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { supabasePublishableKey, supabaseUrl } from './config'
+import { opcionesCookie, supabasePublishableKey, supabaseUrl } from './config'
 
 export async function refrescarSesion(request: NextRequest): Promise<NextResponse> {
   let respuesta = NextResponse.next({ request })
 
   const supabase = createServerClient(supabaseUrl(), supabasePublishableKey(), {
+    cookieOptions: opcionesCookie,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(aEscribir, cabeceras) {
