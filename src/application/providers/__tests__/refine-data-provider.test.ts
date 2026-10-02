@@ -15,13 +15,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({
   db: null as unknown as import('@/db/client').Database,
-  userId: 'user-a' as string | null,
+  userId: '00000000-0000-4000-8000-00000000000a' as string | null,
 }))
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 
 vi.mock('@/lib/auth', () => ({
-  LOCAL_USER_ID: 'user-a',
+  LOCAL_USER_ID: '00000000-0000-4000-8000-00000000000a',
   getSession: async () => (h.userId ? { user: { id: h.userId } } : null),
   requireUserId: async () => {
     if (!h.userId) throw new Error('No autorizado')

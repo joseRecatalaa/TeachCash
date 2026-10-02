@@ -1,72 +1,86 @@
 /**
- * Base de datos de test: SQLite real, con las migraciones reales aplicadas.
+ * Base de datos de test: Postgres REAL (PGlite, el mismo motor compilado a
+ * WASM y ejecutado en proceso), con las migraciones reales aplicadas.
  *
  * Nada de mockear el ORM. Los bugs de agregación viven exactamente en el SQL que
  * un mock no llega a ejecutar. → skill `testing-finance`
  *
- * NO se usa ':memory:'. Con libsql, abrir una transacción sobre una base en
- * memoria estrena conexión, y cada conexión a ':memory:' es una base distinta:
- * las tablas desaparecen a mitad del test. Comprobado. Se usa un fichero
- * desechable por test, dentro de data/test/ (ignorado por git).
+ * Es Postgres y no SQLite a propósito: los fallos que importan aquí son de
+ * dialecto (`like` que distingue mayúsculas, `sum` que vuelve como texto) y
+ * solo los caza el mismo motor que hay en Supabase.
+ *
+ * Supabase trae de serie el esquema `auth` (usuarios, `auth.uid()`) y los roles
+ * `anon`/`authenticated`. Nuestras migraciones dependen de ellos —la clave ajena
+ * de `user_id` y las políticas RLS—, así que aquí se crea un sustituto mínimo
+ * ANTES de migrar. Si una migración nueva usa algo más de `auth`, se añade aquí.
  */
 
-import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
-import { join } from 'node:path'
-import { migrate } from 'drizzle-orm/libsql/migrator'
-import { createDb, createDbClient, type Database } from './client.ts'
+import { PGlite } from '@electric-sql/pglite'
+import { drizzle } from 'drizzle-orm/pglite'
+import { migrate } from 'drizzle-orm/pglite/migrator'
+import type { Database } from './client.ts'
+import * as schema from './schema.ts'
 
-const TEST_DB_DIR = './data/test'
-
-/** Diez minutos: más de lo que dura cualquier test, menos que la siguiente sesión. */
-const STALE_AFTER_MS = 10 * 60 * 1000
+const AUTH_STUB = `
+  create schema if not exists auth;
+  create table auth.users (
+    id uuid primary key,
+    email varchar(255),
+    is_anonymous boolean not null default false,
+    created_at timestamptz not null default now()
+  );
+  create function auth.uid() returns uuid language sql stable as $$
+    select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+  $$;
+  create role anon nologin;
+  create role authenticated nologin;
+`
 
 /**
- * Borra los restos que Windows no dejó borrar en su día.
- *
- * Solo toca ficheros con más de diez minutos. Vitest ejecuta cada fichero de
- * test en un worker distinto y a la vez: borrar "todo lo que no sea mío" hacía
- * que un worker le quitara la base de datos a otro a mitad de ejecución.
+ * Los dos usuarios de siempre de los tests. Nacen ya dados de alta en
+ * `auth.users` en la plantilla, porque `user_id` tiene clave ajena ahí y casi
+ * todo test escribe datos de uno de ellos.
  */
-const sweepStaleFiles = (): void => {
-  const cutoff = Date.now() - STALE_AFTER_MS
-  try {
-    for (const name of readdirSync(TEST_DB_DIR)) {
-      const full = join(TEST_DB_DIR, name)
-      try {
-        if (statSync(full).mtimeMs < cutoff) rmSync(full, { force: true })
-      } catch {
-        // Sigue abierto o ya no está. En cualquier caso, no es asunto de este test.
-      }
-    }
-  } catch {
-    // El directorio aún no existe.
-  }
+export const USER_A = '00000000-0000-4000-8000-00000000000a'
+export const USER_B = '00000000-0000-4000-8000-00000000000b'
+
+export type TestDb = { db: Database; pg: PGlite; close: () => Promise<void> }
+
+/**
+ * Una base nueva y vacía por test. Arrancar PGlite cuesta, así que la primera
+ * se migra una vez y se guarda su directorio de datos: las siguientes nacen de
+ * esa copia en lugar de repetir las migraciones.
+ */
+let plantilla: Promise<File | Blob> | null = null
+
+const crearPlantilla = async (): Promise<File | Blob> => {
+  const pg = new PGlite()
+  await pg.exec(AUTH_STUB)
+  await migrate(drizzle(pg), { migrationsFolder: './db/migrations' })
+  await crearUsuario(pg, USER_A)
+  await crearUsuario(pg, USER_B)
+  const datos = await pg.dumpDataDir('none')
+  await pg.close()
+  return datos
 }
 
-export type TestDb = { db: Database; close: () => void }
-
 export async function createTestDb(): Promise<TestDb> {
-  mkdirSync(TEST_DB_DIR, { recursive: true })
-  sweepStaleFiles()
+  plantilla ??= crearPlantilla()
+  const pg = new PGlite({ loadDataDir: await plantilla })
+  const db = drizzle(pg, { schema }) as unknown as Database
+  return { db, pg, close: () => pg.close() }
+}
 
-  const path = join(TEST_DB_DIR, `${crypto.randomUUID()}.db`)
-  const client = createDbClient(`file:${path}`)
-  const db = createDb(client)
-  await migrate(db, { migrationsFolder: './db/migrations' })
-
-  return {
-    db,
-    close: () => {
-      client.close()
-      // En Windows el handle tarda en soltarse tras close(). Si falla, el fichero
-      // lo barre la siguiente ejecución; no merece hacer fallar un test por esto.
-      for (const suffix of ['', '-wal', '-shm']) {
-        try {
-          rmSync(`${path}${suffix}`, { force: true })
-        } catch {
-          /* se limpia en la próxima pasada */
-        }
-      }
-    },
-  }
+/** Da de alta un usuario en el `auth.users` de mentira. Los datos lo exigen por FK. */
+export async function crearUsuario(
+  pg: PGlite,
+  id: string,
+  opciones: { anonimo?: boolean; email?: string } = {},
+): Promise<string> {
+  await pg.query('insert into auth.users (id, email, is_anonymous) values ($1, $2, $3)', [
+    id,
+    opciones.email ?? null,
+    opciones.anonimo ?? false,
+  ])
+  return id
 }

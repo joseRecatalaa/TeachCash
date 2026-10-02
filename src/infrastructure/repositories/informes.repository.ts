@@ -15,9 +15,15 @@
  * ────────────────────────────────────────────────────────────────────────────
  *
  * Todos los importes son céntimos en la divisa de la aplicación (`DIVISA_APP`).
+ *
+ * Todo agregado lleva `.mapWith(Number)`. En Postgres, `sum` sobre `integer`
+ * devuelve `bigint`, y el driver entrega `bigint` como TEXTO para no perder
+ * precisión. Sin la conversión, `saldo + importe` concatena cadenas y la cifra
+ * que sale en pantalla parece un número — que es lo peligroso.
+ * Un saldo en céntimos cabe de sobra: `Number` es exacto hasta 2^53.
  */
 
-import { and, asc, eq, gte, like, lt, lte, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, lt, lte, sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { categories, transactions } from '@/db/schema'
 import {
@@ -40,6 +46,18 @@ import type {
 // Consultas
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Las fechas de un mes, como rango: así puede usar el índice (user_id, date). */
+const delMes = (periodo: Period) => {
+  const { from, to } = monthRange(periodo)
+  return and(gte(transactions.date, from), lte(transactions.date, to))
+}
+
+/** 'YYYY-MM' de una fecha civil. Lo calcula la base, sin pasar por ningún huso. */
+const periodoDe = sql<string>`to_char(${transactions.date}, 'YYYY-MM')`
+
+const SUMA_INGRESOS = sql<number>`coalesce(sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end), 0)`
+const SUMA_GASTOS = sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`
+
 /**
  * En qué se va el dinero durante un periodo.
  *
@@ -56,15 +74,14 @@ export async function getGastoPorCategoria(
       categoriaId: categories.id,
       categoriaNombre: categories.name,
       categoriaColor: categories.color,
-      total: sql<number>`sum(${transactions.amount})`,
+      total: sql<number>`sum(${transactions.amount})`.mapWith(Number),
     })
     .from(transactions)
     .leftJoin(categories, eq(categories.id, transactions.categoryId))
     .where(
       and(
         eq(transactions.userId, userId),
-        // 'YYYY-MM-%' sobre una columna de texto: usa el índice (user_id, date).
-        like(transactions.date, `${periodo}-%`),
+        delMes(periodo),
         lt(transactions.amount, 0),
       ),
     )
@@ -96,13 +113,13 @@ export async function getIngresosVsGastos(
 
   const rows = await db
     .select({
-      periodo: sql<string>`substr(${transactions.date}, 1, 7)`,
-      ingresos: sql<number>`coalesce(sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end), 0)`,
-      gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
+      periodo: periodoDe,
+      ingresos: SUMA_INGRESOS.mapWith(Number),
+      gastos: SUMA_GASTOS.mapWith(Number),
     })
     .from(transactions)
     .where(eq(transactions.userId, userId))
-    .groupBy(sql`substr(${transactions.date}, 1, 7)`)
+    .groupBy(periodoDe)
 
   if (rows.length === 0) return []
 
@@ -128,11 +145,11 @@ export async function getTotalesDelMes(
 ): Promise<TotalesPeriodoDto> {
   const [row] = await db
     .select({
-      ingresos: sql<number>`coalesce(sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end), 0)`,
-      gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
+      ingresos: SUMA_INGRESOS.mapWith(Number),
+      gastos: SUMA_GASTOS.mapWith(Number),
     })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), like(transactions.date, `${periodo}-%`)))
+    .where(and(eq(transactions.userId, userId), delMes(periodo)))
 
   const ingresos = row?.ingresos ?? 0
   const gastos = row?.gastos ?? 0
@@ -149,7 +166,7 @@ export async function getTotalesDelMes(
  */
 export async function getSaldoActual(userId: string): Promise<number> {
   const [row] = await db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
     .from(transactions)
     .where(eq(transactions.userId, userId))
   return row?.total ?? 0
@@ -168,12 +185,12 @@ export async function getSerieSaldo(
   // Punto de partida: todo lo anterior al rango. Sin esto, una serie de los
   // últimos tres meses arrancaría en cero y dibujaría un salto que no existió.
   const [previo] = await db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
     .from(transactions)
     .where(and(eq(transactions.userId, userId), lt(transactions.date, options.desde)))
 
   const deltas = await db
-    .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})` })
+    .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})`.mapWith(Number) })
     .from(transactions)
     .where(
       and(
@@ -196,7 +213,9 @@ export async function getSerieSaldo(
 /** Fecha del primer movimiento. Sirve para no pintar meses anteriores al alta. */
 export async function getPrimeraFecha(userId: string): Promise<CivilDate | null> {
   const [row] = await db
-    .select({ fecha: sql<string | null>`min(${transactions.date})` })
+    // ::text — un `date` sin columna detrás no pasa por el `mode: 'string'` del
+    // esquema, y según el driver volvería como `Date` (regla dura 5).
+    .select({ fecha: sql<string | null>`min(${transactions.date})::text` })
     .from(transactions)
     .where(eq(transactions.userId, userId))
   return row?.fecha ?? null

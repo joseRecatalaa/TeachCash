@@ -1,41 +1,46 @@
 /**
  * Fábrica de conexiones. Único fichero que sabe qué driver hay debajo.
  *
- * Es SQLite en un fichero local: los datos no salen de esta máquina. Se usa
- * @libsql/client porque distribuye binarios ya compilados por plataforma (no
- * necesita toolchain de C++) y porque es el mismo cliente que habla con Turso,
- * si algún día esto tuviera que dejar de ser local.
+ * Es Postgres en Supabase, a través de su pooler (Supavisor) en modo
+ * TRANSACCIÓN: cada consulta toma una conexión prestada y la devuelve al
+ * terminar. Eso es lo que permite que muchas peticiones compartan las pocas
+ * conexiones del plan gratuito, y tiene una consecuencia que no se ve:
+ * `prepare: false`. Una sentencia preparada vive en UNA conexión del servidor,
+ * y la siguiente consulta puede caer en otra que no la conoce. Con `prepare`
+ * activado funciona en local y falla en Supabase de forma intermitente.
  *
  * Separado de index.ts a propósito: importar la conexión compartida solo para
- * construir una de test abriría el fichero real como efecto colateral.
+ * construir una de test o de migración abriría la de la app como efecto colateral.
  */
 
-import { mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
-import { createClient, type Client } from '@libsql/client/node'
-import { drizzle } from 'drizzle-orm/libsql/node'
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import * as schema from './schema.ts'
 
-export const DATABASE_PATH = process.env.DATABASE_PATH ?? './data/finanzas.db'
+/**
+ * Lo que usa todo el código. Es el tipo común a postgres-js (la app) y a PGlite
+ * (los tests, `db/testing.ts`): los repositorios no saben cuál tienen debajo.
+ */
+export type Database = PgDatabase<PgQueryResultHKT, typeof schema>
 
-export const createDbClient = (url: string = `file:${DATABASE_PATH}`): Client => {
-  // libsql no crea el directorio que falta: fallaría al abrir el fichero.
-  if (url.startsWith('file:')) {
-    mkdirSync(dirname(url.slice('file:'.length)), { recursive: true })
+const urlObligatoria = (nombre: string): string => {
+  const url = process.env[nombre]
+  if (!url) {
+    throw new Error(`Falta ${nombre}. Copia .env.example a .env.local y rellénalo.`)
   }
-  const client = createClient({ url })
-  // foreign_keys es una opción POR CONEXIÓN, y de las que no se quiere descubrir
-  // apagada. libsql ya la trae activada, así que si el PRAGMA falla no cambia
-  // nada; por eso no bloquea la creación del cliente.
-  //
-  // journal_mode NO se toca aquí: es una propiedad persistente del fichero y
-  // fijarla exige un bloqueo exclusivo. Durante un build, con varios workers
-  // abriendo la base a la vez, eso da SQLITE_BUSY. Se fija una sola vez, en
-  // db/migrate.mts.
-  client.execute('PRAGMA foreign_keys = ON').catch(() => {})
-  return client
+  return url
 }
 
-export const createDb = (client: Client) => drizzle(client, { schema })
+export const createDbClient = (url: string = urlObligatoria('DATABASE_URL')) =>
+  postgres(url, {
+    prepare: false,
+    // Pocas: el pooler es quien multiplexa. Muchas aquí solo agotan su cupo.
+    max: 5,
+    // Suelta las conexiones ociosas: un servidor dormido no debe acaparar el pooler.
+    idle_timeout: 20,
+  })
 
-export type Database = ReturnType<typeof createDb>
+export const createDb = (client: postgres.Sql): Database => drizzle(client, { schema })
+
+export { urlObligatoria }

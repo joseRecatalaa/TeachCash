@@ -10,7 +10,7 @@
  * `informes.repository.ts`).
  */
 
-import { and, asc, desc, eq, gte, like, lte, sql, type SQL } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, ilike, lte, sql, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions } from '@/db/schema'
@@ -85,7 +85,9 @@ const filtros = (userId: string, params: ListParams): SQL | undefined => {
     f.desde ? gte(transactions.date, String(f.desde)) : undefined,
     f.hasta ? lte(transactions.date, String(f.hasta)) : undefined,
     f.categoriaId ? eq(transactions.categoryId, String(f.categoriaId)) : undefined,
-    search ? like(transactions.description, `%${search}%`) : undefined,
+    // `ilike` y no `like`: en Postgres `like` distingue mayúsculas, y buscar
+    // "merca" tiene que encontrar "Mercadona".
+    search ? ilike(transactions.description, `%${search}%`) : undefined,
   )
 }
 
@@ -111,7 +113,9 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     const order = [dir(column), desc(transactions.id)]
 
     const [{ total }] = await db
-      .select({ total: sql<number>`count(*)` })
+      // count(*) es bigint y el driver lo devuelve como TEXTO: sin mapWith,
+      // `total` sería "12" y cualquier suma con él concatenaría cadenas.
+      .select({ total: sql<number>`count(*)`.mapWith(Number) })
       .from(transactions)
       .where(where)
 
@@ -197,19 +201,20 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
       if (previo[0]) return { id: previo[0].id }
     }
 
-    const id = crypto.randomUUID()
-    await db.insert(transactions).values({
-      id,
-      userId,
-      categoryId: d.categoriaId,
-      amount: conSigno(d.importe, d.sentido),
-      date: d.fecha,
-      description: d.descripcion,
-      notes: d.notas || null,
-      idempotencyKey: d.idempotencyKey ?? null,
-      createdAt: new Date(),
-    })
-    return { id }
+    // El id y la fecha de alta los pone la base.
+    const [creado] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        categoryId: d.categoriaId,
+        amount: conSigno(d.importe, d.sentido),
+        date: d.fecha,
+        description: d.descripcion,
+        notes: d.notas || null,
+        idempotencyKey: d.idempotencyKey ?? null,
+      })
+      .returning({ id: transactions.id })
+    return { id: creado.id }
   },
 
   async update(userId: string, id: string, values: unknown): Promise<{ id: string }> {

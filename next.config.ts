@@ -1,10 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // @libsql/client carga bindings nativos (.node) por dependencia opcional según
-  // plataforma. Si el bundler intenta empaquetarlos, el build rompe.
-  serverExternalPackages: ["@libsql/client"],
-
   // Next 16 bloquea por defecto las peticiones a recursos de desarrollo
   // (/_next/static/chunks, /_next/hmr) que no vengan del host con el que se
   // arrancó el servidor, que es localhost. Al abrir la app por la IP de la red

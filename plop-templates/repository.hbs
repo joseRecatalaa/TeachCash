@@ -8,7 +8,9 @@
  * ESTE FICHERO NO COMPILA TAL CUAL, y es a propósito.
  *
  * Apunta a una tabla `{{camelCase pluralName}}` que probablemente no existe
- * todavía. Créala en `db/schema.ts`, pasa `pnpm db:generate` y `pnpm db:migrate`,
+ * todavía. Créala en `db/schema.ts` con las piezas de las demás —`idColumn()`,
+ * `userIdColumn()`, `createdAtColumn()`, la política `soloSuyo(...)` y
+ * `.enableRLS()`—, pasa `pnpm db:generate` y `pnpm db:migrate`,
  * y luego sustituye aquí la tabla y los campos de ejemplo. El resto de ficheros
  * generados sí compilan.
  * ────────────────────────────────────────────────────────────────────────────
@@ -21,7 +23,7 @@
  * ────────────────────────────────────────────────────────────────────────────
  */
 
-import { and, asc, desc, eq, like } from 'drizzle-orm'
+import { and, asc, desc, eq, ilike } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
 // TODO: importar la tabla real.
@@ -56,7 +58,8 @@ export const {{camelCase pluralName}}Repository: EntityRepository<
     const search = params.search?.trim()
     const where = and(
       eq(tabla.userId, userId),
-      search ? like(tabla.name, `%${search}%`) : undefined,
+      // `ilike`: en Postgres `like` distingue mayúsculas.
+      search ? ilike(tabla.name, `%${search}%`) : undefined,
     )
 
     const column = SORTABLE[params.sortBy as keyof typeof SORTABLE] ?? tabla.name
@@ -90,15 +93,16 @@ export const {{camelCase pluralName}}Repository: EntityRepository<
     const parsed = {{pascalCase name}}Save.safeParse(values)
     if (!parsed.success) throw fromFieldErrors(z.flattenError(parsed.error).fieldErrors)
 
-    const id = crypto.randomUUID()
-    await db.insert(tabla).values({
-      id,
-      // El userId sale de la sesión, jamás de `values`.
-      userId,
-      name: parsed.data.nombre,
-      createdAt: new Date(),
-    })
-    return { id }
+    // El id y la fecha de alta los pone la base.
+    const [creado] = await db
+      .insert(tabla)
+      .values({
+        // El userId sale de la sesión, jamás de `values`.
+        userId,
+        name: parsed.data.nombre,
+      })
+      .returning({ id: tabla.id })
+    return { id: creado.id }
   },
 
   async update(userId: string, id: string, values: unknown): Promise<{ id: string }> {
