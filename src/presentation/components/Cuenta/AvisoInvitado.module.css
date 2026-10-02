@@ -1,0 +1,43 @@
+/*
+ * Franja de aviso del invitado. Lavado de acento y filete discontinuo: se ve,
+ * pero no compite con el contenido ni parece un error.
+ */
+
+.franja {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--sd-accent-wash);
+  border-bottom: var(--sd-stroke-hair) dashed var(--sd-stroke-color);
+  color: var(--sd-ink);
+}
+
+.icono {
+  flex: 0 0 auto;
+}
+
+.texto {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.enlace {
+  color: var(--sd-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: var(--sd-stroke);
+  text-underline-offset: 3px;
+}
+
+.enlace:hover {
+  color: var(--sd-accent-strong);
+}
+
+.enlace:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: var(--sd-radius-sm);
+}

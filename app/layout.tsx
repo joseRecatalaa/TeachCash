@@ -15,6 +15,7 @@ import 'mantine-datatable/styles.css'
 // especificidad, gana quien se declare después. Si sube de sitio, la aplicación
 // vuelve al gris de fábrica.
 import './globals.css'
+import { getCuenta } from '@/src/application/actions/auth.actions'
 import { Providers } from '@/src/application/providers/providers'
 import { Navbar } from '@/src/presentation/components/Navbar'
 import { SplashScreen } from '@/src/presentation/components/Splash/SplashScreen'
@@ -41,6 +42,9 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 export const metadata: Metadata = {
   title: 'TeachCash',
   description: 'Gestor de finanzas personales',
+  // Una aplicación de finanzas personales no tiene nada que indexar, y un
+  // rastreador que ejecuta JavaScript crearía un invitado en cada visita.
+  robots: { index: false, follow: false },
 }
 
 /**
@@ -54,7 +58,12 @@ export const metadata: Metadata = {
  */
 export const dynamic = 'force-dynamic'
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
+  // Quién es, resuelto en el servidor antes de pintar: así la Navbar sale ya
+  // con el círculo o con "Iniciar sesión", sin un parpadeo de carga.
+  const cuenta = await getCuenta()
+  const cuentaInicial = cuenta.ok ? cuenta.data : { tipo: 'ninguna' as const }
+
   return (
     // `mantineHtmlProps` añade `suppressHydrationWarning`: el script de tema
     // toca el <html> antes de que React hidrate, y sin esto avisa en consola.
@@ -80,7 +89,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             aparecer en el primer fotograma, mientras la aplicación hidrata por
             detrás. Se desmonta sola al terminar su animación. */}
         <SplashScreen />
-        <Providers>
+        <Providers cuentaInicial={cuentaInicial}>
           <Navbar />
           {children}
         </Providers>

@@ -125,6 +125,15 @@
   flex: 0 0 auto;
 }
 
+/* ── Cuenta ──────────────────────────────────────────────────────────────── */
+
+.cuenta {
+  display: flex;
+  align-items: center;
+  /* Si la barra se parte en dos líneas, la cuenta sigue pegada a la derecha. */
+  margin-left: auto;
+}
+
 /* En móvil el icono ya identifica la sección; el texto se lleva el espacio. */
 @media (max-width: 560px) {
   .link {

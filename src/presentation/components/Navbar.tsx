@@ -22,6 +22,8 @@ import {
   IconTags,
   IconWallet,
 } from '@tabler/icons-react'
+import { AvisoInvitado } from './Cuenta/AvisoInvitado'
+import { CuentaMenu } from './Cuenta/CuentaMenu'
 import styles from './Navbar.module.css'
 
 const ENLACES = [
@@ -72,8 +74,14 @@ export function Navbar() {
               )
             })}
           </div>
+
+          {/* Arriba a la derecha: "Iniciar sesión" o el círculo de la cuenta. */}
+          <div className={styles.cuenta}>
+            <CuentaMenu />
+          </div>
         </nav>
       </Container>
+      <AvisoInvitado />
     </header>
   )
 }
