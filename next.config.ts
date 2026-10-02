@@ -1,10 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // @libsql/client carga bindings nativos (.node) por dependencia opcional según
-  // plataforma. Si el bundler intenta empaquetarlos, el build rompe.
-  serverExternalPackages: ["@libsql/client"],
-
   // Next 16 bloquea por defecto las peticiones a recursos de desarrollo
   // (/_next/static/chunks, /_next/hmr) que no vengan del host con el que se
   // arrancó el servidor, que es localhost. Al abrir la app por la IP de la red
@@ -13,6 +9,27 @@ const nextConfig: NextConfig = {
   // para siempre, sin ningún error en consola — solo avisos en el log del dev
   // server. Por eso está aquí la IP de la LAN.
   allowedDevOrigins: ["192.168.1.20", "192.168.1.*"],
+
+  // Cabeceras de seguridad en todas las respuestas. Una CSP con nonce queda
+  // pendiente: el script inline del splash en app/layout.tsx habría que adaptarlo.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Solo HTTPS durante dos años, subdominios incluidos. En localhost el
+          // navegador la ignora.
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          // Que nadie pueda meter la aplicación en un iframe (clickjacking).
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Los enlaces salientes no se llevan la ruta (ni un ?next= o un token).
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+        ],
+      },
+    ];
+  },
 
   // cacheComponents queda desactivado a propósito: saldos y movimientos son datos
   // por usuario que cambian con cada mutación. Ver skill nextjs-app-conventions.

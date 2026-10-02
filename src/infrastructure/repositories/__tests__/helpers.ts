@@ -1,7 +1,7 @@
 /**
  * Andamiaje común de los tests de repositorio.
  *
- * SQLite real con las migraciones reales aplicadas. Nada de mockear el ORM: los
+ * Postgres real (PGlite) con las migraciones reales aplicadas. Nada de mockear el ORM: los
  * bugs de agregación viven exactamente en el SQL que un mock no llega a
  * ejecutar. → skill `testing-finance`
  *
@@ -12,12 +12,12 @@
 import { eq } from 'drizzle-orm'
 import { categories, transactions } from '@/db/schema'
 import type { Database } from '@/db/client'
+import { USER_A, USER_B } from '@/db/testing'
 
 /** Estado compartido con el mock de `@/db`. Se rellena en cada `beforeEach`. */
 export type Harness = { db: Database; userId: string | null }
 
-export const USER_A = 'user-a'
-export const USER_B = 'user-b'
+export { USER_A, USER_B }
 
 const FECHA_ALTA = new Date('2026-01-01T00:00:00Z')
 

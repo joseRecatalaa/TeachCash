@@ -27,6 +27,7 @@ import { createTestDb, type TestDb } from '@/db/testing'
 import { categories, transactions } from '@/db/schema'
 import {
   activarCategoria,
+  asegurarCatalogoInicial,
   categoriasRepository as repo,
   listarCatalogoCategorias,
   ocultarCategoria,
@@ -331,5 +332,36 @@ describe('listarCatalogoCategorias', () => {
 
     const catalogo = await listarCatalogoCategorias(USER_A)
     expect(catalogo.map((c) => c.id)).toEqual(['activa'])
+  })
+})
+
+describe('catálogo inicial', () => {
+  const deUsuario = (userId: string) =>
+    ctx.db.select().from(categories).where(eq(categories.userId, userId))
+
+  test('da las 17 categorías de fábrica, ocultas y con color', async () => {
+    await asegurarCatalogoInicial(USER_A)
+    const filas = await deUsuario(USER_A)
+    expect(filas).toHaveLength(17)
+    expect(filas.every((c) => c.hidden)).toBe(true)
+    expect(filas.every((c) => c.color?.startsWith('cat-'))).toBe(true)
+  })
+
+  test('es idempotente, también con dos llamadas a la vez', async () => {
+    // Dos pestañas abriéndose a la vez: las dos ven "sin categorías" e insertan.
+    await Promise.all([asegurarCatalogoInicial(USER_A), asegurarCatalogoInicial(USER_A)])
+    await asegurarCatalogoInicial(USER_A)
+    expect(await deUsuario(USER_A)).toHaveLength(17)
+  })
+
+  test('no toca a quien ya tiene categorías', async () => {
+    await seedCategoria(ctx.db, 'propia', USER_A, { name: 'Propia' })
+    await asegurarCatalogoInicial(USER_A)
+    expect(await deUsuario(USER_A)).toHaveLength(1)
+  })
+
+  test('es por usuario', async () => {
+    await asegurarCatalogoInicial(USER_A)
+    expect(await deUsuario(USER_B)).toHaveLength(0)
   })
 })

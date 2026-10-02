@@ -279,6 +279,22 @@
   letter-spacing: 0.01em;
 }
 
+/* El círculo de la cuenta: la inicial del email sobre el verde de marca, con el
+   mismo trazo y sombra dura que el resto. Es la señal de "has iniciado sesión". */
+.avatar.avatar {
+  border: var(--sd-border);
+  box-shadow: var(--sd-shadow-xs);
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+.avatar.avatar :where(.mantine-Avatar-placeholder) {
+  background: transparent;
+  color: inherit;
+}
+
 .title.title {
   font-family: var(--sd-font-display);
   letter-spacing: -0.01em;

@@ -1,26 +1,48 @@
 /**
  * Sesión.
  *
- * La v1 no tiene login: la aplicación es local y de un solo usuario. Pero el
- * resto del código se escribe COMO SI lo tuviera — toda consulta filtra por
- * `userId` y toda acción llama a `getSession()` antes de tocar nada.
+ * Hay dos tipos de usuario y los dos son usuarios de verdad en Supabase Auth:
+ *   - **Invitado**: usuario anónimo. Nace solo al entrar en la aplicación, vive
+ *     en la cookie de ese navegador y se borra a los 4 días.
+ *   - **Usuario**: con email y contraseña.
+ * Para la capa de datos no hay diferencia: los dos tienen un `userId` y toda
+ * consulta filtra por él.
  *
- * Ese es el punto de este fichero: cuando llegue auth de verdad, cambia esto y
- * nada más. Si en su lugar se hubiera quitado el `userId` "porque solo hay uno",
- * habría que rehacer la capa de datos entera.
+ * Este fichero es lo único que el resto del código sabe de autenticación. Las
+ * Server Actions llaman a `getSession()` y no saben que debajo hay Supabase.
  */
 
-/** Dueño de todos los datos mientras no haya login. */
-export const LOCAL_USER_ID = 'local-user'
+import { crearClienteSupabase } from './supabase/server'
 
-export type Session = { user: { id: string } }
+export type Session = {
+  user: {
+    id: string
+    email: string | null
+    esInvitado: boolean
+  }
+}
 
 /**
- * Asíncrona a propósito, aunque hoy no espere a nada: cuando la sesión venga de
- * una cookie o de un proveedor externo, ninguna firma de las que la llaman cambia.
+ * La sesión de quien hace la petición, o `null`.
+ *
+ * `getClaims()` VERIFICA la firma del JWT (ES256, con la clave pública del
+ * proyecto, que se cachea) y su caducidad. Nunca `auth.getSession()` en el
+ * servidor: esa lee la cookie tal cual y se la cree, y una cookie la puede
+ * escribir cualquiera.
  */
 export async function getSession(): Promise<Session | null> {
-  return { user: { id: LOCAL_USER_ID } }
+  const supabase = await crearClienteSupabase()
+  const { data, error } = await supabase.auth.getClaims()
+  const claims = data?.claims
+  if (error || !claims?.sub) return null
+
+  return {
+    user: {
+      id: claims.sub,
+      email: typeof claims.email === 'string' && claims.email ? claims.email : null,
+      esInvitado: claims.is_anonymous === true,
+    },
+  }
 }
 
 /**

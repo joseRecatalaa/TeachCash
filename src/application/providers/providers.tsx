@@ -1,22 +1,24 @@
 'use client'
 
 /**
- * Providers globales: Mantine, React Query y Refine.
+ * Providers globales: Mantine, React Query, Refine y la cuenta.
  *
  * Dos ausencias que suelen extrañar y son deliberadas:
- *   - **No hay provider de autenticación.** La v1 no tiene login (ver
- *     "Decisiones tomadas" en AGENTS.md). El `userId` lo pone `getSession()` en
- *     el servidor, dentro de cada Server Action, y el cliente nunca lo ve ni lo
- *     necesita.
+ *   - **No hay `authProvider` de Refine.** La sesión es una cookie httpOnly que
+ *     verifica `getSession()` en el servidor, dentro de cada Server Action; el
+ *     cliente nunca ve el token ni el `userId`. Lo que la interfaz necesita
+ *     saber (invitado o usuario, email) se lo da `CuentaProvider`.
  *   - **No hay URL de API.** El data provider no habla por HTTP: llama a Server
  *     Actions en proceso.
  */
 
 import { useMemo } from 'react'
 import { Refine } from '@refinedev/core'
+import { MutationCache, QueryCache } from '@tanstack/react-query'
 import {
   ActionIcon,
   Alert,
+  Avatar,
   Badge,
   Button,
   Card,
@@ -38,6 +40,8 @@ import { DatesProvider } from '@mantine/dates'
 import { Notifications } from '@mantine/notifications'
 import 'dayjs/locale/es'
 import sketch from '@/src/presentation/styles/mantine-sketch.module.css'
+import type { CuentaDto } from '@/src/types/cuenta.types'
+import { CuentaProvider, NO_AUTORIZADO, notificarSesionPerdida } from './CuentaProvider'
 import { dataProvider } from './refine-data-provider'
 
 /**
@@ -138,6 +142,7 @@ const theme = createTheme({
     Alert: Alert.extend({ classNames: { root: sketch.alert } }),
     Tooltip: Tooltip.extend({ classNames: { tooltip: sketch.tooltip } }),
     Badge: Badge.extend({ classNames: { root: sketch.badge } }),
+    Avatar: Avatar.extend({ classNames: { root: sketch.avatar } }),
     Title: Title.extend({ classNames: { root: sketch.title } }),
     Notification: Notification.extend({
       classNames: { root: sketch.notification },
@@ -157,10 +162,34 @@ const theme = createTheme({
   },
 })
 
-export function Providers({ children }: { children: React.ReactNode }) {
+/**
+ * Una consulta que vuelve "No autorizado" significa que la sesión ha
+ * desaparecido a mitad de uso: cookies borradas, o el invitado caducó y el job
+ * de limpieza lo borró. Se detecta aquí, una vez para todas las consultas y
+ * mutaciones, y no en cada hook que desenvuelve un resultado.
+ */
+const alFallar = (error: Error) => {
+  if (error.message === NO_AUTORIZADO) notificarSesionPerdida()
+}
+
+export function Providers({
+  cuentaInicial,
+  children,
+}: {
+  /** La calcula el layout en el servidor: así no hace falta una vuelta más al arrancar. */
+  cuentaInicial: CuentaDto
+  children: React.ReactNode
+}) {
   // El data provider no tiene estado, pero se memoiza igual: una instancia nueva
   // en cada render haría que Refine reconstruyera sus queries.
   const provider = useMemo(() => dataProvider(), [])
+  const caches = useMemo(
+    () => ({
+      queryCache: new QueryCache({ onError: alFallar }),
+      mutationCache: new MutationCache({ onError: alFallar }),
+    }),
+    [],
+  )
 
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
@@ -178,13 +207,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
             disableTelemetry: true,
             reactQuery: {
               clientConfig: {
+                ...caches,
                 defaultOptions: {
                   queries: {
                     staleTime: 2 * 60 * 1000,
                     gcTime: 10 * 60 * 1000,
                     // Sin esto, cada vuelta a la pestaña dispara un refetch de
-                    // todas las listas. Los datos son locales y de un usuario:
-                    // nadie los está cambiando por detrás.
+                    // todas las listas. Cada usuario solo ve sus datos y solo
+                    // los cambia él, desde esta misma interfaz, que ya invalida
+                    // lo que toca al mutar.
                     refetchOnWindowFocus: false,
                   },
                 },
@@ -192,7 +223,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             },
           }}
         >
-          {children}
+          <CuentaProvider inicial={cuentaInicial}>{children}</CuentaProvider>
         </Refine>
       </DatesProvider>
     </MantineProvider>

@@ -5,11 +5,11 @@
  * cliente. La frontera es `entity.actions.ts`.
  */
 
-import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions, CATEGORY_KINDS } from '@/db/schema'
-import { CLAVES_COLOR } from '@/lib/colores'
+import { CLAVES_COLOR, type ClaveColor } from '@/lib/colores'
 import type { CategoriaFormDto, CategoriaListDto } from '@/src/types/categoria.types'
 import {
   fromFieldErrors,
@@ -63,7 +63,7 @@ function assertPresupuestoValido(tipo: string, presupuesto: number | null): void
  * Sin jerarquía, el nombre es único por usuario y punto: no hace falta
  * comprobar "en el mismo nivel", así que el UNIQUE del esquema
  * (`categories_user_name`) sí puede imponerlo, pero se comprueba aquí primero
- * para devolver un error de campo legible en vez de una excepción de SQLite.
+ * para devolver un error de campo legible en vez de una error de restricción de Postgres.
  */
 async function assertNombreLibre(
   userId: string,
@@ -97,7 +97,7 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 
     const where = and(
       eq(categories.userId, userId),
-      search ? like(categories.name, `%${search}%`) : undefined,
+      search ? ilike(categories.name, `%${search}%`) : undefined,
       params.filters?.tipo ? eq(categories.kind, String(params.filters.tipo)) : undefined,
       params.filters?.oculta !== undefined
         ? eq(categories.hidden, String(params.filters.oculta) === 'true')
@@ -123,7 +123,11 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 
     // Los usos se cuentan de una sola pasada, no una consulta por fila.
     const usos = await db
-      .select({ categoryId: transactions.categoryId, total: sql<number>`count(*)` })
+      .select({
+        categoryId: transactions.categoryId,
+        // bigint → texto en el driver. Ver movimientos.repository.ts.
+        total: sql<number>`count(*)`.mapWith(Number),
+      })
       .from(transactions)
       .where(eq(transactions.userId, userId))
       .groupBy(transactions.categoryId)
@@ -182,20 +186,20 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     await assertNombreLibre(userId, parsed.data.nombre, null)
     assertPresupuestoValido(parsed.data.tipo, parsed.data.presupuesto)
 
-    const id = crypto.randomUUID()
-    await db.insert(categories).values({
-      id,
-      userId,
-      name: parsed.data.nombre,
-      kind: parsed.data.tipo,
-      icon: parsed.data.icono || null,
-      color: parsed.data.color || null,
-      // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
-      monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
-      hidden: false,
-      createdAt: new Date(),
-    })
-    return { id }
+    const [creada] = await db
+      .insert(categories)
+      .values({
+        userId,
+        name: parsed.data.nombre,
+        kind: parsed.data.tipo,
+        icon: parsed.data.icono || null,
+        color: parsed.data.color || null,
+        // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
+        monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
+        hidden: false,
+      })
+      .returning({ id: categories.id })
+    return { id: creada.id }
   },
 
   async update(userId: string, id: string, values: unknown): Promise<{ id: string }> {
@@ -315,4 +319,77 @@ export async function ocultarCategoria(userId: string, id: string): Promise<{ id
 
   if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
   return { id }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Catálogo inicial
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Las categorías con las que nace todo usuario, invitado o no.
+ *
+ * Cada una trae un color, y no es adorno: es lo que hace que el gráfico de gasto
+ * de la portada se lea sin tocar nada. Se reparten de forma que dos categorías
+ * CONSECUTIVAS nunca compartan tono — el gráfico las ordena por importe, así que
+ * las vecinas en pantalla son impredecibles, pero el reparto en zigzag evita el
+ * caso peor de dos iguales seguidas en la lista de Categorías, que va alfabética.
+ */
+const CATALOGO_INICIAL: ReadonlyArray<{
+  name: string
+  kind: 'income' | 'expense'
+  icon: string
+  color: ClaveColor
+}> = [
+  { name: 'Alimentación', kind: 'expense', icon: '🛒', color: 'cat-3' },
+  { name: 'Hogar', kind: 'expense', icon: '🏠', color: 'cat-1' },
+  { name: 'Suministros', kind: 'expense', icon: '💡', color: 'cat-4' },
+  { name: 'Transporte', kind: 'expense', icon: '🚗', color: 'cat-7' },
+  { name: 'Salud', kind: 'expense', icon: '💊', color: 'cat-5' },
+  { name: 'Ocio', kind: 'expense', icon: '🎬', color: 'cat-2' },
+  { name: 'Restaurantes', kind: 'expense', icon: '🍽️', color: 'cat-8' },
+  { name: 'Compras', kind: 'expense', icon: '🛍️', color: 'cat-6' },
+  { name: 'Educación', kind: 'expense', icon: '📚', color: 'cat-1' },
+  { name: 'Suscripciones', kind: 'expense', icon: '📺', color: 'cat-7' },
+  { name: 'Impuestos', kind: 'expense', icon: '🏛️', color: 'cat-5' },
+  { name: 'Otros gastos', kind: 'expense', icon: '📦', color: 'cat-2' },
+  { name: 'Nómina', kind: 'income', icon: '💼', color: 'cat-6' },
+  { name: 'Trabajo por cuenta propia', kind: 'income', icon: '🧾', color: 'cat-3' },
+  { name: 'Intereses', kind: 'income', icon: '🏦', color: 'cat-1' },
+  { name: 'Reembolsos', kind: 'income', icon: '↩️', color: 'cat-4' },
+  { name: 'Otros ingresos', kind: 'income', icon: '➕', color: 'cat-7' },
+]
+
+/**
+ * Da al usuario el catálogo de fábrica. Se llama al crear un invitado y al
+ * confirmar una cuenta.
+ *
+ * Solo actúa si el usuario no tiene NINGUNA categoría: así no resucita una
+ * predefinida que borró a mano. Y si dos peticiones llegan a la vez (dos
+ * pestañas abriéndose), las dos pasan esa comprobación, insertan, y el UNIQUE
+ * (user_id, name) descarta lo repetido en vez de duplicar el catálogo.
+ *
+ * Nacen ocultas: el usuario las activa desde «Nueva categoría» → «Elegir una
+ * predefinida», poniendo su presupuesto si son de gasto.
+ */
+export async function asegurarCatalogoInicial(userId: string): Promise<void> {
+  const alguna = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(eq(categories.userId, userId))
+    .limit(1)
+  if (alguna.length > 0) return
+
+  await db
+    .insert(categories)
+    .values(
+      CATALOGO_INICIAL.map((c) => ({
+        userId,
+        name: c.name,
+        kind: c.kind,
+        icon: c.icon,
+        color: c.color,
+        hidden: true,
+      })),
+    )
+    .onConflictDoNothing({ target: [categories.userId, categories.name] })
 }

@@ -6,21 +6,22 @@
  * tener que declarar "type": "module" en package.json y arrastrar a Next con ello.
  * Los imports relativos llevan extensión explícita porque los resuelve Node, no
  * el bundler.
+ *
+ * Usa DATABASE_URL_MIGRATIONS (Session pooler, puerto 5432) y no la de la app:
+ * el migrador abre una transacción larga y crea su propio esquema `drizzle`, y
+ * eso necesita una conexión que sea suya de principio a fin. El Transaction
+ * pooler se la cambiaría a mitad.
  */
 
-import { migrate } from 'drizzle-orm/libsql/migrator'
-import { createDb, createDbClient, DATABASE_PATH } from './client.ts'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { createDbClient, urlObligatoria } from './client.ts'
 
-const client = createDbClient()
-const db = createDb(client)
+const url = urlObligatoria('DATABASE_URL_MIGRATIONS')
+const client = createDbClient(url)
 
-await migrate(db, { migrationsFolder: './db/migrations' })
+await migrate(drizzle(client), { migrationsFolder: './db/migrations' })
 
-// WAL permite leer mientras se escribe. Es una propiedad persistente del
-// fichero, así que se fija aquí una sola vez: hacerlo al abrir cada conexión
-// exige un bloqueo exclusivo y revienta con varios procesos a la vez.
-await client.execute('PRAGMA journal_mode = WAL')
+await client.end()
 
-client.close()
-
-console.log(`Migraciones aplicadas sobre ${DATABASE_PATH}`)
+console.log(`Migraciones aplicadas sobre ${new URL(url).host}`)

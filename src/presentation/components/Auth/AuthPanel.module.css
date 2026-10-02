@@ -1,0 +1,70 @@
+.pagina {
+  display: grid;
+  place-items: start center;
+  padding: 3rem 1rem 4rem;
+}
+
+/* La ficha: papel con trazo y sombra dura, como el resto de tarjetas, y un
+   pelo torcida para que no parezca un formulario de banco. */
+.ficha {
+  width: 100%;
+  max-width: 26rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1.75rem 1.5rem;
+  background: var(--sd-surface);
+  border: var(--sd-border-bold);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-md);
+  transform: rotate(-0.4deg);
+  animation: sd-rise var(--sd-dur-slow) var(--sd-ease-out) both;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--sd-ink);
+}
+
+.explicacion {
+  margin: 0;
+  color: var(--sd-ink-muted);
+  line-height: 1.5;
+}
+
+.pie {
+  display: grid;
+  gap: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: var(--sd-stroke-hair) dashed var(--sd-stroke-color);
+  font-size: 0.9rem;
+  color: var(--sd-ink-muted);
+}
+
+.pie a {
+  color: var(--sd-ink);
+  font-weight: 600;
+}
+
+.pie a:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: var(--sd-radius-sm);
+}
+
+/* El formulario: los campos en columna y el botón a todo el ancho. */
+.formulario {
+  display: grid;
+  gap: 0.85rem;
+}
+
+/* La ficha torcida no debe girar ni entrar con animación si se pide menos
+   movimiento: el bloque global de globals.css anula la animación, y esto el giro. */
+@media (prefers-reduced-motion: reduce) {
+  .ficha {
+    transform: none;
+  }
+}
