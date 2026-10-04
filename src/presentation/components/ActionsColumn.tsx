@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { ActionIcon, Group, Modal, Button, Text, Tooltip } from '@mantine/core'
 import { useDelete } from '@refinedev/core'
 import { useInvalidarDerivados } from '@/src/application/hooks/useInformes'
+import { useOlvidarListas } from '@/src/application/hooks/useOlvidarListas'
 import { notifications } from '@mantine/notifications'
 import { IconPencil, IconTrash } from '@tabler/icons-react'
 import { extractActionError } from '@/src/application/hooks/useEntityFormSubmit'
@@ -41,6 +42,7 @@ function BotonBorrar({
   const [abierto, setAbierto] = useState(false)
   const { mutateAsync, mutation } = useDelete()
   const invalidarDerivados = useInvalidarDerivados()
+  const olvidarListas = useOlvidarListas()
 
   const borrar = async () => {
     try {
@@ -48,6 +50,10 @@ function BotonBorrar({
       // El saldo y los gráficos son sumas de movimientos y viven en otro árbol
       // de queries: Refine no los invalida solo.
       await invalidarDerivados()
+      // Sin esto, Inicio sigue enseñando lo borrado hasta recargar. Borrar una
+      // categoría se lleva sus movimientos, así que también caducan esos.
+      olvidarListas(resource)
+      if (resource === 'Categorias') olvidarListas('Movimientos')
       notifications.show({ title: 'Hecho', message: 'Registro eliminado', color: 'teal' })
       setAbierto(false)
     } catch (err) {
