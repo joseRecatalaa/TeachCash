@@ -26,6 +26,9 @@ T9 hecha por el usuario y Fase 4 (documentación) escrita. Lo que queda abajo
   las skills `finance-data-model`, `server-action-safety` y `testing-finance`
   ya hablan de Postgres/Supabase, PGlite y Supabase Auth. Las plantillas de
   Plop ya estaban adaptadas.
+- **Fase 5 — ping a Supabase: HECHO (2026-10-05).** `.github/workflows/ping-supabase.yml`
+  consulta la API REST (lunes y jueves) con la clave pública, que guarda en los
+  secrets `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` del repo. Lanzado a mano: HTTP 200.
 
 ## Estado a 2026-10-02
 
@@ -99,7 +102,7 @@ pasar del límite de 2 emails/hora.
   defecto en inglés) solo en el mismo navegador. `/auth/confirm` ya acepta los dos.
 
 ### Fase 5 — Endurecimiento (opcional)
-- Ping semanal (GitHub Actions) para que el proyecto gratuito no se pause tras 7 días sin uso.
+- ~~Ping semanal (GitHub Actions)~~ HECHO (2026-10-05): `ping-supabase.yml`, lunes y jueves.
 - MFA TOTP. CSP con nonce (adaptar el script inline del splash). "Borrar mi cuenta".
 - Fusionar datos de invitado al iniciar sesión en una cuenta existente (hoy se avisa y no se fusionan).
 

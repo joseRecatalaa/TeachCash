@@ -816,6 +816,12 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   `'use client'`. Es un intercambio consciente: se gana el CRUD declarativo
   completo y se pierde el renderizado en servidor de los datos. Lo que lo hace
   seguro es la regla dura 6 — ninguna garantía se sostiene en el cliente.
+- **Ping a Supabase**: el plan gratuito pausa el proyecto tras 7 días sin uso.
+  `.github/workflows/ping-supabase.yml` consulta la API REST lunes y jueves con
+  la clave pública (secrets `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` del
+  repo); RLS devuelve `[]`, pero la petición llega a Postgres y cuenta. Nunca la
+  secret key. GitHub solo lo lanza desde `develop` y lo desactiva tras 60 días
+  sin actividad en el repo.
 - **Tests**: Vitest + fast-check sobre PGlite (Postgres real en proceso, con un
   stub del esquema `auth`). Playwright sigue pendiente.
 - **Sistema de diseño**: dibujado a mano (trazo negro de 2-3 px, esquinas
@@ -889,6 +895,4 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Fusionar los datos del invitado al iniciar sesión** en una cuenta que ya
   existe: hoy se avisa y no se fusionan.
 - **Endurecimiento opcional**: CSP con nonce (hay que adaptar el script inline
-  del splash en `app/layout.tsx`), MFA TOTP, "Borrar mi cuenta" y un ping
-  semanal para que el proyecto gratuito de Supabase no se pause tras 7 días sin
-  uso.
+  del splash en `app/layout.tsx`), MFA TOTP y "Borrar mi cuenta".
