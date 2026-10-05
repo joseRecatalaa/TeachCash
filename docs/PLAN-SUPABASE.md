@@ -36,6 +36,14 @@ T9 hecha por el usuario y Fase 4 (documentación) escrita. Lo que queda abajo
   cascada) y cierra la sesión. Solo cuentas con email; un invitado caduca solo.
   Sin secret key: el rol `postgres` tiene DELETE sobre `auth.users`
   (comprobado en Supabase). Probado por el usuario en el navegador.
+- **Fase 5 — CSP con nonce: HECHA (2026-10-05).** Rama `feat/csp-nonce`.
+  `lib/csp.ts` construye la política y `proxy.ts` genera un nonce por petición
+  y la pone en la petición (Next la lee para sus scripts) y en la respuesta.
+  `app/layout.tsx` pasa el nonce al script del splash y a `ColorSchemeScript`.
+  Scripts solo con nonce + `'strict-dynamic'`; estilos con `'unsafe-inline'`
+  (Mantine/Recharts). Comprobado: los 20 scripts del HTML llevan el nonce, y el
+  usuario lo probó en `dev` y en `build` de producción (splash, invitado con
+  Turnstile, portada y alta de un gasto) sin errores de CSP en consola.
 
 ## Estado a 2026-10-02
 
@@ -70,7 +78,7 @@ Incidencias resueltas al probar: la Publishable key estaba mal copiada
 ## Siguiente paso
 
 Nada obligatorio. Cuando el usuario quiera: lo que queda de la Fase 5 (MFA
-TOTP, CSP con nonce, fusionar datos de invitado), T6 (SMTP), Fase 6 o el
+TOTP, fusionar datos de invitado), T6 (SMTP), Fase 6 o el
 módulo nuevo ("Después").
 
 ## Hecho (referencia)
@@ -111,7 +119,7 @@ pasar del límite de 2 emails/hora.
 
 ### Fase 5 — Endurecimiento (opcional)
 - ~~Ping semanal (GitHub Actions)~~ HECHO (2026-10-05): `ping-supabase.yml`, lunes y jueves.
-- MFA TOTP. CSP con nonce (adaptar el script inline del splash). ~~"Borrar mi cuenta"~~ HECHO (2026-10-05).
+- MFA TOTP. ~~CSP con nonce~~ HECHA (2026-10-05). ~~"Borrar mi cuenta"~~ HECHO (2026-10-05).
 - Fusionar datos de invitado al iniciar sesión en una cuenta existente (hoy se avisa y no se fusionan).
 
 ### Fase 6 — Login con Google (aplazado por decisión del usuario)
@@ -130,7 +138,7 @@ nuevas con `idColumn()`, `userIdColumn()`, `createdAtColumn()`, `soloSuyo()` y
 ```
 Navegador ──cookie httpOnly (JWT + refresh, @supabase/ssr)──►
   CuentaProvider    sin sesión → Turnstile → iniciarInvitado() → usuario anónimo + catálogo
-  proxy.ts          solo refresca la sesión; no redirige
+  proxy.ts          refresca la sesión y pone la CSP con nonce; no redirige
   Server Action     getSession() → getClaims() verifica ES256 → userId = sub
   Repositorio       where user_id = userId
   Drizzle (postgres-js, prepare:false) ──Transaction pooler 6543──► Supabase Postgres
@@ -139,7 +147,7 @@ Navegador ──cookie httpOnly (JWT + refresh, @supabase/ssr)──►
 
 Ficheros clave:
 - Datos: `db/schema.ts`, `db/client.ts`, `db/index.ts` (`server-only`), `db/migrate.mts`, `db/testing.ts`, `db/migrations/0000_inicial.sql`, `db/sql/limpieza-invitados.sql`.
-- Auth: `lib/auth.ts`, `lib/supabase/{config,server,proxy}.ts`, `lib/rutas.ts`, `lib/turnstile.ts`, `proxy.ts`, `app/auth/confirm/route.ts`, `src/application/actions/auth.actions.ts`, `src/infrastructure/repositories/cuenta.repository.ts`, `src/types/cuenta.types.ts`.
+- Auth: `lib/auth.ts`, `lib/supabase/{config,server,proxy}.ts`, `lib/rutas.ts`, `lib/turnstile.ts`, `lib/csp.ts`, `proxy.ts`, `app/auth/confirm/route.ts`, `src/application/actions/auth.actions.ts`, `src/infrastructure/repositories/cuenta.repository.ts`, `src/types/cuenta.types.ts`.
 - UI: `src/application/providers/CuentaProvider.tsx` (+ `providers.tsx`, `onError` global → sesión perdida), `src/presentation/components/Cuenta/{CuentaMenu,AvisoInvitado}.tsx`, `src/presentation/components/Auth/*`, `app/{Login,Registro,RecuperarPassword,CambiarPassword}/page.tsx`.
 - `categorias.repository.ts`: `asegurarCatalogoInicial(userId)` sustituye a `db/seed.mts` (borrado).
 

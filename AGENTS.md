@@ -355,7 +355,7 @@ dinero no parece un error — parece un dato.
 ```
 Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
   CuentaProvider   sin sesión → Turnstile → iniciarInvitado() → usuario anónimo + catálogo
-  proxy.ts         solo refresca la sesión; no redirige ni protege rutas
+  proxy.ts         refresca la sesión y pone la CSP con nonce; no redirige ni protege rutas
   Server Action    getSession() → getClaims() verifica ES256 → userId = sub
   Repositorio      where user_id = userId
   Postgres         RLS user_id = auth.uid() (la red, no el mecanismo)
@@ -394,7 +394,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     Login/ Registro/                  # pantallas de auth (sin GenericForm)
     RecuperarPassword/ CambiarPassword/ BorrarCuenta/
     auth/confirm/route.ts             # destino de los enlaces del email
-  proxy.ts                            # refresca la sesión (antes middleware)
+  proxy.ts                            # refresca la sesión y pone la CSP (antes middleware)
   src/
     types/
       formMetadata.types.ts
@@ -471,6 +471,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     auth.ts                           # getSession(): lo único que sabe de auth
     supabase/                         # clientes de servidor y de proxy
     rutas.ts                          # filtro de redirección abierta
+    csp.ts                            # la Content Security Policy y su nonce
     turnstile.ts
   db/
     schema.ts                         # pg-core; piezas idColumn, soloSuyo…
@@ -653,6 +654,12 @@ lleve hasta ella.
   encima de las hojas de Mantine, sus overrides de `--mantine-*` pierden por
   orden de cascada y la aplicación vuelve al gris de fábrica. No lanza ningún
   error: solo se ve mal.
+- **Un `<script>` inline nuevo necesita el nonce** (`headers().get('x-nonce')`,
+  como los dos de `app/layout.tsx`). Sin él la CSP lo bloquea: en la página no
+  falla nada visible, solo sale un "Refused to execute inline script" en la
+  consola. Un script de un tercero se carga con `appendChild` desde nuestro
+  código (como `lib/turnstile.ts`) y su origen va en `frame-src`/`connect-src`
+  de `lib/csp.ts` si lo necesita.
 - **Un hexadecimal dentro de un `*.module.css` es un bug de modo oscuro.** Todo
   color sale de un token `--sd-*`. El modo claro seguirá viéndose bien, que es
   justo lo que hace que no se detecte. Lo mismo vale para un `color="red"` o un
@@ -828,6 +835,14 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   repo); RLS devuelve `[]`, pero la petición llega a Postgres y cuenta. Nunca la
   secret key. GitHub solo lo lanza desde `develop` y lo desactiva tras 60 días
   sin actividad en el repo.
+- **CSP con nonce** (`lib/csp.ts`, la pone `proxy.ts` en cada petición). La
+  cookie `httpOnly` impide que un XSS robe el JWT, pero no que llame a las
+  Server Actions desde la página; la CSP impide que ese script se ejecute.
+  Scripts: solo con nonce + `'strict-dynamic'` (así cargan los chunks de Next y
+  el de Turnstile). Estilos: `'unsafe-inline'` SIN nonce, porque Mantine y
+  Recharts escriben atributos `style` y un nonce anularía `'unsafe-inline'`.
+  `upgrade-insecure-requests` solo si la petición llega por https. Se descartó
+  la CSP por hashes (SRI experimental): todas las rutas ya son dinámicas.
 - **Tests**: Vitest + fast-check sobre PGlite (Postgres real en proceso, con un
   stub del esquema `auth`). Playwright sigue pendiente.
 - **Sistema de diseño**: dibujado a mano (trazo negro de 2-3 px, esquinas
@@ -900,5 +915,4 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
   `/auth/confirm` ya acepta los dos.
 - **Fusionar los datos del invitado al iniciar sesión** en una cuenta que ya
   existe: hoy se avisa y no se fusionan.
-- **Endurecimiento opcional**: CSP con nonce (hay que adaptar el script inline
-  del splash en `app/layout.tsx`) y MFA TOTP.
+- **Endurecimiento opcional**: MFA TOTP.
