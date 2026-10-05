@@ -13,7 +13,7 @@ concentrado:
 | Zona | Cobertura | Por qué |
 |---|---|---|
 | `lib/money.ts` | Exhaustiva, con propiedades | Un fallo aquí corrompe todos los datos |
-| Agregaciones (`queries.ts`) | Alta | Errores silenciosos: el número sale, pero mal |
+| Agregaciones (`informes.repository.ts`) | Alta | Errores silenciosos: el número sale, pero mal |
 | Parsers de extracto | Alta, con ficheros reales | Entrada hostil e impredecible |
 | Autorización de acciones | Alta | Un fallo expone datos de otro usuario |
 | Fechas y periodos | Alta | Los bugs de zona horaria no se ven en el mes actual |
@@ -28,9 +28,21 @@ total mal calculado, no.
 - **Vitest** para `lib/`, parsers y agregaciones.
 - **fast-check** para propiedades sobre aritmética de dinero.
 - **Playwright** para tres o cuatro flujos completos, no más.
-- Base de datos de test: SQLite en memoria, recreada por fichero de test. Nada
-  de mockear el ORM — los bugs de agregación viven justo en el SQL que el mock
-  no ejecuta.
+- Base de datos de test: **Postgres real sobre PGlite** (el mismo motor en
+  WASM, en proceso), con las migraciones reales y una base nueva por test
+  (`createTestDb()` de `db/testing.ts`). Nunca contra Supabase. Nada de mockear
+  el ORM — los bugs de agregación viven justo en el SQL que el mock no ejecuta,
+  y los de dialecto (`like` que distingue mayúsculas, `sum` que vuelve como
+  texto) solo los caza el mismo motor que hay en producción.
+- `db/testing.ts` monta antes de migrar un **stub del esquema `auth`** de
+  Supabase: `auth.users`, `auth.uid()` (lee `request.jwt.claim.sub`) y los
+  roles `anon` y `authenticated`. Si una migración nueva usa algo más de
+  `auth`, se añade ahí.
+- Usuarios: `USER_A` y `USER_B` ya existen en `auth.users` (los datos tienen
+  clave ajena ahí). Otro, con `crearUsuario(pg, id, { anonimo, email })`.
+- Lo que se mockea: de dónde sale la conexión (`@/db`) y la sesión
+  (`@/lib/auth`, `getSession`). Las semillas, en
+  `src/infrastructure/repositories/__tests__/helpers.ts`.
 
 ## Propiedades del dinero
 
@@ -92,7 +104,7 @@ solo limpia `\s` con `trim()`, cuidado).
 Este último es el que se escapa siempre. Ejecuta la suite con `TZ` forzado:
 
 ```json
-{ "scripts": { "test:tz": "TZ=Pacific/Kiritimati vitest run" } }
+{ "scripts": { "test:tz": "cross-env TZ=Pacific/Kiritimati vitest run" } }
 ```
 
 Si los tests pasan en `Europe/Madrid` pero fallan en UTC+14, hay un `Date` donde
@@ -118,14 +130,14 @@ datos del usuario A:
 
 ```ts
 test('no se puede editar el movimiento de otro usuario', async () => {
-  const txA = await seedTransaction({ userId: 'user-a' })
-  mockSession('user-b')
+  await seedMovimiento(h.db, 'tx-a', USER_A, { amount: -500 })
+  h.userId = USER_B                    // lo que devuelve el getSession mockeado
 
-  const result = await updateTransaction(emptyState, formDataFor(txA.id, { amount: 100 }))
+  const result = await updateEntity('Movimientos', 'tx-a', { amount: -100, … })
 
   expect(result.ok).toBe(false)
-  const unchanged = await db.query.transactions.findFirst({ where: eq(transactions.id, txA.id) })
-  expect(unchanged!.amount).toBe(txA.amount)   // comprobar el dato, no solo la respuesta
+  const [fila] = await h.db.select().from(transactions).where(eq(transactions.id, 'tx-a'))
+  expect(fila.amount).toBe(-500)       // comprobar el dato, no solo la respuesta
 })
 ```
 
@@ -135,6 +147,22 @@ error **después** de haber escrito. Verifica el estado de la base de datos.
 Cubre también: pasar un `categoryId` ajeno al crear, y una categoría de ingreso
 en un movimiento de gasto — que el repositorio rechaza porque descolocaría todos
 los informes.
+
+### Sesión y base
+
+- **`getSession`** (`lib/__tests__/auth.test.ts`): el `userId` sale solo del
+  `sub` de `getClaims()`; sin claims o con error, `null`. Nunca de
+  `auth.getSession()`.
+- **Acciones de auth** (`auth.actions.test.ts`): sin token de Turnstile no se
+  llama a Supabase; crear cuenta siendo invitado conserva el mismo usuario; los
+  mensajes no revelan si un email existe; los errores de Supabase no se filtran
+  crudos al cliente.
+- **`rutaInterna`** (`lib/__tests__/rutas.test.ts`): ninguna redirección sale
+  del sitio (`//evil.com`, `https://…`, `/\evil.com`).
+- **En la base** (`db/__tests__/schema.test.ts`): RLS con el rol
+  `authenticated` y `request.jwt.claim.sub` fijado con `set_config` no deja ver
+  ni escribir lo ajeno, y borrar de `auth.users` se lleva sus datos en cascada.
+  Toda tabla nueva de datos de usuario entra en estos dos tests.
 
 ## Parsers de extracto
 

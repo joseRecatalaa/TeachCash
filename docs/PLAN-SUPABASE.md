@@ -12,9 +12,24 @@
 > está en git; el usuario lo copia de su gestor de contraseñas o lo rehace con
 > `.env.example` y el panel de Supabase).
 
+## Estado a 2026-10-05
+
+**El plan principal está TERMINADO.** Fases 0–2 fusionadas en `develop` (PR #6),
+T9 hecha por el usuario y Fase 4 (documentación) escrita. Lo que queda abajo
+(T6, Fases 5 y 6) es opcional o aplazado y está anotado también en
+"Decisiones abiertas" de `AGENTS.md`.
+
+- **T9 — limpieza de invitados: HECHA (2026-10-05).** `pg_cron` activado,
+  `db/sql/limpieza-invitados.sql` ejecutado (job id 1) y `limpieza-invitados`
+  comprobado en la lista de jobs.
+- **Fase 4 — documentación: HECHA (2026-10-05).** `AGENTS.md`, `README.md` y
+  las skills `finance-data-model`, `server-action-safety` y `testing-finance`
+  ya hablan de Postgres/Supabase, PGlite y Supabase Auth. Las plantillas de
+  Plop ya estaban adaptadas.
+
 ## Estado a 2026-10-02
 
-Rama **`feat/supabase-auth`** (sale de `develop`, sin PR ni push todavía). Commits:
+Rama **`feat/supabase-auth`** (sale de `develop`; fusionada después como PR #6). Commits:
 
 | Commit | Qué |
 |---|---|
@@ -44,15 +59,16 @@ Incidencias resueltas al probar: la Publishable key estaba mal copiada
 
 ## Siguiente paso
 
-1. **T9 — limpieza de invitados (usuario, en curso):**
-   - T9.1 Supabase → Database → Extensions → activar **pg_cron**. ← AQUÍ SE QUEDÓ
-   - T9.2 SQL Editor → pegar y ejecutar `db/sql/limpieza-invitados.sql` (job
-     horario que borra anónimos con más de 4 días; sus datos caen por cascada).
-   - T9.3 Comprobar en Integrations → Cron → Jobs que existe `limpieza-invitados`.
-2. **Fase 4 — documentación (Claude).** Ver abajo.
-3. Abrir PR de `feat/supabase-auth` a `develop` cuando el usuario lo pida.
+Nada obligatorio. Cuando el usuario quiera: T6 (SMTP), Fase 5, Fase 6 o el
+módulo nuevo ("Después").
 
-## Pendiente (en orden)
+## Hecho (referencia)
+
+### T9 — Limpieza de invitados (usuario)
+- T9.1 Supabase → Database → Extensions → activar **pg_cron**.
+- T9.2 SQL Editor → pegar y ejecutar `db/sql/limpieza-invitados.sql` (job
+  horario que borra anónimos con más de 4 días; sus datos caen por cascada).
+- T9.3 Comprobar en Integrations → Cron → Jobs que existe `limpieza-invitados`.
 
 ### Fase 4 — Documentación (Claude)
 - `AGENTS.md`:
@@ -67,6 +83,8 @@ Incidencias resueltas al probar: la Publishable key estaba mal copiada
 - `README.md`: arranque nuevo.
 - Skills `finance-data-model`, `server-action-safety`, `testing-finance`: quitar SQLite y `userId` fijo.
 - `plop-templates`: el repositorio ya está adaptado; revisar el resto (tipos de esquema en comentarios).
+
+## Pendiente (opcional o aplazado)
 
 ### T6 — SMTP propio (usuario, cuando abra la app a otros)
 Necesario para que lleguen emails a quien no es del equipo del proyecto y para

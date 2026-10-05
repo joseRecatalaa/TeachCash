@@ -16,6 +16,21 @@ De ahí sale todo lo demás: **cada acción se defiende sola**. No hereda seguri
 del layout que la renderizó, ni del `proxy.ts`, ni de que la ruta esté detrás de
 login.
 
+## De dónde sale la sesión
+
+`getSession()` de `lib/auth.ts`. Por debajo es Supabase Auth: `getClaims()`
+**verifica** la firma (ES256) y la caducidad del JWT de la cookie, y el `userId`
+es su `sub`. Nada más da identidad.
+
+- **Nunca `supabase.auth.getSession()` en el servidor.** Lee la cookie tal cual
+  y se la cree; una cookie la puede escribir cualquiera.
+- **Un invitado es un usuario más.** Tiene `userId` real (usuario anónimo de
+  Supabase) y pasa por las mismas comprobaciones. Lo que un invitado NO puede
+  hacer (p. ej. cambiar la contraseña) se comprueba con `esInvitado`.
+- **`proxy.ts` no protege nada**: solo refresca la sesión. Cada acción se
+  defiende sola.
+- En los tests se mockea `@/lib/auth`, nunca Supabase por debajo.
+
 ## Las cuatro comprobaciones
 
 Toda acción, sin excepción, en este orden:
@@ -42,7 +57,8 @@ import { transactions, categories } from '@/db/schema'
 import { and, eq } from 'drizzle-orm'
 
 const CreateTransaction = z.object({
-  categoryId: z.string().uuid().nullable(),
+  // Texto, no .uuid(): un id mal formado no casa con nada y da "no encontrada".
+  categoryId: z.string().min(1),
   // Céntimos. Entero, siempre. Ver skill money-and-currency.
   amount: z.number().int().refine((n) => n !== 0, 'El importe no puede ser cero'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida'),
@@ -56,7 +72,7 @@ export async function createTransaction(_prev: State, formData: FormData): Promi
 
   // 2. Validar
   const parsed = CreateTransaction.safeParse({
-    categoryId: formData.get('categoryId') || null,
+    categoryId: formData.get('categoryId'),
     amount: parseMoney(String(formData.get('amount')))?.amount,
     date: formData.get('date'),
     description: formData.get('description'),
@@ -66,24 +82,24 @@ export async function createTransaction(_prev: State, formData: FormData): Promi
   }
 
   // 3. Autorizar — TODO id que venga del cliente se comprueba contra la sesión.
-  //    Aquí solo hay uno, la categoría, y es opcional; el día que haya más, se
-  //    comprueban todos (ver "Comprueba todos los recursos referenciados").
-  if (parsed.data.categoryId) {
-    const category = await db.query.categories.findFirst({
-      where: and(
-        eq(categories.id, parsed.data.categoryId),
-        eq(categories.userId, session.user.id),  // esta línea es la que importa
-      ),
-    })
-    if (!category) return { ok: false, error: 'Categoría no encontrada' }
-  }
+  //    Aquí solo hay uno, la categoría; el día que haya más, se comprueban
+  //    todos (ver "Comprueba todos los recursos referenciados").
+  const category = await db.query.categories.findFirst({
+    where: and(
+      eq(categories.id, parsed.data.categoryId),
+      eq(categories.userId, session.user.id),  // esta línea es la que importa
+    ),
+  })
+  if (!category) return { ok: false, error: 'Categoría no encontrada' }
 
-  // 4. Mutar — userId del servidor, nunca del formulario
+  // 4. Mutar — userId del servidor, nunca del formulario. El id y createdAt
+  //    los pone la base (ver db/schema.ts).
   await db.insert(transactions).values({
-    ...parsed.data,
-    id: crypto.randomUUID(),
+    categoryId: parsed.data.categoryId,
+    amount: parsed.data.amount,
+    date: parsed.data.date,
+    description: parsed.data.description,
     userId: session.user.id,
-    createdAt: new Date(),
   })
 
   revalidatePath('/movimientos')
@@ -140,6 +156,27 @@ un movimiento apunta a dos cosas, se validan las dos.
 `'use server'` en la cabecera convierte **todos** los exports del fichero en
 endpoints. Un helper "interno" exportado desde ahí es una API pública. Las
 lecturas van en `queries.ts`, sin la directiva.
+
+Y además **solo puede exportar funciones async**: un esquema Zod o una
+constante exportada desde un fichero `'use server'` rompe el build. Déjalos sin
+`export` o súbelos a otro fichero.
+
+### Emails: recorta antes de validar
+
+`z.email().trim()` valida ANTES de recortar, así que `"ana@x.com "` se rechaza.
+Se escribe `z.string().trim().pipe(z.email())`.
+
+### Auth: no reveles qué existe
+
+Login, registro y recuperar contraseña responden lo mismo exista o no el email,
+igual que "no encontrado" no distingue "no existe" de "no es tuyo". Y un error de
+Supabase nunca llega crudo al cliente.
+
+### Redirecciones: solo internas
+
+Todo `?next=` o destino que venga de fuera pasa por `rutaInterna()`
+(`lib/rutas.ts`). Sin eso, un enlace con `next=//banco-falso.com` usa tu login
+para mandar a la víctima a otro sitio.
 
 ### Los errores esperados se devuelven, no se lanzan
 
@@ -210,7 +247,7 @@ papel lo hace `importHash` → skill `bank-import-es`.
 
 Antes de dar por buena una acción:
 
-- [ ] Comprueba la sesión antes de tocar nada
+- [ ] Comprueba la sesión (`getSession()`) antes de tocar nada
 - [ ] Valida **toda** la entrada con Zod en el servidor
 - [ ] El `userId` sale de la sesión, no de la entrada
 - [ ] Cada ID recibido se filtra por `userId` dentro del `where`
