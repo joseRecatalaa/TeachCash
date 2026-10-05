@@ -42,6 +42,8 @@ type CuentaContexto = {
   entrar: (cuenta: CuentaDto, destino?: string) => void
   /** Sale, vacía la caché y deja la aplicación lista para un invitado nuevo. */
   salir: () => Promise<void>
+  /** Lo mismo que `salir`, cuando la sesión ya la ha cerrado `borrarCuenta`. */
+  cuentaBorrada: () => void
   /** Vuelve a preguntar al servidor quién es. */
   refrescar: () => Promise<void>
   /** La sesión ha desaparecido a mitad de uso. Lo llama el `onError` global. */
@@ -143,12 +145,16 @@ export function CuentaProvider({
     [queryClient, router],
   )
 
-  const salir = useCallback(async () => {
-    await cerrarSesionAction()
+  const cuentaBorrada = useCallback(() => {
     queryClient.clear()
     setCuenta({ tipo: 'ninguna' })
     router.push('/')
   }, [queryClient, router])
+
+  const salir = useCallback(async () => {
+    await cerrarSesionAction()
+    cuentaBorrada()
+  }, [cuentaBorrada])
 
   const refrescar = useCallback(async () => {
     const resultado = await getCuenta()
@@ -159,8 +165,8 @@ export function CuentaProvider({
     () =>
       cuenta.tipo === 'ninguna'
         ? null
-        : { cuenta, entrar, salir, refrescar, sesionPerdida },
-    [cuenta, entrar, salir, refrescar, sesionPerdida],
+        : { cuenta, entrar, salir, cuentaBorrada, refrescar, sesionPerdida },
+    [cuenta, entrar, salir, cuentaBorrada, refrescar, sesionPerdida],
   )
 
   if (!valor) {

@@ -38,9 +38,11 @@ vi.mock('next/headers', () => ({
   headers: async () => ({ get: (k: string) => h.cabeceras.get(k.toLowerCase()) ?? null }),
 }))
 
-import { createTestDb, crearUsuario, USER_A, type TestDb } from '@/db/testing'
-import { categories } from '@/db/schema'
+import { createTestDb, crearUsuario, USER_A, USER_B, type TestDb } from '@/db/testing'
+import { categories, transactions } from '@/db/schema'
+import { seedMovimiento } from '@/src/infrastructure/repositories/__tests__/helpers'
 import {
+  borrarCuenta,
   cambiarPassword,
   getCuenta,
   iniciarInvitado,
@@ -249,5 +251,78 @@ describe('cambiar contraseña', () => {
     const r = await cambiarPassword(valida)
     expect(r).toEqual({ ok: true, data: { tipo: 'usuario', email: 'ana@example.com' } })
     expect(h.auth.updateUser).toHaveBeenCalledWith({ password: 'Segura#2026x' })
+  })
+})
+
+describe('borrar la cuenta', () => {
+  const ANA = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+  const datos = { password: 'Segura#2026x', captchaToken: 't' }
+
+  const usuarios = async () =>
+    (await ctx.pg.query<{ id: string }>('select id from auth.users order by id')).rows.map(
+      (r) => r.id,
+    )
+
+  beforeEach(async () => {
+    await seedMovimiento(ctx.db, 'mov-a', USER_A)
+    await seedMovimiento(ctx.db, 'mov-b', USER_B)
+  })
+
+  test('borra el usuario y todos sus datos, y nada de los demás', async () => {
+    h.session = ANA
+    const r = await borrarCuenta(datos)
+
+    expect(r).toEqual({ ok: true, data: null })
+    expect(await usuarios()).toEqual([USER_B])
+    const cats = await ctx.db.select().from(categories)
+    const movs = await ctx.db.select().from(transactions)
+    expect(cats.every((c) => c.userId === USER_B)).toBe(true)
+    expect(movs.map((m) => m.id)).toEqual(['mov-b'])
+    expect(h.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+  })
+
+  test('vuelve a pedir la contraseña con el email de la SESIÓN, no del formulario', async () => {
+    h.session = ANA
+    await borrarCuenta({ ...datos, email: 'otra@example.com' })
+    expect(h.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'ana@example.com',
+      password: 'Segura#2026x',
+      options: { captchaToken: 't' },
+    })
+  })
+
+  test('con la contraseña incorrecta no borra nada', async () => {
+    h.session = ANA
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('invalid_credentials') })
+    const r = await borrarCuenta(datos)
+
+    expect(!r.ok && r.fieldErrors?.password).toBe('Contraseña incorrecta')
+    expect(await usuarios()).toEqual([USER_A, USER_B])
+    expect(h.auth.signOut).not.toHaveBeenCalled()
+  })
+
+  test('sin contraseña no llega a Supabase', async () => {
+    h.session = ANA
+    const r = await borrarCuenta({ password: '', captchaToken: 't' })
+    expect(!r.ok && r.fieldErrors?.password).toBeTruthy()
+    expect(h.auth.signInWithPassword).not.toHaveBeenCalled()
+  })
+
+  test('un invitado no puede (no hay contraseña que confirmar)', async () => {
+    h.session = { user: { id: USER_A, email: null, esInvitado: true } }
+    expect(await borrarCuenta(datos)).toEqual({ ok: false, error: 'No autorizado' })
+    expect(await usuarios()).toEqual([USER_A, USER_B])
+  })
+
+  test('sin sesión, tampoco', async () => {
+    expect(await borrarCuenta(datos)).toEqual({ ok: false, error: 'No autorizado' })
+    expect(await usuarios()).toEqual([USER_A, USER_B])
+  })
+
+  test('si Supabase falla al cerrar la sesión, la cuenta ya está borrada y responde ok', async () => {
+    h.session = ANA
+    h.auth.signOut.mockResolvedValue({ error: error('user_not_found') })
+    expect(await borrarCuenta(datos)).toEqual({ ok: true, data: null })
+    expect(await usuarios()).toEqual([USER_B])
   })
 })

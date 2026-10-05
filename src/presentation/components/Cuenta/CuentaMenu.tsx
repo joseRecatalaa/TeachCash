@@ -5,12 +5,14 @@
  *
  *   - **Invitado**: botón "Iniciar sesión".
  *   - **Con sesión**: un círculo con la inicial del email. Es la señal de que
- *     hay una cuenta iniciada; al pulsarlo, el email completo y "Cerrar sesión".
+ *     hay una cuenta iniciada; al pulsarlo, el email completo, "Cerrar sesión"
+ *     y, aparte, "Borrar mi cuenta".
  */
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Avatar, Menu, UnstyledButton } from '@mantine/core'
-import { IconLogin2, IconLogout, IconMail } from '@tabler/icons-react'
+import { IconLogin2, IconLogout, IconMail, IconTrash } from '@tabler/icons-react'
 import { useCuenta } from '@/src/application/providers/CuentaProvider'
 import { SketchButton } from '@/src/presentation/components/ui'
 import styles from './CuentaMenu.module.css'
@@ -63,6 +65,16 @@ export function CuentaMenu() {
           }}
         >
           Cerrar sesión
+        </Menu.Item>
+        {/* Separado y al final: es lo único del menú que no tiene vuelta atrás.
+            Lleva a una página que pide la contraseña, no borra desde aquí. */}
+        <Menu.Divider />
+        <Menu.Item
+          component={Link}
+          href="/BorrarCuenta"
+          leftSection={<IconTrash size={16} stroke={2} />}
+        >
+          Borrar mi cuenta
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

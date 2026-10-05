@@ -29,6 +29,13 @@ T9 hecha por el usuario y Fase 4 (documentación) escrita. Lo que queda abajo
 - **Fase 5 — ping a Supabase: HECHO (2026-10-05).** `.github/workflows/ping-supabase.yml`
   consulta la API REST (lunes y jueves) con la clave pública, que guarda en los
   secrets `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` del repo. Lanzado a mano: HTTP 200.
+- **Fase 5 — "Borrar mi cuenta": HECHO (2026-10-05).** Menú de la cuenta →
+  `/BorrarCuenta` → `borrarCuenta` (`auth.actions.ts`): vuelve a pedir la
+  contraseña con el email de la SESIÓN y Turnstile, borra la fila de
+  `auth.users` (`borrarUsuario`, `cuenta.repository.ts`; los datos caen por
+  cascada) y cierra la sesión. Solo cuentas con email; un invitado caduca solo.
+  Sin secret key: el rol `postgres` tiene DELETE sobre `auth.users`
+  (comprobado en Supabase). Probado por el usuario en el navegador.
 
 ## Estado a 2026-10-02
 
@@ -62,7 +69,8 @@ Incidencias resueltas al probar: la Publishable key estaba mal copiada
 
 ## Siguiente paso
 
-Nada obligatorio. Cuando el usuario quiera: T6 (SMTP), Fase 5, Fase 6 o el
+Nada obligatorio. Cuando el usuario quiera: lo que queda de la Fase 5 (MFA
+TOTP, CSP con nonce, fusionar datos de invitado), T6 (SMTP), Fase 6 o el
 módulo nuevo ("Después").
 
 ## Hecho (referencia)
@@ -103,7 +111,7 @@ pasar del límite de 2 emails/hora.
 
 ### Fase 5 — Endurecimiento (opcional)
 - ~~Ping semanal (GitHub Actions)~~ HECHO (2026-10-05): `ping-supabase.yml`, lunes y jueves.
-- MFA TOTP. CSP con nonce (adaptar el script inline del splash). "Borrar mi cuenta".
+- MFA TOTP. CSP con nonce (adaptar el script inline del splash). ~~"Borrar mi cuenta"~~ HECHO (2026-10-05).
 - Fusionar datos de invitado al iniciar sesión en una cuenta existente (hoy se avisa y no se fusionan).
 
 ### Fase 6 — Login con Google (aplazado por decisión del usuario)
