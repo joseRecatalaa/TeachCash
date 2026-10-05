@@ -1,7 +1,7 @@
 # Plan: TeachCash → Supabase (Postgres) + multiusuario con login seguro
 
 > **Para retomar en una sesión nueva** (también desde otro ordenador): lee
-> primero "Estado a 2026-10-02" y "Siguiente paso".
+> primero "Estado a 2026-10-05", "Siguiente paso" y "Deuda pendiente".
 >
 > Cómo quiere trabajar el usuario: los pasos MANUALES (paneles de Supabase,
 > Cloudflare…) se dan **de uno en uno**, esperando su "ok" antes del siguiente,
@@ -77,9 +77,9 @@ Incidencias resueltas al probar: la Publishable key estaba mal copiada
 
 ## Siguiente paso
 
-Nada obligatorio. Cuando el usuario quiera: lo que queda de la Fase 5 (MFA
-TOTP, fusionar datos de invitado), T6 (SMTP), Fase 6 o el
-módulo nuevo ("Después").
+Nada obligatorio. **El plan se cierra aquí (2026-10-05)**: el usuario decidió
+dejar todo lo que falta como deuda para más adelante (ver "Deuda pendiente").
+No empezar ninguno de esos puntos sin que el usuario lo pida.
 
 ## Hecho (referencia)
 
@@ -103,7 +103,19 @@ módulo nuevo ("Después").
 - Skills `finance-data-model`, `server-action-safety`, `testing-finance`: quitar SQLite y `userId` fijo.
 - `plop-templates`: el repositorio ya está adaptado; revisar el resto (tipos de esquema en comentarios).
 
-## Pendiente (opcional o aplazado)
+## Deuda pendiente (aplazada por el usuario el 2026-10-05)
+
+Todo lo que sigue queda como deuda, sin fecha. Resumen:
+
+| Punto | Qué es | Necesita |
+|---|---|---|
+| Fase 5 — MFA TOTP | Segundo paso al entrar con código de una app (Google Authenticator…) | Solo código + quizá una opción del panel (gratis) |
+| Fase 5 — Fusionar invitado | Llevar los datos del invitado a una cuenta existente al iniciar sesión | Solo código; delicado (mueve datos entre usuarios) |
+| T6 — SMTP propio | Emails a cualquiera, sin el límite de 2/h; plantillas en español con `token_hash` | Dominio propio + proveedor SMTP |
+| Fase 6 — Login con Google | Entrar con Google y convertir un invitado con `linkIdentity` | Google Cloud Console; revisar `lib/csp.ts` |
+| Después — módulo nuevo | El módulo que anunció el usuario | `pnpm generate:crud` |
+
+El detalle de cada uno, abajo.
 
 ### T6 — SMTP propio (usuario, cuando abra la app a otros)
 Necesario para que lleguen emails a quien no es del equipo del proyecto y para
