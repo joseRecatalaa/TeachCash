@@ -2,7 +2,7 @@
 
 /**
  * Server Actions de autenticación: invitado, entrar, crear cuenta, recuperar y
- * cambiar la contraseña, salir.
+ * cambiar la contraseña, salir y borrar la cuenta.
  *
  * Como todo `'use server'`, cada export es un endpoint POST público (regla dura
  * 3). Por eso todo lo que llega se valida con Zod aquí, aunque el formulario ya
@@ -25,7 +25,10 @@ import { z } from 'zod'
 import { getSession, type Session } from '@/lib/auth'
 import { crearClienteSupabase } from '@/lib/supabase/server'
 import { asegurarCatalogoInicial } from '@/src/infrastructure/repositories/categorias.repository'
-import { fechaAltaUsuario } from '@/src/infrastructure/repositories/cuenta.repository'
+import {
+  borrarUsuario,
+  fechaAltaUsuario,
+} from '@/src/infrastructure/repositories/cuenta.repository'
 import { VIDA_INVITADO_DIAS, type CuentaDto } from '@/src/types/cuenta.types'
 import type { ActionResult } from './entity.actions'
 
@@ -71,6 +74,10 @@ const CambiarPassword = z
     path: ['repetir'],
     message: 'Las contraseñas no coinciden',
   })
+const BorrarCuenta = z.object({
+  password: z.string().min(1, 'Escribe tu contraseña').max(72),
+  captchaToken,
+})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mensajes
@@ -341,6 +348,53 @@ export async function cerrarSesion(): Promise<ActionResult<null>> {
     const supabase = await crearClienteSupabase()
     const { error } = await supabase.auth.signOut({ scope: 'local' })
     if (error) return fallo(traducir(error, 'cerrarSesion'))
+    return { ok: true, data: null }
+  })
+}
+
+/**
+ * Borrar la cuenta y todos sus datos, para siempre.
+ *
+ * Solo para cuentas con email: un invitado no tiene nada que confirmar y sus
+ * datos ya se borran solos a los 4 días.
+ *
+ * Se vuelve a pedir la contraseña aunque haya sesión: una cookie robada o un
+ * ordenador que alguien dejó abierto no bastan para borrarlo todo. El email
+ * sale de la sesión verificada, nunca del formulario, así que esto no sirve
+ * para probar contraseñas de otras cuentas. Y pasa por el CAPTCHA, como
+ * cualquier `signInWithPassword`.
+ */
+export async function borrarCuenta(values: unknown): Promise<ActionResult<null>> {
+  return intentar('borrarCuenta', async () => {
+    const session = await getSession()
+    if (!session || session.user.esInvitado || !session.user.email) {
+      return fallo(MENSAJES.noAutorizado)
+    }
+
+    const parsed = BorrarCuenta.safeParse(values)
+    if (!parsed.success) return erroresDeCampo(parsed.error)
+
+    const supabase = await crearClienteSupabase()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: session.user.email,
+      password: parsed.data.password,
+      options: { captchaToken: parsed.data.captchaToken },
+    })
+    if (error) {
+      if (error.code === 'invalid_credentials') {
+        return fallo('Contraseña incorrecta', { password: 'Contraseña incorrecta' })
+      }
+      return fallo(traducir(error, 'borrarCuenta'))
+    }
+
+    await borrarUsuario(session.user.id)
+
+    // El usuario ya no existe, así que Supabase puede responder con error al
+    // revocar la sesión; las cookies se borran igual, y eso es lo que importa.
+    const salida = await supabase.auth.signOut({ scope: 'local' })
+    if (salida.error) {
+      console.error('[auth.actions] borrarCuenta/signOut', salida.error.code, salida.error.message)
+    }
     return { ok: true, data: null }
   })
 }
