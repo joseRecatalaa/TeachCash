@@ -14,8 +14,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Gestor de finanzas personales. Aplicación web para llevar las finanzas
 personales: movimientos (gastos e ingresos), categorías y una portada que
-resume el mes. Uso individual (uno o pocos usuarios), no multi-tenant, no
-contabilidad de empresa.
+resume el mes. Finanzas de personas, no contabilidad de empresa.
+
+**Es multiusuario y se usa sin registrarse.** Quien entra sin sesión recibe una
+de **invitado** (usuario anónimo de Supabase, caduca a los 4 días); si crea una
+cuenta, conserva sus datos. Cada usuario ve solo lo suyo y nada se comparte
+entre usuarios.
 
 **Hay UNA cuenta y UNA divisa, y ninguna de las dos se guarda.** No existe tabla
 de cuentas, ni columna de moneda, ni transferencias: un movimiento es un gasto o
@@ -70,14 +74,15 @@ encontrado la pieza genérica.
 | Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Vía `next/font/google` |
 | Estado de servidor | **React Query v5** | Lo usa Refine por dentro |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
-| Datos | SQLite + **Drizzle ORM**, driver `@libsql/client` | Fichero local en `data/` |
-| Transporte | **Server Actions**, no HTTP | No hay API REST ni route handlers |
+| Datos | **Postgres en Supabase** + **Drizzle ORM**, driver `postgres` (postgres-js) | Por el Transaction pooler, `prepare: false` |
+| Transporte | **Server Actions**, no HTTP | Sin API REST; el único route handler es `/auth/confirm` |
 | Validación | **Zod 4** | En el repositorio, del lado del servidor |
-| Auth | **Sin login en la v1** | `lib/auth.ts` devuelve un `userId` fijo |
+| Auth | **Supabase Auth** vía `@supabase/ssr` | Invitados anónimos + email y contraseña. Cookies `httpOnly` |
+| Anti-bots | **Cloudflare Turnstile** (invisible) | Al crear el invitado; el secret vive en el panel de Supabase |
 | Gráficos | **Recharts 3** | Solo datos ya agregados cruzan al cliente |
 | Exportación | **xlsx** | Carga diferida, solo al pulsar el botón |
 | Scaffolding | **Plop** | `pnpm generate:crud` |
-| Tests | **Vitest + fast-check** | SQLite real, nunca `:memory:` |
+| Tests | **Vitest + fast-check** + **PGlite** | Postgres real en WASM, con las migraciones reales |
 
 **No hay Tailwind.** Se retiró al adoptar Mantine: su `preflight` reescribe los
 estilos base de todos los elementos y peleaba con los de Mantine por quién manda
@@ -152,20 +157,28 @@ excepciones. `lib/colores.ts` guarda las claves y sus nombres; los valores, solo
 Se ejecutan **desde la raíz del repo**.
 
 ```bash
-pnpm dev                  # servidor de desarrollo
+pnpm dev                  # servidor de desarrollo, SOLO en localhost
 pnpm build                # build de producción
 pnpm start                # servir el build
 pnpm lint                 # ESLint (eslint-config-next)
 pnpm typecheck            # tsc --noEmit
-pnpm test                 # Vitest
+pnpm test                 # Vitest (sobre PGlite, no toca Supabase)
 pnpm test:tz              # la misma suite con TZ=Pacific/Kiritimati
 pnpm generate:crud        # scaffolding de una entidad nueva (Plop)
 pnpm db:generate          # genera la migración a partir de db/schema.ts
-pnpm db:migrate           # aplica las migraciones pendientes
-pnpm db:seed              # catálogo de categorías por defecto (idempotente)
+pnpm db:migrate           # aplica las migraciones en Supabase (lee .env.local)
+pnpm db:studio            # explorador de la base
 ```
 
-Primer arranque: `pnpm install` → `pnpm db:migrate` → `pnpm db:seed` → `pnpm dev`.
+Primer arranque: `pnpm install` → copiar `.env.example` a `.env.local` y
+rellenarlo desde el panel de Supabase y de Cloudflare → `pnpm db:migrate` →
+`pnpm dev`.
+
+No hay `db:seed`: las categorías de fábrica se crean por usuario, al nacer, con
+`asegurarCatalogoInicial(userId)` (`categorias.repository.ts`). Es idempotente.
+
+`.env.local` no está en git. Nunca lleva la secret key (`service_role`) de
+Supabase: la app no la necesita y no debe tenerla.
 
 **Usa siempre `pnpm`.** Ejecutar `npm install` o `yarn` aquí corrompe el lockfile.
 
@@ -223,6 +236,12 @@ usan `DIVISA_APP` salvo que la columna declare un `divisaAccessor`.
 
 `'use server'` convierte cada export en un endpoint POST público, alcanzable sin
 pasar por tu interfaz. → skill `server-action-safety`
+
+La sesión es `getSession()` de `lib/auth.ts`, y el `userId` es el `sub` del JWT
+**verificado** con `supabase.auth.getClaims()` (firma ES256 y caducidad). Nunca
+`auth.getSession()` en el servidor: esa se cree la cookie tal cual, y una cookie
+la puede escribir cualquiera. Un invitado es un usuario como otro cualquiera:
+tiene `userId` y pasa por el mismo camino.
 
 ### 4. Nunca confíes en un ID que venga del cliente
 
@@ -284,7 +303,7 @@ Página (cliente)
   → DataProvider   src/application/providers/refine-data-provider.ts
   → Server Action  src/application/actions/entity.actions.ts      'use server'
   → Repositorio    src/infrastructure/repositories/<entidad>.repository.ts
-  → Drizzle → SQLite
+  → Drizzle (postgres-js) → Supabase Postgres, por el Transaction pooler
 ```
 
 **No hay API HTTP.** Nada de route handlers para mutaciones ni de `fetch` a
@@ -331,6 +350,34 @@ sabe nada: cada mutación llama a `useInvalidarDerivados()`. Sin eso se anota un
 gasto y la portada sigue enseñando la cifra de antes, que en una aplicación de
 dinero no parece un error — parece un dato.
 
+### Cómo viaja la sesión
+
+```
+Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
+  CuentaProvider   sin sesión → Turnstile → iniciarInvitado() → usuario anónimo + catálogo
+  proxy.ts         solo refresca la sesión; no redirige ni protege rutas
+  Server Action    getSession() → getClaims() verifica ES256 → userId = sub
+  Repositorio      where user_id = userId
+  Postgres         RLS user_id = auth.uid() (la red, no el mecanismo)
+```
+
+- **El invitado nace en el cliente, no en el proxy.** Crearlo en el proxy daría
+  de alta un usuario por cada bot que pidiera una página; desde el cliente pasa
+  antes por Turnstile.
+- **Crear cuenta convierte al invitado** en usuario con el mismo id: sus datos se
+  quedan. Iniciar sesión en una cuenta ya existente NO fusiona los datos del
+  invitado: se avisa y se pierden al caducar.
+- **Los invitados caducan a los 4 días** (`VIDA_INVITADO_DIAS` en
+  `src/types/cuenta.types.ts`). Los borra un job horario de `pg_cron`
+  (`db/sql/limpieza-invitados.sql`, ejecutado a mano una vez en el SQL Editor
+  porque toca el esquema `auth`); sus datos caen por la cascada de `user_id`.
+  Si cambias los días, cambia los dos sitios.
+- **Los enlaces del email** (confirmar registro, recuperar contraseña) llegan a
+  `app/auth/confirm/route.ts`, que acepta `code` y `token_hash` y solo redirige
+  a rutas internas (`lib/rutas.ts`).
+- **Las pantallas de auth no usan `GenericForm`**: son pocas, no son CRUD y
+  hablan con `auth.actions.ts`, no con el DataProvider.
+
 ### Estructura de ficheros
 
 ```
@@ -344,6 +391,10 @@ dinero no parece un error — parece un dato.
       Create/page.tsx
       Edit/page.tsx                   # lee ?id=
     Categorias/
+    Login/ Registro/                  # pantallas de auth (sin GenericForm)
+    RecuperarPassword/ CambiarPassword/
+    auth/confirm/route.ts             # destino de los enlaces del email
+  proxy.ts                            # refresca la sesión (antes middleware)
   src/
     types/
       formMetadata.types.ts
@@ -356,11 +407,13 @@ dinero no parece un error — parece un dato.
         <entidad-plural>.repository.ts
         metadata.repository.ts        # las opciones de los select
         informes.repository.ts        # las agregaciones (no es un CRUD)
+        cuenta.repository.ts          # fecha de alta (lee auth.users): caducidad del invitado
         __tests__/
     application/
       actions/
         entity.actions.ts             # 'use server' — la frontera
         informes.actions.ts
+        auth.actions.ts               # invitado, login, registro, contraseña
       hooks/
         createEntityHooks.ts          # factory genérica de hooks CRUD
         useEntityFormSubmit.ts        # submit genérico de formulario
@@ -372,6 +425,7 @@ dinero no parece un error — parece un dato.
       providers/
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
         refine-data-provider.ts       # Refine → Server Actions
+        CuentaProvider.tsx            # sesión en el cliente; crea el invitado
     config/                           # SOLO .ts, SIN JSX
       _shared/types.ts
       <entidad-en-kebab>/
@@ -403,6 +457,8 @@ dinero no parece un error — parece un dato.
         EntityListPage.module.css
         ActionsColumn.tsx             # helpers de columna
         Charts/FinanceCharts.tsx
+        Auth/                         # formularios de login, registro…
+        Cuenta/                       # CuentaMenu y AvisoInvitado (la Navbar)
         Navbar.tsx
         Navbar.module.css
         useEntityId.ts
@@ -412,11 +468,18 @@ dinero no parece un error — parece un dato.
     format.ts                         # Intl.NumberFormat / fechas, es-ES
     dates.ts                          # fechas civiles, periodos, rangos de mes
     forms.ts
-    auth.ts                           # getSession()
+    auth.ts                           # getSession(): lo único que sabe de auth
+    supabase/                         # clientes de servidor y de proxy
+    rutas.ts                          # filtro de redirección abierta
+    turnstile.ts
   db/
-    schema.ts
+    schema.ts                         # pg-core; piezas idColumn, soloSuyo…
+    client.ts                         # postgres-js, prepare: false
+    index.ts                          # la `db` compartida (server-only)
+    migrate.mts                       # migra por el Session pooler
     migrations/
-    testing.ts                        # base desechable para los tests
+    sql/limpieza-invitados.sql        # job de pg_cron, a mano en Supabase
+    testing.ts                        # PGlite + stub de `auth` para los tests
   plop-templates/
   plopfile.mjs
 ```
@@ -509,7 +572,11 @@ Crea los nueve ficheros y registra el recurso en los dos sitios que hacen falta
 
 **El repositorio generado no compila tal cual**, y es a propósito: apunta a una
 tabla que casi nunca existe todavía. Si la entidad necesita tabla, créala en
-`db/schema.ts` y pasa `pnpm db:generate` y `pnpm db:migrate` antes de tocarlo.
+`db/schema.ts` con las mismas piezas que las demás —`idColumn()`,
+`userIdColumn()`, `createdAtColumn()`, la política `soloSuyo('<tabla>')` y
+`.enableRLS()`— y pasa `pnpm db:generate` y `pnpm db:migrate` antes de tocarlo.
+Una tabla sin `.enableRLS()` queda abierta a la API REST de Supabase para
+cualquiera con la clave pública; el Security Advisor del panel lo marca.
 
 El generador **no** toca el menú: qué aparece en `Navbar.tsx` es una decisión de
 producto, no de andamiaje.
@@ -600,14 +667,36 @@ lleve hasta ella.
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
   el orden de las hojas no es el del desarrollo.
-- **Abrir el `dev` por la IP de la red deja la app cargando para siempre.** Next
-  16 bloquea los recursos de desarrollo (`/_next/static/chunks`, `/_next/hmr`)
-  que no vengan de `localhost`: el HTML del servidor llega y la Navbar se pinta,
-  pero ningún chunk de cliente carga, así que Refine nunca arranca y todas las
-  listas se quedan en el spinner. No hay error en la consola del navegador —
-  solo avisos en `.next/dev/logs/next-development.log`. Se arregla añadiendo el
-  host a `allowedDevOrigins` en `next.config.ts`; si la IP de la máquina cambia,
-  hay que actualizarla ahí.
+- **El `dev` escucha solo en `localhost`, y el host está atado en tres sitios.**
+  `pnpm dev` arranca con `--hostname localhost`. Abrirlo por la IP de la red
+  exige, además de quitar eso, tres cosas: el host en `allowedDevOrigins` de
+  `next.config.ts` (sin él Next 16 bloquea los chunks de cliente, Refine nunca
+  arranca y las listas se quedan en el spinner sin error en consola —solo avisos
+  en `.next/dev/logs/next-development.log`—), el dominio en el widget de
+  Turnstile (sin él no nace el invitado) y la URL en las Redirect URLs de
+  Supabase (sin ella los enlaces del email no vuelven a la app).
+- **En Postgres `like` distingue mayúsculas.** Las búsquedas de texto van con
+  `ilike`. Con `like` funcionan… solo si el usuario escribe igual que se guardó.
+- **Todo agregado lleva `.mapWith(Number)`.** postgres-js devuelve `sum()` y
+  `count()` como TEXTO (son `bigint`/`numeric`). El tipo `sql<number>` no
+  convierte nada, y `'100' + '50'` da `'10050'`.
+- **`prepare: false` en el cliente de base** (`db/client.ts`). El Transaction
+  pooler de Supabase reparte las consultas entre conexiones, y una sentencia
+  preparada vive en una sola: con `prepare` activo funciona en local y falla en
+  Supabase de forma intermitente.
+- **Las migraciones van por el Session pooler** (`DATABASE_URL_MIGRATIONS`,
+  puerto 5432), no por el Transaction pooler (6543), que no admite lo que lanzan.
+- **Al cambiar de usuario, `queryClient.clear()`.** Lo hace `CuentaProvider` al
+  entrar, salir o recrear el invitado. Sin eso, la cuenta nueva ve por un
+  instante las listas cacheadas de la anterior.
+- **`z.email().trim()` valida ANTES de recortar**, así que un email con un
+  espacio al final se rechaza. Se escribe `z.string().trim().pipe(z.email())`.
+- **Un fichero `'use server'` solo puede exportar funciones async.** Un esquema
+  Zod o una constante exportada rompe el build; déjalos sin `export` o en otro
+  fichero.
+- **Los días de vida del invitado están en dos sitios**: `VIDA_INVITADO_DIAS`
+  (lo que ve el usuario) y el `interval` de `db/sql/limpieza-invitados.sql` (lo
+  que borra de verdad). Si divergen, la franja miente.
 
 ## Estilo
 
@@ -646,19 +735,29 @@ Detalle en la skill `nextjs-app-conventions`.
 
 Cómo están montados:
 
-- **SQLite real con las migraciones reales.** Nada de mockear el ORM: los bugs de
-  agregación viven exactamente en el SQL que un mock no llega a ejecutar.
-- La base es un **fichero** desechable en `data/test/`, no `:memory:`. Con libsql,
-  abrir una transacción sobre una base en memoria estrena conexión, y cada
-  conexión a `:memory:` es una base distinta y vacía.
-- Lo único que se sustituye es de dónde sale la conexión: se mockea `@/db` con un
-  getter. `src/infrastructure/repositories/__tests__/helpers.ts` tiene las
-  semillas.
+- **Postgres real con las migraciones reales**, sobre **PGlite** (el mismo
+  motor en WASM, en proceso). Nunca tocan Supabase. Nada de mockear el ORM: los
+  bugs de agregación —y los de dialecto, como `like` o `sum` en texto— viven
+  exactamente en el SQL que un mock no llega a ejecutar.
+- `db/testing.ts` crea antes de migrar un **stub del esquema `auth`** de
+  Supabase (`auth.users`, `auth.uid()`, roles `anon` y `authenticated`), porque
+  la clave ajena de `user_id` y las políticas RLS dependen de él. Si una
+  migración nueva usa algo más de `auth`, se añade ahí.
+- Los dos usuarios de siempre son `USER_A` y `USER_B` (`db/testing.ts`), ya
+  dados de alta en `auth.users`. Otro usuario se crea con `crearUsuario(pg, id)`.
+- Cada test tiene base nueva: la primera se migra una vez y las demás nacen de
+  copia de su directorio de datos.
+- Lo único que se sustituye es de dónde sale la conexión (se mockea `@/db` con
+  un getter) y la sesión (se mockea `@/lib/auth`).
+  `src/infrastructure/repositories/__tests__/helpers.ts` tiene las semillas.
+- Si la suite completa se cuelga (ha pasado con PGlite en varios workers),
+  relánzala o pásala fichero a fichero.
 
 Qué se testea sin excepción:
 
 - **Aislamiento por usuario**: que ninguna operación lea ni escriba lo ajeno, y
-  que el mensaje no distinga "no existe" de "no es tuyo".
+  que el mensaje no distinga "no existe" de "no es tuyo". Y en la base: que RLS
+  no deje ver lo ajeno y que borrar un usuario se lleve sus datos en cascada.
 - **Aritmética de dinero**: signos, redondeos, que un importe con decimales se
   rechace.
 - **Agregaciones**: que `getSaldoActual` coincida con el último punto de
@@ -686,26 +785,39 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 - **Arquitectura**: Clean Architecture en cinco capas con Refine.dev + Mantine.
   El DataProvider de Refine va sobre Server Actions y no sobre HTTP. Se descartó
   levantar route handlers REST: habrían añadido un salto de red contra la propia
-  base local y duplicado la comprobación de sesión en cada handler.
-- **Persistencia**: SQLite + Drizzle ORM con el driver **`@libsql/client`**.
-  `better-sqlite3` se descartó: no hay binario precompilado para Node 24 y
-  compilarlo exige un toolchain de C++ que no está en la máquina. `node:sqlite`
-  tampoco sirve — Drizzle 0.45 no trae driver para él y `sqlite-proxy` no
-  soporta transacciones. `@libsql/client` distribuye binarios ya compilados y es
-  el mismo cliente que habla con Turso.
-- **Auth**: sin login en la v1. `lib/auth.ts` devuelve un `userId` fijo desde un
-  `getSession()` asíncrono. **El resto del código se escribe como si el login
-  existiera**: toda consulta filtra por `userId` dentro del `where` y toda acción
-  llama a `getSession()` primero. Cambiar a auth real toca un solo fichero.
+  base y duplicado la comprobación de sesión en cada handler.
+- **Persistencia**: **Postgres en Supabase** (plan gratuito, región eu-west-3) +
+  Drizzle ORM con **postgres-js**. Sustituyó a SQLite local al pasar a
+  multiusuario. Se empezó de cero, sin migrar los datos de SQLite.
+- **Datos por Drizzle directo, no por supabase-js.** La app se conecta a
+  Postgres con un rol que se salta RLS y filtra por `userId` en cada `where`
+  (regla dura 4). supabase-js se usa solo para Auth.
+- **RLS como red, no como mecanismo.** Toda tabla lleva RLS "solo lo suyo"
+  (`soloSuyo`) para que la API REST de Supabase, que cualquiera puede llamar con
+  la clave pública, no sirva para leer nada ajeno. La app no depende de ella.
+- **Ids `text` con UUID que pone la base, no `uuid`.** Un id mal formado que
+  llegue del cliente no casa con nada y da "No encontrado", en vez de que
+  Postgres reviente con un error de sintaxis que acabaría como error genérico.
+  `user_id` sí es `uuid`, porque es clave ajena a `auth.users.id`.
+- **Auth**: Supabase Auth con email y contraseña (≥ 10 caracteres, con
+  confirmación por email) y **modo invitado**: usuario anónimo, creado desde el
+  cliente tras pasar Turnstile, que caduca a los 4 días. La app se usa sin
+  registrarse; crear cuenta convierte al invitado conservando sus datos.
+  `lib/auth.ts` sigue siendo lo único que sabe de auth: cambiar de proveedor
+  toca ese fichero, `lib/supabase/` y `auth.actions.ts`.
+- **Cookies `httpOnly`** (y `secure` en producción): no hay cliente de Supabase
+  en el navegador, así que nada de JavaScript necesita leer el JWT.
+- **Emails con las plantillas por defecto de Supabase** hasta tener SMTP propio
+  (sin él: 2 emails/hora y solo a miembros del equipo del proyecto).
 - **Rutas**: PascalCase con `Create/` y `Edit/`, y el id en `?id=` sin cifrar.
-  Los ids son UUID y de un solo usuario: ofuscarlos sería mantener criptografía
-  sin nada que proteger.
+  Los ids son UUID y cada consulta filtra por dueño: ofuscarlos sería mantener
+  criptografía sin nada que proteger.
 - **Interfaz de cliente**: usar Refine implica que las páginas llevan
   `'use client'`. Es un intercambio consciente: se gana el CRUD declarativo
   completo y se pierde el renderizado en servidor de los datos. Lo que lo hace
   seguro es la regla dura 6 — ninguna garantía se sostiene en el cliente.
-- **Tests**: Vitest + fast-check, con fichero SQLite desechable. Playwright sigue
-  pendiente.
+- **Tests**: Vitest + fast-check sobre PGlite (Postgres real en proceso, con un
+  stub del esquema `auth`). Playwright sigue pendiente.
 - **Sistema de diseño**: dibujado a mano (trazo negro de 2-3 px, esquinas
   elípticas asimétricas, sombra dura sin difuminar, verde bosque de acento) sobre
   **CSS Modules** y tokens `--sd-*`. Se descartó estilar con las props de Mantine
@@ -767,3 +879,16 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Filtros de columna en modo servidor**: solo se ofrece "es igual a". Si
   Movimientos necesita operadores ricos, hay que enseñárselos al repositorio
   primero.
+- **Login con Google**: aplazado. Sería credenciales en Google Cloud Console,
+  el proveedor en Supabase y `linkIdentity` para convertir un invitado en cuenta
+  de Google sin perder sus datos.
+- **SMTP propio**: pendiente hasta abrir la app a otros. Con él se pueden poner
+  las plantillas de email en español y con enlaces `token_hash`, que funcionan
+  desde cualquier dispositivo (hoy, con `code`, solo en el mismo navegador).
+  `/auth/confirm` ya acepta los dos.
+- **Fusionar los datos del invitado al iniciar sesión** en una cuenta que ya
+  existe: hoy se avisa y no se fusionan.
+- **Endurecimiento opcional**: CSP con nonce (hay que adaptar el script inline
+  del splash en `app/layout.tsx`), MFA TOTP, "Borrar mi cuenta" y un ping
+  semanal para que el proyecto gratuito de Supabase no se pause tras 7 días sin
+  uso.

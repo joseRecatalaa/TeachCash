@@ -1,25 +1,36 @@
 # TeachCash
 
-Gestor de finanzas personales. Aplicación web local para llevar tus gastos e
+Gestor de finanzas personales. Aplicación web para llevar tus gastos e
 ingresos: movimientos, categorías y una portada que resume el mes.
 
-Los datos viven en un fichero SQLite dentro de `data/`, que está ignorado por
-git. No sale nada de tu máquina y no hay ningún servicio externo.
+Los datos viven en **Postgres en Supabase** y el login es **Supabase Auth**.
+Se puede usar sin registrarse: al entrar recibes una sesión de **invitado**
+(protegida con un CAPTCHA invisible de Cloudflare Turnstile) que dura 4 días.
+Si creas una cuenta, tus datos se quedan.
 
 ## Arrancar
 
+Necesitas un proyecto de Supabase (vale el plan gratuito) y un widget de
+Turnstile. Qué configurar en cada panel está en `docs/PLAN-SUPABASE.md`.
+
 ```bash
 pnpm install
-pnpm db:migrate     # crea las tablas
-pnpm db:seed        # categorías por defecto en español
-pnpm dev            # http://localhost:3000
+cp .env.example .env.local   # y rellénalo: cada variable dice de dónde sale
+pnpm db:migrate              # crea las tablas, RLS y políticas en Supabase
+pnpm dev                     # http://localhost:3000
 ```
 
-No hay login: la aplicación asume un único usuario local.
+No hay paso de semillas: cada usuario recibe las categorías por defecto al
+nacer.
+
+Una vez, en el SQL Editor de Supabase y con la extensión `pg_cron` activada,
+ejecuta `db/sql/limpieza-invitados.sql`: es el job que borra cada hora los
+invitados caducados.
 
 ## Qué hace
 
-Tres pantallas y nada más:
+Las pantallas principales (además de las de cuenta: entrar, registrarse y
+recuperar la contraseña):
 
 - **Inicio** — el saldo, cómo va el mes frente al anterior, la evolución del
   saldo, en qué se va el dinero y los últimos movimientos.
@@ -27,7 +38,10 @@ Tres pantallas y nada más:
   Filtrables por periodo, categoría y texto, y exportables a Excel. El borrado
   es permanente: no hay papelera.
 - **Categorías** — de gasto o de ingreso, con emoji y color propio. El color es
-  el que las identifica luego en la tabla y en los gráficos.
+  el que las identifica luego en la tabla y en los gráficos. Las de gasto llevan
+  un presupuesto mensual.
+- **Planificación** — cada categoría de gasto con lo gastado este mes frente a
+  su presupuesto. Desde aquí se anota un gasto sin cambiar de pantalla.
 
 Hay **una sola cuenta y una sola moneda**, y no se guardan en ninguna parte: el
 saldo es la suma de los movimientos. Si quieres partir del saldo real de tu
@@ -37,11 +51,13 @@ banco, anótalo como un ingreso más ("Saldo inicial").
 
 | Comando | Qué hace |
 |---|---|
-| `pnpm test` | Suite de Vitest |
+| `pnpm dev` | Servidor de desarrollo, solo en `localhost` |
+| `pnpm test` | Suite de Vitest (sobre PGlite: no toca Supabase) |
 | `pnpm test:tz` | La misma suite con otro huso horario |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | ESLint |
 | `pnpm db:generate` | Genera una migración tras tocar `db/schema.ts` |
+| `pnpm db:migrate` | Aplica las migraciones pendientes en Supabase |
 | `pnpm db:studio` | Explorador de la base de datos |
 | `pnpm generate:crud` | Scaffolding completo de una entidad nueva |
 
@@ -49,7 +65,8 @@ banco, anótalo como un ingreso más ("Saldo inicial").
 
 Lee **`AGENTS.md`** antes de tocar nada: lleva las reglas duras, el mapa de las
 cinco capas y cómo se declara una vista. `docs/PLAN-V1.md` tiene el plan de la v1
-y el porqué de cada decisión técnica.
+y el porqué de cada decisión técnica; `docs/PLAN-SUPABASE.md`, el de la
+migración a Supabase y lo que queda pendiente.
 
 La regla que más importa: **el dinero es un entero en céntimos**, nunca un
 decimal. Se convierte a decimal solo al formatearlo para pantalla.
@@ -64,14 +81,15 @@ formulario, `columns.ts` para el listado) que pintan dos componentes genéricos,
 `GenericForm` y `AppTable`.
 
 No hay API HTTP: el DataProvider de Refine llama a **Server Actions** que
-consultan SQLite en proceso.
+consultan Postgres con Drizzle. Cada consulta filtra por el usuario de la sesión,
+y RLS hace de red en la base.
 
 ```
 Página → useList / useOne / useCreate…   (Refine, en el navegador)
        → refine-data-provider.ts
        → entity.actions.ts        'use server'
        → <entidad>.repository.ts  Drizzle
-       → SQLite
+       → Supabase Postgres
 ```
 
 ### Añadir una entidad
