@@ -10,8 +10,8 @@ const nextConfig: NextConfig = {
   // server. Por eso está aquí la IP de la LAN.
   allowedDevOrigins: ["192.168.1.20", "192.168.1.*"],
 
-  // Cabeceras de seguridad en todas las respuestas. Una CSP con nonce queda
-  // pendiente: el script inline del splash en app/layout.tsx habría que adaptarlo.
+  // Cabeceras de seguridad en todas las respuestas. La Content Security Policy
+  // no está aquí: lleva un nonce por petición y la pone `proxy.ts` (lib/csp.ts).
   async headers() {
     return [
       {

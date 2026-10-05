@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { Fredoka, Geist_Mono, Nunito } from 'next/font/google'
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core'
 // El orden importa y no es arbitrario: las reglas dentro de `@layer` pierden
@@ -15,6 +16,7 @@ import 'mantine-datatable/styles.css'
 // especificidad, gana quien se declare después. Si sube de sitio, la aplicación
 // vuelve al gris de fábrica.
 import './globals.css'
+import { CABECERA_NONCE } from '@/lib/csp'
 import { getCuenta } from '@/src/application/actions/auth.actions'
 import { Providers } from '@/src/application/providers/providers'
 import { Navbar } from '@/src/presentation/components/Navbar'
@@ -63,6 +65,9 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   // con el círculo o con "Iniciar sesión", sin un parpadeo de carga.
   const cuenta = await getCuenta()
   const cuentaInicial = cuenta.ok ? cuenta.data : { tipo: 'ninguna' as const }
+  // El nonce de esta petición (lo pone `proxy.ts`). Los dos scripts inline de
+  // abajo lo necesitan: sin él la CSP los bloquea y vuelven los fogonazos.
+  const nonce = (await headers()).get(CABECERA_NONCE) ?? undefined
 
   return (
     // `mantineHtmlProps` añade `suppressHydrationWarning`: el script de tema
@@ -71,13 +76,14 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
       <head>
         {/* Fija el esquema de color ANTES del primer pintado. Sin él hay un
             fogonazo blanco al entrar en modo oscuro. */}
-        <ColorSchemeScript defaultColorScheme="auto" />
+        <ColorSchemeScript defaultColorScheme="auto" nonce={nonce} />
         {/* Y por el mismo motivo que el de arriba: marca el <html> ANTES del
             primer pintado si la pantalla de carga ya se vio en esta sesión del
             navegador. El HTML del servidor la trae siempre, así que si la
             decisión esperase a que React hidrate se vería un fogonazo en cada
             recarga. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `try{if(sessionStorage.getItem('gf-splash-visto')==='1')document.documentElement.dataset.splash='visto'}catch(e){}`,
           }}

@@ -1,7 +1,7 @@
 # Plan: TeachCash → Supabase (Postgres) + multiusuario con login seguro
 
 > **Para retomar en una sesión nueva** (también desde otro ordenador): lee
-> primero "Estado a 2026-10-02" y "Siguiente paso".
+> primero "Estado a 2026-10-05", "Siguiente paso" y "Deuda pendiente".
 >
 > Cómo quiere trabajar el usuario: los pasos MANUALES (paneles de Supabase,
 > Cloudflare…) se dan **de uno en uno**, esperando su "ok" antes del siguiente,
@@ -36,6 +36,14 @@ T9 hecha por el usuario y Fase 4 (documentación) escrita. Lo que queda abajo
   cascada) y cierra la sesión. Solo cuentas con email; un invitado caduca solo.
   Sin secret key: el rol `postgres` tiene DELETE sobre `auth.users`
   (comprobado en Supabase). Probado por el usuario en el navegador.
+- **Fase 5 — CSP con nonce: HECHA (2026-10-05).** Rama `feat/csp-nonce`.
+  `lib/csp.ts` construye la política y `proxy.ts` genera un nonce por petición
+  y la pone en la petición (Next la lee para sus scripts) y en la respuesta.
+  `app/layout.tsx` pasa el nonce al script del splash y a `ColorSchemeScript`.
+  Scripts solo con nonce + `'strict-dynamic'`; estilos con `'unsafe-inline'`
+  (Mantine/Recharts). Comprobado: los 20 scripts del HTML llevan el nonce, y el
+  usuario lo probó en `dev` y en `build` de producción (splash, invitado con
+  Turnstile, portada y alta de un gasto) sin errores de CSP en consola.
 
 ## Estado a 2026-10-02
 
@@ -69,9 +77,9 @@ Incidencias resueltas al probar: la Publishable key estaba mal copiada
 
 ## Siguiente paso
 
-Nada obligatorio. Cuando el usuario quiera: lo que queda de la Fase 5 (MFA
-TOTP, CSP con nonce, fusionar datos de invitado), T6 (SMTP), Fase 6 o el
-módulo nuevo ("Después").
+Nada obligatorio. **El plan se cierra aquí (2026-10-05)**: el usuario decidió
+dejar todo lo que falta como deuda para más adelante (ver "Deuda pendiente").
+No empezar ninguno de esos puntos sin que el usuario lo pida.
 
 ## Hecho (referencia)
 
@@ -95,7 +103,19 @@ módulo nuevo ("Después").
 - Skills `finance-data-model`, `server-action-safety`, `testing-finance`: quitar SQLite y `userId` fijo.
 - `plop-templates`: el repositorio ya está adaptado; revisar el resto (tipos de esquema en comentarios).
 
-## Pendiente (opcional o aplazado)
+## Deuda pendiente (aplazada por el usuario el 2026-10-05)
+
+Todo lo que sigue queda como deuda, sin fecha. Resumen:
+
+| Punto | Qué es | Necesita |
+|---|---|---|
+| Fase 5 — MFA TOTP | Segundo paso al entrar con código de una app (Google Authenticator…) | Solo código + quizá una opción del panel (gratis) |
+| Fase 5 — Fusionar invitado | Llevar los datos del invitado a una cuenta existente al iniciar sesión | Solo código; delicado (mueve datos entre usuarios) |
+| T6 — SMTP propio | Emails a cualquiera, sin el límite de 2/h; plantillas en español con `token_hash` | Dominio propio + proveedor SMTP |
+| Fase 6 — Login con Google | Entrar con Google y convertir un invitado con `linkIdentity` | Google Cloud Console; revisar `lib/csp.ts` |
+| Después — módulo nuevo | El módulo que anunció el usuario | `pnpm generate:crud` |
+
+El detalle de cada uno, abajo.
 
 ### T6 — SMTP propio (usuario, cuando abra la app a otros)
 Necesario para que lleguen emails a quien no es del equipo del proyecto y para
@@ -111,7 +131,7 @@ pasar del límite de 2 emails/hora.
 
 ### Fase 5 — Endurecimiento (opcional)
 - ~~Ping semanal (GitHub Actions)~~ HECHO (2026-10-05): `ping-supabase.yml`, lunes y jueves.
-- MFA TOTP. CSP con nonce (adaptar el script inline del splash). ~~"Borrar mi cuenta"~~ HECHO (2026-10-05).
+- MFA TOTP. ~~CSP con nonce~~ HECHA (2026-10-05). ~~"Borrar mi cuenta"~~ HECHO (2026-10-05).
 - Fusionar datos de invitado al iniciar sesión en una cuenta existente (hoy se avisa y no se fusionan).
 
 ### Fase 6 — Login con Google (aplazado por decisión del usuario)
@@ -130,7 +150,7 @@ nuevas con `idColumn()`, `userIdColumn()`, `createdAtColumn()`, `soloSuyo()` y
 ```
 Navegador ──cookie httpOnly (JWT + refresh, @supabase/ssr)──►
   CuentaProvider    sin sesión → Turnstile → iniciarInvitado() → usuario anónimo + catálogo
-  proxy.ts          solo refresca la sesión; no redirige
+  proxy.ts          refresca la sesión y pone la CSP con nonce; no redirige
   Server Action     getSession() → getClaims() verifica ES256 → userId = sub
   Repositorio       where user_id = userId
   Drizzle (postgres-js, prepare:false) ──Transaction pooler 6543──► Supabase Postgres
@@ -139,7 +159,7 @@ Navegador ──cookie httpOnly (JWT + refresh, @supabase/ssr)──►
 
 Ficheros clave:
 - Datos: `db/schema.ts`, `db/client.ts`, `db/index.ts` (`server-only`), `db/migrate.mts`, `db/testing.ts`, `db/migrations/0000_inicial.sql`, `db/sql/limpieza-invitados.sql`.
-- Auth: `lib/auth.ts`, `lib/supabase/{config,server,proxy}.ts`, `lib/rutas.ts`, `lib/turnstile.ts`, `proxy.ts`, `app/auth/confirm/route.ts`, `src/application/actions/auth.actions.ts`, `src/infrastructure/repositories/cuenta.repository.ts`, `src/types/cuenta.types.ts`.
+- Auth: `lib/auth.ts`, `lib/supabase/{config,server,proxy}.ts`, `lib/rutas.ts`, `lib/turnstile.ts`, `lib/csp.ts`, `proxy.ts`, `app/auth/confirm/route.ts`, `src/application/actions/auth.actions.ts`, `src/infrastructure/repositories/cuenta.repository.ts`, `src/types/cuenta.types.ts`.
 - UI: `src/application/providers/CuentaProvider.tsx` (+ `providers.tsx`, `onError` global → sesión perdida), `src/presentation/components/Cuenta/{CuentaMenu,AvisoInvitado}.tsx`, `src/presentation/components/Auth/*`, `app/{Login,Registro,RecuperarPassword,CambiarPassword}/page.tsx`.
 - `categorias.repository.ts`: `asegurarCatalogoInicial(userId)` sustituye a `db/seed.mts` (borrado).
 
