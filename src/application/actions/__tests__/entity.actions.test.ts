@@ -7,34 +7,14 @@
  * las que se comprueban aquí. Si alguna cae, cae la regla dura 3.
  */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-
-const h = vi.hoisted(() => ({
-  db: null as unknown as import('@/db/client').Database,
-  userId: '00000000-0000-4000-8000-00000000000a' as string | null,
-}))
+import { describe, expect, test, vi } from 'vitest'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 
-vi.mock('@/lib/auth', () => ({
-  getSession: async () => (h.userId ? { user: { id: h.userId } } : null),
-  requireUserId: async () => {
-    if (!h.userId) throw new Error('No autorizado')
-    return h.userId
-  },
-}))
+vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
+vi.mock('@/lib/auth', async () => (await import('@/test/mocks/auth')).authMock())
 
-vi.mock('@/db', async () => {
-  const schema = await import('@/db/schema')
-  return {
-    ...schema,
-    get db() {
-      return h.db
-    },
-  }
-})
-
-import { createTestDb, type TestDb } from '@/db/testing'
+import { harness, usarBaseDeTest } from '@/test/harness'
 import { categories } from '@/db/schema'
 import {
   createEntity,
@@ -45,21 +25,13 @@ import {
 } from '../entity.actions'
 import { seedCategoria, USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
 
-let ctx: TestDb
-
-beforeEach(async () => {
-  ctx = await createTestDb()
-  h.db = ctx.db
-  h.userId = USER_A
-})
-
-afterEach(() => ctx.close())
+const base = usarBaseDeTest()
 
 /**
  * Categorías hace de recurso de PRUEBA del dispatcher. No se prueba aquí nada
  * de categorías —eso está en su propio test de repositorio—: lo que se ejercita
  * es el camino genérico, y hace falta un recurso real del mapa cerrado para
- * recorrerlo entero hasta SQLite.
+ * recorrerlo entero hasta Postgres.
  */
 const categoria = {
   nombre: 'Nómina',
@@ -94,13 +66,13 @@ describe('la sesión se comprueba siempre', () => {
     ['updateEntity', () => updateEntity('Categorias', 'x', categoria)],
     ['deleteEntity', () => deleteEntity('Categorias', 'x')],
   ])('%s sin sesión no hace nada', async (_nombre, ejecutar) => {
-    h.userId = null
+    harness.userId = null
 
     const resultado = await ejecutar()
     expect(resultado.ok).toBe(false)
     if (!resultado.ok) expect(resultado.error).toBe('No autorizado')
 
-    const filas = await ctx.db.select().from(categories)
+    const filas = await base().db.select().from(categories)
     expect(filas).toHaveLength(0)
   })
 })
@@ -110,12 +82,12 @@ describe('el userId sale de la sesión, nunca de los argumentos', () => {
     const resultado = await createEntity('Categorias', { ...categoria, userId: USER_B })
     expect(resultado.ok).toBe(true)
 
-    const filas = await ctx.db.select().from(categories)
+    const filas = await base().db.select().from(categories)
     expect(filas[0].userId).toBe(USER_A)
   })
 
   test('no se puede leer el registro de otro usuario', async () => {
-    await seedCategoria(ctx.db, 'ajena', USER_B)
+    await seedCategoria(base().db, 'ajena', USER_B)
 
     const resultado = await getEntity('Categorias', 'ajena')
     expect(resultado.ok).toBe(false)
@@ -123,22 +95,29 @@ describe('el userId sale de la sesión, nunca de los argumentos', () => {
   })
 
   test('no se puede escribir sobre el registro de otro usuario', async () => {
-    await seedCategoria(ctx.db, 'ajena', USER_B)
+    // Arrange: una categoría de B y la sesión de A.
+    await seedCategoria(base().db, 'ajena', USER_B, { monthlyBudget: 100 })
 
+    // Act: un payload VÁLIDO. Si no lo fuera, Zod lo rechazaría antes de llegar
+    // a la comprobación de propiedad y el test pasaría sin probar nada (pasó:
+    // durante meses mandó un payload de la antigua entidad de cuentas).
     const resultado = await updateEntity('Categorias', 'ajena', {
       nombre: 'Secuestrada',
-      tipo: 'checking',
-      saldoInicial: 0,
+      icono: '',
+      color: '',
+      presupuesto: 999,
     })
-    expect(resultado.ok).toBe(false)
 
-    const [fila] = await ctx.db.select().from(categories)
+    // Assert: el mismo mensaje que si no existiera, y la fila intacta.
+    expect(resultado).toEqual({ ok: false, error: 'No encontrado' })
+    const [fila] = await base().db.select().from(categories)
     expect(fila.name).toBe('Categoría ajena')
+    expect(fila.monthlyBudget).toBe(100)
   })
 
   test('el listado solo devuelve lo del usuario de la sesión', async () => {
-    await seedCategoria(ctx.db, 'mia', USER_A)
-    await seedCategoria(ctx.db, 'ajena', USER_B)
+    await seedCategoria(base().db, 'mia', USER_A)
+    await seedCategoria(base().db, 'ajena', USER_B)
 
     const resultado = await listEntity('Categorias', { paginate: false })
     expect(resultado.ok).toBe(true)
@@ -160,7 +139,7 @@ describe('los valores no se esparcen sobre la tabla', () => {
     })
     expect(resultado.ok).toBe(true)
 
-    const [fila] = await ctx.db.select().from(categories)
+    const [fila] = await base().db.select().from(categories)
     expect(fila.createdAt.getFullYear()).not.toBe(1999)
     expect(fila.id).not.toBe('id-elegido-por-el-cliente')
   })

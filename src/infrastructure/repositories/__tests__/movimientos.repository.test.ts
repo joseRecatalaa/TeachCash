@@ -6,42 +6,26 @@
  * cualquiera de los tres es dinero mal contado, no una molestia de interfaz.
  */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { eq } from 'drizzle-orm'
 
-const h = vi.hoisted(() => ({
-  db: null as unknown as import('@/db/client').Database,
-}))
+vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
 
-vi.mock('@/db', async () => {
-  const schema = await import('@/db/schema')
-  return {
-    ...schema,
-    get db() {
-      return h.db
-    },
-  }
-})
-
-import { createTestDb, type TestDb } from '@/db/testing'
+import { usarBaseDeTest } from '@/test/harness'
 import { transactions } from '@/db/schema'
 import { movimientosRepository as repo } from '../movimientos.repository'
 import { getSaldoActual } from '../informes.repository'
-import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
+import { esperarErrorDeCampo, seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
-let ctx: TestDb
+const base = usarBaseDeTest()
 
 const CAT_GASTO = 'cat-gasto'
 const CAT_INGRESO = 'cat-ingreso'
 
 beforeEach(async () => {
-  ctx = await createTestDb()
-  h.db = ctx.db
-  await seedCategoria(ctx.db, CAT_GASTO, USER_A, { kind: 'expense' })
-  await seedCategoria(ctx.db, CAT_INGRESO, USER_A, { kind: 'income' })
+  await seedCategoria(base().db, CAT_GASTO, USER_A, { kind: 'expense' })
+  await seedCategoria(base().db, CAT_INGRESO, USER_A, { kind: 'income' })
 })
-
-afterEach(() => ctx.close())
 
 const nuevo = (overrides: Record<string, unknown> = {}) => ({
   categoriaId: CAT_GASTO,
@@ -54,7 +38,7 @@ const nuevo = (overrides: Record<string, unknown> = {}) => ({
 })
 
 const filaDe = async (id: string) =>
-  (await ctx.db.select().from(transactions).where(eq(transactions.id, id)))[0]
+  (await base().db.select().from(transactions).where(eq(transactions.id, id)))[0]
 
 describe('create', () => {
   test('un gasto se guarda con importe negativo', async () => {
@@ -80,38 +64,41 @@ describe('create', () => {
   })
 
   test('rechaza un importe de cero', async () => {
-    await expect(repo.create(USER_A, nuevo({ importe: 0 }))).rejects.toThrow()
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ importe: 0 })), 'importe')
   })
 
   test('rechaza un importe negativo (el signo lo pone el sentido)', async () => {
-    await expect(repo.create(USER_A, nuevo({ importe: -100 }))).rejects.toThrow()
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ importe: -100 })), 'importe')
   })
 
   test('rechaza un importe con decimales', async () => {
-    await expect(repo.create(USER_A, nuevo({ importe: 45.9 }))).rejects.toThrow()
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ importe: 45.9 })), 'importe')
   })
 
   test('rechaza una fecha que no existe', async () => {
     // 2026 no es bisiesto: el 29 de febrero no existe.
-    await expect(repo.create(USER_A, nuevo({ fecha: '2026-02-29' }))).rejects.toThrow()
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ fecha: '2026-02-29' })), 'fecha')
   })
 
   test('rechaza una fecha con hora', async () => {
-    await expect(
+    await esperarErrorDeCampo(
       repo.create(USER_A, nuevo({ fecha: '2026-03-15T10:00:00Z' })),
-    ).rejects.toThrow()
+      'fecha',
+    )
   })
 
   test('rechaza una categoría de ingresos en un gasto', async () => {
-    await seedCategoria(ctx.db, 'nomina', USER_A, { kind: 'income' })
-    await expect(
+    await seedCategoria(base().db, 'nomina', USER_A, { kind: 'income' })
+    const error = await esperarErrorDeCampo(
       repo.create(USER_A, nuevo({ sentido: 'expense', categoriaId: 'nomina' })),
-    ).rejects.toThrow(/categoría/i)
+      'categoriaId',
+    )
+    expect(error.message).toMatch(/categoría/i)
   })
 
   test('rechaza un movimiento sin categoría', async () => {
     // No existe el movimiento sin clasificar: la categoría es obligatoria.
-    await expect(repo.create(USER_A, nuevo({ categoriaId: '' }))).rejects.toThrow()
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ categoriaId: '' })), 'categoriaId')
   })
 
   test('la clave de idempotencia evita el duplicado por doble clic', async () => {
@@ -129,29 +116,29 @@ describe('create', () => {
 
 describe('autorización', () => {
   test('no se puede usar la categoría de otro usuario', async () => {
-    await seedCategoria(ctx.db, 'ajena', USER_B, { kind: 'expense' })
+    await seedCategoria(base().db, 'ajena', USER_B, { kind: 'expense' })
     await expect(repo.create(USER_A, nuevo({ categoriaId: 'ajena' }))).rejects.toThrow(
       'No encontrado',
     )
   })
 
   test('no se puede editar el movimiento de otro usuario', async () => {
-    await seedMovimiento(ctx.db, 'ajeno', USER_B, { amount: -100 })
+    await seedMovimiento(base().db, 'ajeno', USER_B, { amount: -100 })
 
     await expect(repo.update(USER_A, 'ajeno', nuevo())).rejects.toThrow('No encontrado')
     expect((await filaDe('ajeno')).amount).toBe(-100)
   })
 
   test('no se puede borrar el movimiento de otro usuario', async () => {
-    await seedMovimiento(ctx.db, 'ajeno', USER_B)
+    await seedMovimiento(base().db, 'ajeno', USER_B)
 
     await expect(repo.remove(USER_A, 'ajeno')).rejects.toThrow('No encontrado')
-    expect(await filaDe('ajeno')).toBeDefined()
+    expect(await filaDe('ajeno')).toMatchObject({ id: 'ajeno', userId: USER_B })
   })
 
   test('los listados no cruzan usuarios', async () => {
-    await seedMovimiento(ctx.db, 'mio', USER_A)
-    await seedMovimiento(ctx.db, 'ajeno', USER_B)
+    await seedMovimiento(base().db, 'mio', USER_A)
+    await seedMovimiento(base().db, 'ajeno', USER_B)
 
     const { data } = await repo.list(USER_A, { paginate: false })
     expect(data.map((m) => m.id)).toEqual(['mio'])
@@ -183,9 +170,9 @@ describe('borrado físico', () => {
 
 describe('listado', () => {
   test('ordena por fecha descendente y desempata por id', async () => {
-    await seedMovimiento(ctx.db, 'a', USER_A, { date: '2026-03-01' })
-    await seedMovimiento(ctx.db, 'b', USER_A, { date: '2026-03-20' })
-    await seedMovimiento(ctx.db, 'c', USER_A, { date: '2026-03-10' })
+    await seedMovimiento(base().db, 'a', USER_A, { date: '2026-03-01' })
+    await seedMovimiento(base().db, 'b', USER_A, { date: '2026-03-20' })
+    await seedMovimiento(base().db, 'c', USER_A, { date: '2026-03-10' })
 
     const { data } = await repo.list(USER_A, { paginate: false })
     expect(data.map((m) => m.id)).toEqual(['b', 'c', 'a'])
@@ -193,7 +180,7 @@ describe('listado', () => {
 
   test('el total no lo recorta la paginación', async () => {
     for (let i = 0; i < 25; i++) {
-      await seedMovimiento(ctx.db, `m${i}`, USER_A, { date: '2026-03-01' })
+      await seedMovimiento(base().db, `m${i}`, USER_A, { date: '2026-03-01' })
     }
 
     const { data, total } = await repo.list(USER_A, { page: 1, pageSize: 10 })
@@ -203,10 +190,10 @@ describe('listado', () => {
   })
 
   test('filtra por rango de fechas, extremos incluidos', async () => {
-    await seedMovimiento(ctx.db, 'antes', USER_A, { date: '2026-02-28' })
-    await seedMovimiento(ctx.db, 'primero', USER_A, { date: '2026-03-01' })
-    await seedMovimiento(ctx.db, 'ultimo', USER_A, { date: '2026-03-31' })
-    await seedMovimiento(ctx.db, 'despues', USER_A, { date: '2026-04-01' })
+    await seedMovimiento(base().db, 'antes', USER_A, { date: '2026-02-28' })
+    await seedMovimiento(base().db, 'primero', USER_A, { date: '2026-03-01' })
+    await seedMovimiento(base().db, 'ultimo', USER_A, { date: '2026-03-31' })
+    await seedMovimiento(base().db, 'despues', USER_A, { date: '2026-04-01' })
 
     const { data } = await repo.list(USER_A, {
       paginate: false,
@@ -217,8 +204,8 @@ describe('listado', () => {
   })
 
   test('la búsqueda mira la descripción', async () => {
-    await seedMovimiento(ctx.db, 'a', USER_A, { description: 'Mercadona' })
-    await seedMovimiento(ctx.db, 'b', USER_A, { description: 'Gasolina' })
+    await seedMovimiento(base().db, 'a', USER_A, { description: 'Mercadona' })
+    await seedMovimiento(base().db, 'b', USER_A, { description: 'Gasolina' })
 
     const { data } = await repo.list(USER_A, { paginate: false, search: 'merca' })
     expect(data.map((m) => m.id)).toEqual(['a'])

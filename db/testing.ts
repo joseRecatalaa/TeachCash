@@ -15,7 +15,8 @@
  * ANTES de migrar. Si una migración nueva usa algo más de `auth`, se añade aquí.
  */
 
-import { PGlite } from '@electric-sql/pglite'
+import { fileURLToPath } from 'node:url'
+import { PGlite, types } from '@electric-sql/pglite'
 import { drizzle } from 'drizzle-orm/pglite'
 import { migrate } from 'drizzle-orm/pglite/migrator'
 import type { Database } from './client.ts'
@@ -47,6 +48,20 @@ export const USER_B = '00000000-0000-4000-8000-00000000000b'
 export type TestDb = { db: Database; pg: PGlite; close: () => Promise<void> }
 
 /**
+ * `bigint` y `numeric` vuelven como TEXTO, igual que con postgres-js en
+ * producción. PGlite, por defecto, los convierte a número; con eso, quitar un
+ * `.mapWith(Number)` de un agregado dejaba la suite verde y producción sumando
+ * `'100' + '50' = '10050'`. Así el test ve lo mismo que Supabase.
+ */
+const COMO_POSTGRES_JS = {
+  [types.INT8]: (valor: string) => valor,
+  [types.NUMERIC]: (valor: string) => valor,
+}
+
+/** Absoluta: los tests no dependen de desde qué carpeta se lance vitest. */
+const MIGRACIONES = fileURLToPath(new URL('./migrations', import.meta.url))
+
+/**
  * Una base nueva y vacía por test. Arrancar PGlite cuesta, así que la primera
  * se migra una vez y se guarda su directorio de datos: las siguientes nacen de
  * esa copia en lugar de repetir las migraciones.
@@ -56,7 +71,7 @@ let plantilla: Promise<File | Blob> | null = null
 const crearPlantilla = async (): Promise<File | Blob> => {
   const pg = new PGlite()
   await pg.exec(AUTH_STUB)
-  await migrate(drizzle(pg), { migrationsFolder: './db/migrations' })
+  await migrate(drizzle(pg), { migrationsFolder: MIGRACIONES })
   await crearUsuario(pg, USER_A)
   await crearUsuario(pg, USER_B)
   const datos = await pg.dumpDataDir('none')
@@ -66,7 +81,7 @@ const crearPlantilla = async (): Promise<File | Blob> => {
 
 export async function createTestDb(): Promise<TestDb> {
   plantilla ??= crearPlantilla()
-  const pg = new PGlite({ loadDataDir: await plantilla })
+  const pg = new PGlite({ loadDataDir: await plantilla, parsers: COMO_POSTGRES_JS })
   const db = drizzle(pg, { schema }) as unknown as Database
   return { db, pg, close: () => pg.close() }
 }

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import fc from 'fast-check'
 import {
   addDays,
@@ -135,6 +135,13 @@ describe('hoy', () => {
   })
 
   test('today y currentPeriod son coherentes entre sí', () => {
-    expect(currentPeriod()).toBe(today().slice(0, 7))
+    // Reloj congelado justo en un cambio de mes: con el reloj real, las dos
+    // llamadas leían la hora por separado y podían caer en meses distintos.
+    vi.useFakeTimers({ now: new Date('2026-08-31T21:59:59.999Z') })
+    try {
+      expect(currentPeriod()).toBe(today().slice(0, 7))
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

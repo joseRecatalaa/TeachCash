@@ -11,34 +11,26 @@
  * en cuenta SOBRE el mismo usuario.
  */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { eq } from 'drizzle-orm'
 
 type ErrorAuth = { code: string; message: string } | null
 
 const h = vi.hoisted(() => ({
-  db: null as unknown as import('@/db/client').Database,
   session: null as null | { user: { id: string; email: string | null; esInvitado: boolean } },
   cabeceras: new Map<string, string>(),
   auth: {} as Record<string, ReturnType<typeof vi.fn>>,
 }))
 
-vi.mock('@/db', async () => {
-  const schema = await import('@/db/schema')
-  return {
-    ...schema,
-    get db() {
-      return h.db
-    },
-  }
-})
+vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
 vi.mock('@/lib/auth', () => ({ getSession: async () => h.session }))
 vi.mock('@/lib/supabase/server', () => ({ crearClienteSupabase: async () => ({ auth: h.auth }) }))
 vi.mock('next/headers', () => ({
   headers: async () => ({ get: (k: string) => h.cabeceras.get(k.toLowerCase()) ?? null }),
 }))
 
-import { createTestDb, crearUsuario, USER_A, USER_B, type TestDb } from '@/db/testing'
+import { crearUsuario, USER_A, USER_B } from '@/db/testing'
+import { usarBaseDeTest } from '@/test/harness'
 import { categories, transactions } from '@/db/schema'
 import { seedMovimiento } from '@/src/infrastructure/repositories/__tests__/helpers'
 import {
@@ -55,11 +47,9 @@ const INVITADO = '00000000-0000-4000-8000-0000000000c1'
 const NAVEGADOR = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/140.0 Safari/537.36'
 const error = (code: string): ErrorAuth => ({ code, message: code })
 
-let ctx: TestDb
+const base = usarBaseDeTest()
 
 beforeEach(async () => {
-  ctx = await createTestDb()
-  h.db = ctx.db
   h.session = null
   h.cabeceras = new Map([
     ['user-agent', NAVEGADOR],
@@ -79,15 +69,10 @@ beforeEach(async () => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
-afterEach(async () => {
-  vi.restoreAllMocks()
-  await ctx.close()
-})
-
 describe('invitado', () => {
   test('crea la sesión anónima con el token del CAPTCHA y le da su catálogo', async () => {
     // Supabase da de alta el usuario en auth.users; aquí lo hace el test.
-    await crearUsuario(ctx.pg, INVITADO, { anonimo: true })
+    await crearUsuario(base().pg, INVITADO, { anonimo: true })
 
     const r = await iniciarInvitado('token-ok')
 
@@ -95,13 +80,13 @@ describe('invitado', () => {
       options: { captchaToken: 'token-ok' },
     })
     expect(r.ok && r.data.tipo).toBe('invitado')
-    const cats = await ctx.db.select().from(categories).where(eq(categories.userId, INVITADO))
+    const cats = await base().db.select().from(categories).where(eq(categories.userId, INVITADO))
     expect(cats).toHaveLength(17)
   })
 
   test('caduca a los 4 días de su alta', async () => {
-    await crearUsuario(ctx.pg, INVITADO, { anonimo: true })
-    await ctx.pg.query(`update auth.users set created_at = '2026-10-01T10:00:00Z' where id = $1`, [
+    await crearUsuario(base().pg, INVITADO, { anonimo: true })
+    await base().pg.query(`update auth.users set created_at = '2026-10-01T10:00:00Z' where id = $1`, [
       INVITADO,
     ])
     h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
@@ -157,7 +142,7 @@ describe('iniciar sesión', () => {
   test('un email mal escrito no llega a Supabase', async () => {
     const r = await iniciarSesion({ ...datos, email: 'no-es-un-email' })
     expect(r.ok).toBe(false)
-    expect(!r.ok && r.fieldErrors?.email).toBeTruthy()
+    expect(r).toMatchObject({ ok: false, fieldErrors: { email: expect.any(String) } })
     expect(h.auth.signInWithPassword).not.toHaveBeenCalled()
   })
 
@@ -236,7 +221,7 @@ describe('cambiar contraseña', () => {
   test('aplica la política de contraseñas antes de llamar', async () => {
     h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
     const r = await cambiarPassword({ password: 'corta', repetir: 'corta' })
-    expect(!r.ok && r.fieldErrors?.password).toBeTruthy()
+    expect(r).toMatchObject({ ok: false, fieldErrors: { password: expect.any(String) } })
     expect(h.auth.updateUser).not.toHaveBeenCalled()
   })
 
@@ -259,13 +244,13 @@ describe('borrar la cuenta', () => {
   const datos = { password: 'Segura#2026x', captchaToken: 't' }
 
   const usuarios = async () =>
-    (await ctx.pg.query<{ id: string }>('select id from auth.users order by id')).rows.map(
+    (await base().pg.query<{ id: string }>('select id from auth.users order by id')).rows.map(
       (r) => r.id,
     )
 
   beforeEach(async () => {
-    await seedMovimiento(ctx.db, 'mov-a', USER_A)
-    await seedMovimiento(ctx.db, 'mov-b', USER_B)
+    await seedMovimiento(base().db, 'mov-a', USER_A)
+    await seedMovimiento(base().db, 'mov-b', USER_B)
   })
 
   test('borra el usuario y todos sus datos, y nada de los demás', async () => {
@@ -274,8 +259,8 @@ describe('borrar la cuenta', () => {
 
     expect(r).toEqual({ ok: true, data: null })
     expect(await usuarios()).toEqual([USER_B])
-    const cats = await ctx.db.select().from(categories)
-    const movs = await ctx.db.select().from(transactions)
+    const cats = await base().db.select().from(categories)
+    const movs = await base().db.select().from(transactions)
     expect(cats.every((c) => c.userId === USER_B)).toBe(true)
     expect(movs.map((m) => m.id)).toEqual(['mov-b'])
     expect(h.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
@@ -304,7 +289,7 @@ describe('borrar la cuenta', () => {
   test('sin contraseña no llega a Supabase', async () => {
     h.session = ANA
     const r = await borrarCuenta({ password: '', captchaToken: 't' })
-    expect(!r.ok && r.fieldErrors?.password).toBeTruthy()
+    expect(r).toMatchObject({ ok: false, fieldErrors: { password: expect.any(String) } })
     expect(h.auth.signInWithPassword).not.toHaveBeenCalled()
   })
 

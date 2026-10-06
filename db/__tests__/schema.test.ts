@@ -18,6 +18,32 @@ const seedCategoria = async (id: string, userId = USER_A) => {
   return id
 }
 
+/**
+ * Espera que Postgres rechace la operación con ESE código SQLSTATE.
+ *
+ * Un `rejects.toThrow()` a secas pasa con cualquier fallo: el test "la FK
+ * impide el huérfano" seguiría en verde si el insert fallase por un typo en una
+ * columna. Drizzle envuelve el error de la base; el código va en `cause`.
+ */
+const esperarSqlstate = async (promesa: Promise<unknown>, codigo: string) => {
+  const error = await promesa.then(
+    () => {
+      throw new Error(`Se esperaba el SQLSTATE ${codigo} y la operación tuvo éxito`)
+    },
+    (e: unknown) => e as { code?: string; cause?: { code?: string } },
+  )
+  expect(error.code ?? error.cause?.code).toBe(codigo)
+}
+
+/** Los SQLSTATE de Postgres que importan aquí. */
+const SQL = {
+  NOT_NULL: '23502',
+  FOREIGN_KEY: '23503',
+  UNIQUE: '23505',
+  CHECK: '23514',
+  RLS: '42501',
+}
+
 beforeEach(async () => {
   ctx = await createTestDb()
 })
@@ -85,7 +111,7 @@ describe('esquema', () => {
   test('las claves ajenas están activas', async () => {
     // Un movimiento apuntando a una categoría que no existe es como se rompen
     // los informes de meses cerrados.
-    await expect(
+    await esperarSqlstate(
       ctx.db.insert(transactions).values({
         id: 'tx-huerfano',
         userId: USER_A,
@@ -95,11 +121,12 @@ describe('esquema', () => {
         description: 'Fantasma',
         createdAt: now,
       }),
-    ).rejects.toThrow()
+      SQL.FOREIGN_KEY,
+    )
   })
 
   test('no se pueden guardar datos de un usuario que no existe en auth.users', async () => {
-    await expect(seedCategoria('cat-1', '00000000-0000-4000-8000-0000000000ff')).rejects.toThrow()
+    await esperarSqlstate(seedCategoria('cat-1', '00000000-0000-4000-8000-0000000000ff'), SQL.FOREIGN_KEY)
   })
 
   test('borrar un usuario se lleva todos sus datos, y solo los suyos', async () => {
@@ -127,9 +154,10 @@ describe('esquema', () => {
   })
 
   test('un tipo de categoría fuera de income/expense lo rechaza la base', async () => {
-    await expect(
+    await esperarSqlstate(
       ctx.db.insert(categories).values({ userId: USER_A, name: 'Rara', kind: 'ambas' }),
-    ).rejects.toThrow()
+      SQL.CHECK,
+    )
   })
 
   test('un movimiento sin categoría no es válido', async () => {
@@ -137,7 +165,7 @@ describe('esquema', () => {
     // tipo ya lo impide en compilación (`categoryId` es requerido en el
     // insert); el `as never` fuerza el caso para comprobar que la base
     // también lo rechaza en runtime, no solo el compilador.
-    await expect(
+    await esperarSqlstate(
       ctx.db.insert(transactions).values({
         id: 'tx-1',
         userId: USER_A,
@@ -146,7 +174,8 @@ describe('esquema', () => {
         description: 'Sin clasificar',
         createdAt: now,
       } as never),
-    ).rejects.toThrow()
+      SQL.NOT_NULL,
+    )
   })
 
   test('la clave de idempotencia impide el movimiento duplicado', async () => {
@@ -163,7 +192,7 @@ describe('esquema', () => {
     await ctx.db.insert(transactions).values({ ...base, id: 'tx-1' })
     // El segundo envío del mismo formulario choca contra el índice en lugar de
     // crear dinero que no existe.
-    await expect(ctx.db.insert(transactions).values({ ...base, id: 'tx-2' })).rejects.toThrow()
+    await esperarSqlstate(ctx.db.insert(transactions).values({ ...base, id: 'tx-2' }), SQL.UNIQUE)
   })
 
   test('varios movimientos sin clave de idempotencia conviven', async () => {
@@ -222,11 +251,12 @@ describe('RLS', () => {
 
   test('un usuario no puede escribir a nombre de otro', async () => {
     await comoUsuario('authenticated', USER_A)
-    await expect(
+    await esperarSqlstate(
       ctx.pg.query(`insert into categories (user_id, name, kind) values ($1, 'Robada', 'expense')`, [
         USER_B,
       ]),
-    ).rejects.toThrow()
+      SQL.RLS,
+    )
     const { affectedRows } = await ctx.pg.query(`delete from categories where id = 'cat-b'`)
     expect(affectedRows).toBe(0)
   })
