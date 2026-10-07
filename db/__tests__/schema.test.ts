@@ -207,17 +207,13 @@ describe('esquema', () => {
     expect(await ctx.db.select().from(transactions)).toHaveLength(2)
   })
 
-  test('las categorías por defecto son de un solo tipo', async () => {
-    await ctx.db.insert(categories).values({
-      id: 'cat-1',
-      userId: USER_A,
-      name: 'Alimentación',
-      kind: 'expense',
-      createdAt: now,
-    })
+  test('una categoría nace visible, sin color y sin presupuesto', async () => {
+    // Lo que pone la BASE cuando el insert no lo dice: si `hidden` naciera a
+    // true, toda categoría creada por un camino que no lo fije (un script, la
+    // API REST) desaparecería del formulario de movimientos sin avisar.
+    await ctx.db.insert(categories).values({ userId: USER_A, name: 'Alimentación', kind: 'expense' })
     const [cat] = await ctx.db.select().from(categories)
-    expect(cat.kind).toBe('expense')
-    expect(cat.color).toBeNull()
+    expect(cat).toMatchObject({ hidden: false, color: null, monthlyBudget: null })
   })
 })
 
@@ -241,15 +237,52 @@ describe('RLS', () => {
   beforeEach(async () => {
     await seedCategoria('cat-a', USER_A)
     await seedCategoria('cat-b', USER_B)
+    await ctx.db.insert(transactions).values([
+      { id: 'tx-a', userId: USER_A, categoryId: 'cat-a', amount: -100, date: '2026-08-13', description: 'De A' },
+      { id: 'tx-b', userId: USER_B, categoryId: 'cat-b', amount: -200, date: '2026-08-13', description: 'De B' },
+    ])
   })
 
-  test('un usuario solo ve sus filas', async () => {
-    await comoUsuario('authenticated', USER_A)
-    const { rows } = await ctx.pg.query<{ id: string }>('select id from categories')
-    expect(rows).toEqual([{ id: 'cat-a' }])
+  // Las dos tablas de datos de usuario, con la fila de cada uno. Toda tabla
+  // nueva con `user_id` entra en esta lista (y el test de catálogo de abajo
+  // falla hasta que tenga RLS).
+  const TABLAS = [
+    { tabla: 'categories', deA: 'cat-a', deB: 'cat-b' },
+    { tabla: 'transactions', deA: 'tx-a', deB: 'tx-b' },
+  ]
+
+  describe.each(TABLAS)('$tabla', ({ tabla, deA, deB }) => {
+    test('un usuario solo ve sus filas', async () => {
+      await comoUsuario('authenticated', USER_A)
+      const { rows } = await ctx.pg.query<{ id: string }>(`select id from ${tabla}`)
+      expect(rows).toEqual([{ id: deA }])
+    })
+
+    test('no puede modificar ni borrar las filas de otro', async () => {
+      await comoUsuario('authenticated', USER_A)
+      const editadas = await ctx.pg.query(`update ${tabla} set user_id = user_id where id = $1`, [deB])
+      const borradas = await ctx.pg.query(`delete from ${tabla} where id = $1`, [deB])
+      expect(editadas.affectedRows).toBe(0)
+      expect(borradas.affectedRows).toBe(0)
+    })
+
+    test('no puede regalarle una fila suya a otro', async () => {
+      // El WITH CHECK: sin él, A podría mover sus datos al espacio de B.
+      await comoUsuario('authenticated', USER_A)
+      await esperarSqlstate(
+        ctx.pg.query(`update ${tabla} set user_id = $1 where id = $2`, [USER_B, deA]),
+        SQL.RLS,
+      )
+    })
+
+    test('sin sesión (rol anon) no se ve nada', async () => {
+      await comoUsuario('anon', null)
+      const { rows } = await ctx.pg.query(`select id from ${tabla}`)
+      expect(rows).toEqual([])
+    })
   })
 
-  test('un usuario no puede escribir a nombre de otro', async () => {
+  test('no se puede insertar a nombre de otro', async () => {
     await comoUsuario('authenticated', USER_A)
     await esperarSqlstate(
       ctx.pg.query(`insert into categories (user_id, name, kind) values ($1, 'Robada', 'expense')`, [
@@ -257,13 +290,42 @@ describe('RLS', () => {
       ]),
       SQL.RLS,
     )
-    const { affectedRows } = await ctx.pg.query(`delete from categories where id = 'cat-b'`)
-    expect(affectedRows).toBe(0)
   })
+})
 
-  test('sin sesión (rol anon) no se ve nada', async () => {
-    await comoUsuario('anon', null)
-    const { rows } = await ctx.pg.query('select id from categories')
-    expect(rows).toEqual([])
+describe('catálogo: toda tabla de datos es de un usuario', () => {
+  /**
+   * Guarda estructural. No prueba una tabla concreta: recorre TODAS las de
+   * `public`, así que la tabla que se añada mañana (presupuestos, importaciones)
+   * rompe este test hasta que tenga las tres piezas. Sin ellas, la tabla queda
+   * abierta a la API REST de Supabase con la clave pública, o sus filas
+   * sobreviven a que su dueño borre la cuenta.
+   */
+  test('RLS activado, columna user_id y FK a auth.users con borrado en cascada', async () => {
+    const { rows } = await ctx.pg.query<{
+      tabla: string
+      rls: boolean
+      cascada: boolean
+    }>(`
+      select c.relname as tabla,
+             c.relrowsecurity as rls,
+             exists (
+               select 1
+               from pg_constraint fk
+               join pg_attribute a on a.attrelid = fk.conrelid and a.attnum = any (fk.conkey)
+               where fk.conrelid = c.oid
+                 and fk.contype = 'f'
+                 and fk.confrelid = 'auth.users'::regclass
+                 and fk.confdeltype = 'c'
+                 and a.attname = 'user_id'
+             ) as cascada
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relkind = 'r'
+      order by c.relname
+    `)
+
+    expect(rows.map((r) => r.tabla)).toEqual(['categories', 'transactions'])
+    for (const fila of rows) expect(fila, fila.tabla).toMatchObject({ rls: true, cascada: true })
   })
 })

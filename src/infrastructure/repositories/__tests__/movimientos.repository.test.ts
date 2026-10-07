@@ -169,13 +169,27 @@ describe('borrado físico', () => {
 })
 
 describe('listado', () => {
-  test('ordena por fecha descendente y desempata por id', async () => {
+  test('ordena por fecha descendente', async () => {
     await seedMovimiento(base().db, 'a', USER_A, { date: '2026-03-01' })
     await seedMovimiento(base().db, 'b', USER_A, { date: '2026-03-20' })
     await seedMovimiento(base().db, 'c', USER_A, { date: '2026-03-10' })
 
     const { data } = await repo.list(USER_A, { paginate: false })
     expect(data.map((m) => m.id)).toEqual(['b', 'c', 'a'])
+  })
+
+  test('en el mismo día desempata por id, y la paginación no repite ni salta filas', async () => {
+    // Sin desempate, el orden entre filas del mismo día lo decide Postgres y
+    // puede cambiar entre la página 1 y la 2: una fila sale dos veces y otra
+    // ninguna.
+    for (const id of ['m3', 'm1', 'm4', 'm2']) {
+      await seedMovimiento(base().db, id, USER_A, { date: '2026-03-15' })
+    }
+
+    const p1 = await repo.list(USER_A, { page: 1, pageSize: 2 })
+    const p2 = await repo.list(USER_A, { page: 2, pageSize: 2 })
+
+    expect([...p1.data, ...p2.data].map((m) => m.id)).toEqual(['m4', 'm3', 'm2', 'm1'])
   })
 
   test('el total no lo recorta la paginación', async () => {
@@ -209,5 +223,133 @@ describe('listado', () => {
 
     const { data } = await repo.list(USER_A, { paginate: false, search: 'merca' })
     expect(data.map((m) => m.id)).toEqual(['a'])
+  })
+})
+
+describe('edición', () => {
+  test('cambia todos los campos y recalcula el signo', async () => {
+    // Arrange: un gasto de 45,90 €.
+    const { id } = await repo.create(USER_A, nuevo())
+
+    // Act: pasa a ser un ingreso de 1.200 € en otra fecha.
+    await repo.update(
+      USER_A,
+      id,
+      nuevo({
+        sentido: 'income',
+        categoriaId: CAT_INGRESO,
+        importe: 120000,
+        fecha: '2026-04-01',
+        descripcion: '  Nómina  ',
+        notas: 'Abril',
+      }),
+    )
+
+    // Assert: en la base, con signo positivo y el texto recortado.
+    expect(await filaDe(id)).toMatchObject({
+      amount: 120000,
+      categoryId: CAT_INGRESO,
+      date: '2026-04-01',
+      description: 'Nómina',
+      notes: 'Abril',
+    })
+    expect(await getSaldoActual(USER_A)).toBe(120000)
+  })
+
+  test('al cambiar el sentido, la categoría tiene que acompañar', async () => {
+    const { id } = await repo.create(USER_A, nuevo())
+
+    await esperarErrorDeCampo(
+      repo.update(USER_A, id, nuevo({ sentido: 'income', categoriaId: CAT_GASTO })),
+      'categoriaId',
+    )
+    expect((await filaDe(id)).amount).toBe(-4590)
+  })
+
+  test('no se puede mover un movimiento propio a una categoría ajena', async () => {
+    const { id } = await repo.create(USER_A, nuevo())
+    await seedCategoria(base().db, 'ajena', USER_B, { kind: 'expense' })
+
+    await esperarErrorDeCampo(repo.update(USER_A, id, nuevo({ categoriaId: 'ajena' })), 'categoriaId')
+    expect((await filaDe(id)).categoryId).toBe(CAT_GASTO)
+  })
+
+  test('las mismas reglas que el alta: nada de importes con decimales', async () => {
+    const { id } = await repo.create(USER_A, nuevo())
+    await esperarErrorDeCampo(repo.update(USER_A, id, nuevo({ importe: 10.5 })), 'importe')
+  })
+})
+
+describe('"no existe" y "no es tuyo" son indistinguibles', () => {
+  // Si los mensajes difirieran, cualquiera podría sondear ids ajenos: "no es
+  // tuyo" confirma que el id existe. Las tres operaciones por id, los dos casos.
+  test('get, update y remove responden igual a un id ajeno que a uno inventado', async () => {
+    await seedMovimiento(base().db, 'ajeno', USER_B)
+
+    for (const id of ['ajeno', 'no-existe']) {
+      expect(await repo.get(USER_A, id)).toBeNull()
+      await expect(repo.update(USER_A, id, nuevo())).rejects.toThrow(/^No encontrado$/)
+      await expect(repo.remove(USER_A, id)).rejects.toThrow(/^No encontrado$/)
+    }
+  })
+})
+
+describe('límites de los campos', () => {
+  test('descripción obligatoria, recortada y de 200 caracteres como mucho', async () => {
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ descripcion: '   ' })), 'descripcion')
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ descripcion: 'x'.repeat(201) })), 'descripcion')
+    await expect(repo.create(USER_A, nuevo({ descripcion: 'x'.repeat(200) }))).resolves.toEqual({
+      id: expect.any(String),
+    })
+  })
+
+  test('notas de 1000 caracteres como mucho; vacías se guardan como null', async () => {
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ notas: 'x'.repeat(1001) })), 'notas')
+    const { id } = await repo.create(USER_A, nuevo({ notas: '   ' }))
+    expect((await filaDe(id)).notes).toBeNull()
+  })
+
+  test('un sentido que no es ingreso ni gasto se rechaza', async () => {
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ sentido: 'transfer' })), 'sentido')
+  })
+})
+
+describe('idempotencia entre usuarios', () => {
+  test('la misma clave en dos usuarios crea dos movimientos', async () => {
+    // La clave la genera el cliente: dos personas pueden coincidir. La de A no
+    // puede devolverle a B el movimiento de A.
+    await seedCategoria(base().db, 'gasto-b', USER_B, { kind: 'expense' })
+    const deA = await repo.create(USER_A, nuevo({ idempotencyKey: 'k1' }))
+    const deB = await repo.create(USER_B, nuevo({ idempotencyKey: 'k1', categoriaId: 'gasto-b' }))
+
+    expect(deB.id).not.toBe(deA.id)
+    expect((await filaDe(deB.id)).userId).toBe(USER_B)
+  })
+})
+
+describe('listado: filtros y orden', () => {
+  test('filtra por categoría', async () => {
+    await seedMovimiento(base().db, 'super', USER_A, { categoryId: CAT_GASTO })
+    await seedMovimiento(base().db, 'nomina', USER_A, { categoryId: CAT_INGRESO, amount: 5000 })
+
+    const { data } = await repo.list(USER_A, { paginate: false, filters: { categoriaId: CAT_INGRESO } })
+    expect(data.map((m) => m.id)).toEqual(['nomina'])
+  })
+
+  test('ordena por importe con signo, ascendente', async () => {
+    await seedMovimiento(base().db, 'gasto-grande', USER_A, { amount: -9000 })
+    await seedMovimiento(base().db, 'ingreso', USER_A, { amount: 5000 })
+    await seedMovimiento(base().db, 'gasto-chico', USER_A, { amount: -100 })
+
+    const { data } = await repo.list(USER_A, { paginate: false, sortBy: 'importe', sortDir: 'asc' })
+    expect(data.map((m) => m.id)).toEqual(['gasto-grande', 'gasto-chico', 'ingreso'])
+  })
+
+  test('el listado trae el nombre y el color de la categoría', async () => {
+    await seedCategoria(base().db, 'ocio', USER_A, { name: 'Ocio', color: 'cat-4' })
+    await seedMovimiento(base().db, 'cine', USER_A, { categoryId: 'ocio' })
+
+    const { data } = await repo.list(USER_A, { paginate: false })
+    expect(data[0]).toMatchObject({ categoriaNombre: 'Ocio', categoriaColor: 'cat-4' })
   })
 })

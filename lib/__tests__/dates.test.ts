@@ -9,8 +9,11 @@ import {
   daysInMonth,
   eachDay,
   fromEpochDay,
+  civilDate,
   isCivilDate,
   isLeapYear,
+  isPeriod,
+  partsOf,
   lastNMonths,
   monthRange,
   periodOf,
@@ -143,5 +146,48 @@ describe('hoy', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+})
+
+describe('periodos y piezas', () => {
+  test('isPeriod acepta AAAA-MM con un mes que exista', () => {
+    expect(isPeriod('2026-01')).toBe(true)
+    expect(isPeriod('2026-12')).toBe(true)
+    expect(isPeriod('2026-00')).toBe(false)
+    expect(isPeriod('2026-13')).toBe(false)
+    expect(isPeriod('2026-1')).toBe(false)
+    expect(isPeriod('2026-01-01')).toBe(false)
+  })
+
+  test('civilDate y partsOf son inversas', () => {
+    expect(civilDate(2026, 2, 9)).toBe('2026-02-09')
+    expect(partsOf('2026-02-09')).toEqual({ year: 2026, month: 2, day: 9 })
+  })
+
+  test('una entrada mal formada lanza en lugar de inventarse una fecha', () => {
+    expect(() => monthRange('2026-13')).toThrow(/Periodo inválido/)
+    expect(() => addMonths('agosto', 1)).toThrow(/Periodo inválido/)
+    expect(() => periodOf('2026-02-30')).toThrow(/Fecha civil inválida/)
+    expect(() => addDays('15/03/2026', 1)).toThrow(/Fecha civil inválida/)
+  })
+})
+
+describe('propiedades de la aritmética de fechas', () => {
+  const fecha = fc.integer({ min: 0, max: 60_000 }).map(fromEpochDay)
+
+  test('sumar n días y medir la distancia devuelve n', () => {
+    fc.assert(
+      fc.property(fecha, fc.integer({ min: -3_000, max: 3_000 }), (d, n) => {
+        expect(daysBetween(d, addDays(d, n))).toBe(n)
+      }),
+    )
+  })
+
+  test('comparar fechas es comparar sus días de época', () => {
+    fc.assert(
+      fc.property(fecha, fecha, (a, b) => {
+        expect(Math.sign(compareDates(a, b))).toBe(Math.sign(toEpochDay(a) - toEpochDay(b)))
+      }),
+    )
   })
 })

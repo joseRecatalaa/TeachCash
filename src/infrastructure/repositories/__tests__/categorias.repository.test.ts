@@ -98,7 +98,14 @@ describe('autorización', () => {
 
   test('no se puede borrar la categoría de otro usuario', async () => {
     await seedCategoria(base().db, 'ajena', USER_B)
+    await seedMovimiento(base().db, 'tx-ajeno', USER_B, { categoryId: 'ajena' })
+
     await expect(repo.remove(USER_A, 'ajena')).rejects.toThrow('No encontrado')
+
+    // Comprobar el DATO, no solo la respuesta: borrar arrastra los movimientos
+    // en cascada, y un error devuelto DESPUÉS de borrar seguiría siendo un error.
+    expect(await base().db.select().from(categories)).toHaveLength(1)
+    expect(await base().db.select().from(transactions)).toHaveLength(1)
   })
 
   test('el listado solo trae las del usuario', async () => {
@@ -344,5 +351,61 @@ describe('catálogo inicial', () => {
   test('es por usuario', async () => {
     await asegurarCatalogoInicial(USER_A)
     expect(await deUsuario(USER_B)).toHaveLength(0)
+  })
+})
+
+describe('nombre único por usuario', () => {
+  test('renombrar a su propio nombre no choca consigo misma', async () => {
+    await seedCategoria(base().db, 'c1', USER_A, { name: 'Comida', monthlyBudget: 500 })
+    await expect(
+      repo.update(USER_A, 'c1', { nombre: 'Comida', icono: '', color: 'cat-2', presupuesto: 600 }),
+    ).resolves.toEqual({ id: 'c1' })
+  })
+
+  test('renombrar al nombre de OTRA categoría suya se rechaza', async () => {
+    await seedCategoria(base().db, 'c1', USER_A, { name: 'Comida', monthlyBudget: 500 })
+    await seedCategoria(base().db, 'c2', USER_A, { name: 'Ocio', monthlyBudget: 500 })
+
+    await esperarErrorDeCampo(
+      repo.update(USER_A, 'c2', { nombre: 'Comida', icono: '', color: '', presupuesto: 500 }),
+      'nombre',
+    )
+  })
+
+  test('los espacios de alrededor no sirven para duplicar un nombre', async () => {
+    await repo.create(USER_A, nueva({ nombre: 'Comida' }))
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ nombre: '  Comida  ' })), 'nombre')
+  })
+})
+
+describe('límites de los campos', () => {
+  test('nombre obligatorio y de 40 caracteres como mucho', async () => {
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ nombre: '   ' })), 'nombre')
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ nombre: 'x'.repeat(41) })), 'nombre')
+  })
+
+  test('solo colores de la paleta: nunca un color a pelo', async () => {
+    // La base guarda la CLAVE (`cat-3`); un hexadecimal no tendría variante
+    // oscura y rompería la regla del sistema de diseño.
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ color: '#ff0000' })), 'color')
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ color: 'cat-9' })), 'color')
+  })
+
+  test('el presupuesto es un entero de céntimos no negativo', async () => {
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ presupuesto: 12.5 })), 'presupuesto')
+    await esperarErrorDeCampo(repo.create(USER_A, nueva({ presupuesto: -100 })), 'presupuesto')
+  })
+})
+
+describe('"no existe" y "no es tuya" son indistinguibles', () => {
+  test('get, update y remove responden igual a un id ajeno que a uno inventado', async () => {
+    await seedCategoria(base().db, 'ajena', USER_B, { monthlyBudget: 500 })
+    const cambios = { nombre: 'X', icono: '', color: '', presupuesto: 500 }
+
+    for (const id of ['ajena', 'no-existe']) {
+      expect(await repo.get(USER_A, id)).toBeNull()
+      await expect(repo.update(USER_A, id, cambios)).rejects.toThrow(/^No encontrado$/)
+      await expect(repo.remove(USER_A, id)).rejects.toThrow(/^No encontrado$/)
+    }
   })
 })

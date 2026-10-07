@@ -15,8 +15,10 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    // Los `vi.spyOn` (p. ej. silenciar console.error) se deshacen solos al
-    // acabar cada test: un espía olvidado no contamina al siguiente.
+    // Cada test empieza con los dobles limpios: las llamadas de un test no
+    // cuentan en el siguiente (clearMocks) y los `vi.spyOn` —p. ej. silenciar
+    // console.error— se deshacen solos (restoreMocks).
+    clearMocks: true,
     restoreMocks: true,
     setupFiles: ['./test/setup/fast-check.ts'],
     projects: [

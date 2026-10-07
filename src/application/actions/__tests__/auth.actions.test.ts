@@ -36,6 +36,7 @@ import { seedMovimiento } from '@/src/infrastructure/repositories/__tests__/help
 import {
   borrarCuenta,
   cambiarPassword,
+  cerrarSesion,
   getCuenta,
   iniciarInvitado,
   iniciarSesion,
@@ -309,5 +310,99 @@ describe('borrar la cuenta', () => {
     h.auth.signOut.mockResolvedValue({ error: error('user_not_found') })
     expect(await borrarCuenta(datos)).toEqual({ ok: true, data: null })
     expect(await usuarios()).toEqual([USER_B])
+  })
+})
+
+describe('traducción de los errores de Supabase', () => {
+  const datos = { email: 'ana@example.com', password: 'x', captchaToken: 't' }
+
+  // Lo que la persona PUEDE hacer algo al respecto tiene su mensaje; lo demás
+  // sale como genérico. Si un código cambia de nombre en Supabase, el mensaje
+  // útil se pierde sin que nada falle: estos tests son los que lo detectan.
+  test.each([
+    ['captcha_failed', /robot/],
+    ['over_request_rate_limit', /Demasiados intentos/],
+    ['over_email_send_rate_limit', /Demasiados intentos/],
+    ['weak_password', /débil/],
+    ['email_not_confirmed', /Confirma tu email/],
+  ])('%s tiene su propio mensaje', async (codigo, mensaje) => {
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error(codigo) })
+    const r = await iniciarSesion(datos)
+    expect(r).toEqual({ ok: false, error: expect.stringMatching(mensaje) })
+  })
+
+  test('sin token de CAPTCHA, el mensaje es el del CAPTCHA y no un error de campo', async () => {
+    // El token no es un campo que la persona pueda corregir: marcarlo en rojo
+    // en el formulario no le diría qué hacer.
+    const r = await iniciarSesion({ ...datos, captchaToken: '' })
+    expect(r).toEqual({ ok: false, error: expect.stringMatching(/robot/), fieldErrors: undefined })
+  })
+
+  test('si Supabase no puede crear el invitado, no se filtra su mensaje', async () => {
+    h.auth.signInAnonymously.mockResolvedValue({
+      data: { user: null },
+      error: { code: 'anonymous_provider_disabled', message: 'Anonymous sign-ins are disabled' },
+    })
+    const r = await iniciarInvitado('token-ok')
+    expect(r).toEqual({ ok: false, error: 'Se ha producido un error inesperado' })
+  })
+})
+
+describe('crear cuenta sin sesión', () => {
+  test('alta normal con CAPTCHA y una contraseña desechable que no se repite', async () => {
+    // La sesión de invitado no llegó a crearse (p. ej. el CAPTCHA falló al
+    // entrar): se da de alta una cuenta nueva. La contraseña es aleatoria; la
+    // de verdad se elige al confirmar el email.
+    await registrarse({ email: 'ana@example.com', captchaToken: 't' })
+    await registrarse({ email: 'ana@example.com', captchaToken: 't' })
+
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
+    const [[primera], [segunda]] = h.auth.signUp.mock.calls as [[{ password: string }], [{ password: string }]]
+    expect(primera).toMatchObject({
+      email: 'ana@example.com',
+      options: {
+        captchaToken: 't',
+        emailRedirectTo: 'http://localhost:3000/auth/confirm?next=/CambiarPassword',
+      },
+    })
+    expect(primera.password).not.toBe(segunda.password)
+  })
+
+  test('detrás de un proxy, el enlace se construye con las cabeceras reenviadas', async () => {
+    h.cabeceras.delete('origin')
+    h.cabeceras.set('x-forwarded-host', 'teachcash.example.com')
+    h.cabeceras.set('x-forwarded-proto', 'https')
+
+    await registrarse({ email: 'ana@example.com', captchaToken: 't' })
+
+    expect(h.auth.signUp).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          emailRedirectTo: 'https://teachcash.example.com/auth/confirm?next=/CambiarPassword',
+        }),
+      }),
+    )
+  })
+})
+
+describe('cuenta y salida', () => {
+  test('sin sesión, no hay cuenta', async () => {
+    expect(await getCuenta()).toEqual({ ok: true, data: { tipo: 'ninguna' } })
+  })
+
+  test('con email, es una cuenta de usuario', async () => {
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+    expect(await getCuenta()).toEqual({ ok: true, data: { tipo: 'usuario', email: 'ana@example.com' } })
+  })
+
+  test('cerrar sesión revoca solo la sesión de este navegador', async () => {
+    const r = await cerrarSesion()
+    expect(r).toEqual({ ok: true, data: null })
+    expect(h.auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+  })
+
+  test('si cerrar sesión falla, se dice sin detalles', async () => {
+    h.auth.signOut.mockResolvedValue({ error: { code: 'session_not_found', message: 'interno' } })
+    expect(await cerrarSesion()).toEqual({ ok: false, error: 'Se ha producido un error inesperado' })
   })
 })
