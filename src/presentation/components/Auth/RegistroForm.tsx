@@ -9,6 +9,7 @@ import { obtenerTokenCaptcha } from '@/lib/turnstile'
 import { registrarse } from '@/src/application/actions/auth.actions'
 import { useCuenta } from '@/src/application/providers/CuentaProvider'
 import { SketchButton } from '@/src/presentation/components/ui'
+import { validarEmail } from './validacion'
 import { AuthError, AuthFormulario, AuthHecho, AuthPanel } from './AuthPanel'
 
 export function RegistroForm() {
@@ -20,7 +21,7 @@ export function RegistroForm() {
   const form = useForm({
     initialValues: { email: '' },
     validate: {
-      email: (v) => (/^\S+@\S+\.\S+$/.test(v.trim()) ? null : 'Escribe un email válido'),
+      email: validarEmail,
     },
   })
 

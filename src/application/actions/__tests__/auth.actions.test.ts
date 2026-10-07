@@ -480,3 +480,133 @@ describe('cuenta y salida', () => {
     expect(await cerrarSesion()).toEqual({ ok: false, error: 'Se ha producido un error inesperado' })
   })
 })
+
+describe('caminos de error que la persona tiene que entender', () => {
+  const ANA = {
+    user: { id: USER_A, email: 'ana@example.com', esInvitado: false, entroConPassword: true },
+  }
+  const cambio = {
+    password: 'Segura#2026x',
+    repetir: 'Segura#2026x',
+    passwordActual: 'Vieja#2025xx',
+    captchaToken: 't',
+  }
+
+  test.each([
+    ['same_password', /distinta de la actual/],
+    ['reauthentication_needed', /Has olvidado tu contraseña/],
+    ['weak_password', /débil/],
+  ])('al guardar la contraseña, %s tiene su propio mensaje', async (codigo, mensaje) => {
+    h.session = { user: { ...ANA.user, entroConPassword: false } }
+    h.auth.updateUser.mockResolvedValue({ data: {}, error: error(codigo) })
+    expect(await cambiarPassword(cambio)).toEqual({ ok: false, error: expect.stringMatching(mensaje) })
+  })
+
+  test('una sesión con contraseña pero sin email no puede reautenticarse', async () => {
+    h.session = { user: { ...ANA.user, email: null } }
+    expect(await cambiarPassword(cambio)).toEqual({ ok: false, error: 'No autorizado' })
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
+  })
+
+  test('si la reautenticación falla por otra cosa (CAPTCHA), no se guarda nada', async () => {
+    h.session = ANA
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('captcha_failed') })
+    expect(await cambiarPassword(cambio)).toEqual({ ok: false, error: expect.stringMatching(/robot/) })
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
+  })
+
+  test('borrar la cuenta con el CAPTCHA caducado no borra nada', async () => {
+    h.session = ANA
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('captcha_failed') })
+    const r = await borrarCuenta({ password: 'x', captchaToken: 't' })
+    expect(r).toEqual({ ok: false, error: expect.stringMatching(/robot/) })
+    const quedan = await base().pg.query('select 1 from auth.users where id = $1', [USER_A])
+    expect(quedan.rows).toHaveLength(1)
+  })
+
+  test('crear cuenta con un email mal escrito no llega a Supabase', async () => {
+    const r = await registrarse({ email: 'no-es-email', captchaToken: 't' })
+    expect(r).toMatchObject({ ok: false, fieldErrors: { email: expect.any(String) } })
+    expect(h.auth.signUp).not.toHaveBeenCalled()
+  })
+
+  test('crear cuenta con el límite de envíos agotado lo dice', async () => {
+    h.auth.signUp.mockResolvedValue({ data: {}, error: error('over_email_send_rate_limit') })
+    const r = await registrarse({ email: 'ana@example.com', captchaToken: 't' })
+    expect(r).toEqual({ ok: false, error: expect.stringMatching(/Demasiados intentos/) })
+  })
+
+  test('recuperar con un email mal escrito no llega a Supabase', async () => {
+    const r = await solicitarRecuperacion({ email: 'no-es-email', captchaToken: 't' })
+    expect(r).toMatchObject({ ok: false, fieldErrors: { email: expect.any(String) } })
+    expect(h.auth.resetPasswordForEmail).not.toHaveBeenCalled()
+  })
+
+  test('recuperar con el CAPTCHA fallido lo dice (eso no revela si el email existe)', async () => {
+    h.auth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: error('captcha_failed') })
+    const r = await solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })
+    expect(r).toEqual({ ok: false, error: expect.stringMatching(/robot/) })
+  })
+
+  test('cualquier otro fallo al recuperar responde igual que un éxito', async () => {
+    // Distinguirlo revelaría si el email tiene cuenta.
+    h.auth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: error('user_not_found') })
+    const r = await solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })
+    expect(r).toMatchObject({ ok: true })
+  })
+
+  test('unos valores que ni siquiera son un objeto dan el mensaje genérico de campos', async () => {
+    const r = await iniciarSesion(null)
+    expect(r).toEqual({ ok: false, error: 'Revisa los campos marcados', fieldErrors: {} })
+  })
+
+  test('una excepción inesperada se registra y sale como genérico', async () => {
+    h.auth.signOut.mockRejectedValue(new Error('red caída'))
+    expect(await cerrarSesion()).toEqual({ ok: false, error: 'Se ha producido un error inesperado' })
+  })
+
+  test('sin cabecera User-Agent no se crea invitado', async () => {
+    h.cabeceras.delete('user-agent')
+    expect((await iniciarInvitado('token-ok')).ok).toBe(false)
+    expect(h.auth.signInAnonymously).not.toHaveBeenCalled()
+  })
+
+  test('si Supabase no devuelve usuario ni error, es un fallo genérico', async () => {
+    h.auth.signInAnonymously.mockResolvedValue({ data: { user: null }, error: null })
+    expect(await iniciarInvitado('token-ok')).toEqual({
+      ok: false,
+      error: 'Se ha producido un error inesperado',
+    })
+  })
+
+  test('al entrar, si Supabase no devuelve el email se usa el escrito', async () => {
+    h.auth.signInWithPassword.mockResolvedValue({ data: { user: {} }, error: null })
+    const r = await iniciarSesion({ email: ' Ana@Example.com ', password: 'x', captchaToken: 't' })
+    expect(r).toEqual({ ok: true, data: { tipo: 'usuario', email: 'ana@example.com' } })
+  })
+
+  test('sin Origin ni cabeceras reenviadas, el enlace usa Host y https', async () => {
+    h.cabeceras.delete('origin')
+    h.cabeceras.set('host', 'teachcash.example.com')
+
+    await solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })
+
+    expect(h.auth.resetPasswordForEmail).toHaveBeenCalledWith('ana@example.com', {
+      redirectTo: 'https://teachcash.example.com/auth/confirm?next=/CambiarPassword',
+      captchaToken: 't',
+    })
+  })
+
+  test('un invitado sin fila en auth.users caduca contando desde ahora', async () => {
+    vi.useFakeTimers({ now: new Date('2026-10-07T12:00:00Z'), toFake: ['Date'] })
+    try {
+      h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
+      expect(await getCuenta()).toEqual({
+        ok: true,
+        data: { tipo: 'invitado', caducaEl: '2026-10-11T12:00:00.000Z' },
+      })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})

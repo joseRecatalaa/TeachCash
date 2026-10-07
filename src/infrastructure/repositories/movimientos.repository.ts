@@ -145,7 +145,8 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     const query = db
       .select(SELECT_LIST)
       .from(transactions)
-      .leftJoin(categories, eq(categories.id, transactions.categoryId))
+      // `innerJoin`: `category_id` es NOT NULL con clave ajena (ver informes).
+      .innerJoin(categories, eq(categories.id, transactions.categoryId))
       .where(where)
       .orderBy(...order)
 
@@ -159,12 +160,12 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
         fecha: r.fecha,
         descripcion: r.descripcion,
         importe: r.importe,
-        categoriaId: r.categoriaId ?? '',
-        categoriaNombre: r.categoriaNombre ?? 'Sin categoría',
+        categoriaId: r.categoriaId,
+        categoriaNombre: r.categoriaNombre,
         categoriaColor: r.categoriaColor ?? '',
         notas: r.notas ?? '',
       })),
-      total: total ?? 0,
+      total,
     }
   },
 

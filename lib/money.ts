@@ -29,8 +29,10 @@ export const isCurrency = (value: string): value is Currency =>
   (CURRENCIES as readonly string[]).includes(value)
 
 /**
- * La columna `currency` es texto en SQLite: el tipo `Currency` es una promesa al
- * compilador, no una garantía. Este es el punto donde se comprueba de verdad.
+ * Una divisa que llega como texto (hoy, la de una fila con `divisaAccessor` en
+ * `AppTable`) es una promesa al compilador, no una garantía. Este es el punto
+ * donde se comprueba de verdad. No hay columna de divisa en la base: la decide
+ * `DIVISA_APP` (regla dura 2).
  */
 export const asCurrency = (value: string): Currency => {
   if (!isCurrency(value)) throw new TypeError(`Divisa desconocida: ${value}`)
@@ -86,7 +88,8 @@ export const isPositive = (a: Money): boolean => a.amount > 0
 /** -1, 0 o 1. Lanza si las divisas no coinciden: ordenar peras y manzanas no significa nada. */
 export const compare = (a: Money, b: Money): number => {
   assertSame(a, b)
-  return a.amount === b.amount ? 0 : a.amount < b.amount ? -1 : 1
+  // Enteros seguros: la resta es exacta y su signo es la comparación.
+  return Math.sign(a.amount - b.amount)
 }
 
 export const equals = (a: Money, b: Money): boolean =>

@@ -20,6 +20,64 @@ export default defineConfig({
     // console.error— se deshacen solos (restoreMocks).
     clearMocks: true,
     restoreMocks: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'html', 'json-summary'],
+      // Lo que se mide: el código de la app. Fuera, lo que no es lógica
+      // (tipos, la vista declarada en src/config —la vigilan las guardas de
+      // src/__tests__/invariantes.test.ts—, estilos y migraciones generadas) y
+      // el propio andamiaje de test.
+      // Solo código: con `db/**` a secas entraban los .sql y .json y el
+      // informe reventaba al intentar analizarlos.
+      include: [
+        'lib/**/*.ts',
+        'src/**/*.{ts,tsx}',
+        'app/**/*.{ts,tsx}',
+        'db/**/*.{ts,mts}',
+        'proxy.ts',
+        'instrumentation.ts',
+      ],
+      exclude: [
+        '**/__tests__/**',
+        '**/*.test.{ts,tsx}',
+        '**/*.css',
+        'src/types/**',
+        'src/config/**',
+        'db/migrations/**',
+        'db/testing.ts',
+      ],
+      /**
+       * Umbrales POR NIVELES (lección 10: 100/80/0), por fichero y no en
+       * media: una media alta esconde un fichero crítico a medias.
+       *
+       *  - CORE 100 %: el dinero, las fechas y la seguridad de las rutas. Un
+       *    fallo aquí es una cifra mal o un agujero; no hay rama que sobre.
+       *  - CORE 90 %: repositorios, acciones y sesión. Lo que queda fuera son
+       *    ramas de carreras entre peticiones, marcadas con su porqué.
+       *  - IMPORTANT 80 %: GenericForm, AppTable y hooks. Los añade la Fase 5,
+       *    que es la que escribe sus tests de componente.
+       *  - INFRA 0 %: lo excluido arriba.
+       *
+       * Un umbral NO se baja para que pase: o se escribe el test, o la rama
+       * inalcanzable se marca con `/* v8 ignore next *\/` y su porqué.
+       */
+      thresholds: {
+        ...Object.fromEntries(
+          ['lib/money.ts', 'lib/dates.ts', 'lib/format.ts', 'lib/rutas.ts', 'lib/csp.ts'].map(
+            (f) => [f, { lines: 100, branches: 100, functions: 100, statements: 100 }],
+          ),
+        ),
+        ...Object.fromEntries(
+          [
+            'src/infrastructure/repositories/**',
+            'src/application/actions/**',
+            'lib/auth.ts',
+            'lib/env.ts',
+            'lib/log.ts',
+          ].map((f) => [f, { lines: 90, branches: 90, functions: 90, statements: 90 }]),
+        ),
+      },
+    },
     setupFiles: ['./test/setup/fast-check.ts'],
     projects: [
       {

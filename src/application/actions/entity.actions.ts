@@ -31,18 +31,10 @@
  *   4. Todo `where` de lectura y escritura lleva el `userId` DENTRO. La
  *      propiedad no se comprueba después de leer.
  *
- * ─── Por qué se DEVUELVEN los errores y no se lanzan ────────────────────────
- *
- * Una excepción en una Server Action llega al cliente redactada en producción:
- * "An error occurred in the Server Components render". Eso no le sirve a quien
- * está rellenando un formulario. Los errores esperados viajan como valor, con
- * sus `fieldErrors`, y el data provider los vuelve a convertir en excepción ya
- * en el navegador, que es donde Refine y React Query las quieren.
+ * Los errores se DEVUELVEN, no se lanzan: ver `resultado.ts`.
  */
 
 import { revalidatePath } from 'next/cache'
-import { getSession } from '@/lib/auth'
-import { registrarError } from '@/lib/log'
 import {
   repositoryOf,
   RepositoryError,
@@ -58,42 +50,14 @@ import {
 import { getFormMetadata as getFormMetadataRepo } from '@/src/infrastructure/repositories/metadata.repository'
 import type { FormMetadata } from '@/src/types/formMetadata.types'
 import { validarId, validarListParams } from './frontera'
+import { ejecutar, type ActionResult } from './resultado'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Resultado
-// ─────────────────────────────────────────────────────────────────────────────
+// Solo tipos: un fichero 'use server' no puede exportar valores que no sean
+// funciones async, pero los tipos desaparecen al compilar.
+export type { ActionFail, ActionOk, ActionResult } from './resultado'
 
-export type ActionOk<T> = { ok: true; data: T }
-export type ActionFail = {
-  ok: false
-  error: string
-  /** Errores por campo, en el formato que consume `GenericForm`. */
-  fieldErrors?: Record<string, string>
-}
-export type ActionResult<T> = ActionOk<T> | ActionFail
-
-/**
- * Envuelve una operación: resuelve la sesión, ejecuta y traduce el fallo.
- *
- * Un `RepositoryError` es un error de negocio y su mensaje SE LE ENSEÑA a la
- * persona. Cualquier otra cosa es un fallo inesperado: se registra en el
- * servidor y al cliente le llega un texto genérico, sin filtrar el interior de
- * la base de datos.
- */
-async function run<T>(operacion: (userId: string) => Promise<T>): Promise<ActionResult<T>> {
-  const session = await getSession()
-  if (!session) return { ok: false, error: 'No autorizado' }
-
-  try {
-    return { ok: true, data: await operacion(session.user.id) }
-  } catch (err) {
-    if (err instanceof RepositoryError) {
-      return { ok: false, error: err.message, fieldErrors: err.fieldErrors }
-    }
-    registrarError('entity.actions', err)
-    return { ok: false, error: 'Se ha producido un error inesperado' }
-  }
-}
+const run = <T,>(operacion: (userId: string) => Promise<T>) =>
+  ejecutar('entity.actions', operacion)
 
 /**
  * Las rutas se revalidan tras cada mutación aunque la caché la lleve React

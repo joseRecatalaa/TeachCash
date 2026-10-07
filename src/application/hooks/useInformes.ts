@@ -22,6 +22,7 @@ import {
   fetchTotalesDelMes,
 } from '@/src/application/actions/informes.actions'
 import { getSaldo } from '@/src/application/actions/entity.actions'
+import { INFORME_MESES_POR_DEFECTO } from '@/src/types/informe.types'
 
 /** Desenvuelve el `ActionResult` o lanza, que es lo que espera React Query. */
 const unwrap = <T>(result: { ok: true; data: T } | { ok: false; error: string }): T => {
@@ -36,7 +37,7 @@ export function useGastoPorCategoria(periodo: Period) {
   })
 }
 
-export function useIngresosVsGastos(meses = 12) {
+export function useIngresosVsGastos(meses = INFORME_MESES_POR_DEFECTO) {
   return useQuery({
     queryKey: ['informes', 'ingresosVsGastos', meses],
     queryFn: async () => unwrap(await fetchIngresosVsGastos(meses)),

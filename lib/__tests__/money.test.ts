@@ -255,9 +255,8 @@ describe('reparto justo', () => {
   test('a quien tiene peso 0 no le toca nada, ni el céntimo del resto', () => {
     fc.assert(
       fc.property(totales, pesos, (total, w) => {
-        allocate(money(total), w).forEach((parte, i) => {
-          if (w[i] === 0) expect(parte.amount).toBe(0)
-        })
+        const conPesoCero = allocate(money(total), w).filter((_, i) => w[i] === 0)
+        expect(conPesoCero.every((parte) => parte.amount === 0)).toBe(true)
       }),
     )
   })

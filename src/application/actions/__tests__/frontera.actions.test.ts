@@ -119,8 +119,7 @@ describe('activarCategoria valida el presupuesto', () => {
 
     const r = await activarCategoria('oculta', hostil<number>(presupuesto))
 
-    expect(r.ok).toBe(false)
-    if (!r.ok) expect(r.fieldErrors).toHaveProperty('presupuesto')
+    expect(r).toMatchObject({ ok: false, fieldErrors: { presupuesto: expect.any(String) } })
     const [fila] = await base().db.select().from(categories)
     expect(fila.hidden).toBe(true)
   })
@@ -170,4 +169,19 @@ describe('informes', () => {
       })
     },
   )
+})
+
+describe('sin argumentos', () => {
+  // Quien llama a mano al endpoint puede no mandar nada, o mandar null.
+  test('listEntity sin parámetros lista con los de por defecto', async () => {
+    await seedCategoria(base().db, 'a', USER_A, { name: 'Alfa' })
+    expect(await listEntity('Categorias', hostil(undefined))).toMatchObject({
+      ok: true,
+      data: { total: 1 },
+    })
+  })
+
+  test('fetchSerieSaldo con null usa el rango por defecto', async () => {
+    expect(await fetchSerieSaldo(hostil(null))).toMatchObject({ ok: true })
+  })
 })

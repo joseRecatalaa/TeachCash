@@ -1,0 +1,22 @@
+# Finales de línea: LF en el repositorio Y en la copia de trabajo, en cualquier
+# sistema. No es estética, es que dos cosas fallan EN SILENCIO con CRLF:
+#   - Los `modify` del generador de Plop no casan y se saltan sin avisar
+#     (ya pasó una vez: ver "Trampas" en AGENTS.md).
+#   - pnpm no aplica un parche de `patches/` cuyo contexto no coincide byte a
+#     byte con el paquete, que viene en LF.
+# `eol=lf` gana a `core.autocrlf` de cada máquina: en Windows, sin esto, la copia
+# de trabajo se convierte a CRLF.
+* text=auto eol=lf
+
+# Binarios: ni se tocan los finales de línea ni se intenta un diff de texto.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.xlsx binary
+*.pdf binary

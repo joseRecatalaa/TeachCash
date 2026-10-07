@@ -21,6 +21,20 @@ import { asegurarCatalogoInicial } from '@/src/infrastructure/repositories/categ
 
 const TIPOS: readonly EmailOtpType[] = ['email', 'signup', 'recovery', 'email_change', 'invite']
 
+/** Convierte el enlace en sesión, por la vía que traiga. */
+async function canjearEnlace(
+  code: string | null,
+  tokenHash: string | null,
+  tipo: EmailOtpType | null,
+) {
+  const supabase = await crearClienteSupabase()
+  if (code) return supabase.auth.exchangeCodeForSession(code)
+  if (tokenHash && tipo && TIPOS.includes(tipo)) {
+    return supabase.auth.verifyOtp({ token_hash: tokenHash, type: tipo })
+  }
+  return { data: { user: null }, error: new Error('Enlace incompleto') }
+}
+
 export async function GET(request: NextRequest) {
   const url = request.nextUrl
   const destino = rutaInterna(url.searchParams.get('next'))
@@ -28,13 +42,7 @@ export async function GET(request: NextRequest) {
   const tokenHash = url.searchParams.get('token_hash')
   const tipo = url.searchParams.get('type') as EmailOtpType | null
 
-  const supabase = await crearClienteSupabase()
-
-  const { data, error } = code
-    ? await supabase.auth.exchangeCodeForSession(code)
-    : tokenHash && tipo && TIPOS.includes(tipo)
-      ? await supabase.auth.verifyOtp({ token_hash: tokenHash, type: tipo })
-      : { data: { user: null }, error: new Error('Enlace incompleto') }
+  const { data, error } = await canjearEnlace(code, tokenHash, tipo)
 
   if (error || !data.user) {
     // Caducado, ya usado o abierto en otro navegador. El motivo exacto no se

@@ -7,7 +7,7 @@
  */
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { entornoPublico, entornoServidor, validarEntorno } from '../env'
+import { entornoMigraciones, entornoPublico, entornoServidor, validarEntorno } from '../env'
 
 const PUBLICO = {
   NEXT_PUBLIC_SUPABASE_URL: 'https://abcd.supabase.co',
@@ -78,6 +78,25 @@ describe('validarEntorno (lo que corre al arrancar)', () => {
 
   test('con todo bien, no lanza', () => {
     poner({ ...PUBLICO, ...SERVIDOR })
+    expect(() => validarEntorno()).not.toThrow()
+  })
+})
+
+describe('entorno de migraciones', () => {
+  // Va aparte: solo lo necesita `pnpm db:migrate`, y exigírselo al servidor
+  // obligaría a tener la URL del Session pooler donde no hace falta.
+  test('con la URL del Session pooler, la devuelve', () => {
+    poner({ DATABASE_URL_MIGRATIONS: SERVIDOR.DATABASE_URL.replace(':6543', ':5432') })
+    expect(entornoMigraciones().DATABASE_URL_MIGRATIONS).toContain(':5432')
+  })
+
+  test('sin ella, falla diciendo cuál', () => {
+    poner({ DATABASE_URL_MIGRATIONS: undefined })
+    expect(() => entornoMigraciones()).toThrow(/DATABASE_URL_MIGRATIONS/)
+  })
+
+  test('el servidor arranca sin ella', () => {
+    poner({ ...PUBLICO, ...SERVIDOR, DATABASE_URL_MIGRATIONS: undefined })
     expect(() => validarEntorno()).not.toThrow()
   })
 })

@@ -168,3 +168,26 @@ describe('escala de la divisa', () => {
     expect(formatMoney(money(100, 'GBP'))).toContain('GBP')
   })
 })
+
+describe('parseMoney: los casos de separadores que faltaban', () => {
+  test.each([
+    // Los dos signos y el punto al final: formato anglosajón.
+    ['1,234.56', 123456],
+    // Una coma repetida solo puede ser de miles.
+    ['1,234,567', 123456700],
+    // Un punto repetido, igual.
+    ['1.234.567', 123456700],
+  ])('%j se lee como %i céntimos', (texto, centimos) => {
+    expect(parseMoney(texto)?.amount).toBe(centimos)
+  })
+
+  test.each(['12,3x', '12,-3', '1,2,3', '1.23.4,5'])('rechaza %j', (texto) => {
+    expect(parseMoney(texto)).toBeNull()
+  })
+
+  test('rechaza un importe que no cabe en un entero seguro', () => {
+    // Pasado 2^53 los céntimos dejan de ser exactos: mejor no aceptarlo que
+    // guardar una cifra que no es la que se escribió.
+    expect(parseMoney('99999999999999999')).toBeNull()
+  })
+})

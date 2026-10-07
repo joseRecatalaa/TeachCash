@@ -146,6 +146,9 @@ export default function generadorCrud(plop) {
         ).concat(REGISTROS.map((r) => r.fichero))
 
         try {
+          // Herramienta de desarrollo, en la máquina de quien la lanza: el PATH es
+          // el suyo, y es el mismo con el que ha ejecutado `pnpm generate:crud`.
+          // eslint-disable-next-line sonarjs/no-os-command-from-path
           execFileSync('pnpm', ['exec', 'prettier', '--write', ...rutas], {
             stdio: 'ignore',
             shell: process.platform === 'win32',

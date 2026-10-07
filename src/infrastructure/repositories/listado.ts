@@ -57,5 +57,6 @@ export function trozo(params: ListParams): { limit: number; offset: number } {
  * empiece por "10", y buscar "%" lo encuentra todo.
  */
 export function patronContiene(texto: string): string {
-  return `%${texto.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+  const escapado = texto.replace(/[\\%_]/g, (c) => '\\' + c)
+  return `%${escapado}%`
 }

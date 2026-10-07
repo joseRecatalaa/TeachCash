@@ -29,7 +29,7 @@ const REQUISITOS: ReadonlyArray<[RegExp, string]> = [
   [/.{10,}/, 'Mínimo 10 caracteres'],
   [/[a-z]/, 'Incluye al menos una minúscula'],
   [/[A-Z]/, 'Incluye al menos una mayúscula'],
-  [/[0-9]/, 'Incluye al menos un número'],
+  [/\d/, 'Incluye al menos un número'],
   [/[^a-zA-Z0-9]/, 'Incluye al menos un símbolo'],
 ]
 

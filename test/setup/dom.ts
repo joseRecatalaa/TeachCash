@@ -15,7 +15,10 @@ afterEach(() => cleanup())
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({
-      matches: false,
+      // Como en un navegador: la consulta vacía coincide siempre, y las demás
+      // (pantalla oscura, móvil…) no. mantine-datatable pregunta por '' para
+      // cada columna sin `visibleMediaQuery`: con `false` las ocultaba todas.
+      matches: query.trim() === '',
       media: query,
       onchange: null,
       addListener: () => {},

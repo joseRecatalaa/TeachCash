@@ -90,6 +90,17 @@ describe('cómo se abrió la sesión (claim `amr`)', () => {
     ).toBe(true)
   })
 
+  test('se salta las entradas que no son objetos y las que no traen hora', async () => {
+    // Sin hora, una entrada cuenta como la más antigua posible.
+    expect(await conAmr([null, 7, { method: 'password' }])).toBe(true)
+    expect(
+      await conAmr([
+        { method: 'recovery' },
+        { method: 'password', timestamp: 100 },
+      ]),
+    ).toBe(true)
+  })
+
   test('también en el formato RFC 8176 (lista de cadenas)', async () => {
     expect(await conAmr(['password'])).toBe(true)
     expect(await conAmr(['otp'])).toBe(false)

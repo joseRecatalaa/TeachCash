@@ -68,8 +68,8 @@ describe('serie de saldo', () => {
 
     const r = await fetchSerieSaldo()
 
-    expect(r.ok).toBe(true)
-    if (r.ok) expect(r.data[0]).toEqual({ fecha: '2026-03-02', saldo: -500 })
+    // Solo el primer punto: la serie sigue, un punto por día, hasta hoy.
+    expect(r.ok && r.data[0]).toEqual({ fecha: '2026-03-02', saldo: -500 })
   })
 })
 

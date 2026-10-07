@@ -115,8 +115,10 @@ export const daysBetween = (a: CivilDate, b: CivilDate): number =>
   toEpochDay(b) - toEpochDay(a)
 
 /** Comparación de fechas civiles. El formato ISO ordena bien como texto. */
-export const compareDates = (a: CivilDate, b: CivilDate): number =>
-  a === b ? 0 : a < b ? -1 : 1
+export const compareDates = (a: CivilDate, b: CivilDate): number => {
+  if (a === b) return 0
+  return a < b ? -1 : 1
+}
 
 /** El día de hoy en el huso del usuario. El único punto que mira el reloj. */
 export const today = (timeZone: string = USER_TIME_ZONE, now: Date = new Date()): CivilDate => {

@@ -304,3 +304,22 @@ describe('rango por defecto y movimientos posteriores a hoy', () => {
     expect(rango.hasta).toBe('2026-08-13')
   })
 })
+
+describe('ingresos frente a gastos: valores por defecto', () => {
+  test('sin `hasta`, la ventana termina en el mes de hoy', async () => {
+    vi.useFakeTimers({ now: new Date('2026-08-13T10:00:00Z'), toFake: ['Date'] })
+    try {
+      await seedMovimiento(base().db, 'a', USER_A, { date: '2026-08-02', amount: -500 })
+      const r = await getIngresosVsGastos(USER_A)
+      expect(r.at(-1)).toEqual({ periodo: '2026-08', ingresos: 0, gastos: 500, neto: -500 })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('si los datos empiezan antes de la ventana, la ventana manda', async () => {
+    await seedMovimiento(base().db, 'viejo', USER_A, { date: '2020-01-15', amount: -100 })
+    const r = await getIngresosVsGastos(USER_A, { meses: 3, hasta: '2026-08' })
+    expect(r.map((p) => p.periodo)).toEqual(['2026-06', '2026-07', '2026-08'])
+  })
+})

@@ -96,7 +96,7 @@ describe('dos sitios que tienen que decir lo mismo', () => {
   test('el cliente de base desactiva las sentencias preparadas', () => {
     // El Transaction pooler de Supabase reparte las consultas entre conexiones;
     // con `prepare` activo funciona en local y falla en producción a ratos.
-    expect(leer('db/client.ts')).toMatch(/^\s*prepare: false,/m)
+    expect(leer('db/client.ts')).toMatch(/^ *prepare: false,/m)
   })
 })
 

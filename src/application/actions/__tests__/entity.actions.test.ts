@@ -57,9 +57,8 @@ describe('el recurso se resuelve contra un mapa cerrado', () => {
     'un recurso desconocido (%j) no ejecuta nada',
     async (resource) => {
       const resultado = await listEntity(resource, {})
-      expect(resultado.ok).toBe(false)
       // Falla como error inesperado y NO filtra qué recursos existen.
-      if (!resultado.ok) expect(resultado.error).toBe('Se ha producido un error inesperado')
+      expect(resultado).toMatchObject({ ok: false, error: 'Se ha producido un error inesperado' })
     },
   )
 
@@ -80,8 +79,7 @@ describe('la sesión se comprueba siempre', () => {
     harness.userId = null
 
     const resultado = await ejecutar()
-    expect(resultado.ok).toBe(false)
-    if (!resultado.ok) expect(resultado.error).toBe('No autorizado')
+    expect(resultado).toMatchObject({ ok: false, error: 'No autorizado' })
 
     const filas = await base().db.select().from(categories)
     expect(filas).toHaveLength(0)
@@ -101,8 +99,7 @@ describe('el userId sale de la sesión, nunca de los argumentos', () => {
     await seedCategoria(base().db, 'ajena', USER_B)
 
     const resultado = await getEntity('Categorias', 'ajena')
-    expect(resultado.ok).toBe(false)
-    if (!resultado.ok) expect(resultado.error).toBe('No encontrado')
+    expect(resultado).toMatchObject({ ok: false, error: 'No encontrado' })
   })
 
   test('no se puede escribir sobre el registro de otro usuario', async () => {
@@ -131,11 +128,7 @@ describe('el userId sale de la sesión, nunca de los argumentos', () => {
     await seedCategoria(base().db, 'ajena', USER_B)
 
     const resultado = await listEntity('Categorias', { paginate: false })
-    expect(resultado.ok).toBe(true)
-    if (resultado.ok) {
-      expect(resultado.data.data).toHaveLength(1)
-      expect(resultado.data.total).toBe(1)
-    }
+    expect(resultado).toMatchObject({ ok: true, data: { data: [{ id: 'mia' }], total: 1 } })
   })
 })
 
@@ -158,12 +151,9 @@ describe('los valores no se esparcen sobre la tabla', () => {
   test('los valores inválidos vuelven con su error por campo', async () => {
     const resultado = await createEntity('Categorias', { ...categoria, tipo: 'inventado' })
 
-    expect(resultado.ok).toBe(false)
-    if (!resultado.ok) {
-      // El error viaja como VALOR, no como excepción: una excepción llegaría al
-      // navegador redactada en producción y el formulario no podría enseñarla.
-      expect(resultado.fieldErrors).toMatchObject({ tipo: expect.any(String) })
-    }
+    // El error viaja como VALOR, no como excepción: una excepción llegaría al
+    // navegador redactada en producción y el formulario no podría enseñarla.
+    expect(resultado).toMatchObject({ ok: false, fieldErrors: { tipo: expect.any(String) } })
   })
 })
 
@@ -347,5 +337,21 @@ describe('un fallo inesperado se registra sin los datos de la persona', () => {
     expect(log).not.toContain('987654')
     expect(log).not.toContain('Farmacia')
     expect(log).not.toContain('dermatólogo')
+  })
+})
+
+describe('activar y ocultar una categoría propia', () => {
+  test('ocultar y volver a activar, y cada paso revalida Categorías', async () => {
+    const { revalidatePath } = await import('next/cache')
+    await seedCategoria(base().db, 'mia', USER_A, { kind: 'expense', monthlyBudget: 100 })
+
+    expect(await ocultarCategoria('mia')).toEqual({ ok: true, data: { id: 'mia' } })
+    expect(revalidatePath).toHaveBeenCalledWith('/Categorias')
+    vi.mocked(revalidatePath).mockClear()
+
+    expect(await activarCategoria('mia', 500)).toEqual({ ok: true, data: { id: 'mia' } })
+    expect(revalidatePath).toHaveBeenCalledWith('/Categorias')
+    const [fila] = await base().db.select().from(categories)
+    expect(fila).toMatchObject({ hidden: false, monthlyBudget: 500 })
   })
 })

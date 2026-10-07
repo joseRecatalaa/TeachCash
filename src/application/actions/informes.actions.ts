@@ -11,10 +11,7 @@
  * los movimientos crudos. Es la regla de la skill `finance-charts`.
  */
 
-import { getSession } from '@/lib/auth'
 import type { CivilDate, Period } from '@/lib/dates'
-import { registrarError } from '@/lib/log'
-import { RepositoryError } from '@/src/infrastructure/repositories'
 import {
   getGastoPorCategoria,
   getIngresosVsGastos,
@@ -22,30 +19,17 @@ import {
   getSerieSaldo,
   getTotalesDelMes,
 } from '@/src/infrastructure/repositories/informes.repository'
-import type {
-  GastoPorCategoriaDto,
-  PuntoSaldoDto,
-  TotalesPeriodoDto,
+import {
+  INFORME_MESES_POR_DEFECTO,
+  type GastoPorCategoriaDto,
+  type PuntoSaldoDto,
+  type TotalesPeriodoDto,
 } from '@/src/types/informe.types'
-import type { ActionResult } from './entity.actions'
 import { validarMeses, validarPeriodo, validarRangoSerie } from './frontera'
+import { ejecutar, type ActionResult } from './resultado'
 
-/**
- * Como el `run` de `entity.actions.ts`: un `RepositoryError` (aquí, los de
- * validación de `frontera.ts`) se le enseña a quien llama; lo demás se
- * registra y sale como genérico.
- */
-async function run<T>(operacion: (userId: string) => Promise<T>): Promise<ActionResult<T>> {
-  const session = await getSession()
-  if (!session) return { ok: false, error: 'No autorizado' }
-  try {
-    return { ok: true, data: await operacion(session.user.id) }
-  } catch (err) {
-    if (err instanceof RepositoryError) return { ok: false, error: err.message }
-    registrarError('informes.actions', err)
-    return { ok: false, error: 'Se ha producido un error inesperado' }
-  }
-}
+const run = <T,>(operacion: (userId: string) => Promise<T>) =>
+  ejecutar('informes.actions', operacion)
 
 export async function fetchGastoPorCategoria(
   periodo: Period,
@@ -54,7 +38,7 @@ export async function fetchGastoPorCategoria(
 }
 
 export async function fetchIngresosVsGastos(
-  meses = 12,
+  meses = INFORME_MESES_POR_DEFECTO,
 ): Promise<ActionResult<TotalesPeriodoDto[]>> {
   return run((userId) => getIngresosVsGastos(userId, { meses: validarMeses(meses) }))
 }
@@ -66,7 +50,7 @@ export async function fetchTotalesDelMes(
 }
 
 /**
- * La serie de saldo. Sin rango explícito usa el de por defecto (12 meses, sin
+ * La serie de saldo. Sin rango explícito usa el de por defecto (un año, sin
  * empezar antes del primer movimiento), que se calcula EN EL SERVIDOR: hacerlo
  * en el cliente obligaría a una petición previa solo para saber desde cuándo hay
  * datos. Un rango explícito lleva los dos extremos, en orden y de como mucho

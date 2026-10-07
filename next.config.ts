@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   // el JS de cliente no. Refine nunca arranca y las páginas se quedan cargando
   // para siempre, sin ningún error en consola — solo avisos en el log del dev
   // server. Por eso está aquí la IP de la LAN.
+  // Solo afecta a `next dev` y es una red local privada: no expone nada.
+  // eslint-disable-next-line sonarjs/no-hardcoded-ip
   allowedDevOrigins: ["192.168.1.20", "192.168.1.*"],
 
   // Sin "X-Powered-By: Next.js": decir qué servidor corre es darle trabajo

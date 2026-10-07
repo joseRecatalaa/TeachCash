@@ -35,7 +35,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Todo menos los estáticos: sin esto, cada imagen y cada chunk de JS
+    // Todas las rutas menos los estáticos: sin esto, cada imagen y cada chunk de JS
     // pagaría una vuelta a Supabase.
     '/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],

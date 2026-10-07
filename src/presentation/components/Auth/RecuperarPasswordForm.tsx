@@ -8,6 +8,7 @@ import { IconMailForward } from '@tabler/icons-react'
 import { obtenerTokenCaptcha } from '@/lib/turnstile'
 import { solicitarRecuperacion } from '@/src/application/actions/auth.actions'
 import { SketchButton } from '@/src/presentation/components/ui'
+import { validarEmail } from './validacion'
 import { AuthError, AuthFormulario, AuthHecho, AuthPanel } from './AuthPanel'
 
 export function RecuperarPasswordForm() {
@@ -18,7 +19,7 @@ export function RecuperarPasswordForm() {
   const form = useForm({
     initialValues: { email: '' },
     validate: {
-      email: (v) => (/^\S+@\S+\.\S+$/.test(v.trim()) ? null : 'Escribe un email válido'),
+      email: validarEmail,
     },
   })
 

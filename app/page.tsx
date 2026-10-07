@@ -45,6 +45,7 @@ import {
 import { currentPeriod, monthRange } from '@/lib/dates'
 import { formatDate, formatMoney, formatPercent, formatPeriod } from '@/lib/format'
 import { DIVISA_APP, money } from '@/lib/money'
+import { INFORME_MESES_POR_DEFECTO } from '@/src/types/informe.types'
 import styles from './page.module.css'
 
 export default function InicioPage() {
@@ -54,7 +55,7 @@ export default function InicioPage() {
   const saldo = useSaldo()
   const totales = useTotalesDelMes(periodo)
   const gasto = useGastoPorCategoria(periodo)
-  const ingresosVsGastos = useIngresosVsGastos(12)
+  const ingresosVsGastos = useIngresosVsGastos(INFORME_MESES_POR_DEFECTO)
   const serie = useSerieSaldo()
   const ultimos = useMovimientos(
     { desde: rango.from, hasta: rango.to },
@@ -135,7 +136,7 @@ export default function InicioPage() {
           <SketchCard
             className={styles.colSerie}
             title="Evolución del saldo"
-            eyebrow="Últimos 12 meses"
+            eyebrow={`Últimos ${INFORME_MESES_POR_DEFECTO} meses`}
           >
             <SerieSaldoChart datos={serie.data ?? []} />
           </SketchCard>
@@ -177,7 +178,7 @@ export default function InicioPage() {
           <SketchCard
             className={styles.colBarras}
             title="Ingresos frente a gastos"
-            eyebrow="Últimos 12 meses"
+            eyebrow={`Últimos ${INFORME_MESES_POR_DEFECTO} meses`}
           >
             <IngresosVsGastosChart datos={ingresosVsGastos.data ?? []} />
           </SketchCard>

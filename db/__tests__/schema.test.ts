@@ -326,6 +326,7 @@ describe('catálogo: toda tabla de datos es de un usuario', () => {
     `)
 
     expect(rows.map((r) => r.tabla)).toEqual(['categories', 'transactions'])
-    for (const fila of rows) expect(fila, fila.tabla).toMatchObject({ rls: true, cascada: true })
+    // Todas a la vez: si una falla, el diff dice cuál.
+    expect(rows).toEqual(rows.map((r) => ({ ...r, rls: true, cascada: true })))
   })
 })

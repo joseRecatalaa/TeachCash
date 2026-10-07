@@ -63,6 +63,14 @@ describe('create', () => {
     expect((await filaDe(id)).amount).toBe(200000)
   })
 
+  test('el get de un ingreso devuelve sentido ingreso', async () => {
+    const { id } = await repo.create(
+      USER_A,
+      nuevo({ sentido: 'income', categoriaId: CAT_INGRESO, importe: 200000 }),
+    )
+    expect(await repo.get(USER_A, id)).toMatchObject({ importe: 200000, sentido: 'income' })
+  })
+
   test('el get devuelve magnitud y sentido, no el signo', async () => {
     const { id } = await repo.create(USER_A, nuevo({ sentido: 'expense', importe: 4590 }))
     const dto = await repo.get(USER_A, id)

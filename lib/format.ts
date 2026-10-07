@@ -33,6 +33,7 @@ export const fractionDigitsOf = (currency: Currency): number => {
   ).resolvedOptions().maximumFractionDigits
   // El tipo lo declara opcional; con style 'currency' siempre viene. El 2 es una
   // red por si alguna implementación no lo informa, no la fuente de verdad.
+  /* v8 ignore next -- Intl siempre informa maximumFractionDigits de una divisa. */
   return digits ?? 2
 }
 
@@ -99,6 +100,43 @@ export function formatAmountForInput(m: Money, locale: string = LOCALE): string 
   return f.format(m.amount / scaleOf(m.currency))
 }
 
+type Separadores = { decimal: '.' | ',' | null; miles: '.' | ',' | null }
+
+/**
+ * Cuál de los dos signos es el separador decimal y cuál el de miles:
+ * - si aparecen los dos, el decimal es el último en aparecer ("1.234,56", "1,234.56");
+ * - si uno aparece varias veces, es de miles: no existe un número con dos comas decimales;
+ * - si solo hay uno y una vez, se asume decimal. "1.234" se lee 1,23 €: es una
+ *   ambigüedad real del castellano y hay que resolverla en alguna dirección.
+ */
+function separadoresDe(texto: string): Separadores {
+  const puntos = texto.split('.').length - 1
+  const comas = texto.split(',').length - 1
+
+  if (puntos > 0 && comas > 0) {
+    return texto.lastIndexOf(',') > texto.lastIndexOf('.')
+      ? { decimal: ',', miles: '.' }
+      : { decimal: '.', miles: ',' }
+  }
+  if (puntos === 1) return { decimal: '.', miles: ',' }
+  if (comas === 1) return { decimal: ',', miles: '.' }
+  if (puntos > 1) return { decimal: null, miles: '.' }
+  if (comas > 1) return { decimal: null, miles: ',' }
+  return { decimal: null, miles: null }
+}
+
+/**
+ * La parte entera sin separadores de miles, o `null` si no agrupa de verdad:
+ * 1-3 dígitos y luego grupos de exactamente 3. Sin esto, "1,2,3" pasaría por
+ * 123 en lugar de rechazarse.
+ */
+function sinMiles(entero: string, miles: string | null): string | null {
+  if (!miles || !entero.includes(miles)) return entero
+  const grupos = entero.split(miles)
+  const agrupa = /^\d{1,3}$/.test(grupos[0]) && grupos.slice(1).every((g) => /^\d{3}$/.test(g))
+  return agrupa ? grupos.join('') : null
+}
+
 /**
  * Parsea lo que escribe una persona ("1.234,56", "1234,56", "1234.56", "12 €")
  * a un importe entero.
@@ -112,55 +150,22 @@ export function parseMoney(input: string, currency: Currency = 'EUR'): Money | n
   const cleaned = input.trim().replace(/[\s€$£+]/g, '')
   if (!cleaned) return null
 
-  const dots = cleaned.split('.').length - 1
-  const commas = cleaned.split(',').length - 1
+  const { decimal, miles } = separadoresDe(cleaned)
+  const corte = decimal ? cleaned.lastIndexOf(decimal) : cleaned.length
+  const negativo = cleaned.startsWith('-')
+  const entero = sinMiles(cleaned.slice(negativo ? 1 : 0, corte), miles)
+  const fraccion = cleaned.slice(corte + 1)
 
-  // Cuál de los dos es el separador decimal:
-  // - si aparecen los dos, el decimal es el último en aparecer ("1.234,56", "1,234.56");
-  // - si uno aparece varias veces, es de miles: no existe un número con dos comas decimales;
-  // - si solo hay uno y una vez, se asume decimal. "1.234" se lee 1,23 €: es una
-  //   ambigüedad real del castellano y hay que resolverla en alguna dirección.
-  let decimalSep: string | null = null
-  if (dots > 0 && commas > 0) {
-    decimalSep = cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.') ? ',' : '.'
-  } else if (dots === 1) {
-    decimalSep = '.'
-  } else if (commas === 1) {
-    decimalSep = ','
-  }
-
-  const thousandsSep =
-    decimalSep === ',' ? '.' : decimalSep === '.' ? ',' : dots > 1 ? '.' : commas > 1 ? ',' : null
-
-  let integerText = cleaned
-  let fractionText = ''
-  if (decimalSep) {
-    const at = cleaned.lastIndexOf(decimalSep)
-    integerText = cleaned.slice(0, at)
-    fractionText = cleaned.slice(at + 1)
-  }
-
-  const negative = integerText.startsWith('-')
-  if (negative) integerText = integerText.slice(1)
-
-  // Si algo se interpreta como separador de miles, tiene que agrupar de verdad:
-  // 1-3 dígitos y luego grupos de exactamente 3. Sin esto, "1,2,3" pasaría por
-  // 123 en lugar de rechazarse.
-  if (thousandsSep && integerText.includes(thousandsSep)) {
-    const groups = integerText.split(thousandsSep)
-    const grouped =
-      /^\d{1,3}$/.test(groups[0]) && groups.slice(1).every((g) => /^\d{3}$/.test(g))
-    if (!grouped) return null
-    integerText = groups.join('')
-  }
-
-  if (!/^\d+$/.test(integerText)) return null
-  if (fractionText !== '' && !/^\d+$/.test(fractionText)) return null
+  if (entero === null || !/^\d+$/.test(entero)) return null
+  if (fraccion !== '' && !/^\d+$/.test(fraccion)) return null
 
   const digits = fractionDigitsOf(currency)
   // Trunca, no redondea: si alguien escribe 1,999 quiere decir 1,99, no 2,00.
-  const minor = digits === 0 ? 0 : Number(fractionText.padEnd(digits, '0').slice(0, digits))
-  const amount = (negative ? -1 : 1) * (Number(integerText) * 10 ** digits + minor)
+  // Una divisa sin decimales (JPY) no tiene parte menor. Hoy no hay ninguna en
+  // CURRENCIES; la rama está para que añadirla no descuadre nada.
+  /* v8 ignore next */
+  const minor = digits === 0 ? 0 : Number(fraccion.padEnd(digits, '0').slice(0, digits))
+  const amount = (negativo ? -1 : 1) * (Number(entero) * 10 ** digits + minor)
 
   return Number.isSafeInteger(amount) ? money(amount, currency) : null
 }

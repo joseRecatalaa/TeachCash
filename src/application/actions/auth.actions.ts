@@ -31,7 +31,7 @@ import {
   fechaAltaUsuario,
 } from '@/src/infrastructure/repositories/cuenta.repository'
 import { VIDA_INVITADO_DIAS, type CuentaDto } from '@/src/types/cuenta.types'
-import type { ActionResult } from './entity.actions'
+import type { ActionResult } from './resultado'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Validación
@@ -57,7 +57,7 @@ const passwordNueva = z
   .max(72, 'Máximo 72 caracteres')
   .regex(/[a-z]/, 'Incluye al menos una minúscula')
   .regex(/[A-Z]/, 'Incluye al menos una mayúscula')
-  .regex(/[0-9]/, 'Incluye al menos un número')
+  .regex(/\d/, 'Incluye al menos un número')
   .regex(/[^a-zA-Z0-9]/, 'Incluye al menos un símbolo')
 
 const captchaToken = z.string().min(1, 'Falta la verificación anti-bots')
@@ -173,6 +173,13 @@ async function origen(): Promise<string> {
 const AGENTE_BOT =
   /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|embedly|whatsapp|telegram/i
 
+/**
+ * Un día en milisegundos, para la caducidad del invitado. Es un INSTANTE (el
+ * alta en `auth.users` es un timestamp), no una fecha civil: aquí sí vale
+ * sumar milisegundos, porque "4 días después del alta" son 96 horas exactas.
+ */
+const MS_POR_DIA = 24 * 60 * 60 * 1000
+
 /** La cuenta que ve la interfaz, a partir de la sesión verificada. */
 async function cuentaDe(session: Session | null): Promise<CuentaDto> {
   if (!session) return { tipo: 'ninguna' }
@@ -180,7 +187,7 @@ async function cuentaDe(session: Session | null): Promise<CuentaDto> {
     return { tipo: 'usuario', email: session.user.email }
   }
   const alta = (await fechaAltaUsuario(session.user.id)) ?? new Date()
-  const caducaEl = new Date(alta.getTime() + VIDA_INVITADO_DIAS * 24 * 60 * 60 * 1000)
+  const caducaEl = new Date(alta.getTime() + VIDA_INVITADO_DIAS * MS_POR_DIA)
   return { tipo: 'invitado', caducaEl: caducaEl.toISOString() }
 }
 

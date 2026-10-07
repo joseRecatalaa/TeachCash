@@ -271,6 +271,8 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
         .returning({ id: categories.id }),
     )
 
+    // Solo si otra petición la borra entre el `get` de arriba y este `update`.
+    /* v8 ignore next */
     if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
     return { id }
   },
@@ -358,6 +360,8 @@ export async function activarCategoria(
     .where(and(eq(categories.id, id), eq(categories.userId, userId)))
     .returning({ id: categories.id })
 
+  // Solo si otra petición la borra entre el `get` de arriba y este `update`.
+  /* v8 ignore next */
   if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
   return { id }
 }

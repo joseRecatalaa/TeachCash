@@ -18,14 +18,14 @@ const movimientoHooks = createEntityHooks<
 >('Movimientos')
 
 /**
- * `skipListCache: true` NO es opcional aquí.
+ * Sin `desdeLista` a propósito: el detalle siempre se pide entero.
  *
  * El `ListDto` guarda el importe CON SIGNO y el `FormDto` lo parte en magnitud +
- * sentido. Si el hook cogiera el registro del cache de lista como sustituto del
- * de formulario, el campo de importe aparecería en negativo y al guardar la
- * validación lo rechazaría. Ver la nota de `createEntityHooks`.
+ * sentido. Si el formulario se pintara con la fila de la lista, el importe
+ * aparecería en negativo y al guardar la validación lo rechazaría. Ver
+ * `EntityHooksOptions` en `createEntityHooks`.
  */
-export const useMovimiento = (id: string) => movimientoHooks.useOne(id, { skipListCache: true })
+export const useMovimiento = movimientoHooks.useOne
 
 export const useCreateMovimiento = movimientoHooks.useCreate
 export const useUpdateMovimiento = movimientoHooks.useUpdate

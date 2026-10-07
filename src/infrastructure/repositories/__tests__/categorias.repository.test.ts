@@ -493,3 +493,20 @@ describe('nombre único ante una carrera', () => {
     expect((error as RepositoryError).fieldErrors).toHaveProperty('nombre')
   })
 })
+
+describe('update: validación y errores que no son de nombre', () => {
+  test('rechaza unos valores inválidos sin tocar la fila', async () => {
+    const { id } = await repo.create(USER_A, nueva())
+    await esperarErrorDeCampo(repo.update(USER_A, id, { ...nueva(), nombre: '' }), 'nombre')
+    const [fila] = await base().db.select().from(categories).where(eq(categories.id, id))
+    expect(fila.name).toBe('Comida')
+  })
+
+  test('un fallo de la base que no es el UNIQUE de nombre no se disfraza de "ya existe"', async () => {
+    // Traducir cualquier error a «ya existe una categoría con ese nombre»
+    // escondería el fallo real detrás de un mensaje falso.
+    await base().pg.exec("alter table categories add constraint chk_prueba check (name <> 'Prohibida')")
+    const error = await repo.create(USER_A, nueva({ nombre: 'Prohibida' })).catch((e: unknown) => e)
+    expect(error).not.toBeInstanceOf(RepositoryError)
+  })
+})
