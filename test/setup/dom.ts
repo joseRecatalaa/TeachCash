@@ -35,5 +35,15 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 }
 
-// jsdom no implementa el scroll; Mantine lo llama al abrir desplegables.
+// jsdom no implementa el scroll; Mantine lo llama al abrir desplegables y
+// mantine-datatable al cambiar de página (vuelve arriba).
 Element.prototype.scrollIntoView ??= () => {}
+Element.prototype.scrollTo ??= () => {}
+
+// Ni la API de fuentes: el `Textarea` con `autosize` escucha cuándo terminan de
+// cargar para volver a medir su alto, y sin esto revienta al montar.
+if (!('fonts' in document)) {
+  Object.defineProperty(document, 'fonts', {
+    value: { addEventListener: () => {}, removeEventListener: () => {} },
+  })
+}

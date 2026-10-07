@@ -16,6 +16,7 @@
  */
 
 import {
+  keys,
   useCreate,
   useDelete,
   useList,
@@ -111,8 +112,11 @@ export function createEntityHooks<TList extends BaseRecord, TForm extends BaseRe
 
     const desdeCache = () => {
       if (!desdeLista) return undefined
+      // La clave la construye Refine, no se escribe a mano: la real lleva
+      // delante `['data', <data provider>, ...]`, y con `['default', resource,
+      // 'list']` este atajo no encontraba nunca ninguna lista, sin avisar.
       const listas = queryClient.getQueriesData<{ data: TList[] }>({
-        queryKey: ['default', resource, 'list'],
+        queryKey: keys().data('default').resource(resource).action('list').get(),
       })
       for (const [, lista] of listas) {
         const fila = lista?.data?.find((item) => item.id === id)

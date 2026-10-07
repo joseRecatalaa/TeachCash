@@ -54,8 +54,9 @@ export default defineConfig({
        *    fallo aquí es una cifra mal o un agujero; no hay rama que sobre.
        *  - CORE 90 %: repositorios, acciones y sesión. Lo que queda fuera son
        *    ramas de carreras entre peticiones, marcadas con su porqué.
-       *  - IMPORTANT 80 %: GenericForm, AppTable y hooks. Los añade la Fase 5,
-       *    que es la que escribe sus tests de componente.
+       *  - IMPORTANT 80 %: GenericForm, AppTable y hooks. Los cubren los
+       *    tests de componente (`*.test.tsx`) y, en AppTable, los puros de
+       *    `columnas.ts`.
        *  - INFRA 0 %: lo excluido arriba.
        *
        * Un umbral NO se baja para que pase: o se escribe el test, o la rama
@@ -75,6 +76,13 @@ export default defineConfig({
             'lib/env.ts',
             'lib/log.ts',
           ].map((f) => [f, { lines: 90, branches: 90, functions: 90, statements: 90 }]),
+        ),
+        ...Object.fromEntries(
+          [
+            'src/presentation/components/Forms/GenericForm/**',
+            'src/presentation/components/AppTable/**',
+            'src/application/hooks/**',
+          ].map((f) => [f, { lines: 80, branches: 80, functions: 80, statements: 80 }]),
         ),
       },
     },
@@ -102,6 +110,10 @@ export default defineConfig({
           include: ['**/*.test.tsx'],
           exclude: ['node_modules/**', '.next/**', 'e2e/**'],
           setupFiles: ['./test/setup/dom.ts'],
+          // `userEvent` teclea carácter a carácter, como una persona. Con la
+          // suite entera en paralelo y la cobertura instrumentando, un
+          // formulario de tres contraseñas pasaba de los 5 s por defecto.
+          testTimeout: 15_000,
         },
       },
     ],

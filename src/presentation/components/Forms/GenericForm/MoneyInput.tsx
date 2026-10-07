@@ -10,7 +10,8 @@
  *
  * Aquí el contrato es estricto:
  *   - **hacia fuera** (`value` / `onChange`) circula SIEMPRE un entero en la
- *     unidad mínima de la divisa, o `null` si el campo está vacío;
+ *     unidad mínima de la divisa, o `null` si el campo está vacío o lo
+ *     escrito no es un importe;
  *   - **hacia dentro** (lo que se ve y se teclea) circula texto, que es lo único
  *     que una persona escribe.
  *
@@ -58,26 +59,30 @@ export function MoneyInput({ value, onChange, divisa, ...props }: MoneyInputProp
     setTexto(aTexto(value, divisa))
   }
 
+  /**
+   * Publica un valor y lo apunta como ya conocido. Sin apuntarlo, al soltar el
+   * foco el bloque de arriba lo tomaría por un cambio llegado de fuera y
+   * regeneraría el texto: "12,3x" se convertía en "12,30" sin que nadie lo
+   * pidiera.
+   */
+  const publicar = (siguiente: number | null) => {
+    setAnterior({ value: siguiente, divisa })
+    onChange(siguiente)
+  }
+
   const handleChange = (siguiente: string) => {
     setTexto(siguiente)
-
-    if (siguiente.trim() === '') {
-      onChange(null)
-      return
-    }
-
-    const importe = parseMoney(siguiente, divisa)
-    // Un texto a medio escribir ("1.", "-") no es un error: simplemente todavía
-    // no hay importe que publicar. Se deja el texto y no se toca el valor, y el
-    // blur lo resolverá cuando la persona termine.
-    if (importe) onChange(importe.amount)
+    // Un texto a medio escribir ("1.", "-") o que no es un importe publica
+    // `null`: todavía no hay importe. No es un error —la validación va al
+    // salir del campo—, pero tampoco se deja publicado el importe anterior,
+    // que el formulario guardaría mientras la pantalla enseña otra cosa.
+    publicar(parseMoney(siguiente, divisa)?.amount ?? null)
   }
 
   const handleBlur = () => {
     setEnfocado(false)
     if (texto.trim() === '') {
       setTexto('')
-      onChange(null)
       return
     }
     const importe = parseMoney(texto, divisa)

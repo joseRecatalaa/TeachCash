@@ -232,13 +232,13 @@ function FieldRendererBase({
  * sus campos con cada tecla si no se corta aquí.
  *
  * Un campo depende de su propio valor, de su propio error y de lo que declare en
- * `dependsOn`. Los campos `component`/`render` sin `dependsOn` no se pueden
- * memoizar — no hay forma de saber qué leen — así que se repintan siempre; es
- * justo el caso que la documentación de `dependsOn` pide evitar. Un `select`
- * con `optionsFrom` SÍ se memoiza por defecto, y por eso necesita `dependsOn`
- * declarado a mano si su `optionsFrom` lee otro campo (ver `categoriaId` en
- * `movimientos/sections.ts`): de lo contrario este comparador no tiene forma
- * de saber que tiene que repintarlo.
+ * `dependsOn`. Un campo que lee los valores vivos —`component`/`render`, o una
+ * función `optionsFrom`, `labelFrom` o `disabledWhen`— y NO declara
+ * `dependsOn` no se puede memoizar: no hay forma de saber qué lee, así que se
+ * repinta siempre. Es lo seguro por defecto; con `dependsOn` (ver
+ * `categoriaId` en `movimientos/sections.ts`) se repinta solo cuando cambia lo
+ * declarado. Antes `optionsFrom`/`disabledWhen` se memoizaban sin él y el
+ * campo se quedaba con lo del primer pintado sin que nada avisara.
  */
 export const FieldRenderer = memo(FieldRendererBase, (prev, next) => {
   if (prev.field !== next.field) return false
@@ -246,17 +246,20 @@ export const FieldRenderer = memo(FieldRendererBase, (prev, next) => {
   if (prev.enumMetadata !== next.enumMetadata) return false
   if (prev.readOnlyFields !== next.readOnlyFields) return false
 
-  const esCustom = Boolean(next.field.render || next.field.component)
-  if (esCustom && !next.field.dependsOn) return false
+  const { field } = next
+  const leeValores = Boolean(
+    field.render || field.component || field.optionsFrom || field.labelFrom || field.disabledWhen,
+  )
+  if (leeValores && !field.dependsOn) return false
 
-  const claves = [next.field.name, ...(next.field.dependsOn ?? [])]
-  if (next.field.minDateFrom) claves.push(next.field.minDateFrom)
-  if (next.field.maxDateFrom) claves.push(next.field.maxDateFrom)
+  const claves = [field.name, ...(field.dependsOn ?? [])]
+  if (field.minDateFrom) claves.push(field.minDateFrom)
+  if (field.maxDateFrom) claves.push(field.maxDateFrom)
 
   for (const clave of claves) {
     if (prev.values[clave] !== next.values[clave]) return false
   }
   // Los errores viven fuera de `values`: sin esto, un error de validación no se
   // pintaría hasta que la persona tocara otra tecla.
-  return prev.form.errors[next.field.name] === next.form.errors[next.field.name]
+  return prev.form.errors[field.name] === next.form.errors[field.name]
 })
