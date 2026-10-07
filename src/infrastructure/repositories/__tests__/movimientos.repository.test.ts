@@ -6,7 +6,7 @@
  * cualquiera de los tres es dinero mal contado, no una molestia de interfaz.
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { eq } from 'drizzle-orm'
 
 vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
@@ -15,6 +15,13 @@ import { usarBaseDeTest } from '@/test/harness'
 import { transactions } from '@/db/schema'
 import { movimientosRepository as repo } from '../movimientos.repository'
 import { getSaldoActual } from '../informes.repository'
+import { crearUsuario } from '@/db/testing'
+import {
+  FILAS_SIN_PAGINAR_MAXIMO,
+  IMPORTE_MAXIMO,
+  MAX_MOVIMIENTOS_INVITADO,
+} from '@/src/types/limites.types'
+import { RepositoryError } from '../types'
 import { esperarErrorDeCampo, seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 const base = usarBaseDeTest()
@@ -351,5 +358,159 @@ describe('listado: filtros y orden', () => {
 
     const { data } = await repo.list(USER_A, { paginate: false })
     expect(data[0]).toMatchObject({ categoriaNombre: 'Ocio', categoriaColor: 'cat-4' })
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seguridad: lo que llega es hostil hasta que se demuestra lo contrario
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('topes de entrada', () => {
+  test('rechaza un importe que no cabe en la columna, como error del campo', async () => {
+    // Sin el tope, llega a Postgres como «integer out of range» y vuelve como
+    // un error genérico que no dice qué corregir.
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ importe: IMPORTE_MAXIMO + 1 })), 'importe')
+  })
+
+  test('acepta el importe máximo exacto', async () => {
+    const { id } = await repo.create(USER_A, nuevo({ importe: IMPORTE_MAXIMO }))
+    expect((await filaDe(id)).amount).toBe(-IMPORTE_MAXIMO)
+  })
+
+  test('rechaza un id de categoría desmesurado sin consultar nada', async () => {
+    await esperarErrorDeCampo(
+      repo.create(USER_A, nuevo({ categoriaId: 'x'.repeat(65) })),
+      'categoriaId',
+    )
+  })
+})
+
+describe('fechas futuras', () => {
+  // 12:00 UTC del 7 de octubre: en Madrid es día 7 y en Kiritimati (UTC+14),
+  // la zona más adelantada del planeta, ya es día 8.
+  beforeEach(() => {
+    vi.useFakeTimers({ now: new Date('2026-10-07T12:00:00Z'), toFake: ['Date'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  test('rechaza una fecha posterior al "hoy" de cualquier parte del mundo', async () => {
+    await esperarErrorDeCampo(repo.create(USER_A, nuevo({ fecha: '2026-10-09' })), 'fecha')
+  })
+
+  test('acepta el "hoy" de la zona más adelantada, para no rechazar el de nadie', async () => {
+    const { id } = await repo.create(USER_A, nuevo({ fecha: '2026-10-08' }))
+    expect((await filaDe(id)).date).toBe('2026-10-08')
+  })
+
+  test('tampoco se puede mover un movimiento al futuro al editarlo', async () => {
+    const { id } = await repo.create(USER_A, nuevo({ fecha: '2026-10-01' }))
+    await esperarErrorDeCampo(repo.update(USER_A, id, nuevo({ fecha: '2027-01-01' })), 'fecha')
+    expect((await filaDe(id)).date).toBe('2026-10-01')
+  })
+})
+
+describe('listado: lo que manda el cliente no llega al SQL tal cual', () => {
+  test('un sortBy heredado del prototipo ("constructor") ordena por defecto', async () => {
+    // `SORTABLE['constructor']` es la función Object: sin `Object.hasOwn` se
+    // colaba como columna de orden y la consulta reventaba.
+    await seedMovimiento(base().db, 'viejo', USER_A, { date: '2026-01-01' })
+    await seedMovimiento(base().db, 'nuevo', USER_A, { date: '2026-02-01' })
+
+    const { data } = await repo.list(USER_A, { sortBy: 'constructor' })
+    expect(data.map((m) => m.id)).toEqual(['nuevo', 'viejo'])
+  })
+
+  test('buscar "%" encuentra el carácter, no "cualquier cosa"', async () => {
+    await seedMovimiento(base().db, 'con', USER_A, { description: 'Descuento 10% súper' })
+    await seedMovimiento(base().db, 'sin', USER_A, { description: 'Gasolina' })
+
+    const { data } = await repo.list(USER_A, { paginate: false, search: '%' })
+    expect(data.map((m) => m.id)).toEqual(['con'])
+  })
+
+  test('"_" y "\\" también son literales', async () => {
+    await seedMovimiento(base().db, 'guion', USER_A, { description: 'pago_luz' })
+    // La barra invertida es el carácter de escape de LIKE en Postgres.
+    const BARRA = String.fromCharCode(92)
+    await seedMovimiento(base().db, 'barra', USER_A, { description: `ruta${BARRA}caja` })
+    await seedMovimiento(base().db, 'otro', USER_A, { description: 'pagoXluz' })
+
+    const guion = await repo.list(USER_A, { paginate: false, search: 'pago_luz' })
+    expect(guion.data.map((m) => m.id)).toEqual(['guion'])
+    const barra = await repo.list(USER_A, { paginate: false, search: BARRA })
+    expect(barra.data.map((m) => m.id)).toEqual(['barra'])
+  })
+
+  test('sin paginar, devuelve como mucho FILAS_SIN_PAGINAR_MAXIMO filas', async () => {
+    await seedMovimiento(base().db, 'semilla', USER_A)
+    const [{ categoryId }] = await base().db.select().from(transactions)
+    await base().db.insert(transactions).values(
+      Array.from({ length: FILAS_SIN_PAGINAR_MAXIMO + 5 }, (_, i) => ({
+        userId: USER_A,
+        categoryId,
+        amount: -1,
+        date: '2026-03-15',
+        description: `m${i}`,
+      })),
+    )
+
+    const { data, total } = await repo.list(USER_A, { paginate: false })
+    expect(data).toHaveLength(FILAS_SIN_PAGINAR_MAXIMO)
+    // El total sigue siendo el real: la tabla puede avisar de que hay más.
+    expect(total).toBe(FILAS_SIN_PAGINAR_MAXIMO + 6)
+  })
+})
+
+describe('idempotencia ante una carrera', () => {
+  test('dos envíos simultáneos con la misma clave dan el MISMO movimiento', async () => {
+    // Los dos pasan la comprobación previa antes de que ninguno inserte; el
+    // segundo choca con el UNIQUE. Eso no es un error: su movimiento está
+    // guardado, así que se devuelve el id del primero.
+    const payload = nuevo({ idempotencyKey: 'form-carrera' })
+    const [a, b] = await Promise.all([repo.create(USER_A, payload), repo.create(USER_A, payload)])
+
+    expect(a.id).toBe(b.id)
+    const filas = await base().db.select().from(transactions)
+    expect(filas).toHaveLength(1)
+  })
+})
+
+describe('cuota de movimientos', () => {
+  const INVITADO = '00000000-0000-4000-8000-0000000000c1'
+
+  const llenar = async (userId: string, cuantos: number) => {
+    const categoryId = await seedCategoria(base().db, `cat-${userId}`, userId, { kind: 'expense' })
+    await base().db.insert(transactions).values(
+      Array.from({ length: cuantos }, (_, i) => ({
+        userId,
+        categoryId,
+        amount: -1,
+        date: '2026-03-15',
+        description: `m${i}`,
+      })),
+    )
+    return categoryId
+  }
+
+  test('un invitado no pasa de su cuota, con un mensaje que explica qué hacer', async () => {
+    await crearUsuario(base().pg, INVITADO, { anonimo: true })
+    const categoriaId = await llenar(INVITADO, MAX_MOVIMIENTOS_INVITADO)
+
+    const error = await repo.create(INVITADO, nuevo({ categoriaId })).catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(RepositoryError)
+    expect((error as RepositoryError).message).toMatch(/crea una cuenta/i)
+    const [{ n }] = await base()
+      .pg.query<{ n: string }>('select count(*) as n from transactions where user_id = $1', [INVITADO])
+      .then((r) => r.rows)
+    expect(Number(n)).toBe(MAX_MOVIMIENTOS_INVITADO)
+  })
+
+  test('una cuenta con email tiene una cuota mayor que la del invitado', async () => {
+    const categoriaId = await llenar(USER_A, MAX_MOVIMIENTOS_INVITADO)
+    const { id } = await repo.create(USER_A, nuevo({ categoriaId }))
+    expect(await filaDe(id)).toBeDefined()
   })
 })

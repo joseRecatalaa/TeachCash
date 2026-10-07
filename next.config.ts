@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
   // server. Por eso está aquí la IP de la LAN.
   allowedDevOrigins: ["192.168.1.20", "192.168.1.*"],
 
+  // Sin "X-Powered-By: Next.js": decir qué servidor corre es darle trabajo
+  // hecho a quien busca una vulnerabilidad conocida de esa versión.
+  poweredByHeader: false,
+
   // Cabeceras de seguridad en todas las respuestas. La Content Security Policy
   // no está aquí: lleva un nonce por petición y la pone `proxy.ts` (lib/csp.ts).
   async headers() {
@@ -26,6 +30,10 @@ const nextConfig: NextConfig = {
           // Los enlaces salientes no se llevan la ruta (ni un ?next= o un token).
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+          // Una ventana abierta desde otra web (window.open) no se queda con
+          // una referencia a la nuestra. Turnstile va en iframe, no en popup,
+          // así que no le afecta.
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
         ],
       },
     ];

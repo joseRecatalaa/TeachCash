@@ -16,6 +16,7 @@
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { entornoServidor } from '../lib/env.ts'
 import * as schema from './schema.ts'
 
 /**
@@ -24,15 +25,7 @@ import * as schema from './schema.ts'
  */
 export type Database = PgDatabase<PgQueryResultHKT, typeof schema>
 
-const urlObligatoria = (nombre: string): string => {
-  const url = process.env[nombre]
-  if (!url) {
-    throw new Error(`Falta ${nombre}. Copia .env.example a .env.local y rellénalo.`)
-  }
-  return url
-}
-
-export const createDbClient = (url: string = urlObligatoria('DATABASE_URL')) =>
+export const createDbClient = (url: string = entornoServidor().DATABASE_URL) =>
   postgres(url, {
     prepare: false,
     // Pocas: el pooler es quien multiplexa. Muchas aquí solo agotan su cupo.
@@ -42,5 +35,3 @@ export const createDbClient = (url: string = urlObligatoria('DATABASE_URL')) =>
   })
 
 export const createDb = (client: postgres.Sql): Database => drizzle(client, { schema })
-
-export { urlObligatoria }

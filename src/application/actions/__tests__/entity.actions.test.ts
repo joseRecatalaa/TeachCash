@@ -320,3 +320,32 @@ describe('operaciones fuera del CRUD', () => {
     })
   })
 })
+
+describe('un fallo inesperado se registra sin los datos de la persona', () => {
+  test('el importe y la descripción no llegan al log', async () => {
+    // Arrange: una restricción que el repositorio no conoce, para que el
+    // insert falle DENTRO de Postgres con los parámetros en el error.
+    await seedCategoria(base().db, 'super', USER_A, { kind: 'expense' })
+    await base().pg.exec('alter table transactions add constraint chk_prueba check (amount > 0)')
+    const espia = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // Act
+    const r = await createEntity('Movimientos', {
+      categoriaId: 'super',
+      importe: 987654,
+      sentido: 'expense',
+      fecha: '2026-03-15',
+      descripcion: 'Farmacia de la calle Mayor',
+      notas: 'Receta del dermatólogo',
+    })
+
+    // Assert: genérico para el cliente, y el log dice qué falló sin decir qué
+    // compró ni cuánto.
+    expect(r).toEqual({ ok: false, error: 'Se ha producido un error inesperado' })
+    const log = JSON.stringify(espia.mock.calls)
+    expect(log).toContain('chk_prueba')
+    expect(log).not.toContain('987654')
+    expect(log).not.toContain('Farmacia')
+    expect(log).not.toContain('dermatólogo')
+  })
+})

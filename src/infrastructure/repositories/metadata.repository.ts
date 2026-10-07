@@ -56,5 +56,7 @@ const VACIO: FormMetadata = { readOnlyFields: [], enumFields: {} }
  * Devolver `{}` deja que el formulario se pinte igual, con sus campos de texto.
  */
 export function getFormMetadata(resource: string): FormMetadata {
-  return METADATA[resource] ?? VACIO
+  // `Object.hasOwn` y no `METADATA[resource] ?? VACIO`: `resource` llega del
+  // cliente, y `METADATA['constructor']` es la función `Object`, no `undefined`.
+  return Object.hasOwn(METADATA, resource) ? METADATA[resource] : VACIO
 }

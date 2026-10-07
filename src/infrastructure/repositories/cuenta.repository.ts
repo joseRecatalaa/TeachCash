@@ -6,8 +6,20 @@
  */
 
 import { eq } from 'drizzle-orm'
+import { boolean, pgSchema, uuid } from 'drizzle-orm/pg-core'
 import { authUsers } from 'drizzle-orm/supabase'
 import { db } from '@/db'
+
+/**
+ * Las columnas de `auth.users` que `drizzle-orm/supabase` no declara.
+ *
+ * Va aquí y no en `db/schema.ts` a propósito: lo que está en el esquema lo
+ * gestiona drizzle-kit, y el esquema `auth` es de Supabase.
+ */
+const usuarios = pgSchema('auth').table('users', {
+  id: uuid('id').primaryKey(),
+  isAnonymous: boolean('is_anonymous'),
+})
 
 /** Cuándo se dio de alta el usuario. Para un invitado, es lo que fija cuándo caduca. */
 export async function fechaAltaUsuario(userId: string): Promise<Date | null> {
@@ -17,6 +29,20 @@ export async function fechaAltaUsuario(userId: string): Promise<Date | null> {
     .where(eq(authUsers.id, userId))
     .limit(1)
   return fila?.creado ?? null
+}
+
+/**
+ * ¿Es un invitado? Se lee de la base y no de la sesión porque quien pregunta
+ * es un repositorio, que solo recibe el `userId`. Un usuario que no está en
+ * `auth.users` cuenta como invitado: ante la duda, la cuota más baja.
+ */
+export async function esInvitado(userId: string): Promise<boolean> {
+  const [fila] = await db
+    .select({ anonimo: usuarios.isAnonymous })
+    .from(usuarios)
+    .where(eq(usuarios.id, userId))
+    .limit(1)
+  return fila?.anonimo !== false
 }
 
 /**

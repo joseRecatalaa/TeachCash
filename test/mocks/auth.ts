@@ -11,7 +11,9 @@ import { harness } from '../harness'
 export function authMock() {
   return {
     getSession: async () =>
-      harness.userId ? { user: { id: harness.userId, email: null, esInvitado: false } } : null,
+      harness.userId
+        ? { user: { id: harness.userId, email: null, esInvitado: false, entroConPassword: false } }
+        : null,
     requireUserId: async () => {
       if (!harness.userId) throw new Error('No autorizado')
       return harness.userId

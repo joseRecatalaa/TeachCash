@@ -135,7 +135,8 @@ describe('reparto', () => {
   test('reparto entre 7', () => {
     const parts = allocate(money(10000), [1, 1, 1, 1, 1, 1, 1])
     expect(sum(parts).amount).toBe(10000)
-    // 10000/7 = 1428,57 → 1428 a cada uno y 4 céntimos de resto a los 4 primeros.
+    // 10000/7 = 1428,57 → 1428 a cada uno y 4 céntimos de resto. Las partes
+    // decimales empatan, así que van a los 4 primeros.
     expect(parts.filter((p) => p.amount === 1429)).toHaveLength(4)
   })
 
@@ -219,12 +220,36 @@ describe('reparto justo', () => {
     )
   })
 
-  test('el resto se reparte por orden, empezando por el primero con peso', () => {
-    // Decisión fijada: determinista y por posición. Si se cambia a "mayor
-    // parte fraccionaria", este es el test que tiene que cambiar.
-    expect(allocate(money(13555737), [64, 8, 2, 1, 35, 98]).map((m) => m.amount)).toEqual([
-      4170997, 521375, 130344, 65171, 2281013, 6386837,
-    ])
+  test('el céntimo sobrante va a quien más cerca estaba de merecerlo', () => {
+    // 1,01 € al 10/45/45: lo exacto es 0,101 / 0,4545 / 0,4545. Por orden, el
+    // céntimo iría al primero (0,11: el que más se aleja de su parte); por mayor
+    // parte decimal va al segundo, y ninguna parte se aleja más de lo necesario.
+    expect(allocate(money(101), [10, 45, 45]).map((m) => m.amount)).toEqual([10, 46, 45])
+  })
+
+  test('a igual parte decimal, desempata la posición (determinista)', () => {
+    expect(allocate(money(10000), [1, 1, 1]).map((m) => m.amount)).toEqual([3334, 3333, 3333])
+  })
+
+  test('nadie redondeado hacia abajo tenía más derecho al céntimo que alguien redondeado hacia arriba', () => {
+    // Es la definición de "mayor parte decimal" (método del resto mayor).
+    fc.assert(
+      fc.property(totales, pesos, (total, w) => {
+        const totalPeso = w.reduce((a, b) => a + b, 0)
+        if (totalPeso === 0) return
+        const decimal = w.map((p) => {
+          const exacto = (total * p) / totalPeso
+          return exacto - Math.floor(exacto)
+        })
+        const subidos = allocate(money(total), w).map(
+          (parte, i) => parte.amount > Math.floor((total * w[i]) / totalPeso),
+        )
+        const minSubido = Math.min(...decimal.filter((_, i) => subidos[i]))
+        const maxNoSubido = Math.max(...decimal.filter((_, i) => !subidos[i] && w[i] > 0))
+        // Margen para el error de coma flotante al calcular las partes decimales.
+        expect(maxNoSubido).toBeLessThanOrEqual(minSubido + 1e-9)
+      }),
+    )
   })
 
   test('a quien tiene peso 0 no le toca nada, ni el céntimo del resto', () => {

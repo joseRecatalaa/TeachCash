@@ -20,6 +20,8 @@ import {
   listarCatalogoCategorias,
   ocultarCategoria,
 } from '../categorias.repository'
+import { IMPORTE_MAXIMO, MAX_CATEGORIAS } from '@/src/types/limites.types'
+import { RepositoryError } from '../types'
 import { esperarErrorDeCampo, seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 const base = usarBaseDeTest()
@@ -407,5 +409,87 @@ describe('"no existe" y "no es tuya" son indistinguibles', () => {
       await expect(repo.update(USER_A, id, cambios)).rejects.toThrow(/^No encontrado$/)
       await expect(repo.remove(USER_A, id)).rejects.toThrow(/^No encontrado$/)
     }
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seguridad
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('listado: lo que manda el cliente no llega al SQL tal cual', () => {
+  test('un sortBy heredado del prototipo ("constructor") ordena por nombre', async () => {
+    await seedCategoria(base().db, 'b', USER_A, { name: 'Bravo' })
+    await seedCategoria(base().db, 'a', USER_A, { name: 'Alfa' })
+
+    const { data } = await repo.list(USER_A, { sortBy: 'constructor', paginate: false })
+    expect(data.map((c) => c.nombre)).toEqual(['Alfa', 'Bravo'])
+  })
+
+  test('buscar "_" encuentra el carácter, no "un carácter cualquiera"', async () => {
+    await seedCategoria(base().db, 'con', USER_A, { name: 'gastos_fijos' })
+    await seedCategoria(base().db, 'sin', USER_A, { name: 'gastosXfijos' })
+
+    const { data } = await repo.list(USER_A, { paginate: false, search: 'gastos_fijos' })
+    expect(data.map((c) => c.id)).toEqual(['con'])
+  })
+
+  test('el tamaño de página por defecto es el de la constante', async () => {
+    for (let i = 0; i < 25; i++) {
+      await seedCategoria(base().db, `c${i}`, USER_A, { name: `Cat ${String(i).padStart(2, '0')}` })
+    }
+    const { data, total } = await repo.list(USER_A, {})
+    expect(data).toHaveLength(20)
+    expect(total).toBe(25)
+  })
+})
+
+describe('topes', () => {
+  test('rechaza un presupuesto que no cabe en la columna', async () => {
+    await esperarErrorDeCampo(
+      repo.create(USER_A, nueva({ presupuesto: IMPORTE_MAXIMO + 1 })),
+      'presupuesto',
+    )
+  })
+
+  test('activar con un presupuesto desmesurado es un error del campo', async () => {
+    await seedCategoria(base().db, 'oculta', USER_A, { hidden: true, kind: 'expense' })
+    await esperarErrorDeCampo(activarCategoria(USER_A, 'oculta', IMPORTE_MAXIMO + 1), 'presupuesto')
+  })
+
+  test('no se pasa de MAX_CATEGORIAS', async () => {
+    await base()
+      .db.insert(categories)
+      .values(
+        Array.from({ length: MAX_CATEGORIAS }, (_, i) => ({
+          userId: USER_A,
+          name: `Cat ${i}`,
+          kind: 'income' as const,
+        })),
+      )
+
+    const error = await repo.create(USER_A, nueva({ nombre: 'Una más' })).catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(RepositoryError)
+    expect((error as RepositoryError).message).toMatch(/categorías/i)
+    const filas = await base().db.select().from(categories).where(eq(categories.userId, USER_A))
+    expect(filas).toHaveLength(MAX_CATEGORIAS)
+  })
+})
+
+describe('nombre único ante una carrera', () => {
+  test('dos altas simultáneas con el mismo nombre: una gana y la otra es un error del campo', async () => {
+    // Las dos pasan `assertNombreLibre` antes de que ninguna inserte; la
+    // segunda choca con el UNIQUE (user_id, name). Sin capturarlo, eso es un
+    // «error inesperado» en vez de «ya existe una categoría con ese nombre».
+    const resultados = await Promise.allSettled([
+      repo.create(USER_A, nueva()),
+      repo.create(USER_A, nueva()),
+    ])
+
+    const fallidos = resultados.filter((r) => r.status === 'rejected')
+    expect(fallidos).toHaveLength(1)
+    const error = (fallidos[0] as PromiseRejectedResult).reason
+    expect(error).toBeInstanceOf(RepositoryError)
+    expect((error as RepositoryError).fieldErrors).toHaveProperty('nombre')
   })
 })

@@ -15,9 +15,10 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
-import { createDbClient, urlObligatoria } from './client.ts'
+import { entornoMigraciones } from '../lib/env.ts'
+import { createDbClient } from './client.ts'
 
-const url = urlObligatoria('DATABASE_URL_MIGRATIONS')
+const url = entornoMigraciones().DATABASE_URL_MIGRATIONS
 const client = createDbClient(url)
 
 await migrate(drizzle(client), { migrationsFolder: './db/migrations' })

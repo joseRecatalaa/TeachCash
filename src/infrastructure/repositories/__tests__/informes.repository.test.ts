@@ -281,3 +281,26 @@ describe('rango por defecto de la serie', () => {
     expect(rango).toEqual({ desde: '2026-06-20', hasta: '2026-08-13' })
   })
 })
+
+describe('rango por defecto y movimientos posteriores a hoy', () => {
+  test('termina en el último movimiento si es posterior a hoy', async () => {
+    // El "hoy" de Madrid puede ir un día por detrás del de Kiritimati, que es
+    // el tope de las fechas: un movimiento de "mañana" es legítimo. Si la
+    // serie cortara en hoy, su último punto no incluiría ese movimiento y
+    // dejaría de coincidir con el saldo actual.
+    await seedMovimiento(base().db, 'a', USER_A, { date: '2026-08-10', amount: -500 })
+    await seedMovimiento(base().db, 'b', USER_A, { date: '2026-08-14', amount: -300 })
+
+    const rango = await getRangoPorDefecto(USER_A, 12, '2026-08-13')
+    expect(rango).toEqual({ desde: '2026-08-10', hasta: '2026-08-14' })
+
+    const serie = await getSerieSaldo(USER_A, rango)
+    expect(serie.at(-1)?.saldo).toBe(await getSaldoActual(USER_A))
+  })
+
+  test('sin movimientos posteriores, sigue terminando hoy', async () => {
+    await seedMovimiento(base().db, 'a', USER_A, { date: '2026-08-10' })
+    const rango = await getRangoPorDefecto(USER_A, 12, '2026-08-13')
+    expect(rango.hasta).toBe('2026-08-13')
+  })
+})

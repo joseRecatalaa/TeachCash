@@ -221,9 +221,25 @@ export async function getPrimeraFecha(userId: string): Promise<CivilDate | null>
   return row?.fecha ?? null
 }
 
+/** Fecha del último movimiento. */
+export async function getUltimaFecha(userId: string): Promise<CivilDate | null> {
+  const [row] = await db
+    // ::text, por lo mismo que en `getPrimeraFecha`.
+    .select({ fecha: sql<string | null>`max(${transactions.date})::text` })
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+  return row?.fecha ?? null
+}
+
 /**
  * Rango por defecto de la evolución de saldo: los últimos `meses` meses, sin
  * empezar antes del primer movimiento.
+ *
+ * Termina en `max(hoy, último movimiento)`, no en hoy a secas. Las fechas se
+ * aceptan hasta el "hoy" de la zona más adelantada (`latestToday`), que en
+ * Madrid puede ser mañana; si la serie cortara en hoy, su último punto no
+ * incluiría ese movimiento y dejaría de coincidir con `getSaldoActual` — y esa
+ * coincidencia es la prueba de que el saldo es derivado (regla dura 7).
  */
 export async function getRangoPorDefecto(
   userId: string,
@@ -231,7 +247,8 @@ export async function getRangoPorDefecto(
   hoy: CivilDate = today(),
 ): Promise<{ desde: CivilDate; hasta: CivilDate }> {
   const inicioVentana = monthRange(addMonths(periodOf(hoy), -(meses - 1))).from
-  const primera = await getPrimeraFecha(userId)
+  const [primera, ultima] = await Promise.all([getPrimeraFecha(userId), getUltimaFecha(userId)])
   const desde = primera && compareDates(primera, inicioVentana) > 0 ? primera : inicioVentana
-  return { desde, hasta: hoy }
+  const hasta = ultima && compareDates(ultima, hoy) > 0 ? ultima : hoy
+  return { desde, hasta }
 }

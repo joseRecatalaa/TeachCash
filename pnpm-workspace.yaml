@@ -6,3 +6,46 @@ ignoredBuiltDependencies:
 # esbuild coloca su binario en el postinstall; sin esto, vitest falla al arrancar.
 onlyBuiltDependencies:
   - esbuild
+
+# Suelos de seguridad para dependencias TRANSITIVAS, que no se suben solas.
+# Objetivo: `pnpm audit` (producción Y desarrollo) sin un solo aviso. Un aviso
+# que se tolera "porque es de desarrollo" acaba tapando el siguiente que no lo es.
+# Cada entrada se queda dentro de la mayor que ya pide quien la trae, o sustituye
+# un paquete por otro con la misma API. Cuando el padre lo arregle por su cuenta,
+# se puede quitar: `pnpm audit` dirá si sigue haciendo falta.
+#
+# OJO: `pnpm patch-commit` y algunos `pnpm add` reescriben este fichero y BORRAN
+# los comentarios. Si los tocas, revisa el diff.
+overrides:
+  # PRODUCCIÓN ─────────────────────────────────────────────────────────────────
+  # GHSA-x5fp-wj9c-mxmx y GHSA-4mjr-xmp4-gh2g. La trae @refinedev/core (^6.10.1).
+  qs: ^6.16.0
+  # DoS del event loop con mapas de código manipulados. La trae next > postcss (^1.2.1).
+  source-map-js: ^1.2.2
+
+  # DESARROLLO (lint, migraciones y generador) ─────────────────────────────────
+  # Varios DoS por expansión de llaves. Conviven dos mayores: la 1 (eslint >
+  # minimatch@3) y la 5 (typescript-estree > minimatch@10).
+  brace-expansion@<2: ^1.1.21
+  brace-expansion@>=4 <6: ^5.0.12
+  # DoS por claves de merge. La trae eslint > @eslint/eslintrc (^4.1.0).
+  js-yaml: ^4.3.2
+  # GHSA-67mh-4wv8-2f99: CORS abierto en `esbuild serve`. La trae drizzle-kit >
+  # @esbuild-kit/core-utils, fijada en la 0.18. Solo usa `transform` (nunca
+  # `serve`), así que se alinea con la 0.25 que drizzle-kit ya usa directamente.
+  '@esbuild-kit/core-utils>esbuild': ^0.25.4
+  # GHSA-vfj7-8cjw-p6xm: `braces` NO tiene versión con parche, así que se quita
+  # de en medio en los dos sitios que lo traían (vía micromatch):
+  #   - El plugin de ESLint de Next usa fast-glob en UNA llamada,
+  #     `globSync(patrón, { onlyDirectories: true })`, y solo si se configura
+  #     `settings.next.rootDir` (aquí no). tinyglobby tiene la misma función.
+  #     Si un día se configura `rootDir`: tinyglobby devuelve la barra final.
+  '@next/eslint-plugin-next>fast-glob': npm:tinyglobby@^0.2.17
+  #   - plop > liftoff > findup-sync usa `micromatch.matcher(patrón, opts)`.
+  #     picomatch es el motor de micromatch y `picomatch(patrón, opts)` hace lo
+  #     mismo; el parche de abajo cambia esa única llamada.
+  'findup-sync>micromatch': npm:picomatch@^4.0.7
+
+# Parches sobre paquetes de terceros. Cada uno explica su porqué dentro del diff.
+patchedDependencies:
+  findup-sync@5.0.0: patches/findup-sync@5.0.0.patch

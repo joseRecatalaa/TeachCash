@@ -41,6 +41,7 @@ import { formatDate, formatMoney, formatMoneySigned, scaleOf } from '@/lib/forma
 import { asCurrency, DIVISA_APP, isCurrency, type Currency } from '@/lib/money'
 import { CLAVES_COLOR, esClaveColor } from '@/lib/colores'
 import type { EnumValueDto } from '@/src/types/formMetadata.types'
+import { TAMANO_PAGINA_POR_DEFECTO } from '@/src/types/limites.types'
 import styles from './AppTable.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -189,7 +190,9 @@ export interface AppTableProps<T> extends AppTableManualProps<T> {
 // Constantes
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DEFAULT_PAGE_SIZE = 20
+// El mismo que el del servidor: si difirieran, la primera página del modo
+// servidor y la del modo cliente tendrían tamaños distintos.
+const DEFAULT_PAGE_SIZE = TAMANO_PAGINA_POR_DEFECTO
 const PAGE_SIZE_OPTIONS = [20, 50, 100, 200]
 
 const OPERADORES: Record<ColumnType, { value: FilterOperator; label: string }[]> = {

@@ -75,12 +75,14 @@ describe('serie de saldo', () => {
 
 describe('errores', () => {
   test('un fallo inesperado no filtra el detalle al cliente', async () => {
-    // Un periodo imposible revienta dentro de `lib/dates`. El mensaje real
-    // («Periodo inválido: …») se queda en el log del servidor.
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Sin la tabla, la consulta revienta dentro de Postgres. El mensaje real
+    // («relation "transactions" does not exist») se queda en el log del servidor.
+    await base().pg.exec('drop table transactions cascade')
+    const espia = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const r = await fetchTotalesDelMes('2026-13')
+    const r = await fetchTotalesDelMes('2026-03')
 
     expect(r).toEqual({ ok: false, error: 'Se ha producido un error inesperado' })
+    expect(JSON.stringify(espia.mock.calls)).toContain('does not exist')
   })
 })

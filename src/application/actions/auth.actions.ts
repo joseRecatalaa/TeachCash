@@ -23,6 +23,7 @@ import { headers } from 'next/headers'
 import type { AuthError } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { getSession, type Session } from '@/lib/auth'
+import { registrarError } from '@/lib/log'
 import { crearClienteSupabase } from '@/lib/supabase/server'
 import { asegurarCatalogoInicial } from '@/src/infrastructure/repositories/categorias.repository'
 import {
@@ -68,8 +69,18 @@ const IniciarSesion = z.object({
 })
 const Registrarse = z.object({ email, captchaToken })
 const SolicitarRecuperacion = z.object({ email, captchaToken })
+/**
+ * La actual y el CAPTCHA son opcionales AQUÍ porque solo se piden a quien
+ * entró con contraseña; `cambiarPassword` decide si hacen falta mirando la
+ * sesión, no lo que diga el formulario.
+ */
 const CambiarPassword = z
-  .object({ password: passwordNueva, repetir: z.string() })
+  .object({
+    password: passwordNueva,
+    repetir: z.string(),
+    passwordActual: z.string().max(72).optional(),
+    captchaToken: z.string().optional(),
+  })
   .refine((v) => v.password === v.repetir, {
     path: ['repetir'],
     message: 'Las contraseñas no coinciden',
@@ -112,7 +123,7 @@ function traducir(error: AuthError, contexto: string): string {
     case 'reauthentication_needed':
       return 'Por seguridad, cambia la contraseña desde «¿Has olvidado tu contraseña?»'
     default:
-      console.error(`[auth.actions] ${contexto}`, error.code, error.message)
+      registrarError(`auth.actions/${contexto}`, error)
       return MENSAJES.inesperado
   }
 }
@@ -180,7 +191,7 @@ async function intentar<T>(
   try {
     return await operacion()
   } catch (err) {
-    console.error(`[auth.actions] ${contexto}`, err)
+    registrarError(`auth.actions/${contexto}`, err)
     return fallo(MENSAJES.inesperado)
   }
 }
@@ -220,7 +231,9 @@ export async function iniciarInvitado(token: unknown): Promise<ActionResult<Cuen
     await asegurarCatalogoInicial(data.user.id)
     return {
       ok: true,
-      data: await cuentaDe({ user: { id: data.user.id, email: null, esInvitado: true } }),
+      data: await cuentaDe({
+        user: { id: data.user.id, email: null, esInvitado: true, entroConPassword: false },
+      }),
     }
   })
 }
@@ -312,15 +325,40 @@ export async function solicitarRecuperacion(
     if (error && (error.code === 'captcha_failed' || error.code?.startsWith('over_'))) {
       return fallo(traducir(error, 'solicitarRecuperacion'))
     }
-    if (error) console.error('[auth.actions] solicitarRecuperacion', error.code, error.message)
+    if (error) registrarError('auth.actions/solicitarRecuperacion', error)
     return { ok: true, data: { mensaje: MENSAJES.enlaceEnviado } }
   })
 }
 
 /**
- * Fijar o cambiar la contraseña. Solo para usuarios con email confirmado: es el
- * destino del enlace de confirmación y del de recuperación, que dejan la sesión
- * ya iniciada.
+ * Si cambiar la contraseña exige escribir la actual. Lo pregunta el formulario
+ * para saber si pintar ese campo; quien lo impone es `cambiarPassword`.
+ */
+export async function requisitosCambioPassword(): Promise<ActionResult<{ pideActual: boolean }>> {
+  return intentar('requisitosCambioPassword', async () => {
+    const session = await getSession()
+    if (!session || session.user.esInvitado) return fallo(MENSAJES.noAutorizado)
+    return { ok: true, data: { pideActual: session.user.entroConPassword } }
+  })
+}
+
+/**
+ * Fijar o cambiar la contraseña. Solo para usuarios con email confirmado.
+ *
+ * Se llega por dos caminos, y cada uno pide una cosa distinta:
+ *   - **Desde un enlace del email** (confirmar la cuenta nueva o recuperar la
+ *     contraseña). El enlace deja la sesión iniciada, y quien lo abre no
+ *     conoce la contraseña actual: o es aleatoria (alta) o la ha olvidado. El
+ *     enlace, que solo llega a su buzón, es la prueba de identidad.
+ *   - **Con una sesión abierta escribiendo la contraseña.** Esa persona sí la
+ *     conoce, y se le vuelve a pedir: una cookie robada o un ordenador
+ *     desatendido no bastan para quedarse la cuenta. Es la misma
+ *     reautenticación que `borrarCuenta`: el email sale de la SESIÓN, nunca
+ *     del formulario, y pasa por el CAPTCHA.
+ *
+ * Cuál de los dos es lo dice el claim `amr` del JWT verificado
+ * (`session.user.entroConPassword`), que no se puede falsificar desde el
+ * cliente. Un flag en el formulario o en una cookie sí se podría.
  */
 export async function cambiarPassword(values: unknown): Promise<ActionResult<CuentaDto>> {
   return intentar('cambiarPassword', async () => {
@@ -329,9 +367,35 @@ export async function cambiarPassword(values: unknown): Promise<ActionResult<Cue
 
     const parsed = CambiarPassword.safeParse(values)
     if (!parsed.success) return erroresDeCampo(parsed.error)
+    const { password, passwordActual, captchaToken } = parsed.data
 
     const supabase = await crearClienteSupabase()
-    const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+
+    if (session.user.entroConPassword) {
+      if (!session.user.email) return fallo(MENSAJES.noAutorizado)
+      if (!passwordActual) {
+        return fallo('Escribe tu contraseña actual', {
+          passwordActual: 'Escribe tu contraseña actual',
+        })
+      }
+      if (!captchaToken) return fallo(MENSAJES.captcha)
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: passwordActual,
+        options: { captchaToken },
+      })
+      if (error) {
+        if (error.code === 'invalid_credentials') {
+          return fallo('Contraseña actual incorrecta', {
+            passwordActual: 'Contraseña actual incorrecta',
+          })
+        }
+        return fallo(traducir(error, 'cambiarPassword/reautenticar'))
+      }
+    }
+
+    const { error } = await supabase.auth.updateUser({ password })
     if (error) return fallo(traducir(error, 'cambiarPassword'))
 
     return { ok: true, data: await cuentaDe(session) }
@@ -392,9 +456,7 @@ export async function borrarCuenta(values: unknown): Promise<ActionResult<null>>
     // El usuario ya no existe, así que Supabase puede responder con error al
     // revocar la sesión; las cookies se borran igual, y eso es lo que importa.
     const salida = await supabase.auth.signOut({ scope: 'local' })
-    if (salida.error) {
-      console.error('[auth.actions] borrarCuenta/signOut', salida.error.code, salida.error.message)
-    }
+    if (salida.error) registrarError('auth.actions/borrarCuenta/signOut', salida.error)
     return { ok: true, data: null }
   })
 }

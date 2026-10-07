@@ -13,6 +13,8 @@ import {
   isCivilDate,
   isLeapYear,
   isPeriod,
+  LATEST_TIME_ZONE,
+  latestToday,
   partsOf,
   lastNMonths,
   monthRange,
@@ -188,6 +190,27 @@ describe('propiedades de la aritmética de fechas', () => {
       fc.property(fecha, fecha, (a, b) => {
         expect(Math.sign(compareDates(a, b))).toBe(Math.sign(toEpochDay(a) - toEpochDay(b)))
       }),
+    )
+  })
+})
+
+describe('latestToday', () => {
+  test('es el "hoy" de la zona más adelantada del planeta', () => {
+    // 12:00 UTC: en Madrid es día 7; en Kiritimati (UTC+14), ya es día 8.
+    const instante = new Date('2026-10-07T12:00:00Z')
+    expect(LATEST_TIME_ZONE).toBe('Pacific/Kiritimati')
+    expect(latestToday(instante)).toBe('2026-10-08')
+  })
+
+  test('nunca va por detrás del "hoy" de ninguna zona', () => {
+    // Es lo que permite usarlo como tope de las fechas sin rechazar el día de
+    // nadie: si fuera por detrás en alguna zona, esa persona no podría anotar
+    // lo que acaba de gastar.
+    const zonas = ['Pacific/Pago_Pago', 'America/Los_Angeles', 'UTC', 'Europe/Madrid', 'Asia/Tokyo', 'Pacific/Auckland']
+    fc.assert(
+      fc.property(fc.date({ min: new Date('2000-01-01'), max: new Date('2100-01-01'), noInvalidDate: true }), (instante) =>
+        zonas.every((zona) => compareDates(today(zona, instante), latestToday(instante)) <= 0),
+      ),
     )
   })
 })

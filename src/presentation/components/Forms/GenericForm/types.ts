@@ -141,6 +141,12 @@ export interface FieldDefinition {
   minDateFrom?: string
   /** Solo campos `date`: idem, como fecha máxima. */
   maxDateFrom?: string
+  /**
+   * Solo campos `date`: no deja elegir días posteriores a hoy (el de quien
+   * rellena, en su huso). Es cortesía: quien prohíbe las fechas futuras es el
+   * repositorio.
+   */
+  noFutureDates?: boolean
   /** Contenido custom. Si se define, se ignora `type`. */
   render?: FieldRender
   /**

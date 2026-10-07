@@ -11,11 +11,21 @@
  */
 
 import { and, asc, desc, eq, gte, ilike, lte, sql, type SQL } from 'drizzle-orm'
+import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions } from '@/db/schema'
-import { isCivilDate } from '@/lib/dates'
+import { compareDates, isCivilDate, latestToday } from '@/lib/dates'
+import {
+  ID_MAX,
+  IMPORTE_MAXIMO,
+  MAX_MOVIMIENTOS_CUENTA,
+  MAX_MOVIMIENTOS_INVITADO,
+} from '@/src/types/limites.types'
 import type { MovimientoFormDto, MovimientoListDto } from '@/src/types/movimiento.types'
+import { esInvitado } from './cuenta.repository'
+import { columnaDeOrden, patronContiene, trozo } from './listado'
+import { esChoqueUnico } from './postgres-errors'
 import {
   fromFieldErrors,
   NOT_FOUND,
@@ -29,17 +39,30 @@ import {
 // Validación
 // ─────────────────────────────────────────────────────────────────────────────
 
-const fechaCivil = z.string().refine(isCivilDate, 'Fecha no válida')
+/**
+ * Una fecha civil que no sea futura.
+ *
+ * El tope es el "hoy" de la zona más adelantada del planeta, no el de Madrid:
+ * el servidor no sabe dónde está nadie, y rechazar el "hoy" real de alguien
+ * sería impedirle anotar lo que acaba de gastar. Se evalúa en cada validación,
+ * no al cargar el módulo, porque el servidor no se reinicia a medianoche.
+ */
+const fechaCivil = z
+  .string()
+  .refine(isCivilDate, 'Fecha no válida')
+  .refine((f) => compareDates(f, latestToday()) <= 0, 'La fecha no puede ser futura')
 
 export const SENTIDOS = ['expense', 'income'] as const
 
 const MovimientoSave = z.object({
-  categoriaId: z.string().min(1, 'Elige una categoría'),
-  // Céntimos, SIN signo. El signo lo pone `sentido`.
+  categoriaId: z.string().min(1, 'Elige una categoría').max(ID_MAX, 'Categoría no encontrada'),
+  // Céntimos, SIN signo. El signo lo pone `sentido`. El tope es lo que cabe
+  // en la columna (int4): sin él, Postgres lo rechaza con un error genérico.
   importe: z
     .number()
     .int('Importe no válido')
-    .positive('El importe debe ser mayor que cero'),
+    .positive('El importe debe ser mayor que cero')
+    .max(IMPORTE_MAXIMO, 'El importe máximo es de 10.000.000,00 €'),
   sentido: z.enum(SENTIDOS, { message: 'Elige ingreso o gasto' }),
   fecha: fechaCivil,
   descripcion: z
@@ -87,7 +110,7 @@ const filtros = (userId: string, params: ListParams): SQL | undefined => {
     f.categoriaId ? eq(transactions.categoryId, String(f.categoriaId)) : undefined,
     // `ilike` y no `like`: en Postgres `like` distingue mayúsculas, y buscar
     // "merca" tiene que encontrar "Mercadona".
-    search ? ilike(transactions.description, `%${search}%`) : undefined,
+    search ? ilike(transactions.description, patronContiene(search)) : undefined,
   )
 }
 
@@ -106,7 +129,7 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
   async list(userId: string, params: ListParams): Promise<ListResult<MovimientoListDto>> {
     const where = filtros(userId, params)
 
-    const column = SORTABLE[params.sortBy as keyof typeof SORTABLE] ?? transactions.date
+    const column = columnaDeOrden<AnyPgColumn>(SORTABLE, params.sortBy, transactions.date)
     const dir = params.sortDir === 'asc' ? asc : desc
     // Desempate por id: sin él, dos movimientos del mismo día pueden bailar de
     // orden entre recargas y la paginación se salta filas.
@@ -127,12 +150,8 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
       .orderBy(...order)
 
     // Aquí sí se pagina en SQL: los movimientos son la tabla que crece.
-    const rows =
-      params.paginate === false
-        ? await query
-        : await query
-            .limit(params.pageSize ?? 20)
-            .offset(((params.page ?? 1) - 1) * (params.pageSize ?? 20))
+    const { limit, offset } = trozo(params)
+    const rows = await query.limit(limit).offset(offset)
 
     return {
       data: rows.map((r) => ({
@@ -188,33 +207,37 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     // Devuelve el movimiento que ya existe, así que para quien llama es un éxito
     // — que es exactamente lo que fue: su movimiento está guardado.
     if (d.idempotencyKey) {
-      const previo = await db
-        .select({ id: transactions.id })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            eq(transactions.idempotencyKey, d.idempotencyKey),
-          ),
-        )
-        .limit(1)
-      if (previo[0]) return { id: previo[0].id }
+      const previo = await idPorClave(userId, d.idempotencyKey)
+      if (previo) return { id: previo }
     }
 
-    // El id y la fecha de alta los pone la base.
-    const [creado] = await db
-      .insert(transactions)
-      .values({
-        userId,
-        categoryId: d.categoriaId,
-        amount: conSigno(d.importe, d.sentido),
-        date: d.fecha,
-        description: d.descripcion,
-        notes: d.notas || null,
-        idempotencyKey: d.idempotencyKey ?? null,
-      })
-      .returning({ id: transactions.id })
-    return { id: creado.id }
+    await assertCuotaLibre(userId)
+
+    try {
+      // El id y la fecha de alta los pone la base.
+      const [creado] = await db
+        .insert(transactions)
+        .values({
+          userId,
+          categoryId: d.categoriaId,
+          amount: conSigno(d.importe, d.sentido),
+          date: d.fecha,
+          description: d.descripcion,
+          notes: d.notas || null,
+          idempotencyKey: d.idempotencyKey ?? null,
+        })
+        .returning({ id: transactions.id })
+      return { id: creado.id }
+    } catch (err) {
+      // Dos envíos simultáneos pasan los dos la comprobación de arriba antes
+      // de que ninguno inserte; el segundo choca con el UNIQUE. Tampoco es un
+      // error: el movimiento está guardado, y es el del primero.
+      if (d.idempotencyKey && esChoqueUnico(err, 'tx_idempotency_key')) {
+        const ganador = await idPorClave(userId, d.idempotencyKey)
+        if (ganador) return { id: ganador }
+      }
+      throw err
+    }
   },
 
   async update(userId: string, id: string, values: unknown): Promise<{ id: string }> {
@@ -258,6 +281,44 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
 // ─────────────────────────────────────────────────────────────────────────────
 // Reglas de dominio
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** El movimiento que ya se guardó con esa clave de idempotencia, si lo hay. */
+async function idPorClave(userId: string, clave: string): Promise<string | null> {
+  const [previo] = await db
+    .select({ id: transactions.id })
+    .from(transactions)
+    .where(and(eq(transactions.userId, userId), eq(transactions.idempotencyKey, clave)))
+    .limit(1)
+  return previo?.id ?? null
+}
+
+/**
+ * Cuota de movimientos por usuario (`src/types/limites.types.ts`).
+ *
+ * Es una cuota contra el abuso, no un control exacto: dos altas simultáneas
+ * justo en el límite pueden dejarlo uno por encima, y eso no daña a nadie. Lo
+ * que impide es que un bucle llene la base del plan gratuito.
+ */
+async function assertCuotaLibre(userId: string): Promise<void> {
+  const [[{ total }], invitado] = await Promise.all([
+    db
+      .select({ total: sql<number>`count(*)`.mapWith(Number) })
+      .from(transactions)
+      .where(eq(transactions.userId, userId)),
+    esInvitado(userId),
+  ])
+
+  if (invitado && total >= MAX_MOVIMIENTOS_INVITADO) {
+    throw new RepositoryError(
+      `Has llegado al máximo de ${MAX_MOVIMIENTOS_INVITADO} movimientos como invitado. Crea una cuenta para seguir anotando.`,
+    )
+  }
+  if (total >= MAX_MOVIMIENTOS_CUENTA) {
+    throw new RepositoryError(
+      `Has llegado al máximo de ${MAX_MOVIMIENTOS_CUENTA} movimientos de una cuenta.`,
+    )
+  }
+}
 
 /** Una categoría de gasto en un ingreso descoloca todos los informes. */
 async function assertCategoriaCompatible(

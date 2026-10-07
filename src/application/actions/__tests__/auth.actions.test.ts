@@ -17,7 +17,9 @@ import { eq } from 'drizzle-orm'
 type ErrorAuth = { code: string; message: string } | null
 
 const h = vi.hoisted(() => ({
-  session: null as null | { user: { id: string; email: string | null; esInvitado: boolean } },
+  session: null as null | {
+    user: { id: string; email: string | null; esInvitado: boolean; entroConPassword?: boolean }
+  },
   cabeceras: new Map<string, string>(),
   auth: {} as Record<string, ReturnType<typeof vi.fn>>,
 }))
@@ -39,6 +41,7 @@ import {
   cerrarSesion,
   getCuenta,
   iniciarInvitado,
+  requisitosCambioPassword,
   iniciarSesion,
   registrarse,
   solicitarRecuperacion,
@@ -232,11 +235,82 @@ describe('cambiar contraseña', () => {
     expect(!r.ok && r.fieldErrors?.repetir).toBe('Las contraseñas no coinciden')
   })
 
-  test('con todo bien, la guarda', async () => {
+  test('desde el enlace del email, la guarda sin pedir la actual (no la conoce)', async () => {
     h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
     const r = await cambiarPassword(valida)
     expect(r).toEqual({ ok: true, data: { tipo: 'usuario', email: 'ana@example.com' } })
+    expect(h.auth.signInWithPassword).not.toHaveBeenCalled()
     expect(h.auth.updateUser).toHaveBeenCalledWith({ password: 'Segura#2026x' })
+  })
+})
+
+describe('cambiar contraseña con una sesión abierta CON contraseña', () => {
+  // Quien entró con su contraseña la sabe, así que se le vuelve a pedir: una
+  // cookie robada o un ordenador desatendido no bastan para quedarse la
+  // cuenta. Es la misma reautenticación que `borrarCuenta`.
+  const ANA = {
+    user: { id: USER_A, email: 'ana@example.com', esInvitado: false, entroConPassword: true },
+  }
+  const datos = {
+    password: 'Segura#2026x',
+    repetir: 'Segura#2026x',
+    passwordActual: 'Vieja#2025xx',
+    captchaToken: 't',
+  }
+
+  test('sin la contraseña actual no cambia nada', async () => {
+    h.session = ANA
+    const r = await cambiarPassword({ ...datos, passwordActual: '' })
+
+    expect(r).toMatchObject({ ok: false, fieldErrors: { passwordActual: expect.any(String) } })
+    expect(h.auth.signInWithPassword).not.toHaveBeenCalled()
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
+  })
+
+  test('la comprueba con el email de la SESIÓN, no del formulario, y luego guarda la nueva', async () => {
+    h.session = ANA
+    const r = await cambiarPassword({ ...datos, email: 'otra@example.com' })
+
+    expect(r).toEqual({ ok: true, data: { tipo: 'usuario', email: 'ana@example.com' } })
+    expect(h.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'ana@example.com',
+      password: 'Vieja#2025xx',
+      options: { captchaToken: 't' },
+    })
+    expect(h.auth.updateUser).toHaveBeenCalledWith({ password: 'Segura#2026x' })
+  })
+
+  test('con la actual incorrecta no cambia nada', async () => {
+    h.session = ANA
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('invalid_credentials') })
+
+    const r = await cambiarPassword(datos)
+
+    expect(!r.ok && r.fieldErrors?.passwordActual).toBe('Contraseña actual incorrecta')
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
+  })
+
+  test('sin token de CAPTCHA no llega a Supabase', async () => {
+    h.session = ANA
+    const r = await cambiarPassword({ ...datos, captchaToken: '' })
+
+    expect(r.ok).toBe(false)
+    expect(h.auth.signInWithPassword).not.toHaveBeenCalled()
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
+  })
+
+  test('el formulario sabe si tiene que pedir la actual', async () => {
+    h.session = ANA
+    expect(await requisitosCambioPassword()).toEqual({ ok: true, data: { pideActual: true } })
+
+    h.session = { user: { ...ANA.user, entroConPassword: false } }
+    expect(await requisitosCambioPassword()).toEqual({ ok: true, data: { pideActual: false } })
+  })
+
+  test('sin cuenta con email no hay requisitos que pedir', async () => {
+    expect(await requisitosCambioPassword()).toEqual({ ok: false, error: 'No autorizado' })
+    h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
+    expect(await requisitosCambioPassword()).toEqual({ ok: false, error: 'No autorizado' })
   })
 })
 

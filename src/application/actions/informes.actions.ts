@@ -13,6 +13,8 @@
 
 import { getSession } from '@/lib/auth'
 import type { CivilDate, Period } from '@/lib/dates'
+import { registrarError } from '@/lib/log'
+import { RepositoryError } from '@/src/infrastructure/repositories'
 import {
   getGastoPorCategoria,
   getIngresosVsGastos,
@@ -26,14 +28,21 @@ import type {
   TotalesPeriodoDto,
 } from '@/src/types/informe.types'
 import type { ActionResult } from './entity.actions'
+import { validarMeses, validarPeriodo, validarRangoSerie } from './frontera'
 
+/**
+ * Como el `run` de `entity.actions.ts`: un `RepositoryError` (aquí, los de
+ * validación de `frontera.ts`) se le enseña a quien llama; lo demás se
+ * registra y sale como genérico.
+ */
 async function run<T>(operacion: (userId: string) => Promise<T>): Promise<ActionResult<T>> {
   const session = await getSession()
   if (!session) return { ok: false, error: 'No autorizado' }
   try {
     return { ok: true, data: await operacion(session.user.id) }
   } catch (err) {
-    console.error('[informes.actions]', err)
+    if (err instanceof RepositoryError) return { ok: false, error: err.message }
+    registrarError('informes.actions', err)
     return { ok: false, error: 'Se ha producido un error inesperado' }
   }
 }
@@ -41,34 +50,36 @@ async function run<T>(operacion: (userId: string) => Promise<T>): Promise<Action
 export async function fetchGastoPorCategoria(
   periodo: Period,
 ): Promise<ActionResult<GastoPorCategoriaDto[]>> {
-  return run((userId) => getGastoPorCategoria(userId, periodo))
+  return run((userId) => getGastoPorCategoria(userId, validarPeriodo(periodo)))
 }
 
 export async function fetchIngresosVsGastos(
   meses = 12,
 ): Promise<ActionResult<TotalesPeriodoDto[]>> {
-  return run((userId) => getIngresosVsGastos(userId, { meses }))
+  return run((userId) => getIngresosVsGastos(userId, { meses: validarMeses(meses) }))
 }
 
 export async function fetchTotalesDelMes(
   periodo: Period,
 ): Promise<ActionResult<TotalesPeriodoDto>> {
-  return run((userId) => getTotalesDelMes(userId, periodo))
+  return run((userId) => getTotalesDelMes(userId, validarPeriodo(periodo)))
 }
 
 /**
  * La serie de saldo. Sin rango explícito usa el de por defecto (12 meses, sin
  * empezar antes del primer movimiento), que se calcula EN EL SERVIDOR: hacerlo
  * en el cliente obligaría a una petición previa solo para saber desde cuándo hay
- * datos.
+ * datos. Un rango explícito lleva los dos extremos, en orden y de como mucho
+ * `SERIE_SALDO_MAX_DIAS` días (ver `frontera.ts`).
  */
 export async function fetchSerieSaldo(
   options: { desde?: CivilDate; hasta?: CivilDate } = {},
 ): Promise<ActionResult<PuntoSaldoDto[]>> {
   return run(async (userId) => {
+    const pedido = validarRangoSerie(options)
     const rango =
-      options.desde && options.hasta
-        ? { desde: options.desde, hasta: options.hasta }
+      pedido.desde && pedido.hasta
+        ? { desde: pedido.desde, hasta: pedido.hasta }
         : await getRangoPorDefecto(userId)
 
     return getSerieSaldo(userId, rango)

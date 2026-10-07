@@ -9,7 +9,7 @@
  *     → refine-data-provider.ts
  *     → ESTE FICHERO                 'use server'
  *     → <entidad>.repository.ts      Drizzle
- *     → SQLite
+ *     → Postgres (Supabase)
  *
  * Por encima de esta línea no hay acceso a la base de datos ni sesión: los
  * componentes son cliente. Por debajo no hay React. Este fichero es la costura.
@@ -23,7 +23,8 @@
  * ninguna es negociable:
  *
  *   1. `resource` se resuelve contra `REPOSITORIES`, un mapa CERRADO. Un nombre
- *      que no esté ahí no ejecuta nada.
+ *      que no esté ahí no ejecuta nada. Los demás argumentos (ids, parámetros
+ *      del listado) pasan por los esquemas de `frontera.ts` antes de nada.
  *   2. `values` llega como `unknown` y NUNCA se esparce sobre la tabla: cada
  *      repositorio lo pasa por su esquema Zod y escribe campo a campo.
  *   3. El `userId` sale de `getSession()`. Jamás de los argumentos.
@@ -41,6 +42,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
+import { registrarError } from '@/lib/log'
 import {
   repositoryOf,
   RepositoryError,
@@ -55,6 +57,7 @@ import {
 } from '@/src/infrastructure/repositories/categorias.repository'
 import { getFormMetadata as getFormMetadataRepo } from '@/src/infrastructure/repositories/metadata.repository'
 import type { FormMetadata } from '@/src/types/formMetadata.types'
+import { validarId, validarListParams } from './frontera'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Resultado
@@ -87,7 +90,7 @@ async function run<T>(operacion: (userId: string) => Promise<T>): Promise<Action
     if (err instanceof RepositoryError) {
       return { ok: false, error: err.message, fieldErrors: err.fieldErrors }
     }
-    console.error('[entity.actions]', err)
+    registrarError('entity.actions', err)
     return { ok: false, error: 'Se ha producido un error inesperado' }
   }
 }
@@ -110,7 +113,7 @@ export async function listEntity(
   resource: string,
   params: ListParams,
 ): Promise<ActionResult<ListResult<unknown>>> {
-  return run((userId) => repositoryOf(resource).list(userId, params))
+  return run((userId) => repositoryOf(resource).list(userId, validarListParams(params)))
 }
 
 export async function getEntity(
@@ -118,7 +121,7 @@ export async function getEntity(
   id: string,
 ): Promise<ActionResult<unknown>> {
   return run(async (userId) => {
-    const registro = await repositoryOf(resource).get(userId, id)
+    const registro = await repositoryOf(resource).get(userId, validarId(id))
     // Mismo mensaje para "no existe" y "no es tuyo": distinguirlos le diría a
     // quien prueba ids al azar cuáles existen.
     if (!registro) throw new RepositoryError('No encontrado')
@@ -140,7 +143,9 @@ export async function updateEntity(
   id: string,
   values: unknown,
 ): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => repositoryOf(resource).update(userId, id, values))
+  const resultado = await run((userId) =>
+    repositoryOf(resource).update(userId, validarId(id), values),
+  )
   if (resultado.ok) revalidar(resource)
   return resultado
 }
@@ -149,7 +154,7 @@ export async function deleteEntity(
   resource: string,
   id: string,
 ): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => repositoryOf(resource).remove(userId, id))
+  const resultado = await run((userId) => repositoryOf(resource).remove(userId, validarId(id)))
   if (resultado.ok) revalidar(resource)
   return resultado
 }
@@ -163,14 +168,17 @@ export async function activarCategoria(
   id: string,
   presupuesto?: number | null,
 ): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => activarCategoriaRepo(userId, id, presupuesto))
+  // El presupuesto lo valida el repositorio, con la misma regla que el alta.
+  const resultado = await run((userId) =>
+    activarCategoriaRepo(userId, validarId(id), presupuesto),
+  )
   if (resultado.ok) revalidar('Categorias')
   return resultado
 }
 
 /** Oculta una categoría sin borrarla. */
 export async function ocultarCategoria(id: string): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => ocultarCategoriaRepo(userId, id))
+  const resultado = await run((userId) => ocultarCategoriaRepo(userId, validarId(id)))
   if (resultado.ok) revalidar('Categorias')
   return resultado
 }

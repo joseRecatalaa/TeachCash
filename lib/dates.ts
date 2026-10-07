@@ -130,6 +130,22 @@ export const today = (timeZone: string = USER_TIME_ZONE, now: Date = new Date())
   return `${get('year')}-${get('month')}-${get('day')}`
 }
 
+/**
+ * La zona horaria que va más adelantada del planeta (UTC+14). Su "hoy" es el
+ * último día que ya ha empezado en alguna parte.
+ */
+export const LATEST_TIME_ZONE = 'Pacific/Kiritimati'
+
+/**
+ * El "hoy" más adelantado del planeta: ninguna persona, esté donde esté, vive
+ * en un día posterior a este.
+ *
+ * Es el tope de las fechas de movimiento. Usar el `today()` de Madrid
+ * rechazaría el "hoy" real de quien anota desde Auckland, y el servidor no
+ * sabe en qué huso está nadie.
+ */
+export const latestToday = (now: Date = new Date()): CivilDate => today(LATEST_TIME_ZONE, now)
+
 export const periodOf = (date: CivilDate): Period => {
   assertCivilDate(date)
   return date.slice(0, 7)

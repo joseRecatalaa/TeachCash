@@ -65,7 +65,7 @@ encontrado la pieza genérica.
 
 | Pieza | Elección | Notas |
 |---|---|---|
-| Framework | Next.js **16.3.0** (App Router) | Turbopack por defecto |
+| Framework | Next.js **16.3.8** (App Router) | Turbopack por defecto |
 | React | **19.2.8** | |
 | Lenguaje | TypeScript 5, `strict` | |
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |

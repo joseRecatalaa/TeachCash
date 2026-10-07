@@ -1,16 +1,25 @@
 'use client'
 
 /**
- * Elegir contraseña. Se llega aquí desde el enlace del email (confirmar la
- * cuenta nueva o recuperar la contraseña), que ya deja la sesión iniciada.
+ * Elegir o cambiar la contraseña.
+ *
+ * Se llega desde el enlace del email (confirmar la cuenta nueva o recuperar la
+ * contraseña), que ya deja la sesión iniciada y no pide la actual: quien llega
+ * así no la conoce. Con una sesión abierta escribiendo la contraseña, sí se
+ * pide. Quién es quién lo decide el servidor (`requisitosCambioPassword`); aquí
+ * solo se pinta el campo cuando hace falta.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PasswordInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconKey } from '@tabler/icons-react'
-import { cambiarPassword } from '@/src/application/actions/auth.actions'
+import { obtenerTokenCaptcha } from '@/lib/turnstile'
+import {
+  cambiarPassword,
+  requisitosCambioPassword,
+} from '@/src/application/actions/auth.actions'
 import { useCuenta } from '@/src/application/providers/CuentaProvider'
 import { SketchButton } from '@/src/presentation/components/ui'
 import { AuthError, AuthFormulario, AuthPanel } from './AuthPanel'
@@ -28,10 +37,30 @@ export function CambiarPasswordForm() {
   const { cuenta, entrar } = useCuenta()
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  // `null` mientras se pregunta: hasta saberlo no se deja enviar, para no
+  // mandar el formulario sin la actual cuando sí hacía falta.
+  const [pideActual, setPideActual] = useState<boolean | null>(null)
+
+  const esUsuario = cuenta.tipo === 'usuario'
+  useEffect(() => {
+    if (!esUsuario) return
+    let vigente = true
+    requisitosCambioPassword()
+      .then((r) => {
+        if (!vigente) return
+        if (r.ok) setPideActual(r.data.pideActual)
+        else setError(r.error)
+      })
+      .catch(() => vigente && setError('No se ha podido preparar el formulario'))
+    return () => {
+      vigente = false
+    }
+  }, [esUsuario])
 
   const form = useForm({
-    initialValues: { password: '', repetir: '' },
+    initialValues: { passwordActual: '', password: '', repetir: '' },
     validate: {
+      passwordActual: (v) => (pideActual && !v ? 'Escribe tu contraseña actual' : null),
       password: (v) => REQUISITOS.find(([regla]) => !regla.test(v))?.[1] ?? null,
       repetir: (v, valores) => (v === valores.password ? null : 'Las contraseñas no coinciden'),
     },
@@ -57,7 +86,11 @@ export function CambiarPasswordForm() {
     setEnviando(true)
     setError(null)
     try {
-      const resultado = await cambiarPassword(valores)
+      const resultado = await cambiarPassword(
+        pideActual
+          ? { ...valores, captchaToken: await obtenerTokenCaptcha() }
+          : { password: valores.password, repetir: valores.repetir },
+      )
       if (!resultado.ok) {
         setError(resultado.error)
         if (resultado.fieldErrors) form.setErrors(resultado.fieldErrors)
@@ -73,7 +106,7 @@ export function CambiarPasswordForm() {
 
   return (
     <AuthPanel
-      titulo="Elige tu contraseña"
+      titulo={pideActual ? 'Cambiar contraseña' : 'Elige tu contraseña'}
       explicacion={
         <>
           Para <strong>{cuenta.email}</strong>. Mínimo 10 caracteres, con mayúsculas,
@@ -83,6 +116,14 @@ export function CambiarPasswordForm() {
     >
       <AuthError mensaje={error} />
       <AuthFormulario onSubmit={enviar}>
+        {pideActual && (
+          <PasswordInput
+            label="Contraseña actual"
+            autoComplete="current-password"
+            required
+            {...form.getInputProps('passwordActual')}
+          />
+        )}
         <PasswordInput
           label="Contraseña nueva"
           autoComplete="new-password"
@@ -99,6 +140,7 @@ export function CambiarPasswordForm() {
           type="submit"
           fullWidth
           loading={enviando}
+          disabled={pideActual === null}
           leftSection={<IconKey size={16} stroke={2.2} />}
         >
           Guardar contraseña

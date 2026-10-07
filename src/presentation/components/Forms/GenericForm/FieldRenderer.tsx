@@ -26,6 +26,7 @@ import {
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { IconInfoCircle } from '@tabler/icons-react'
+import { compareDates, today } from '@/lib/dates'
 import type { Currency } from '@/lib/money'
 import type { EnumValueDto } from '@/src/types/formMetadata.types'
 import { MoneyInput } from './MoneyInput'
@@ -53,6 +54,24 @@ function Label({ text, tooltip }: { text?: string; tooltip?: string }) {
       </Tooltip>
     </span>
   )
+}
+
+/**
+ * La fecha máxima de un `DateInput`: la del campo `maxDateFrom`, la de hoy si
+ * `noFutureDates`, o la menor de las dos.
+ *
+ * Hoy en el huso del NAVEGADOR, no en el de la aplicación: es el "hoy" de
+ * quien rellena el formulario. El servidor acepta hasta el de la zona más
+ * adelantada del planeta, que nunca es anterior a este, así que la cortesía no
+ * deja elegir nada que luego se rechace.
+ */
+function topeDeFecha(desdeCampo: string | undefined, noFutureDates?: boolean): string | undefined {
+  const hoy = noFutureDates
+    ? today(Intl.DateTimeFormat().resolvedOptions().timeZone)
+    : undefined
+  if (!desdeCampo) return hoy
+  if (!hoy) return desdeCampo
+  return compareDates(desdeCampo, hoy) < 0 ? desdeCampo : hoy
 }
 
 function FieldRendererBase({
@@ -115,7 +134,10 @@ function FieldRendererBase({
        * Si alguna vez alguien mete un `new Date(...)` aquí, ese es el bug.
        */
       const minDate = field.minDateFrom ? (values[field.minDateFrom] as string) : undefined
-      const maxDate = field.maxDateFrom ? (values[field.maxDateFrom] as string) : undefined
+      const maxDate = topeDeFecha(
+        field.maxDateFrom ? (values[field.maxDateFrom] as string) : undefined,
+        field.noFutureDates,
+      )
       return (
         <DateInput
           {...comun}
