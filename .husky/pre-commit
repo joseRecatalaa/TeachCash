@@ -1,0 +1,5 @@
+# Antes de cada commit: ESLint sobre lo que entra en él y el typecheck entero.
+# Lo lento (tests, coverage, build) lo hace el CI. Saltarlo (`git commit
+# --no-verify`) es solo para emergencias: el CI lo volverá a comprobar igual.
+pnpm exec lint-staged
+pnpm typecheck

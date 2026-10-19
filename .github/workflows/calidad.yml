@@ -1,0 +1,149 @@
+# Quality gate: nada entra en `develop` sin pasar los mismos comprobantes que
+# AGENTS.md pide antes de dar algo por terminado.
+#
+# Gratis: un repo público tiene minutos ilimitados, y uno privado 2.000 al mes
+# en el plan Free (esto tarda unos 5). Si un mes se agotaran, GitHub para los
+# workflows; no cobra salvo que alguien suba a propósito el límite de gasto.
+# Para gastar poco: solo en PR, nada si la PR es solo documentación, y cada
+# push nuevo cancela la ejecución anterior.
+#
+# No hacen falta secretos: los tests corren sobre PGlite (Postgres en proceso)
+# y nunca tocan Supabase. Los E2E NO corren aquí: necesitarían el proyecto de
+# Supabase de pruebas y sus claves en GitHub, y son de uso local
+# (`pnpm test:e2e`, ver .env.e2e.example).
+name: Calidad
+
+# Solo en las PR a `develop`, que es por donde entra el código. Sin `push`: una
+# PR ya prueba el resultado de mezclar la rama con `develop`, y volver a
+# probarlo al hacer merge eran 5 minutos repetidos por PR. Tampoco en `main`:
+# lo que llega a `main` es lo que ya pasó por aquí en `develop`.
+on:
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+# Solo lectura: este workflow no escribe en el repo ni comenta en las PR.
+permissions:
+  contents: read
+
+# Un push nuevo a la misma rama o PR deja obsoleta la ejecución anterior:
+# cancelarla ahorra minutos y el resultado que importa es el del último commit.
+concurrency:
+  group: calidad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Una PR que solo toca documentación no puede romper ni los tipos ni los
+  # tests: no se gastan 5 minutos en comprobarlo.
+  #
+  # Se decide aquí y no con `paths-ignore` a propósito: con `paths-ignore` el
+  # workflow ni siquiera arranca, y si algún día el check es obligatorio
+  # (branch protection), la PR se queda esperando para siempre un resultado
+  # que no va a llegar. Un job saltado por `if:` cuenta como superado.
+  cambios:
+    name: ¿Solo documentación?
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      codigo: ${{ steps.mirar.outputs.codigo }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: mirar
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Lanzado a mano no hay PR con la que comparar: se comprueba todo.
+          if [ -z "$BASE" ]; then echo "codigo=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          ficheros=$(git diff --name-only "$BASE...$HEAD")
+          echo "$ficheros"
+          # Cualquier fichero que no sea .md ni de docs/ cuenta como código.
+          if echo "$ficheros" | grep -qvE '(\.md$|^docs/)'; then
+            echo "codigo=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "codigo=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  calidad:
+    name: Tipos, lint, tests y build
+    needs: cambios
+    if: needs.cambios.outputs.codigo == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Los hooks de Husky son para el commit en local, no para la máquina del CI.
+      HUSKY: '0'
+      NEXT_TELEMETRY_DISABLED: '1'
+      # Valores de RELLENO, no secretos. `lib/env.ts` valida el entorno y el
+      # build lo exige (recoger la configuración de las páginas importa el
+      # cliente de base). Nada llega a conectarse: el build no consulta la base.
+      # La URL de Supabase va sin ruta: `lib/env.ts` rechaza `/rest/v1`.
+      DATABASE_URL: postgresql://relleno:relleno@localhost:5432/relleno
+      NEXT_PUBLIC_SUPABASE_URL: https://relleno.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_relleno
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000BB
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # Sin `version`: la lee de `packageManager` en package.json, así el CI
+      # usa exactamente el mismo pnpm que el lockfile.
+      - uses: pnpm/action-setup@v6
+
+      # La misma mayor que en local: `db/migrate.mts` depende del type
+      # stripping de Node 24.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # `--frozen-lockfile`: si package.json y el lockfile no cuadran, falla en
+      # vez de resolver versiones nuevas por su cuenta.
+      - run: pnpm install --frozen-lockfile
+
+      # Genera antes los tipos de rutas (`next typegen`): sin ellos, en un
+      # checkout limpio `LayoutProps` no existe y tsc falla.
+      - run: pnpm typecheck
+      - run: pnpm lint
+
+      # La suite completa con los umbrales por niveles (vitest.config.mts): un
+      # fichero CORE por debajo de su umbral tumba el workflow.
+      - run: pnpm test:coverage
+
+      # La misma suite en la zona horaria más adelantada del planeta: es la que
+      # caza las fechas que se cuelan como instantes (regla dura 5).
+      - run: pnpm test:tz
+
+      - run: pnpm build
+
+      # El informe HTML de coverage, para mirar qué línea falta sin repetir la
+      # ejecución en local. Una semana basta.
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  # Aparte y en paralelo: es rápido y depende de la base de avisos, no del
+  # código, así que un aviso publicado hoy se ve como lo que es y no tapa el
+  # resultado de los tests. Completo, producción Y desarrollo: el proyecto se
+  # mantiene en cero avisos (overrides documentados en pnpm-workspace.yaml), y
+  # un aviso tolerado "porque es de desarrollo" acaba tapando el siguiente.
+  auditoria:
+    name: Auditoría de dependencias
+    needs: cambios
+    if: needs.cambios.outputs.codigo == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      # `pnpm audit` lee el lockfile; no hace falta instalar nada.
+      - run: pnpm audit
