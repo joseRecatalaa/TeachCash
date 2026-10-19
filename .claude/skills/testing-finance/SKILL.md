@@ -5,6 +5,10 @@ description: Estrategia y convenciones de test del gestor de finanzas — qué s
 
 # Tests
 
+Esta skill dice QUÉ testear y con qué criterio. CÓMO está montado todo (PGlite,
+mocks, Testing Library, Playwright, coverage, CI), qué fichero cubre qué y las
+trampas conocidas están en **`docs/TESTS.md`**: léelo antes de escribir un test.
+
 ## Dónde ponerlos
 
 La cobertura uniforme es un desperdicio. En esta aplicación el riesgo está muy
@@ -17,7 +21,8 @@ concentrado:
 | Parsers de extracto | Alta, con ficheros reales | Entrada hostil e impredecible |
 | Autorización de acciones | Alta | Un fallo expone datos de otro usuario |
 | Fechas y periodos | Alta | Los bugs de zona horaria no se ven en el mes actual |
-| Componentes de UI | Baja | Cambian mucho, fallan de forma visible |
+| Formularios y tablas genéricos (`GenericForm`, `AppTable`, `MoneyInput`) | Media (80 %) | Los usa toda la app: un fallo aquí es un importe mal leído o un filtro que no filtra |
+| Componentes de una sola vista | Baja | Cambian mucho, fallan de forma visible |
 | Estilos, layout | Ninguna | |
 
 El criterio: **testea lo que falla en silencio.** Un botón desalineado se ve. Un
@@ -27,7 +32,12 @@ total mal calculado, no.
 
 - **Vitest** para `lib/`, parsers y agregaciones.
 - **fast-check** para propiedades sobre aritmética de dinero.
-- **Playwright** para tres o cuatro flujos completos, no más.
+- **Testing Library** (`*.test.tsx`, jsdom) para componentes y hooks, por rol y
+  nombre accesible y con `userEvent`. Los hooks, sobre Refine real
+  (`test/refine.tsx`).
+- **Playwright** (`e2e/`) para tres o cuatro flujos completos, no más, contra el
+  build de producción y un Supabase de PRUEBAS (`teachcash-e2e`), nunca el de
+  desarrollo.
 - Base de datos de test: **Postgres real sobre PGlite** (el mismo motor en
   WASM, en proceso), con las migraciones reales y una base nueva por test
   (`createTestDb()` de `db/testing.ts`). Nunca contra Supabase. Nada de mockear
@@ -180,12 +190,22 @@ Por cada banco soportado:
 
 ## Flujos end-to-end
 
-Cuatro, y bien elegidos. Cada uno cuesta mantenimiento:
+Pocos, y bien elegidos. Cada uno cuesta mantenimiento. Los que hay
+(`e2e/*.spec.ts`):
 
-1. Añadir movimiento → el saldo de la portada refleja el cambio
-2. Borrarlo → el saldo vuelve atrás → restaurarlo → vuelve a contar
-3. Importar extracto → previsualizar → confirmar → reimportar no duplica
-4. Crear presupuesto → gastar por encima → se ve el exceso
+1. Anotar un gasto → el saldo de la portada refleja el cambio, sin recargar
+2. Borrarlo → el saldo vuelve atrás (el borrado es físico: no hay papelera ni
+   "restaurar")
+3. Crear una categoría → anotar en ella → aparece al filtrar por ella
+4. Las tres tipografías llegan de verdad a la página (solo un navegador lo ve)
+
+Cuando existan las funcionalidades, los siguientes candidatos son:
+
+- Importar extracto → previsualizar → confirmar → reimportar no duplica
+- Crear presupuesto → gastar por encima → se ve el exceso
+
+Navega por el MENÚ, no con `page.goto`: una recarga tira la caché de React Query
+y taparía justo lo que hay que probar, que cada mutación invalida `['informes']`.
 
 No hagas e2e de validación de formularios: eso es un test unitario del esquema
 Zod, y en Playwright cuesta cien veces más.
