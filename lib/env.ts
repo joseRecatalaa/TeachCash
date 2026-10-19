@@ -37,10 +37,20 @@ const urlPostgres = z.url({
 })
 
 const EsquemaPublico = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.url({
-    protocol: /^https?$/,
-    error: (iss) => falta(iss, 'Tiene que ser la URL del proyecto, https://….supabase.co'),
-  }),
+  NEXT_PUBLIC_SUPABASE_URL: z
+    .url({
+      protocol: /^https?$/,
+      error: (iss) => falta(iss, 'Tiene que ser la URL del proyecto, https://….supabase.co'),
+    })
+    // Sin ruta: el panel enseña también la de la API de datos (`…/rest/v1/`), y
+    // con ella supabase-js pide `…/rest/v1/auth/v1/…`. Supabase responde
+    // "Invalid path specified in request URL" y el invitado no nace, con un
+    // error genérico en pantalla y nada que apunte aquí. Zod 4 ejecuta el
+    // `refine` aunque la URL ya haya fallado: de ahí el `canParse`, para que
+    // una URL mal escrita dé SU mensaje y no una excepción de `new URL`.
+    .refine((url) => !URL.canParse(url) || new URL(url).pathname === '/', {
+      error: 'Tiene que ser la URL del proyecto sin ruta, https://….supabase.co (no la de /rest/v1)',
+    }),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: obligatoria,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: obligatoria,
 })

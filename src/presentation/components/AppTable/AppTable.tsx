@@ -160,18 +160,37 @@ export function AppTable<T extends object>({
     [manualFiltering, onSearchChange],
   )
 
+  /**
+   * La clave con la que se avisa al padre de cada filtro: la `enumKey` de la
+   * columna si la tiene, y si no, su accessor. Por dentro, la tabla sigue
+   * guardando los filtros por accessor (es lo que pinta cada cabecera).
+   *
+   * Movimientos PINTA `categoriaNombre` pero el repositorio FILTRA por
+   * `categoriaId`. Avisando con el accessor, el repositorio recibía una clave
+   * que no conoce, la ignoraba sin error y devolvía todo: filtro encendido,
+   * tabla sin filtrar.
+   */
+  const clavesDeFiltro = useMemo(
+    () => new Map(columns.map((c) => [accessorDe(c), c.enumKey ?? accessorDe(c)])),
+    [columns],
+  )
+
   const handleFiltro = useCallback(
     (accessor: string, filtro: ColumnFilter | undefined) => {
       setFiltros((prev) => {
         const siguiente = { ...prev }
         if (filtro) siguiente[accessor] = filtro
         else delete siguiente[accessor]
-        onFiltersChange?.(siguiente)
+        onFiltersChange?.(
+          Object.fromEntries(
+            Object.entries(siguiente).map(([a, f]) => [clavesDeFiltro.get(a) ?? a, f]),
+          ),
+        )
         return siguiente
       })
       if (!manualFiltering) setPage(1)
     },
-    [manualFiltering, onFiltersChange],
+    [manualFiltering, onFiltersChange, clavesDeFiltro],
   )
 
   const handleSort = useCallback(

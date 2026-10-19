@@ -86,6 +86,11 @@ export default function InicioPage() {
             ribbon
             eyebrow="Patrimonio"
             icon={<IconWallet size={18} stroke={2.2} />}
+            // La cifra más importante de la aplicación, y la tarjeta no tiene
+            // título: sin nombre propio, un lector de pantalla no la encuentra
+            // (ni el E2E, que la busca como la buscaría una persona).
+            role="region"
+            aria-label="Patrimonio"
           >
             {/* Una sola cifra, sin nada alrededor: el patrimonio ES el saldo
                 (misma cifra, regla dura 7) y no necesita más contexto que su

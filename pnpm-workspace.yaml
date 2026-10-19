@@ -30,6 +30,10 @@ overrides:
   brace-expansion@>=4 <6: ^5.0.12
   # DoS por claves de merge. La trae eslint > @eslint/eslintrc (^4.1.0).
   js-yaml: ^4.3.2
+  # GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f (críticas) y GHSA-xw65-4hp5-5hc7:
+  # inyección de JS al compilar plantillas. La trae plop > node-plop (^4.7.8),
+  # y solo compila las plantillas del propio repo (plop-templates/).
+  handlebars: ^4.7.10
   # GHSA-67mh-4wv8-2f99: CORS abierto en `esbuild serve`. La trae drizzle-kit >
   # @esbuild-kit/core-utils, fijada en la 0.18. Solo usa `transform` (nunca
   # `serve`), así que se alinea con la 0.25 que drizzle-kit ya usa directamente.

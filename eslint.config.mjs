@@ -109,9 +109,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Generado por drizzle-kit, y el informe de coverage.
+    // Generado por drizzle-kit, y los informes de coverage y de Playwright.
     "db/migrations/**",
     "coverage/**",
+    "playwright-report/**",
+    "test-results/**",
+    "blob-report/**",
   ]),
 ]);
 

@@ -90,6 +90,42 @@ describe('modo servidor', () => {
     expect(nombresVisibles()).toHaveLength(3)
   })
 
+  test('un enum con enumKey avisa con SU clave, que es la que entiende el repositorio', async () => {
+    // Movimientos pinta `categoriaNombre` pero filtra por `categoriaId`. Con la
+    // clave del accessor, el repositorio recibía `{ categoriaNombre: <id> }`,
+    // no lo reconocía y devolvía todo: el icono del filtro, encendido; la
+    // tabla, sin filtrar. Lo cazó el E2E de categorías.
+    type ConCategoria = Fila & { categoriaNombre: string; categoriaId: string }
+    const onFiltersChange = vi.fn()
+    const { usuario } = renderConMantine(
+      <AppTable<ConCategoria>
+        data={FILAS.map((f, i) => ({ ...f, categoriaNombre: `Cat ${i}`, categoriaId: `id-${i}` }))}
+        columns={[
+          { accessor: 'nombre', title: 'Nombre' },
+          {
+            accessor: 'categoriaNombre',
+            title: 'Categoría',
+            type: 'enum',
+            filterable: true,
+            enumKey: 'categoriaId',
+            filterOptions: [{ value: 'id-1', label: 'Cat 1' }],
+          },
+        ]}
+        manualFiltering
+        onFiltersChange={onFiltersChange}
+        height="auto"
+      />,
+    )
+
+    await usuario.click(screen.getByRole('button', { name: 'Filtrar por Categoría' }))
+    await usuario.click(screen.getByRole('combobox', { name: 'Valor' }))
+    await usuario.click(await screen.findByRole('option', { name: 'Cat 1' }))
+
+    expect(onFiltersChange).toHaveBeenLastCalledWith({
+      categoriaId: { operator: 'equals', value: 'id-1', valueTo: undefined },
+    })
+  })
+
   test('no ofrece más filas por página de las que acepta el servidor', async () => {
     // La frontera rechaza un pageSize mayor que TAMANO_PAGINA_MAXIMO; ofrecerlo
     // aquí sería un botón que siempre da error.

@@ -42,6 +42,22 @@ describe('entorno público', () => {
     expect(() => entornoPublico()).toThrow(/NEXT_PUBLIC_SUPABASE_URL/)
   })
 
+  // El panel enseña también la URL de la API de datos (`…/rest/v1/`). Pegada
+  // aquí, supabase-js le añade `/auth/v1` detrás y Supabase responde "Invalid
+  // path specified in request URL" en la primera visita, como error genérico.
+  test.each(['https://abcd.supabase.co/rest/v1/', 'https://abcd.supabase.co/rest/v1'])(
+    'una URL de Supabase con ruta (%s) falla al arrancar, no en la primera visita',
+    (url) => {
+      poner({ ...PUBLICO, NEXT_PUBLIC_SUPABASE_URL: url })
+      expect(() => entornoPublico()).toThrow(/NEXT_PUBLIC_SUPABASE_URL: .*sin ruta/)
+    },
+  )
+
+  test('la barra final sola no es una ruta', () => {
+    poner({ ...PUBLICO, NEXT_PUBLIC_SUPABASE_URL: 'https://abcd.supabase.co/' })
+    expect(entornoPublico().NEXT_PUBLIC_SUPABASE_URL).toBe('https://abcd.supabase.co/')
+  })
+
   test('el mensaje dice qué hacer', () => {
     poner({ ...PUBLICO, NEXT_PUBLIC_TURNSTILE_SITE_KEY: '' })
     expect(() => entornoPublico()).toThrow(/\.env\.example/)

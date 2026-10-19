@@ -72,7 +72,18 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     // `mantineHtmlProps` añade `suppressHydrationWarning`: el script de tema
     // toca el <html> antes de que React hidrate, y sin esto avisa en consola.
-    <html lang="es" {...mantineHtmlProps}>
+    //
+    // Las clases de `next/font` van en el <html> y NO en el <body>: definen
+    // `--font-body` y compañía, y `globals.css` las lee desde `:root`
+    // (`--sd-font-body: var(--font-body), …`). Un `var()` se resuelve donde se
+    // declara; en el <body> llegaban tarde, `--sd-font-*` quedaban inválidas y
+    // toda la app se pintaba en Times New Roman sin un solo error. Lo vigila
+    // e2e/tipografia.spec.ts.
+    <html
+      lang="es"
+      className={`${display.variable} ${body.variable} ${geistMono.variable}`}
+      {...mantineHtmlProps}
+    >
       <head>
         {/* Fija el esquema de color ANTES del primer pintado. Sin él hay un
             fogonazo blanco al entrar en modo oscuro. */}
@@ -89,7 +100,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           }}
         />
       </head>
-      <body className={`${display.variable} ${body.variable} ${geistMono.variable}`}>
+      <body>
         {/* Va FUERA de `Providers` y antes que nada: no necesita Refine ni el
             tema de Mantine —se pinta con los tokens del sistema— y así puede
             aparecer en el primer fotograma, mientras la aplicación hidrata por

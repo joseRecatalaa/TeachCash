@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+# Playwright: informes, trazas y capturas de los fallos
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -33,6 +38,8 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# La plantilla del entorno de los E2E sí se sube; .env.e2e, no.
+!.env.e2e.example
 
 # vercel
 .vercel
