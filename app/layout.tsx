@@ -10,6 +10,8 @@ import '@mantine/core/styles.css'
 import '@mantine/dates/styles.css'
 import '@mantine/notifications/styles.css'
 import 'mantine-datatable/styles.css'
+// Antes de `globals.css`, que tiene que seguir siendo la última hoja.
+import styles from './layout.module.css'
 // `globals.css` va EL ÚLTIMO: define los tokens del sistema de diseño y
 // reapunta las variables de Mantine (`--mantine-color-body`, `--mantine-font-*`).
 // Mantine las declara sobre `:root[data-mantine-color-scheme]` y, a igual
@@ -114,7 +116,8 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           {/* DESPUÉS de la Navbar, no antes: los dos van a z-index 200 y a
               igualdad gana el último del DOM. Así el panel tapa la cabecera. */}
           <SideMenu />
-          {children}
+          {/* El hueco a la izquierda para la pestaña del menú. */}
+          <div className={styles.contenido}>{children}</div>
         </Providers>
       </body>
     </html>

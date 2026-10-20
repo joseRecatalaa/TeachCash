@@ -1,0 +1,23 @@
+/*
+ * El contenido de TODAS las rutas, corrido a la derecha para dejar sitio a la
+ * pestaña del menú lateral (`SideMenu`), que asoma por el borde izquierdo y
+ * flota a media altura. Sin este hueco tapaba el borde de las tarjetas.
+ *
+ * Va aquí, en el layout, y no en cada página: así una pantalla nueva nace ya
+ * con el hueco. La Navbar queda fuera a propósito: la pestaña no llega a ella
+ * y su fondo tiene que seguir yendo de borde a borde.
+ *
+ * El hueco depende del ancho de la pestaña (`--pestana-ancho` en
+ * `SideMenu.module.css`): pestaña + su sombra + aire, menos el margen que ya
+ * pone el `Container` de cada página (32 px). Si cambias uno, mira el otro.
+ */
+.contenido {
+  padding-left: 32px;
+}
+
+/* En móvil la pestaña es más estrecha y cada píxel de ancho cuenta. */
+@media (max-width: 560px) {
+  .contenido {
+    padding-left: 16px;
+  }
+}

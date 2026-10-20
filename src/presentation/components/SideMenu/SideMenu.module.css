@@ -15,6 +15,8 @@
 
 .raiz {
   --menu-ancho: min(300px, 86vw);
+  /* El hueco que el layout deja a la izquierda del contenido
+     (`app/layout.module.css`) cuenta con este ancho. */
   --pestana-ancho: 36px;
   --pestana-alto: 104px;
 
@@ -341,20 +343,28 @@ a.modulo:hover .flecha {
   margin-left: calc(var(--sd-stroke-bold) * -1);
   padding: 0;
 
-  /* En verde de marca y no en papel: en papel se confundía con el borde de
-     una tarjeta y nadie la tomaba por algo que se pudiera abrir. */
-  background: var(--sd-accent);
+  /*
+   * Cristal gris: deja ver la página por detrás, borrosa, y por eso no tapa
+   * el borde de la tarjeta sobre la que cae. Lo que la sigue atando al estilo
+   * de la app es el trazo grueso y la sombra dura, que no son de cristal.
+   * Tinta y no blanco para las rayas: sobre un 20 % de gris, lo que se ve de
+   * fondo es casi la página, y la tinta es lo que contrasta con ella.
+   */
+  background: var(--sd-glass-tint);
+  -webkit-backdrop-filter: var(--sd-glass-filter);
+  backdrop-filter: var(--sd-glass-filter);
   border: var(--sd-border-bold);
   border-left: none;
   border-radius: 0 12px 14px 0 / 0 14px 12px 0;
   box-shadow: var(--sd-shadow-sm);
-  color: var(--sd-accent-ink);
+  color: var(--sd-ink);
   cursor: pointer;
 
   transition: var(--sd-transition), width var(--sd-dur) var(--sd-ease-pop);
 }
 
 .pestana:hover {
+  background: var(--sd-glass-tint-hover);
   width: calc(var(--pestana-ancho) + 6px);
   box-shadow: var(--sd-shadow-md);
 }
@@ -364,8 +374,8 @@ a.modulo:hover .flecha {
   box-shadow: var(--sd-focus-ring);
 }
 
-/* Abierto, la pestaña pasa a papel: el verde ya lo lleva el panel y la X se
-   lee mejor en tinta. */
+/* Abierta, la pestaña es papel como el panel del que cuelga: es su borde, ya
+   no algo que flota sobre la página. */
 .raiz[data-abierto='true'] .pestana {
   background: var(--sd-surface);
   color: var(--sd-ink);
