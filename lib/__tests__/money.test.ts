@@ -4,8 +4,13 @@ import {
   abs,
   add,
   allocate,
+  asCurrency,
   compare,
   equals,
+  isCurrency,
+  isNegative,
+  isPositive,
+  isZero,
   money,
   mul,
   neg,
@@ -130,7 +135,8 @@ describe('reparto', () => {
   test('reparto entre 7', () => {
     const parts = allocate(money(10000), [1, 1, 1, 1, 1, 1, 1])
     expect(sum(parts).amount).toBe(10000)
-    // 10000/7 = 1428,57 → 1428 a cada uno y 4 céntimos de resto a los 4 primeros.
+    // 10000/7 = 1428,57 → 1428 a cada uno y 4 céntimos de resto. Las partes
+    // decimales empatan, así que van a los 4 primeros.
     expect(parts.filter((p) => p.amount === 1429)).toHaveLength(4)
   })
 
@@ -153,5 +159,126 @@ describe('reparto', () => {
 
   test('conserva la divisa del total', () => {
     expect(allocate(money(300, 'USD'), [1, 1]).every((p) => p.currency === 'USD')).toBe(true)
+  })
+})
+
+describe('multiplicar con negativos', () => {
+  // Math.round no es simétrico: redondea las mitades hacia +∞, así que -50,5
+  // da -50 y 50,5 da 51. Es la política documentada de `mul`; si algún día se
+  // cambia a "mitad lejos del cero", este test es el que tiene que cambiar.
+  test('las mitades negativas suben hacia el cero', () => {
+    expect(mul(money(-101), 0.5).amount).toBe(-50)
+    expect(mul(money(101), 0.5).amount).toBe(51)
+  })
+
+  test('un resultado de -0,5 céntimos no deja un -0', () => {
+    // Math.round(-0.5) es -0; `money` lo normaliza. Un -0 que se cuele se pinta
+    // "-0,00 €" y Object.is(-0, 0) es false.
+    expect(Object.is(mul(money(-1), 0.5).amount, 0)).toBe(true)
+  })
+
+  test('la política de redondeo se puede inyectar', () => {
+    expect(mul(money(-101), 0.5, Math.floor).amount).toBe(-51)
+    expect(mul(money(-101), 0.5, Math.trunc).amount).toBe(-50)
+  })
+
+  test('multiplicar por un factor entero es exacto', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: -1_000_000_00, max: 1_000_000_00 }),
+        fc.integer({ min: -100, max: 100 }),
+        (centimos, factor) => {
+          expect(mul(money(centimos), factor).amount).toBe(centimos * factor + 0)
+        },
+      ),
+    )
+  })
+})
+
+describe('reparto justo', () => {
+  const totales = fc.integer({ min: -1_000_000_00, max: 1_000_000_00 })
+  const pesos = fc
+    .array(fc.integer({ min: 0, max: 100 }), { minLength: 1, maxLength: 12 })
+    .filter((w) => w.some((x) => x > 0))
+
+  test('cada parte es su cuota redondeada abajo, más como mucho un céntimo', () => {
+    // El contrato de la skill money-and-currency: suelo + reparto del resto de
+    // uno en uno. NO es "la más cercana a la cuota exacta": el resto va por
+    // orden, así que una parte con cuota entera puede llevarse un céntimo que
+    // otra con ,8 no recibe (fast-check lo encontró: 13555737 entre
+    // [64, 8, 2, 1, 35, 98]). El orden es una decisión de producto; ver el
+    // test de abajo.
+    fc.assert(
+      fc.property(totales, pesos, (total, w) => {
+        const totalPeso = w.reduce((a, b) => a + b, 0)
+        allocate(money(total), w).forEach((parte, i) => {
+          const suelo = Math.floor((total * w[i]) / totalPeso)
+          expect(parte.amount - suelo).toBeGreaterThanOrEqual(0)
+          expect(parte.amount - suelo).toBeLessThanOrEqual(1)
+        })
+      }),
+    )
+  })
+
+  test('el céntimo sobrante va a quien más cerca estaba de merecerlo', () => {
+    // 1,01 € al 10/45/45: lo exacto es 0,101 / 0,4545 / 0,4545. Por orden, el
+    // céntimo iría al primero (0,11: el que más se aleja de su parte); por mayor
+    // parte decimal va al segundo, y ninguna parte se aleja más de lo necesario.
+    expect(allocate(money(101), [10, 45, 45]).map((m) => m.amount)).toEqual([10, 46, 45])
+  })
+
+  test('a igual parte decimal, desempata la posición (determinista)', () => {
+    expect(allocate(money(10000), [1, 1, 1]).map((m) => m.amount)).toEqual([3334, 3333, 3333])
+  })
+
+  test('nadie redondeado hacia abajo tenía más derecho al céntimo que alguien redondeado hacia arriba', () => {
+    // Es la definición de "mayor parte decimal" (método del resto mayor).
+    fc.assert(
+      fc.property(totales, pesos, (total, w) => {
+        const totalPeso = w.reduce((a, b) => a + b, 0)
+        if (totalPeso === 0) return
+        const decimal = w.map((p) => {
+          const exacto = (total * p) / totalPeso
+          return exacto - Math.floor(exacto)
+        })
+        const subidos = allocate(money(total), w).map(
+          (parte, i) => parte.amount > Math.floor((total * w[i]) / totalPeso),
+        )
+        const minSubido = Math.min(...decimal.filter((_, i) => subidos[i]))
+        const maxNoSubido = Math.max(...decimal.filter((_, i) => !subidos[i] && w[i] > 0))
+        // Margen para el error de coma flotante al calcular las partes decimales.
+        expect(maxNoSubido).toBeLessThanOrEqual(minSubido + 1e-9)
+      }),
+    )
+  })
+
+  test('a quien tiene peso 0 no le toca nada, ni el céntimo del resto', () => {
+    fc.assert(
+      fc.property(totales, pesos, (total, w) => {
+        const conPesoCero = allocate(money(total), w).filter((_, i) => w[i] === 0)
+        expect(conPesoCero.every((parte) => parte.amount === 0)).toBe(true)
+      }),
+    )
+  })
+})
+
+describe('predicados y divisas', () => {
+  test('isZero, isNegative e isPositive miran el signo', () => {
+    const signos = (c: number) => [isZero(money(c)), isNegative(money(c)), isPositive(money(c))]
+    expect(signos(0)).toEqual([true, false, false])
+    expect(signos(-1)).toEqual([false, true, false])
+    expect(signos(1)).toEqual([false, false, true])
+  })
+
+  test('solo se aceptan las divisas conocidas', () => {
+    expect(isCurrency('EUR')).toBe(true)
+    expect(isCurrency('eur')).toBe(false)
+    expect(isCurrency('BTC')).toBe(false)
+    expect(asCurrency('USD')).toBe('USD')
+    expect(() => asCurrency('BTC')).toThrow(/Divisa desconocida/)
+  })
+
+  test('un importe fuera del rango exacto de Number se rechaza', () => {
+    expect(() => money(Number.MAX_SAFE_INTEGER + 1)).toThrow(TypeError)
   })
 })

@@ -9,7 +9,7 @@
  *     → refine-data-provider.ts
  *     → ESTE FICHERO                 'use server'
  *     → <entidad>.repository.ts      Drizzle
- *     → SQLite
+ *     → Postgres (Supabase)
  *
  * Por encima de esta línea no hay acceso a la base de datos ni sesión: los
  * componentes son cliente. Por debajo no hay React. Este fichero es la costura.
@@ -23,24 +23,18 @@
  * ninguna es negociable:
  *
  *   1. `resource` se resuelve contra `REPOSITORIES`, un mapa CERRADO. Un nombre
- *      que no esté ahí no ejecuta nada.
+ *      que no esté ahí no ejecuta nada. Los demás argumentos (ids, parámetros
+ *      del listado) pasan por los esquemas de `frontera.ts` antes de nada.
  *   2. `values` llega como `unknown` y NUNCA se esparce sobre la tabla: cada
  *      repositorio lo pasa por su esquema Zod y escribe campo a campo.
  *   3. El `userId` sale de `getSession()`. Jamás de los argumentos.
  *   4. Todo `where` de lectura y escritura lleva el `userId` DENTRO. La
  *      propiedad no se comprueba después de leer.
  *
- * ─── Por qué se DEVUELVEN los errores y no se lanzan ────────────────────────
- *
- * Una excepción en una Server Action llega al cliente redactada en producción:
- * "An error occurred in the Server Components render". Eso no le sirve a quien
- * está rellenando un formulario. Los errores esperados viajan como valor, con
- * sus `fieldErrors`, y el data provider los vuelve a convertir en excepción ya
- * en el navegador, que es donde Refine y React Query las quieren.
+ * Los errores se DEVUELVEN, no se lanzan: ver `resultado.ts`.
  */
 
 import { revalidatePath } from 'next/cache'
-import { getSession } from '@/lib/auth'
 import {
   repositoryOf,
   RepositoryError,
@@ -55,42 +49,15 @@ import {
 } from '@/src/infrastructure/repositories/categorias.repository'
 import { getFormMetadata as getFormMetadataRepo } from '@/src/infrastructure/repositories/metadata.repository'
 import type { FormMetadata } from '@/src/types/formMetadata.types'
+import { validarId, validarListParams } from './frontera'
+import { ejecutar, type ActionResult } from './resultado'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Resultado
-// ─────────────────────────────────────────────────────────────────────────────
+// Solo tipos: un fichero 'use server' no puede exportar valores que no sean
+// funciones async, pero los tipos desaparecen al compilar.
+export type { ActionFail, ActionOk, ActionResult } from './resultado'
 
-export type ActionOk<T> = { ok: true; data: T }
-export type ActionFail = {
-  ok: false
-  error: string
-  /** Errores por campo, en el formato que consume `GenericForm`. */
-  fieldErrors?: Record<string, string>
-}
-export type ActionResult<T> = ActionOk<T> | ActionFail
-
-/**
- * Envuelve una operación: resuelve la sesión, ejecuta y traduce el fallo.
- *
- * Un `RepositoryError` es un error de negocio y su mensaje SE LE ENSEÑA a la
- * persona. Cualquier otra cosa es un fallo inesperado: se registra en el
- * servidor y al cliente le llega un texto genérico, sin filtrar el interior de
- * la base de datos.
- */
-async function run<T>(operacion: (userId: string) => Promise<T>): Promise<ActionResult<T>> {
-  const session = await getSession()
-  if (!session) return { ok: false, error: 'No autorizado' }
-
-  try {
-    return { ok: true, data: await operacion(session.user.id) }
-  } catch (err) {
-    if (err instanceof RepositoryError) {
-      return { ok: false, error: err.message, fieldErrors: err.fieldErrors }
-    }
-    console.error('[entity.actions]', err)
-    return { ok: false, error: 'Se ha producido un error inesperado' }
-  }
-}
+const run = <T,>(operacion: (userId: string) => Promise<T>) =>
+  ejecutar('entity.actions', operacion)
 
 /**
  * Las rutas se revalidan tras cada mutación aunque la caché la lleve React
@@ -110,7 +77,7 @@ export async function listEntity(
   resource: string,
   params: ListParams,
 ): Promise<ActionResult<ListResult<unknown>>> {
-  return run((userId) => repositoryOf(resource).list(userId, params))
+  return run((userId) => repositoryOf(resource).list(userId, validarListParams(params)))
 }
 
 export async function getEntity(
@@ -118,7 +85,7 @@ export async function getEntity(
   id: string,
 ): Promise<ActionResult<unknown>> {
   return run(async (userId) => {
-    const registro = await repositoryOf(resource).get(userId, id)
+    const registro = await repositoryOf(resource).get(userId, validarId(id))
     // Mismo mensaje para "no existe" y "no es tuyo": distinguirlos le diría a
     // quien prueba ids al azar cuáles existen.
     if (!registro) throw new RepositoryError('No encontrado')
@@ -140,7 +107,9 @@ export async function updateEntity(
   id: string,
   values: unknown,
 ): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => repositoryOf(resource).update(userId, id, values))
+  const resultado = await run((userId) =>
+    repositoryOf(resource).update(userId, validarId(id), values),
+  )
   if (resultado.ok) revalidar(resource)
   return resultado
 }
@@ -149,7 +118,7 @@ export async function deleteEntity(
   resource: string,
   id: string,
 ): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => repositoryOf(resource).remove(userId, id))
+  const resultado = await run((userId) => repositoryOf(resource).remove(userId, validarId(id)))
   if (resultado.ok) revalidar(resource)
   return resultado
 }
@@ -163,14 +132,17 @@ export async function activarCategoria(
   id: string,
   presupuesto?: number | null,
 ): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => activarCategoriaRepo(userId, id, presupuesto))
+  // El presupuesto lo valida el repositorio, con la misma regla que el alta.
+  const resultado = await run((userId) =>
+    activarCategoriaRepo(userId, validarId(id), presupuesto),
+  )
   if (resultado.ok) revalidar('Categorias')
   return resultado
 }
 
 /** Oculta una categoría sin borrarla. */
 export async function ocultarCategoria(id: string): Promise<ActionResult<{ id: string }>> {
-  const resultado = await run((userId) => ocultarCategoriaRepo(userId, id))
+  const resultado = await run((userId) => ocultarCategoriaRepo(userId, validarId(id)))
   if (resultado.ok) revalidar('Categorias')
   return resultado
 }

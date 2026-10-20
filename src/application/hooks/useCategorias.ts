@@ -21,6 +21,19 @@ import { createEntityHooks, type EntityListPagination } from './createEntityHook
 
 const categoriaHooks = createEntityHooks<CategoriaListDto, CategoriaFormDto, CategoriaSaveDto>(
   'Categorias',
+  {
+    // La fila del listado trae todo lo que lee el formulario; `usos` y
+    // `oculta` sobran y se quedan fuera. El icono sin poner es `null` en la
+    // fila y cadena vacía en el formulario, como lo devuelve el `get`.
+    desdeLista: ({ id, nombre, tipo, icono, color, presupuesto }) => ({
+      id,
+      nombre,
+      tipo,
+      icono: icono ?? '',
+      color,
+      presupuesto,
+    }),
+  },
 )
 
 export const useCategoria = categoriaHooks.useOne

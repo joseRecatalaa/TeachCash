@@ -14,6 +14,13 @@
 
 import type { CivilDate, Period } from '@/lib/dates'
 
+/**
+ * La ventana por defecto de los informes de la portada: un año. La comparten
+ * la serie de saldo y "ingresos frente a gastos", y la etiqueta que lo dice en
+ * pantalla; si divergieran, el rótulo "últimos 12 meses" mentiría.
+ */
+export const INFORME_MESES_POR_DEFECTO = 12
+
 export interface GastoPorCategoriaDto {
   categoriaId: string
   categoriaNombre: string

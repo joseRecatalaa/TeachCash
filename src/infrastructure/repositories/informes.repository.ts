@@ -36,10 +36,11 @@ import {
   type CivilDate,
   type Period,
 } from '@/lib/dates'
-import type {
-  GastoPorCategoriaDto,
-  PuntoSaldoDto,
-  TotalesPeriodoDto,
+import {
+  INFORME_MESES_POR_DEFECTO,
+  type GastoPorCategoriaDto,
+  type PuntoSaldoDto,
+  type TotalesPeriodoDto,
 } from '@/src/types/informe.types'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,7 +78,10 @@ export async function getGastoPorCategoria(
       total: sql<number>`sum(${transactions.amount})`.mapWith(Number),
     })
     .from(transactions)
-    .leftJoin(categories, eq(categories.id, transactions.categoryId))
+    // `innerJoin`: `category_id` es NOT NULL con clave ajena, así que todo
+    // movimiento tiene su categoría y un `leftJoin` solo añadiría nulos que no
+    // pueden darse (y `?? 'Sin categoría'` que nunca se pintarían).
+    .innerJoin(categories, eq(categories.id, transactions.categoryId))
     .where(
       and(
         eq(transactions.userId, userId),
@@ -90,10 +94,11 @@ export async function getGastoPorCategoria(
     .orderBy(asc(sql`sum(${transactions.amount})`))
 
   return rows.map((r) => ({
-    categoriaId: r.categoriaId ?? '',
-    categoriaNombre: r.categoriaNombre ?? 'Sin categoría',
+    categoriaId: r.categoriaId,
+    categoriaNombre: r.categoriaNombre,
+    // El color sí puede faltar: es opcional en la categoría.
     categoriaColor: r.categoriaColor ?? '',
-    total: Math.abs(r.total ?? 0),
+    total: Math.abs(r.total),
   }))
 }
 
@@ -108,7 +113,7 @@ export async function getIngresosVsGastos(
   userId: string,
   options: { meses?: number; hasta?: Period } = {},
 ): Promise<TotalesPeriodoDto[]> {
-  const meses = options.meses ?? 12
+  const meses = options.meses ?? INFORME_MESES_POR_DEFECTO
   const hasta = options.hasta ?? periodOf(today())
 
   const rows = await db
@@ -131,6 +136,7 @@ export async function getIngresosVsGastos(
   const resultado: TotalesPeriodoDto[] = []
   for (let p = inicio; p <= hasta; p = addMonths(p, 1)) {
     const row = porPeriodo.get(p)
+    // Un mes sin fila es un hueco interior: cero, no "sin datos".
     const ingresos = row?.ingresos ?? 0
     const gastos = row?.gastos ?? 0
     resultado.push({ periodo: p, ingresos, gastos, neto: ingresos - gastos })
@@ -151,8 +157,9 @@ export async function getTotalesDelMes(
     .from(transactions)
     .where(and(eq(transactions.userId, userId), delMes(periodo)))
 
-  const ingresos = row?.ingresos ?? 0
-  const gastos = row?.gastos ?? 0
+  // Un agregado sin GROUP BY devuelve siempre UNA fila, y `coalesce` la deja
+  // en cero: no hay caso "sin fila" que cubrir.
+  const { ingresos, gastos } = row
   return { periodo, ingresos, gastos, neto: ingresos - gastos }
 }
 
@@ -169,7 +176,8 @@ export async function getSaldoActual(userId: string): Promise<number> {
     .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
     .from(transactions)
     .where(eq(transactions.userId, userId))
-  return row?.total ?? 0
+  // Siempre una fila (agregado sin GROUP BY), y `coalesce` evita el null.
+  return row.total
 }
 
 /**
@@ -201,8 +209,9 @@ export async function getSerieSaldo(
     )
     .groupBy(transactions.date)
 
-  const porFecha = new Map(deltas.map((d) => [d.fecha, d.total ?? 0]))
-  let acumulado = previo?.total ?? 0
+  // `sum` de un grupo que existe nunca es null; el previo, por `coalesce`, tampoco.
+  const porFecha = new Map(deltas.map((d) => [d.fecha, d.total]))
+  let acumulado = previo.total
 
   return eachDay(options.desde, options.hasta).map((fecha) => {
     acumulado += porFecha.get(fecha) ?? 0
@@ -218,20 +227,37 @@ export async function getPrimeraFecha(userId: string): Promise<CivilDate | null>
     .select({ fecha: sql<string | null>`min(${transactions.date})::text` })
     .from(transactions)
     .where(eq(transactions.userId, userId))
-  return row?.fecha ?? null
+  return row.fecha
+}
+
+/** Fecha del último movimiento. */
+export async function getUltimaFecha(userId: string): Promise<CivilDate | null> {
+  const [row] = await db
+    // ::text, por lo mismo que en `getPrimeraFecha`.
+    .select({ fecha: sql<string | null>`max(${transactions.date})::text` })
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+  return row.fecha
 }
 
 /**
  * Rango por defecto de la evolución de saldo: los últimos `meses` meses, sin
  * empezar antes del primer movimiento.
+ *
+ * Termina en `max(hoy, último movimiento)`, no en hoy a secas. Las fechas se
+ * aceptan hasta el "hoy" de la zona más adelantada (`latestToday`), que en
+ * Madrid puede ser mañana; si la serie cortara en hoy, su último punto no
+ * incluiría ese movimiento y dejaría de coincidir con `getSaldoActual` — y esa
+ * coincidencia es la prueba de que el saldo es derivado (regla dura 7).
  */
 export async function getRangoPorDefecto(
   userId: string,
-  meses = 12,
+  meses = INFORME_MESES_POR_DEFECTO,
   hoy: CivilDate = today(),
 ): Promise<{ desde: CivilDate; hasta: CivilDate }> {
   const inicioVentana = monthRange(addMonths(periodOf(hoy), -(meses - 1))).from
-  const primera = await getPrimeraFecha(userId)
+  const [primera, ultima] = await Promise.all([getPrimeraFecha(userId), getUltimaFecha(userId)])
   const desde = primera && compareDates(primera, inicioVentana) > 0 ? primera : inicioVentana
-  return { desde, hasta: hoy }
+  const hasta = ultima && compareDates(ultima, hoy) > 0 ? ultima : hoy
+  return { desde, hasta }
 }

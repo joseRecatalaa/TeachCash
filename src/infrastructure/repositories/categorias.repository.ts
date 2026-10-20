@@ -6,11 +6,15 @@
  */
 
 import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm'
+import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 import { db } from '@/db'
 import { categories, transactions, CATEGORY_KINDS } from '@/db/schema'
 import { CLAVES_COLOR, type ClaveColor } from '@/lib/colores'
 import type { CategoriaFormDto, CategoriaListDto } from '@/src/types/categoria.types'
+import { IMPORTE_MAXIMO, MAX_CATEGORIAS } from '@/src/types/limites.types'
+import { columnaDeOrden, patronContiene, trozo } from './listado'
+import { esChoqueUnico } from './postgres-errors'
 import {
   fromFieldErrors,
   NOT_FOUND,
@@ -23,6 +27,18 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 // Validación
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Un presupuesto mensual: céntimos enteros (regla dura 1), sin signo y que
+ * quepan en la columna (int4). Es una función para que `activarCategoria`, que
+ * no pasa por `CategoriaSave`, valide exactamente con la misma regla.
+ */
+const presupuestoSchema = () =>
+  z
+    .number('Importe no válido')
+    .int('Importe no válido')
+    .nonnegative('El importe no puede ser negativo')
+    .max(IMPORTE_MAXIMO, 'El presupuesto máximo es de 10.000.000,00 €')
 
 const CategoriaSave = z.object({
   nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(40, 'Máximo 40 caracteres'),
@@ -37,7 +53,7 @@ const CategoriaSave = z.object({
   // Obligatorio en gasto, ignorado en ingreso: lo comprueba
   // `assertPresupuestoValido`, no este esquema, porque en `update` el tipo no
   // viaja en el payload (es inmutable) y hay que mirar el de la fila actual.
-  presupuesto: z.number().int('Importe no válido').nonnegative('El importe no puede ser negativo').nullable(),
+  presupuesto: presupuestoSchema().nullable(),
 })
 
 /** El tipo NO se puede cambiar: los movimientos ya clasificados dependen de él. */
@@ -65,6 +81,39 @@ function assertPresupuestoValido(tipo: string, presupuesto: number | null): void
  * (`categories_user_name`) sí puede imponerlo, pero se comprueba aquí primero
  * para devolver un error de campo legible en vez de una error de restricción de Postgres.
  */
+/** El error de nombre repetido, lo detecte quien lo detecte. */
+const nombreOcupado = () =>
+  new RepositoryError('Ya existe una categoría con ese nombre', {
+    nombre: 'Ya existe una categoría con ese nombre',
+  })
+
+/**
+ * Traduce el choque con `categories_user_name` a su error de campo. Dos
+ * peticiones simultáneas con el mismo nombre pasan las dos `assertNombreLibre`
+ * antes de que ninguna escriba, y quien las para es el UNIQUE.
+ */
+async function conNombreUnico<T>(escribir: () => Promise<T>): Promise<T> {
+  try {
+    return await escribir()
+  } catch (err) {
+    if (esChoqueUnico(err, 'categories_user_name')) throw nombreOcupado()
+    throw err
+  }
+}
+
+/** Cuota de categorías por usuario. Contra el abuso; ver `limites.types.ts`. */
+async function assertCuotaLibre(userId: string): Promise<void> {
+  const [{ total }] = await db
+    .select({ total: sql<number>`count(*)`.mapWith(Number) })
+    .from(categories)
+    .where(eq(categories.userId, userId))
+  if (total >= MAX_CATEGORIAS) {
+    throw new RepositoryError(
+      `Has llegado al máximo de ${MAX_CATEGORIAS} categorías. Borra alguna que no uses para crear otra.`,
+    )
+  }
+}
+
 async function assertNombreLibre(
   userId: string,
   nombre: string,
@@ -75,11 +124,7 @@ async function assertNombreLibre(
     .from(categories)
     .where(and(eq(categories.userId, userId), eq(categories.name, nombre)))
 
-  if (rows.some((r) => r.id !== excluirId)) {
-    throw new RepositoryError('Ya existe una categoría con ese nombre', {
-      nombre: 'Ya existe una categoría con ese nombre',
-    })
-  }
+  if (rows.some((r) => r.id !== excluirId)) throw nombreOcupado()
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -97,14 +142,14 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 
     const where = and(
       eq(categories.userId, userId),
-      search ? ilike(categories.name, `%${search}%`) : undefined,
+      search ? ilike(categories.name, patronContiene(search)) : undefined,
       params.filters?.tipo ? eq(categories.kind, String(params.filters.tipo)) : undefined,
       params.filters?.oculta !== undefined
         ? eq(categories.hidden, String(params.filters.oculta) === 'true')
         : undefined,
     )
 
-    const column = SORTABLE[params.sortBy as keyof typeof SORTABLE] ?? categories.name
+    const column = columnaDeOrden<AnyPgColumn>(SORTABLE, params.sortBy, categories.name)
     const order = params.sortDir === 'desc' ? desc(column) : asc(column)
 
     const rows = await db
@@ -145,12 +190,10 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
       usos: usosPorCategoria.get(r.id) ?? 0,
     }))
 
-    const total = data.length
-    if (params.paginate === false) return { data, total }
-
-    const page = params.page ?? 1
-    const pageSize = params.pageSize ?? 20
-    return { data: data.slice((page - 1) * pageSize, page * pageSize), total }
+    // Aquí se pagina en memoria: un usuario tiene decenas de categorías
+    // (`MAX_CATEGORIAS` como mucho) y los usos ya se han traído enteros.
+    const { limit, offset } = trozo(params)
+    return { data: data.slice(offset, offset + limit), total: data.length }
   },
 
   async get(userId: string, id: string): Promise<CategoriaFormDto | null> {
@@ -185,20 +228,23 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 
     await assertNombreLibre(userId, parsed.data.nombre, null)
     assertPresupuestoValido(parsed.data.tipo, parsed.data.presupuesto)
+    await assertCuotaLibre(userId)
 
-    const [creada] = await db
-      .insert(categories)
-      .values({
-        userId,
-        name: parsed.data.nombre,
-        kind: parsed.data.tipo,
-        icon: parsed.data.icono || null,
-        color: parsed.data.color || null,
-        // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
-        monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
-        hidden: false,
-      })
-      .returning({ id: categories.id })
+    const [creada] = await conNombreUnico(() =>
+      db
+        .insert(categories)
+        .values({
+          userId,
+          name: parsed.data.nombre,
+          kind: parsed.data.tipo,
+          icon: parsed.data.icono || null,
+          color: parsed.data.color || null,
+          // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
+          monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
+          hidden: false,
+        })
+        .returning({ id: categories.id }),
+    )
     return { id: creada.id }
   },
 
@@ -212,17 +258,21 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
     await assertNombreLibre(userId, parsed.data.nombre, id)
     assertPresupuestoValido(actual.tipo, parsed.data.presupuesto)
 
-    const updated = await db
-      .update(categories)
-      .set({
-        name: parsed.data.nombre,
-        icon: parsed.data.icono || null,
-        color: parsed.data.color || null,
-        monthlyBudget: actual.tipo === 'expense' ? parsed.data.presupuesto : null,
-      })
-      .where(and(eq(categories.id, id), eq(categories.userId, userId)))
-      .returning({ id: categories.id })
+    const updated = await conNombreUnico(() =>
+      db
+        .update(categories)
+        .set({
+          name: parsed.data.nombre,
+          icon: parsed.data.icono || null,
+          color: parsed.data.color || null,
+          monthlyBudget: actual.tipo === 'expense' ? parsed.data.presupuesto : null,
+        })
+        .where(and(eq(categories.id, id), eq(categories.userId, userId)))
+        .returning({ id: categories.id }),
+    )
 
+    // Solo si otra petición la borra entre el `get` de arriba y este `update`.
+    /* v8 ignore next */
     if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
     return { id }
   },
@@ -288,6 +338,15 @@ export async function activarCategoria(
   id: string,
   presupuesto?: number | null,
 ): Promise<{ id: string }> {
+  // No pasa por `CategoriaSave`, así que valida el presupuesto por su cuenta,
+  // con la misma regla, antes de leer nada.
+  if (presupuesto !== undefined && presupuesto !== null) {
+    const valido = presupuestoSchema().safeParse(presupuesto)
+    if (!valido.success) {
+      throw fromFieldErrors({ presupuesto: valido.error.issues.map((i) => i.message) })
+    }
+  }
+
   const actual = await categoriasRepository.get(userId, id)
   if (!actual) throw new RepositoryError(NOT_FOUND)
 
@@ -301,6 +360,8 @@ export async function activarCategoria(
     .where(and(eq(categories.id, id), eq(categories.userId, userId)))
     .returning({ id: categories.id })
 
+  // Solo si otra petición la borra entre el `get` de arriba y este `update`.
+  /* v8 ignore next */
   if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
   return { id }
 }

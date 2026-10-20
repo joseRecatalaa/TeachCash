@@ -60,6 +60,9 @@ export function movimientoSections({
           required: true,
           span: { base: 12, md: 6 },
           tooltip: 'El día del gasto, no el de la anotación.',
+          // No se anota lo que aún no ha pasado. Lo impone el repositorio;
+          // esto solo evita ofrecer en el calendario días que va a rechazar.
+          noFutureDates: true,
         },
         {
           name: 'descripcion',

@@ -15,6 +15,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { BaseRecord, useList } from '@refinedev/core'
 import type { DataTableSortStatus } from 'mantine-datatable'
+import { TAMANO_PAGINA_POR_DEFECTO } from '@/src/types/limites.types'
 import type { EntityListPagination } from './createEntityHooks'
 import type {
   AppTableManualProps,
@@ -55,7 +56,7 @@ export function usePaginacion<TFilters, TRow extends BaseRecord>(
 ) {
   const {
     baseFilter,
-    initialPageSize = 20,
+    initialPageSize = TAMANO_PAGINA_POR_DEFECTO,
     initialSort = {},
     enabled,
     server = true,

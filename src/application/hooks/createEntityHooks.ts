@@ -16,6 +16,7 @@
  */
 
 import {
+  keys,
   useCreate,
   useDelete,
   useList,
@@ -25,6 +26,7 @@ import {
   type HttpError,
 } from '@refinedev/core'
 import { useQueryClient } from '@tanstack/react-query'
+import { TAMANO_PAGINA_POR_DEFECTO } from '@/src/types/limites.types'
 
 export interface EntityListPagination {
   /**
@@ -44,8 +46,24 @@ export interface EntityListOptions {
   enabled?: boolean
 }
 
+export interface EntityHooksOptions<TList, TForm> {
+  /**
+   * Cómo convertir una fila del LISTADO en el registro del FORMULARIO, si se
+   * puede. Con ella, abrir el detalle de algo que ya está en una lista cargada
+   * pinta al instante, sin esperar a la petición.
+   *
+   * Es opcional y explícita a propósito: solo sirve si la fila trae TODO lo que
+   * el formulario lee, y eso lo comprueba el compilador campo a campo en esta
+   * función. Sin ella, el detalle siempre se pide entero, que es lo seguro.
+   * (Movimientos no la tiene: su fila guarda el importe con signo y el
+   * formulario lo parte en magnitud + sentido.)
+   */
+  desdeLista?: (fila: TList) => TForm
+}
+
 export function createEntityHooks<TList extends BaseRecord, TForm extends BaseRecord, TSave>(
   resource: string,
+  { desdeLista }: EntityHooksOptions<TList, TForm> = {},
 ) {
   function useEntityList(
     filters?: Record<string, string | number | undefined>,
@@ -69,7 +87,7 @@ export function createEntityHooks<TList extends BaseRecord, TForm extends BaseRe
         ? {
             paginate: pagination.paginate ?? true,
             page: pagination.page ?? 1,
-            pageSize: pagination.pageSize ?? 20,
+            pageSize: pagination.pageSize ?? TAMANO_PAGINA_POR_DEFECTO,
             sortBy: pagination.sortBy,
             sortDir: pagination.sortDir,
             searchQuery: pagination.searchQuery ?? '',
@@ -86,39 +104,33 @@ export function createEntityHooks<TList extends BaseRecord, TForm extends BaseRe
   }
 
   /**
-   * Detalle por id.
-   *
-   * `skipListCache` fuerza la petición completa. El atajo del `initialData`
-   * asume que un registro del cache de lista (`TList`) sirve como sustituto del
-   * registro de formulario (`TForm`), y eso solo es cierto si `TList` ya trae
-   * todos los campos que el llamador va a leer. Cuando no lo es — el caso vivo
-   * aquí es Movimientos, cuyo `ListDto` guarda el importe CON SIGNO y el
-   * `FormDto` lo parte en magnitud + sentido — el atajo devolvería datos
-   * incompletos "frescos" durante todo el staleTime sin disparar el fetch real.
+   * Detalle por id. Si la entidad declaró `desdeLista` y el registro ya está en
+   * una lista cargada, se pinta con él mientras llega el detalle.
    */
-  function useEntityOne(id: string, options?: { skipListCache?: boolean }) {
+  function useEntityOne(id: string) {
     const queryClient = useQueryClient()
+
+    const desdeCache = () => {
+      if (!desdeLista) return undefined
+      // La clave la construye Refine, no se escribe a mano: la real lleva
+      // delante `['data', <data provider>, ...]`, y con `['default', resource,
+      // 'list']` este atajo no encontraba nunca ninguna lista, sin avisar.
+      const listas = queryClient.getQueriesData<{ data: TList[] }>({
+        queryKey: keys().data('default').resource(resource).action('list').get(),
+      })
+      for (const [, lista] of listas) {
+        const fila = lista?.data?.find((item) => item.id === id)
+        if (fila) return { data: desdeLista(fila) }
+      }
+      return undefined
+    }
 
     return useOne<TForm>({
       resource,
       id,
       queryOptions: {
         enabled: Boolean(id),
-        ...(options?.skipListCache
-          ? {}
-          : {
-              initialData: () => {
-                const listQueries = queryClient.getQueriesData<{ data: TList[] }>({
-                  queryKey: ['default', resource, 'list'],
-                })
-
-                for (const [, listData] of listQueries) {
-                  const record = listData?.data?.find((item) => item.id === id)
-                  if (record) return { data: record as unknown as TForm }
-                }
-                return undefined
-              },
-            }),
+        ...(desdeLista ? { initialData: desdeCache } : {}),
       },
     })
   }

@@ -38,6 +38,8 @@ tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
 4. Si vas a tocar un formulario o una tabla, lee **Cómo se declara una vista**.
    La regla que sorprende: los ficheros de `src/config/` no pueden llevar JSX.
 5. Antes de terminar, mira las **trampas**. Todas fallan en silencio.
+6. Si vas a escribir o arreglar un test, lee **`docs/TESTS.md`**: cómo está
+   montado, qué cubre cada fichero y qué no merece test.
 
 ### Dónde va cada cosa
 
@@ -65,7 +67,7 @@ encontrado la pieza genérica.
 
 | Pieza | Elección | Notas |
 |---|---|---|
-| Framework | Next.js **16.3.0** (App Router) | Turbopack por defecto |
+| Framework | Next.js **16.3.8** (App Router) | Turbopack por defecto |
 | React | **19.2.8** | |
 | Lenguaje | TypeScript 5, `strict` | |
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
@@ -82,7 +84,8 @@ encontrado la pieza genérica.
 | Gráficos | **Recharts 3** | Solo datos ya agregados cruzan al cliente |
 | Exportación | **xlsx** | Carga diferida, solo al pulsar el botón |
 | Scaffolding | **Plop** | `pnpm generate:crud` |
-| Tests | **Vitest + fast-check** + **PGlite** | Postgres real en WASM, con las migraciones reales |
+| Tests | **Vitest + fast-check** + **PGlite**, **Testing Library**, **Playwright** | Postgres real en WASM; componentes en jsdom; E2E contra un Supabase de pruebas. Ver `docs/TESTS.md` |
+| Quality gates | **GitHub Actions** + **Husky** + **lint-staged** | CI en cada PR a `develop`; ESLint y tipos en cada commit |
 
 **No hay Tailwind.** Se retiró al adoptar Mantine: su `preflight` reescribe los
 estilos base de todos los elementos y peleaba con los de Mantine por quién manda
@@ -161,12 +164,17 @@ pnpm dev                  # servidor de desarrollo, SOLO en localhost
 pnpm build                # build de producción
 pnpm start                # servir el build
 pnpm lint                 # ESLint (eslint-config-next)
-pnpm typecheck            # tsc --noEmit
+pnpm typecheck            # next typegen (tipos de rutas) + tsc --noEmit
 pnpm test                 # Vitest (sobre PGlite, no toca Supabase)
 pnpm test:tz              # la misma suite con TZ=Pacific/Kiritimati
+pnpm test:coverage        # la suite con los umbrales de coverage por fichero
+pnpm test:e2e             # Playwright contra el Supabase de pruebas (necesita .env.e2e)
+pnpm test:e2e:ui          # lo mismo, con la interfaz de Playwright
+pnpm test:e2e:visual      # regresión visual de Inicio (opt-in, solo local)
 pnpm generate:crud        # scaffolding de una entidad nueva (Plop)
 pnpm db:generate          # genera la migración a partir de db/schema.ts
 pnpm db:migrate           # aplica las migraciones en Supabase (lee .env.local)
+pnpm db:migrate:e2e       # lo mismo en el proyecto de los E2E (lee .env.e2e)
 pnpm db:studio            # explorador de la base
 ```
 
@@ -192,8 +200,14 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm test:tz
 es lo que caza las fechas que se han colado como instantes en lugar de como
 fechas civiles. Un cambio que toque fechas y no pase por aquí no está probado.
 
-Si has tocado rutas, layouts o tipos de página, pasa también `pnpm build`: el
-tipo `LayoutProps` lo genera el build, así que `typecheck` a solas no lo ve.
+Si has tocado algo que se ve en el navegador (formularios, tablas, estilos,
+`layout.tsx`), pasa también `pnpm test:e2e`. Si has tocado rutas, layouts o
+`next.config.ts`, pasa `pnpm build`.
+
+Dos controles lo vuelven a comprobar solos: **Husky** en cada `git commit`
+(ESLint sobre lo que entra y `typecheck`; si falla, el commit no se crea) y el
+**CI** en cada PR a `develop` (todo lo anterior más coverage, build y `pnpm
+audit`). Detalle en `docs/TESTS.md`.
 
 ## Reglas duras
 
@@ -412,6 +426,8 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     application/
       actions/
         entity.actions.ts             # 'use server' — la frontera
+        frontera.ts                   # los esquemas Zod de lo que llega del cliente
+        resultado.ts                  # run(): errores esperados como valor
         informes.actions.ts
         auth.actions.ts               # invitado, login, registro, contraseña, borrar cuenta
       hooks/
@@ -467,8 +483,10 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     colores.ts                        # las claves de la paleta categórica
     format.ts                         # Intl.NumberFormat / fechas, es-ES
     dates.ts                          # fechas civiles, periodos, rangos de mes
-    forms.ts
     auth.ts                           # getSession(): lo único que sabe de auth
+    env.ts                            # el entorno, validado con Zod al arrancar
+    log.ts                            # registrarError(): sin los params de Drizzle
+    ids.ts                            # uuid() que funciona fuera de https
     supabase/                         # clientes de servidor y de proxy
     rutas.ts                          # filtro de redirección abierta
     csp.ts                            # la Content Security Policy y su nonce
@@ -483,6 +501,13 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     testing.ts                        # PGlite + stub de `auth` para los tests
   plop-templates/
   plopfile.mjs
+  instrumentation.ts                  # valida el entorno al arrancar el servidor
+  test/                               # andamiaje de Vitest: harness, mocks, render
+  e2e/                                # Playwright: specs y Page Objects (e2e/pages/)
+  playwright.config.ts
+  docs/TESTS.md                       # todo lo de tests y quality gates
+  .github/workflows/                  # calidad.yml (CI) y ping-supabase.yml
+  .husky/pre-commit                   # ESLint + typecheck en cada commit
 ```
 
 ## Cómo se declara una vista
@@ -530,6 +555,12 @@ tener presente al escribirlos:
 - **Todo campo con `component:` o `render:` lleva su `dependsOn`.** Sin él se
   repinta con cada tecla del formulario entero; con él, solo cuando cambia lo que
   declara. Si olvidas una dependencia, el campo deja de actualizarse en silencio.
+- **Lo mismo para `disabledWhen`, `labelFrom` y `optionsFrom`** que lean otros
+  campos: sin `dependsOn` el campo se repinta siempre (correcto, pero caro); con
+  un `dependsOn` incompleto se queda con lo del primer pintado.
+- **`MoneyInput` publica `null` mientras el texto no es un importe** ("12,3x"),
+  nunca el último importe bueno: la validación lo trata como vacío y no se guarda
+  una cifra que ya no se ve.
 - `visibleWhen` / `disabledWhen` reciben los valores vivos y el `FormContext`.
 
 El `FormContext` lleva el `mode` y la **divisa**, que es la de la aplicación y no
@@ -638,7 +669,20 @@ lleve hasta ella.
 - **El nombre de un recurso aparece en cuatro sitios** y tienen que coincidir
   carácter a carácter. Si el DataProvider dice "Recurso desconocido", es esto.
 - **Los campos con `component:` o `render:` necesitan `dependsOn`.** Si lo
-  olvidas, el campo deja de actualizarse y no aparece ningún error.
+  olvidas, el campo deja de actualizarse y no aparece ningún error. Lo vigila
+  `src/__tests__/invariantes.test.ts`. Con `disabledWhen`/`labelFrom`/`optionsFrom`,
+  un `dependsOn` incompleto congela el campo.
+- **Un filtro de columna en modo servidor viaja con la `enumKey`, no con el
+  accessor.** Movimientos pinta `categoriaNombre` y filtra por `categoriaId`: si
+  la clave no es la que espera el repositorio, la ignora y devuelve todo. El
+  icono del filtro sale encendido y la tabla, sin filtrar.
+- **Las clases de `next/font` van en el `<html>`, no en el `<body>`.**
+  `globals.css` resuelve `--sd-font-*` en `:root`; con las clases en el `<body>`
+  quedaban inválidas y toda la app salía en Times New Roman sin un solo error. Lo
+  vigila `e2e/tipografia.spec.ts`.
+- **`NEXT_PUBLIC_SUPABASE_URL` es la URL del proyecto, sin `/rest/v1`.** El panel
+  enseña las dos; con la de la API de datos, Auth responde "Invalid path specified
+  in request URL". `lib/env.ts` ya no arranca con ella.
 - **Nada de `Date` para la fecha de un movimiento.** Cadenas `'YYYY-MM-DD'`.
   `lib/dates.ts` opera sobre ellas sin construir un solo `Date`.
 - **Los repositorios importan `@/db`**, así que nunca se importan desde un
@@ -726,9 +770,9 @@ respecto a versiones anteriores que probablemente conozcas:
 - Caché: directiva `'use cache'` + `cacheComponents` en `next.config.ts`.
   `cacheComponents` está **desactivado a propósito**: saldos y movimientos son
   datos por usuario que cambian con cada mutación.
-- El layout raíz usa `LayoutProps<'/'>`, un tipo que **genera el build**. Por eso
-  `pnpm typecheck` necesita que exista `.next/types`: si borras `.next`, pasa
-  `pnpm build` antes.
+- El layout raíz usa `LayoutProps<'/'>`, un tipo que **genera Next**. Por eso
+  `pnpm typecheck` es `next typegen && tsc --noEmit`: genera los tipos de rutas
+  sin compilar y funciona aunque no exista `.next` (en el CI, siempre).
 - Mutaciones vía **Server Actions**, no route handlers, salvo que necesites un
   endpoint HTTP real (webhooks, descargas).
 - Toda página que use `useSearchParams` necesita un `<Suspense>` por encima, o el
@@ -738,40 +782,13 @@ Detalle en la skill `nextjs-app-conventions`.
 
 ## Tests
 
-`pnpm test` y `pnpm test:tz`. → skill `testing-finance`
+Todo lo de tests está en **`docs/TESTS.md`**: cómo se ejecuta cada suite, cómo
+están montados (PGlite con las migraciones reales, Testing Library, Playwright
+contra un Supabase de pruebas), qué fichero cubre qué regla dura, los niveles de
+coverage, las trampas y los quality gates. → skill `testing-finance`
 
-Cómo están montados:
-
-- **Postgres real con las migraciones reales**, sobre **PGlite** (el mismo
-  motor en WASM, en proceso). Nunca tocan Supabase. Nada de mockear el ORM: los
-  bugs de agregación —y los de dialecto, como `like` o `sum` en texto— viven
-  exactamente en el SQL que un mock no llega a ejecutar.
-- `db/testing.ts` crea antes de migrar un **stub del esquema `auth`** de
-  Supabase (`auth.users`, `auth.uid()`, roles `anon` y `authenticated`), porque
-  la clave ajena de `user_id` y las políticas RLS dependen de él. Si una
-  migración nueva usa algo más de `auth`, se añade ahí.
-- Los dos usuarios de siempre son `USER_A` y `USER_B` (`db/testing.ts`), ya
-  dados de alta en `auth.users`. Otro usuario se crea con `crearUsuario(pg, id)`.
-- Cada test tiene base nueva: la primera se migra una vez y las demás nacen de
-  copia de su directorio de datos.
-- Lo único que se sustituye es de dónde sale la conexión (se mockea `@/db` con
-  un getter) y la sesión (se mockea `@/lib/auth`).
-  `src/infrastructure/repositories/__tests__/helpers.ts` tiene las semillas.
-- Si la suite completa se cuelga (ha pasado con PGlite en varios workers),
-  relánzala o pásala fichero a fichero.
-
-Qué se testea sin excepción:
-
-- **Aislamiento por usuario**: que ninguna operación lea ni escriba lo ajeno, y
-  que el mensaje no distinga "no existe" de "no es tuyo". Y en la base: que RLS
-  no deje ver lo ajeno y que borrar un usuario se lleve sus datos en cascada.
-- **Aritmética de dinero**: signos, redondeos, que un importe con decimales se
-  rechace.
-- **Agregaciones**: que `getSaldoActual` coincida con el último punto de
-  `getSerieSaldo` — dos caminos distintos hasta la misma cifra son la prueba de
-  que el saldo sigue siendo derivado (regla dura 7).
-- **Reglas de borrado**: que sea permanente y que se propague donde toque (p. ej.
-  borrar una categoría se lleva por delante sus movimientos).
+Lo que no se negocia: un bug se arregla escribiendo primero el test que lo
+reproduce y viéndolo en rojo, y un umbral de coverage no se baja para que pase.
 
 ## Skills del proyecto
 
@@ -785,7 +802,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 | `server-action-safety` | Escribir o revisar una Server Action o un formulario |
 | `bank-import-es` | Importar extractos bancarios (CSV, Norma 43), dedup, categorización |
 | `finance-charts` | Gráficos financieros (usa además la skill global `dataviz`) |
-| `testing-finance` | Tests, sobre todo de lógica de dinero y de acciones |
+| `testing-finance` | Qué testear y cómo, sobre todo dinero y acciones. El montaje, en `docs/TESTS.md` |
 
 ## Decisiones tomadas
 
@@ -844,7 +861,68 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   `upgrade-insecure-requests` solo si la petición llega por https. Se descartó
   la CSP por hashes (SRI experimental): todas las rutas ya son dinámicas.
 - **Tests**: Vitest + fast-check sobre PGlite (Postgres real en proceso, con un
-  stub del esquema `auth`). Playwright sigue pendiente.
+  stub del esquema `auth`, `int8` como texto igual que postgres-js); Testing
+  Library para componentes y hooks (con Refine real); Playwright para cuatro
+  flujos E2E. Detalle en `docs/TESTS.md`.
+- **E2E contra un segundo proyecto de Supabase** (`teachcash-e2e`, plan gratuito)
+  y el build de producción en el puerto 3100, con las claves de PRUEBA de
+  Turnstile. Solo en local: en CI gastarían minutos y obligarían a guardar en
+  GitHub las claves de ese proyecto. Cada test es un invitado nuevo, así que no
+  hay que limpiar la base. Pasos del panel en `.env.e2e.example`.
+- **Coverage por niveles, por fichero** (`vitest.config.mts`): CORE 100 % (dinero,
+  fechas, formato, rutas, CSP), CORE 90 % (repositorios, acciones, sesión,
+  entorno, log), IMPORTANT 80 % (`GenericForm`, `AppTable`, hooks) e INFRA
+  excluido (tipos, `src/config`, migraciones, estilos). Un umbral no se baja: se
+  escribe el test o la rama inalcanzable se marca con su porqué.
+- **Quality gates gratis**: Husky + lint-staged en cada commit (ESLint sobre lo
+  que entra y `typecheck`) y GitHub Actions en cada PR a `develop`
+  (`calidad.yml`: typecheck, lint, coverage, `test:tz`, build y `pnpm audit`). El
+  CI no corre en push (la PR ya prueba la mezcla) ni en PRs que solo tocan
+  documentación; se salta con un job y no con `paths-ignore` para no dejar
+  colgado un check obligatorio. `--no-verify` solo en emergencias.
+- **Repositorio público**: minutos de Actions ilimitados, poder exigir el check
+  del CI para mergear en `develop`, secret scanning y push protection, todo gratis. Se hizo tras revisar
+  el historial entero: ningún secreto se ha commiteado nunca. La seguridad no
+  depende de que el código sea secreto (RLS, sesión verificada, `userId` en cada
+  `where`).
+- **Zod en la frontera** (`src/application/actions/frontera.ts`): `ListParams`,
+  ids, rango de la serie de saldo, periodo y meses se validan antes de llegar al
+  repositorio. Los topes viven con nombre en `src/types/limites.types.ts`: importe
+  y presupuesto ≤ 1.000.000.000 céntimos, 100 filas por página, 5.000 sin
+  paginar, serie de saldo ≤ 731 días.
+- **Cuotas por usuario en la base**, sin Redis: 1.000 movimientos para un
+  invitado, 50.000 para una cuenta y 200 categorías. Al superarlas, un
+  `RepositoryError` legible.
+- **No se anotan movimientos con fecha futura.** El tope es el "hoy" de
+  `Pacific/Kiritimati`, la zona más adelantada del planeta, para no rechazar el
+  hoy de nadie; el `DateInput` lleva `maxDate` como cortesía. La serie de saldo
+  llega por defecto hasta `max(hoy, último movimiento)`.
+- **Cambiar la contraseña pide la actual** (y CAPTCHA) si la sesión se abrió con
+  contraseña, según el claim `amr` del JWT verificado. Desde el enlace de
+  recuperación no: quien llega así no la conoce.
+- **`allocate` reparte el resto por mayor parte decimal** (método del resto
+  mayor), no por orden: el céntimo sobrante va a quien le corresponde.
+- **El entorno se valida al arrancar** (`lib/env.ts`, llamado desde
+  `instrumentation.ts`): una variable que falta o está mal para el servidor con un
+  mensaje que dice cuál, en vez de un error genérico en la primera petición.
+- **Errores al log sin datos** (`lib/log.ts`): nombre, código y mensaje, sin los
+  `params` de Drizzle, que llevan importes y descripciones.
+- **Dependencias sin un solo aviso de `pnpm audit`** (producción y desarrollo):
+  `xlsx` 0.20.3 desde el CDN oficial de SheetJS (npm se quedó en una versión con
+  CVEs), overrides documentados en `pnpm-workspace.yaml` y un parche de
+  `findup-sync` para quitar `braces` (sin versión parcheada). Dependabot mensual
+  y agrupado.
+- **El repo es LF** (`.gitattributes`): un CRLF hace que los `modify` de Plop no
+  casen y se salten en silencio.
+- **Las capas, impuestas por ESLint** (`no-restricted-imports`): `src/config` y
+  `src/presentation` no importan de `src/infrastructure`, solo los repositorios
+  importan `@/db`, y `lib/`/`db/` no importan de `src/`. También sonarjs
+  (complejidad 15), `no-console` y las reglas de Vitest (sin `.only`, todo test
+  con aserción).
+- **`AppTable` partido** en `columnas.ts` (lógica pura de filtros y orden),
+  `FiltroColumna.tsx` y `CeldaPorDefecto.tsx`, con los tests escritos antes del
+  corte. `desdeLista` (`createEntityHooks.ts`) toma el registro de la lista ya en
+  caché con la clave que construye Refine.
 - **Sistema de diseño**: dibujado a mano (trazo negro de 2-3 px, esquinas
   elípticas asimétricas, sombra dura sin difuminar, verde bosque de acento) sobre
   **CSS Modules** y tokens `--sd-*`. Se descartó estilar con las props de Mantine
@@ -916,3 +994,13 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Fusionar los datos del invitado al iniciar sesión** en una cuenta que ya
   existe: hoy se avisa y no se fusionan.
 - **Endurecimiento opcional**: MFA TOTP.
+- **Rol de base de mínimo privilegio**: la app se conecta con un rol que se salta
+  RLS. Uno propio con permisos solo sobre las tablas de la app acotaría el daño
+  de una inyección; hoy lo frena el `userId` en cada `where`.
+- **Observabilidad (Sentry o similar)**: fuera por coste y privacidad. Hoy solo
+  hay logs saneados (`lib/log.ts`).
+- **`noUncheckedIndexedAccess`**: aplazado. Activarlo daba 106 errores (66 en
+  tests).
+- **E2E en CI**: hoy solo locales. Si un día se quieren en GitHub, sería un
+  `workflow_dispatch` manual con las claves del proyecto `teachcash-e2e` como
+  secrets.

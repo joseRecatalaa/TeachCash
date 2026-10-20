@@ -19,7 +19,37 @@ export type Session = {
     id: string
     email: string | null
     esInvitado: boolean
+    /**
+     * Si la sesión se abrió escribiendo la contraseña. Quien entró así la
+     * conoce, y por eso se le vuelve a pedir antes de cambiarla; quien llegó
+     * desde el enlace de recuperación o de alta, no la conoce (o no la tiene).
+     */
+    entroConPassword: boolean
   }
+}
+
+/**
+ * El método con que se abrió la sesión, según el claim `amr` del JWT.
+ *
+ * Supabase lo manda como lista de `{ method, timestamp }` (o como lista de
+ * cadenas, en el formato RFC 8176). Manda el MÁS RECIENTE: es el que abrió
+ * esta sesión. Cualquier forma inesperada devuelve `null`, y `null` no cuenta
+ * como contraseña: ante la duda, no se le exige a nadie una contraseña que a
+ * lo mejor no tiene (el que llega de "he olvidado mi contraseña").
+ */
+function metodoDeEntrada(amr: unknown): string | null {
+  if (!Array.isArray(amr) || amr.length === 0) return null
+  if (amr.every((e) => typeof e === 'string')) return amr.at(-1) as string
+
+  let reciente: { method: string; timestamp: number } | null = null
+  for (const e of amr) {
+    if (!e || typeof e !== 'object') continue
+    const { method, timestamp } = e as { method?: unknown; timestamp?: unknown }
+    if (typeof method !== 'string') continue
+    const t = typeof timestamp === 'number' ? timestamp : 0
+    if (!reciente || t >= reciente.timestamp) reciente = { method, timestamp: t }
+  }
+  return reciente?.method ?? null
 }
 
 /**
@@ -41,6 +71,7 @@ export async function getSession(): Promise<Session | null> {
       id: claims.sub,
       email: typeof claims.email === 'string' && claims.email ? claims.email : null,
       esInvitado: claims.is_anonymous === true,
+      entroConPassword: metodoDeEntrada(claims.amr) === 'password',
     },
   }
 }

@@ -2,13 +2,18 @@ import { describe, expect, test } from 'vitest'
 import fc from 'fast-check'
 import { money } from '@/lib/money'
 import {
+  formatAmountForInput,
   formatDate,
   formatDateLong,
   formatMoney,
+  formatMoneyCompact,
   formatMoneySigned,
   formatPeriod,
+  formatPeriodShort,
   formatPercent,
+  fractionDigitsOf,
   parseMoney,
+  scaleOf,
 } from '@/lib/format'
 
 const anyCents = fc.integer({ min: -100_000_000, max: 100_000_000 })
@@ -106,5 +111,83 @@ describe('fechas y porcentajes', () => {
   test('formatPercent', () => {
     expect(formatPercent(0.85)).toMatch(/^85\s?%$/u)
     expect(formatPercent(1.8)).toMatch(/^180\s?%$/u)
+  })
+})
+
+describe('importe para un input', () => {
+  test('sin símbolo y sin separador de miles', () => {
+    // "1.234" es ambiguo al volver a parsearlo: el input nunca lo enseña.
+    expect(formatAmountForInput(money(123456))).toBe('1234,56')
+    expect(formatAmountForInput(money(-5))).toBe('-0,05')
+    expect(formatAmountForInput(money(0))).toBe('0,00')
+  })
+
+  test('lo que enseña el input vuelve intacto al parsearlo', () => {
+    // Es la ida y vuelta de MoneyInput: el usuario edita lo que ve y se reenvía.
+    fc.assert(
+      fc.property(fc.integer({ min: -1_000_000_00, max: 1_000_000_00 }), (centimos) => {
+        expect(parseMoney(formatAmountForInput(money(centimos)))?.amount).toBe(centimos)
+      }),
+    )
+  })
+})
+
+describe('lectura ambigua de "1.234"', () => {
+  // Decisión fijada a propósito (format.ts): un único punto con TRES cifras
+  // detrás se lee como separador decimal y se trunca, no como miles. Si algún
+  // día cambia, cambia lo que se anota quien escribe "1.234" en un formulario.
+  test('"1.234" se lee como 1,23 €', () => {
+    expect(parseMoney('1.234')?.amount).toBe(123)
+  })
+
+  test('con coma decimal, el punto sí es de miles', () => {
+    expect(parseMoney('1.234,00')?.amount).toBe(123400)
+  })
+})
+
+describe('formatos de gráfico', () => {
+  test('compacto para los ejes', () => {
+    expect(formatMoneyCompact(money(123456))).toMatch(/^1,2\smil\s€$/)
+    expect(formatMoneyCompact(money(500))).toMatch(/^5\s€$/)
+  })
+
+  test('mes abreviado para los ejes', () => {
+    expect(formatPeriodShort('2026-08')).toBe('ago')
+    expect(formatPeriodShort('2026-01')).toBe('ene')
+  })
+})
+
+describe('escala de la divisa', () => {
+  test('EUR y USD tienen dos decimales: la unidad mínima es el céntimo', () => {
+    expect(fractionDigitsOf('EUR')).toBe(2)
+    expect(scaleOf('USD')).toBe(100)
+  })
+
+  test('el símbolo lo decide la divisa del importe, no la configuración regional', () => {
+    expect(formatMoney(money(100, 'USD'))).toContain('US$')
+    expect(formatMoney(money(100, 'GBP'))).toContain('GBP')
+  })
+})
+
+describe('parseMoney: los casos de separadores que faltaban', () => {
+  test.each([
+    // Los dos signos y el punto al final: formato anglosajón.
+    ['1,234.56', 123456],
+    // Una coma repetida solo puede ser de miles.
+    ['1,234,567', 123456700],
+    // Un punto repetido, igual.
+    ['1.234.567', 123456700],
+  ])('%j se lee como %i céntimos', (texto, centimos) => {
+    expect(parseMoney(texto)?.amount).toBe(centimos)
+  })
+
+  test.each(['12,3x', '12,-3', '1,2,3', '1.23.4,5'])('rechaza %j', (texto) => {
+    expect(parseMoney(texto)).toBeNull()
+  })
+
+  test('rechaza un importe que no cabe en un entero seguro', () => {
+    // Pasado 2^53 los céntimos dejan de ser exactos: mejor no aceptarlo que
+    // guardar una cifra que no es la que se escribió.
+    expect(parseMoney('99999999999999999')).toBeNull()
   })
 })

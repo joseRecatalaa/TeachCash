@@ -1,0 +1,45 @@
+# Actualizaciones de dependencias. Gratis: Dependabot viene con GitHub.
+#
+# Mensual y AGRUPADO: un PR al mes por ecosistema en vez de uno por paquete.
+# Las alertas de seguridad (Dependabot alerts) no esperan al mes: llegan en
+# cuanto se publica el aviso, y eso se activa en Settings → Code security.
+#
+# Sale contra `develop`, que es la rama de integración del repo.
+#
+# `xlsx` no lo puede actualizar: se instala desde el CDN de SheetJS
+# (https://cdn.sheetjs.com), no desde npm, porque npm se quedó en una versión
+# con CVEs. Hay que mirar a mano https://cdn.sheetjs.com/ de vez en cuando.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Las de producción y las de desarrollo por separado: un PR de
+      # herramientas de test no debería tener que esperar a revisar Next.
+      produccion:
+        dependency-type: production
+        update-types: [minor, patch]
+      desarrollo:
+        dependency-type: development
+        update-types: [minor, patch]
+    # Las mayores van una a una: cada una trae cambios que leer (AGENTS.md
+    # avisa de que este Next no es el que conoces).
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      acciones:
+        patterns: ['*']

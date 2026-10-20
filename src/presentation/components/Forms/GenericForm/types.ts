@@ -141,6 +141,12 @@ export interface FieldDefinition {
   minDateFrom?: string
   /** Solo campos `date`: idem, como fecha máxima. */
   maxDateFrom?: string
+  /**
+   * Solo campos `date`: no deja elegir días posteriores a hoy (el de quien
+   * rellena, en su huso). Es cortesía: quien prohíbe las fechas futuras es el
+   * repositorio.
+   */
+  noFutureDates?: boolean
   /** Contenido custom. Si se define, se ignora `type`. */
   render?: FieldRender
   /**
@@ -168,19 +174,20 @@ export interface FieldDefinition {
   /**
    * De qué OTROS valores del formulario depende lo que pinta.
    *
-   * Obligatorio en la práctica para dos casos, por la misma razón: el
-   * `FieldRenderer` está memoizado y solo repinta un campo cuando cambia su
-   * propio valor, su error, o algo listado aquí.
-   *   - Campos `component`/`render`: no hay forma de saber qué leen, así que
-   *     sin `dependsOn` se repintan siempre (el memo no puede cortar nada).
-   *   - Campos `select` con `optionsFrom`: la función SÍ lee otros valores
-   *     (p. ej. `categoriaId` filtrando por `sentido`), y sin declararlos aquí
-   *     el memo no sabe que tiene que volver a evaluarla — el desplegable se
-   *     queda con las opciones del primer render aunque el otro campo cambie.
+   * El `FieldRenderer` está memoizado y solo repinta un campo cuando cambia su
+   * propio valor, su error, o algo listado aquí. Importa en los campos que
+   * leen los valores vivos: `component`/`render` y los que tienen
+   * `optionsFrom`, `labelFrom` o `disabledWhen`.
+   *   - **Sin `dependsOn`** se repintan con cada tecla del formulario entero:
+   *     no hay forma de saber qué leen, así que el memo no corta nada. Es
+   *     correcto, pero caro en un formulario grande.
+   *   - **Con `dependsOn`** se repintan solo cuando cambia lo declarado (p. ej.
+   *     `categoriaId` filtrando por `sentido`).
    *
    * `[]` = no depende de nada más.
    *
-   * **Cuidado: si olvidas uno, el campo deja de actualizarse en silencio.**
+   * **Cuidado: si declaras la lista y olvidas uno, el campo deja de
+   * actualizarse en silencio.**
    */
   dependsOn?: string[]
 }

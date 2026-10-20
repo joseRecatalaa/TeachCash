@@ -108,9 +108,15 @@ export function GenericForm<TSave>({
   // Los errores del servidor se pintan EN EL CAMPO, no solo en la notificación:
   // en un formulario largo, un aviso arriba no dice cuál de los quince campos
   // está mal.
+  //
+  // Depende de `setErrors` y NO de `form`: `useForm` devuelve un objeto nuevo
+  // en cada render y `setErrors` siempre guarda un objeto nuevo, así que con
+  // `form` en la lista el efecto se relanzaba sin fin y la pestaña se quedaba
+  // en un bucle de renders en cuanto el servidor devolvía errores por campo.
+  const { setErrors } = form
   useEffect(() => {
-    if (fieldErrors && Object.keys(fieldErrors).length > 0) form.setErrors(fieldErrors)
-  }, [fieldErrors, form])
+    if (fieldErrors && Object.keys(fieldErrors).length > 0) setErrors(fieldErrors)
+  }, [fieldErrors, setErrors])
 
   const values = form.values
 

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import fc from 'fast-check'
 import {
   addDays,
@@ -9,8 +9,13 @@ import {
   daysInMonth,
   eachDay,
   fromEpochDay,
+  civilDate,
   isCivilDate,
   isLeapYear,
+  isPeriod,
+  LATEST_TIME_ZONE,
+  latestToday,
+  partsOf,
   lastNMonths,
   monthRange,
   periodOf,
@@ -135,6 +140,77 @@ describe('hoy', () => {
   })
 
   test('today y currentPeriod son coherentes entre sí', () => {
-    expect(currentPeriod()).toBe(today().slice(0, 7))
+    // Reloj congelado justo en un cambio de mes: con el reloj real, las dos
+    // llamadas leían la hora por separado y podían caer en meses distintos.
+    vi.useFakeTimers({ now: new Date('2026-08-31T21:59:59.999Z') })
+    try {
+      expect(currentPeriod()).toBe(today().slice(0, 7))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('periodos y piezas', () => {
+  test('isPeriod acepta AAAA-MM con un mes que exista', () => {
+    expect(isPeriod('2026-01')).toBe(true)
+    expect(isPeriod('2026-12')).toBe(true)
+    expect(isPeriod('2026-00')).toBe(false)
+    expect(isPeriod('2026-13')).toBe(false)
+    expect(isPeriod('2026-1')).toBe(false)
+    expect(isPeriod('2026-01-01')).toBe(false)
+  })
+
+  test('civilDate y partsOf son inversas', () => {
+    expect(civilDate(2026, 2, 9)).toBe('2026-02-09')
+    expect(partsOf('2026-02-09')).toEqual({ year: 2026, month: 2, day: 9 })
+  })
+
+  test('una entrada mal formada lanza en lugar de inventarse una fecha', () => {
+    expect(() => monthRange('2026-13')).toThrow(/Periodo inválido/)
+    expect(() => addMonths('agosto', 1)).toThrow(/Periodo inválido/)
+    expect(() => periodOf('2026-02-30')).toThrow(/Fecha civil inválida/)
+    expect(() => addDays('15/03/2026', 1)).toThrow(/Fecha civil inválida/)
+  })
+})
+
+describe('propiedades de la aritmética de fechas', () => {
+  const fecha = fc.integer({ min: 0, max: 60_000 }).map(fromEpochDay)
+
+  test('sumar n días y medir la distancia devuelve n', () => {
+    fc.assert(
+      fc.property(fecha, fc.integer({ min: -3_000, max: 3_000 }), (d, n) => {
+        expect(daysBetween(d, addDays(d, n))).toBe(n)
+      }),
+    )
+  })
+
+  test('comparar fechas es comparar sus días de época', () => {
+    fc.assert(
+      fc.property(fecha, fecha, (a, b) => {
+        expect(Math.sign(compareDates(a, b))).toBe(Math.sign(toEpochDay(a) - toEpochDay(b)))
+      }),
+    )
+  })
+})
+
+describe('latestToday', () => {
+  test('es el "hoy" de la zona más adelantada del planeta', () => {
+    // 12:00 UTC: en Madrid es día 7; en Kiritimati (UTC+14), ya es día 8.
+    const instante = new Date('2026-10-07T12:00:00Z')
+    expect(LATEST_TIME_ZONE).toBe('Pacific/Kiritimati')
+    expect(latestToday(instante)).toBe('2026-10-08')
+  })
+
+  test('nunca va por detrás del "hoy" de ninguna zona', () => {
+    // Es lo que permite usarlo como tope de las fechas sin rechazar el día de
+    // nadie: si fuera por detrás en alguna zona, esa persona no podría anotar
+    // lo que acaba de gastar.
+    const zonas = ['Pacific/Pago_Pago', 'America/Los_Angeles', 'UTC', 'Europe/Madrid', 'Asia/Tokyo', 'Pacific/Auckland']
+    fc.assert(
+      fc.property(fc.date({ min: new Date('2000-01-01'), max: new Date('2100-01-01'), noInvalidDate: true }), (instante) =>
+        zonas.every((zona) => compareDates(today(zona, instante), latestToday(instante)) <= 0),
+      ),
+    )
   })
 })
