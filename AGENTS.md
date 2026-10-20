@@ -880,8 +880,9 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   CI no corre en push (la PR ya prueba la mezcla) ni en PRs que solo tocan
   documentación; se salta con un job y no con `paths-ignore` para no dejar
   colgado un check obligatorio. `--no-verify` solo en emergencias.
-- **Repositorio público**: minutos de Actions ilimitados, poder exigir el check
-  del CI para mergear en `develop`, secret scanning y push protection, todo gratis. Se hizo tras revisar
+- **Repositorio público**: minutos de Actions ilimitados, checks obligatorios
+  (`develop` exige los tres del CI para mergear), secret scanning y push
+  protection, todo gratis. Se hizo tras revisar
   el historial entero: ningún secreto se ha commiteado nunca. La seguridad no
   depende de que el código sea secreto (RLS, sesión verificada, `userId` en cada
   `where`).
