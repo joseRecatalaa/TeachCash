@@ -58,6 +58,7 @@ Cada cambio tiene un sitio y solo uno:
 | Añadir una operación que no es CRUD | Una función en el repositorio + su acción en `entity.actions.ts` + su hook |
 | Cambiar el color de una categoría en tabla y gráficos | La clave en `categories.color`; los tonos, en `app/globals.css` (`--sd-cat-*`) |
 | Añadir una entidad entera | `pnpm generate:crud` |
+| Añadir un módulo al menú lateral | `MODULOS` en `src/presentation/components/SideMenu/SideMenu.tsx` |
 
 Si te ves escribiendo un formulario a mano con `<TextInput>` sueltos, o una
 `<DataTable>` fuera de `AppTable`, párate: casi siempre significa que no has
@@ -477,6 +478,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         Cuenta/                       # CuentaMenu y AvisoInvitado (la Navbar)
         Navbar.tsx
         Navbar.module.css
+        SideMenu/                     # menú lateral de MÓDULOS (se abre al pasar el ratón)
         useEntityId.ts
   lib/
     money.ts                          # tipo Money, aritmética y DIVISA_APP
@@ -714,6 +716,14 @@ lleve hasta ella.
   `opacity: 0` y se acelera hasta lo instantáneo sigue dando un parpadeo. Y el
   CSS no llega al JavaScript: `AnimatedMoney` lo comprueba aparte con
   `matchMedia`.
+- **El aviso de invitado cerrado se decide en DOS sitios**: `AvisoInvitado.tsx`
+  y el script inline del `<head>` de `app/layout.tsx` (misma clave de
+  `localStorage`, mismo día de margen). Si divergen, la franja aparece y
+  desaparece al cargar, o se esconde cuando ya debería volver.
+- **`<SideMenu />` va DESPUÉS de `<Navbar />` en `app/layout.tsx`.** Los dos
+  (y los modales de Mantine) están a z-index 200, y a igualdad gana el último
+  del DOM: así el panel tapa la cabecera y un modal tapa el panel. Si sube por
+  encima de la Navbar, la cabecera se pinta sobre el menú abierto.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
@@ -945,6 +955,25 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   revisión de cada sitio donde se pinta. **Los ocho valores están validados con
   el script de `dataviz`**, no elegidos a ojo: el peor par adyacente está en
   ΔE 9,1 sobre un suelo de 8. Si tocas uno, vuelve a pasarlo.
+- **Menú lateral de módulos** (`SideMenu`): la Navbar lleva las secciones del
+  módulo en el que estás; el menú lateral cambia de MÓDULO (Gestión de
+  patrimonio; Camino del héroe, aún sin hacer). Escondido, solo asoma una
+  pestaña con tres rayas en el borde izquierdo; se abre al pasar el ratón y se
+  cierra al salir, con 220 ms de margen para que una diagonal torpe no lo cierre.
+  El hover no es la única vía: la pestaña es un `<button>` (toque y Enter
+  alternan; un clic de ratón solo abre, porque el hover ya lo había abierto),
+  Escape cierra, y el panel va `inert` mientras está escondido. Un módulo por
+  llegar no es un enlace deshabilitado sino texto con "Próximamente".
+  Para que se descubra, la pestaña va en verde de marca con la palabra "Menú"
+  y, una vez por sesión, el panel se asoma al terminar la pantalla de carga
+  (escucha `EVENTO_FIN_SPLASH`; no se asoma con el movimiento reducido).
+- **El aviso de invitado se puede cerrar, pero vuelve el último día.** Antes no
+  se podía cerrar, por ser la única señal de que los datos se borran; se abrió
+  porque molestaba. El cierre se guarda en `localStorage` con la fecha de
+  borrado DE ESE invitado (otro invitado lo vuelve a ver) y deja de valer 24 h
+  antes del borrado, cuando aún se está a tiempo de crear la cuenta. El script
+  del `<head>` de `app/layout.tsx` lo esconde antes del primer pintado para que
+  no salte la página en cada recarga: clave y margen están en los dos sitios.
 - **Movimiento**: tres gestos y ni uno más (`sd-rise`, `sd-pop`, `sd-underline`
   en `globals.css`), más el conteo de las cifras grandes (`AnimatedMoney`). El
   escalonado va por `:nth-child()` en CSS y no por una variable inline en el JSX,

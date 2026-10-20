@@ -1,0 +1,437 @@
+/*
+ * El menú lateral de módulos.
+ *
+ * Es una hoja de la libreta metida bajo la tapa: escondida, solo asoma su
+ * pestaña por el borde izquierdo; al pasar el ratón sale entera, con el trazo
+ * grueso y la sombra dura de todo lo que flota en esta aplicación.
+ *
+ * Capas: `.raiz` y `.velo` van a z-index 200, el mismo que la Navbar y que los
+ * modales de Mantine. No es un empate descuidado: a igual z-index gana el que
+ * va después en el DOM, y el orden es Navbar → este menú → portales de Mantine
+ * (al final del <body>). Así el panel tapa la Navbar y un modal tapa el panel.
+ * Si `<SideMenu />` sube por encima de `<Navbar />` en el layout, la cabecera
+ * se pinta encima del menú.
+ */
+
+.raiz {
+  --menu-ancho: min(300px, 86vw);
+  --pestana-ancho: 36px;
+  --pestana-alto: 104px;
+
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 200;
+  width: var(--menu-ancho);
+
+  /* Escondido = desplazado su propio ancho. La pestaña cuelga del borde
+     derecho del panel y por eso es lo único que queda dentro de la pantalla. */
+  transform: translateX(-100%);
+  transition: transform var(--sd-dur-slow) var(--sd-ease-out);
+}
+
+/* El asomo: sale un palmo, lo justo para que se vea que detrás de la pestaña
+   hay una hoja entera. Va antes que el abierto para que este le gane. */
+.raiz[data-asomando='true'] {
+  transform: translateX(calc(-100% + 64px));
+}
+
+.raiz[data-abierto='true'] {
+  transform: translateX(0);
+}
+
+/* ── Velo ────────────────────────────────────────────────────────────────── */
+
+/*
+ * Aparta el contenido sin taparlo. Es papel, no negro: en claro aclara y en
+ * oscuro oscurece, y en los dos casos el panel queda delante sin que haga falta
+ * un token propio por esquema.
+ */
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: color-mix(in srgb, var(--sd-paper) 55%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sd-dur-slow) var(--sd-ease-out);
+}
+
+.velo[data-abierto='true'] {
+  opacity: 1;
+}
+
+/* ── Panel ───────────────────────────────────────────────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  height: 100%;
+  padding: 1.25rem 1.1rem;
+  overflow-y: auto;
+
+  background-color: var(--sd-surface);
+  /* La misma retícula de puntos que el fondo de la aplicación: el panel es
+     otra hoja de la misma libreta, no una ventana de otro programa. */
+  background-image: radial-gradient(circle at 1px 1px, var(--sd-grid-color) 1px, transparent 0);
+  background-size: var(--sd-grid-size) var(--sd-grid-size);
+  border-right: var(--sd-border-bold);
+}
+
+/*
+ * La sombra, solo con el panel fuera. Escondido, una sombra hacia la derecha
+ * asomaría como una franja oscura pegada al borde de la pantalla.
+ */
+.raiz[data-abierto='true'] .panel {
+  /* `md` y no `lg`: en un panel de alto completo, ocho píxeles de sombra dura
+     se leen como una segunda barra negra, no como algo que flota. */
+  box-shadow: var(--sd-shadow-md);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding-bottom: 1rem;
+  border-bottom: var(--sd-stroke-hair) dashed var(--sd-stroke-color);
+  color: var(--sd-ink);
+}
+
+.marca {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  transform: rotate(-3deg);
+}
+
+.marcaNombre {
+  font-family: var(--sd-font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ── Módulos ─────────────────────────────────────────────────────────────── */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * Al abrir, los módulos entran escalonados detrás del panel. Es una TRANSICIÓN
+ * y no uno de los tres keyframes del sistema: el menú no se monta al abrirse,
+ * está siempre en el DOM, y una animación solo correría la primera vez.
+ */
+.lista > li {
+  opacity: 0;
+  translate: -12px 0;
+  transition:
+    opacity var(--sd-dur-slow) var(--sd-ease-out),
+    translate var(--sd-dur-slow) var(--sd-ease-out);
+}
+
+.raiz[data-abierto='true'] .lista > li {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.raiz[data-abierto='true'] .lista > li:nth-child(1) { transition-delay: 90ms; }
+.raiz[data-abierto='true'] .lista > li:nth-child(2) { transition-delay: calc(90ms + var(--sd-stagger)); }
+.raiz[data-abierto='true'] .lista > li:nth-child(n + 3) { transition-delay: calc(90ms + var(--sd-stagger) * 2); }
+
+.modulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 1rem 1rem;
+
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle);
+  color: var(--sd-ink);
+  text-decoration: none;
+
+  transition: var(--sd-transition);
+}
+
+/* Las fichas alternan su esquina orgánica, como dos recortes distintos. */
+.lista > li:nth-child(even) .modulo {
+  border-radius: var(--sd-radius-doodle-alt);
+}
+
+a.modulo:hover {
+  transform: translate(calc(var(--sd-press-lift) * -2), calc(var(--sd-press-lift) * -2));
+  box-shadow: var(--sd-shadow-sm);
+}
+
+a.modulo:active {
+  transform: translate(var(--sd-press-lift), var(--sd-press-lift));
+  box-shadow: none;
+}
+
+a.modulo:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+/* El módulo en el que estás: trazo grueso, sombra y el título subrayado. Tres
+   señales, como en la Navbar, para que no dependa solo del color. */
+.modulo[data-activo='true'] {
+  border: var(--sd-border-bold);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.chapa {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  /* Una pegatina puesta a mano: se endereza hacia el otro lado al pasar. */
+  transform: rotate(-4deg);
+  transition: var(--sd-transition);
+}
+
+a.modulo:hover .chapa {
+  transform: rotate(4deg) scale(1.06);
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+/*
+ * El nombre del módulo: Fredoka en mayúsculas grandes, en su propia fila. Es
+ * la única etiqueta en mayúsculas de la aplicación que no es pequeña, y es a
+ * propósito: aquí se cambia de MUNDO, no de pantalla, y tiene que pesar más que
+ * la Navbar. Partido en dos líneas ("Gestión de / patrimonio") se lee como un
+ * rótulo, no como un texto que no cabe.
+ *
+ * El texto va en minúsculas en el JSX y sube por CSS: un lector de pantalla
+ * deletrea las palabras escritas en mayúsculas.
+ */
+.titulo {
+  font-family: var(--sd-font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/*
+ * El trazo de rotulador, en el span INTERIOR y en línea: con
+ * `box-decoration-break: clone` cada línea lleva su trazo entero. En el bloque
+ * de fuera solo se pintaría bajo la última.
+ *
+ * Lee `--sd-underline-alto`, como los títulos de página. Aquí no lo dibuja el
+ * keyframe sino una transición de `background-size`, así que es el mismo alto
+ * en reposo y al terminar.
+ */
+.tituloTexto {
+  --sd-underline-alto: 0.42em;
+
+  padding: 0 0.1em;
+  background-image: linear-gradient(var(--sd-accent-wash), var(--sd-accent-wash));
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 0% var(--sd-underline-alto);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size var(--sd-dur-slow) var(--sd-ease-out);
+}
+
+a.modulo:hover .tituloTexto {
+  background-size: 100% var(--sd-underline-alto);
+}
+
+/* En el activo el trazo ya está dibujado: dice "estás aquí" sin pasar por
+   encima. El fondo de la ficha se queda en papel, que es lo que le da
+   contraste al trazo lavado y al texto. */
+.modulo[data-activo='true'] .tituloTexto {
+  background-size: 100% var(--sd-underline-alto);
+}
+
+.descripcion {
+  font-family: var(--sd-font-body);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--sd-ink-muted);
+}
+
+.flecha {
+  color: var(--sd-ink);
+  transition: var(--sd-transition);
+}
+
+a.modulo:hover .flecha {
+  transform: translateX(3px);
+}
+
+/* ── Módulo por llegar ───────────────────────────────────────────────────── */
+
+/*
+ * Trazo discontinuo, sin relleno y la chapa apagada: se lee como el hueco de
+ * algo que todavía no está, no como un botón roto. El "Próximamente" lo dice
+ * con palabras, que es la señal que no depende del color.
+ */
+.modulo[data-deshabilitado] {
+  background: transparent;
+  border-style: dashed;
+  color: var(--sd-ink-muted);
+  cursor: not-allowed;
+}
+
+.modulo[data-deshabilitado] .chapa {
+  background: var(--sd-surface-muted);
+  color: var(--sd-ink-muted);
+  box-shadow: none;
+}
+
+.modulo[data-deshabilitado] .titulo {
+  color: var(--sd-ink-muted);
+}
+
+
+@media (max-width: 560px) {
+  .raiz {
+    --pestana-ancho: 28px;
+    --pestana-alto: 88px;
+  }
+}
+
+/* ── Pestaña ─────────────────────────────────────────────────────────────── */
+
+/*
+ * La pestaña cuelga del borde derecho del panel, a media altura, y viaja con él.
+ * Media altura y no arriba: arriba competiría con la marca de la Navbar.
+ */
+.pestana {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: var(--pestana-ancho);
+  height: var(--pestana-alto);
+  margin-top: calc(var(--pestana-alto) / -2);
+  /* Pegada al panel: el trazo del panel ya hace de borde izquierdo. */
+  margin-left: calc(var(--sd-stroke-bold) * -1);
+  padding: 0;
+
+  /* En verde de marca y no en papel: en papel se confundía con el borde de
+     una tarjeta y nadie la tomaba por algo que se pudiera abrir. */
+  background: var(--sd-accent);
+  border: var(--sd-border-bold);
+  border-left: none;
+  border-radius: 0 12px 14px 0 / 0 14px 12px 0;
+  box-shadow: var(--sd-shadow-sm);
+  color: var(--sd-accent-ink);
+  cursor: pointer;
+
+  transition: var(--sd-transition), width var(--sd-dur) var(--sd-ease-pop);
+}
+
+.pestana:hover {
+  width: calc(var(--pestana-ancho) + 6px);
+  box-shadow: var(--sd-shadow-md);
+}
+
+.pestana:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+/* Abierto, la pestaña pasa a papel: el verde ya lo lleva el panel y la X se
+   lee mejor en tinta. */
+.raiz[data-abierto='true'] .pestana {
+  background: var(--sd-surface);
+  color: var(--sd-ink);
+}
+
+/*
+ * "Menú" en vertical, de abajo arriba como el lomo de una libreta. Fredoka y
+ * en minúsculas con mayúscula inicial: es una palabra que se lee, no una
+ * etiqueta decorativa.
+ */
+.pestanaTexto {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--sd-font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* Abierto, la palabra sobra: la X ya dice "cerrar". */
+.raiz[data-abierto='true'] .pestanaTexto {
+  display: none;
+}
+
+/*
+ * Las tres rayas, de largos desiguales como si estuvieran hechas a mano. Al
+ * abrir se cruzan en una X: la pestaña pasa a decir "cerrar".
+ */
+.rayas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 16px;
+}
+
+.rayas > span {
+  display: block;
+  height: var(--sd-stroke-bold);
+  background: currentColor;
+  border-radius: var(--sd-radius-pill);
+  transition:
+    width var(--sd-dur) var(--sd-ease-out),
+    transform var(--sd-dur) var(--sd-ease-out),
+    opacity var(--sd-dur) var(--sd-ease-out);
+}
+
+.rayas > span:nth-child(1) { width: 16px; }
+.rayas > span:nth-child(2) { width: 11px; translate: -2px 0; }
+.rayas > span:nth-child(3) { width: 14px; }
+
+.pestana:hover .rayas > span {
+  width: 16px;
+}
+
+.raiz[data-abierto='true'] .rayas > span:nth-child(1) {
+  width: 16px;
+  transform: translateY(7px) rotate(45deg);
+}
+
+.raiz[data-abierto='true'] .rayas > span:nth-child(2) {
+  opacity: 0;
+}
+
+.raiz[data-abierto='true'] .rayas > span:nth-child(3) {
+  width: 16px;
+  transform: translateY(-7px) rotate(-45deg);
+}

@@ -20,6 +20,7 @@ import { CABECERA_NONCE } from '@/lib/csp'
 import { getCuenta } from '@/src/application/actions/auth.actions'
 import { Providers } from '@/src/application/providers/providers'
 import { Navbar } from '@/src/presentation/components/Navbar'
+import { SideMenu } from '@/src/presentation/components/SideMenu/SideMenu'
 import { SplashScreen } from '@/src/presentation/components/Splash/SplashScreen'
 
 /**
@@ -90,13 +91,15 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
         <ColorSchemeScript defaultColorScheme="auto" nonce={nonce} />
         {/* Y por el mismo motivo que el de arriba: marca el <html> ANTES del
             primer pintado si la pantalla de carga ya se vio en esta sesión del
-            navegador. El HTML del servidor la trae siempre, así que si la
-            decisión esperase a que React hidrate se vería un fogonazo en cada
-            recarga. */}
+            navegador, y si el aviso de invitado está cerrado. El HTML del
+            servidor trae siempre las dos cosas, así que si la decisión esperase
+            a que React hidrate se vería un fogonazo en cada recarga.
+            El aviso: misma clave y mismo día de margen (864e5 ms) que
+            `AvisoInvitado.tsx`; si cambias uno, cambia el otro. */}
         <script
           nonce={nonce}
           dangerouslySetInnerHTML={{
-            __html: `try{if(sessionStorage.getItem('gf-splash-visto')==='1')document.documentElement.dataset.splash='visto'}catch(e){}`,
+            __html: `try{var d=document.documentElement;if(sessionStorage.getItem('gf-splash-visto')==='1')d.dataset.splash='visto';var a=localStorage.getItem('tc-aviso-invitado-cerrado');if(a&&Date.now()<Date.parse(a)-864e5)d.dataset.avisoInvitado='cerrado'}catch(e){}`,
           }}
         />
       </head>
@@ -108,6 +111,9 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
         <SplashScreen />
         <Providers cuentaInicial={cuentaInicial}>
           <Navbar />
+          {/* DESPUÉS de la Navbar, no antes: los dos van a z-index 200 y a
+              igualdad gana el último del DOM. Así el panel tapa la cabecera. */}
+          <SideMenu />
           {children}
         </Providers>
       </body>
