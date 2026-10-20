@@ -14,7 +14,7 @@ Necesitas un proyecto de Supabase (vale el plan gratuito) y un widget de
 Turnstile. Qué configurar en cada panel está en `docs/PLAN-SUPABASE.md`.
 
 ```bash
-pnpm install
+pnpm install                 # instala también el hook de commit (Husky)
 cp .env.example .env.local   # y rellénalo: cada variable dice de dónde sale
 pnpm db:migrate              # crea las tablas, RLS y políticas en Supabase
 pnpm dev                     # http://localhost:3000
@@ -54,17 +54,36 @@ banco, anótalo como un ingreso más ("Saldo inicial").
 | `pnpm dev` | Servidor de desarrollo, solo en `localhost` |
 | `pnpm test` | Suite de Vitest (sobre PGlite: no toca Supabase) |
 | `pnpm test:tz` | La misma suite con otro huso horario |
-| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm test:coverage` | La suite con los umbrales de cobertura por fichero |
+| `pnpm test:e2e` | Tests end-to-end con Playwright (necesitan `.env.e2e`) |
+| `pnpm test:e2e:ui` | Los mismos, con la interfaz de Playwright |
+| `pnpm typecheck` | Genera los tipos de rutas de Next y pasa `tsc --noEmit` |
 | `pnpm lint` | ESLint |
 | `pnpm db:generate` | Genera una migración tras tocar `db/schema.ts` |
 | `pnpm db:migrate` | Aplica las migraciones pendientes en Supabase |
+| `pnpm db:migrate:e2e` | Lo mismo en el proyecto de Supabase de los E2E |
 | `pnpm db:studio` | Explorador de la base de datos |
 | `pnpm generate:crud` | Scaffolding completo de una entidad nueva |
+
+## Tests y calidad
+
+Todo está en **`docs/TESTS.md`**: cómo se ejecuta cada suite, qué cubre cada
+test y por qué. En resumen:
+
+- **750 tests de Vitest** sobre Postgres real en proceso (PGlite), sin tocar
+  Supabase, más tests de componentes con Testing Library.
+- **4 flujos end-to-end con Playwright**, solo en local, contra un segundo
+  proyecto de Supabase de pruebas. Cómo montarlo, en `.env.e2e.example`.
+- **En cada commit** (Husky): ESLint sobre los ficheros que entran y el chequeo
+  de tipos. Si falla, el commit no se crea.
+- **En cada PR a `develop`** (GitHub Actions): tipos, lint, tests con cobertura,
+  la suite en otro huso horario, build y `pnpm audit`. Los tres checks son
+  obligatorios para mergear.
 
 ## Para trabajar en el código
 
 Lee **`AGENTS.md`** antes de tocar nada: lleva las reglas duras, el mapa de las
-cinco capas y cómo se declara una vista. `docs/PLAN-V1.md` tiene el plan de la v1
+cinco capas y cómo se declara una vista. Para los tests, `docs/TESTS.md`. `docs/PLAN-V1.md` tiene el plan de la v1
 y el porqué de cada decisión técnica; `docs/PLAN-SUPABASE.md`, el de la
 migración a Supabase y lo que queda pendiente.
 

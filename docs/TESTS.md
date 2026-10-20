@@ -315,7 +315,7 @@ menos).
 | Dónde | Cuándo | Qué comprueba | Se puede saltar |
 |---|---|---|---|
 | **Husky** (`.husky/pre-commit`) | En cada `git commit`, en tu máquina | `eslint --fix` sobre los ficheros del commit (`lint-staged.config.mjs`) y `pnpm typecheck` | `git commit --no-verify`, solo en emergencias: el CI lo vuelve a comprobar |
-| **CI** (`.github/workflows/calidad.yml`) | En cada PR a `develop`, y a mano | Install `--frozen-lockfile`, typecheck, lint, `test:coverage`, `test:tz`, build y, en paralelo, `pnpm audit` completo | No, una vez marcado como check obligatorio de `develop` (ver la checklist de abajo) |
+| **CI** (`.github/workflows/calidad.yml`) | En cada PR a `develop`, y a mano | Install `--frozen-lockfile`, typecheck, lint, `test:coverage`, `test:tz`, build y, en paralelo, `pnpm audit` completo | No: `develop` exige sus tres checks para mergear (ver la checklist de abajo) |
 
 Detalles del CI:
 
@@ -351,8 +351,11 @@ Lo que el código no puede comprobar y hay que revisar a mano en los paneles.
 
 - [ ] Settings → Code security: *Secret scanning* y *Push protection* activados.
 - [ ] Settings → Code security: *Dependabot alerts* activado.
-- [ ] Settings → Branches (o Rules): `develop` exige el check *Tipos, lint, tests y
-      build* y el de *Auditoría de dependencias* antes de mergear.
+- [ ] Settings → Branches: `develop` exige *Require a pull request* (sin
+      aprobaciones: se trabaja solo) y los tres checks *Tipos, lint, tests y
+      build*, *Auditoría de dependencias* y *¿Solo documentación?*. Sin
+      *Require branches to be up to date*: obligaría a repetir el CI cada vez
+      que `develop` avanza.
 - [ ] Settings → Secrets: solo `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` (los usa
       el ping). Nunca la secret key de Supabase.
 
