@@ -11,6 +11,8 @@
  * El typecheck no va aquí: tsc con ficheros sueltos ignora el tsconfig. Va
  * entero en el hook.
  */
-export default {
+const config = {
   '*.{ts,tsx,mts,mjs,js}': 'eslint --fix --no-warn-ignored',
 }
+
+export default config
