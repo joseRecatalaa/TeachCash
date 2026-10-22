@@ -10,7 +10,10 @@
   position: sticky;
   top: 0;
   z-index: 200;
-  background: var(--sd-surface);
+  /* Un verde tenue y no papel: ata la cabecera al acento de marca sin
+     competir con el verde lleno del enlace activo (`--sd-accent-wash`, un tono
+     más fuerte). El token tiene su paso oscuro en `globals.css`. */
+  background: var(--sd-accent-wash-faint);
   /* El borde inferior grueso es la línea del cuaderno: separa la cabecera del
      contenido sin necesidad de sombra ni de cambio de fondo. */
   border-bottom: var(--sd-border-bold);

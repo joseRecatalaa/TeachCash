@@ -14,7 +14,9 @@
  */
 
 .raiz {
-  --menu-ancho: min(300px, 86vw);
+  /* 340 px y no 300: es lo que deja a "Gestión de patrimonio" en UNA línea con
+     el título a 1,25rem. En un móvil estrecho manda el 86vw y se parte. */
+  --menu-ancho: min(340px, 86vw);
   /* El hueco que el layout deja a la izquierda del contenido
      (`app/layout.module.css`) cuenta con este ancho. */
   --pestana-ancho: 36px;
@@ -155,8 +157,8 @@
 .modulo {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.9rem 1rem 1rem;
+  gap: 0.65rem;
+  padding: 1rem 1.1rem 1.1rem;
 
   background: var(--sd-surface);
   border: var(--sd-border);
@@ -187,11 +189,13 @@ a.modulo:focus-visible {
   box-shadow: var(--sd-focus-ring);
 }
 
-/* El módulo en el que estás: trazo grueso, sombra y el título subrayado. Tres
-   señales, como en la Navbar, para que no dependa solo del color. */
+/* El módulo en el que estás: trazo grueso, sombra, el título subrayado y un
+   lavado verde de fondo. Las tres primeras no dependen del color; el lavado es
+   el abrazo, no la señal. */
 .modulo[data-activo='true'] {
+  background: var(--sd-accent-wash-faint);
   border: var(--sd-border-bold);
-  box-shadow: var(--sd-shadow-xs);
+  box-shadow: var(--sd-shadow-sm);
 }
 
 .chapa {
@@ -225,15 +229,15 @@ a.modulo:hover .chapa {
  * El nombre del módulo: Fredoka en mayúsculas grandes, en su propia fila. Es
  * la única etiqueta en mayúsculas de la aplicación que no es pequeña, y es a
  * propósito: aquí se cambia de MUNDO, no de pantalla, y tiene que pesar más que
- * la Navbar. Partido en dos líneas ("Gestión de / patrimonio") se lee como un
- * rótulo, no como un texto que no cabe.
+ * la Navbar. Cabe en una línea con el ancho del panel; si se parte (en un móvil
+ * estrecho), el trazo de rotulador sigue cada línea.
  *
  * El texto va en minúsculas en el JSX y sube por CSS: un lector de pantalla
  * deletrea las palabras escritas en mayúsculas.
  */
 .titulo {
   font-family: var(--sd-font-display);
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.12;
   letter-spacing: 0.03em;
@@ -267,25 +271,31 @@ a.modulo:hover .tituloTexto {
 }
 
 /* En el activo el trazo ya está dibujado: dice "estás aquí" sin pasar por
-   encima. El fondo de la ficha se queda en papel, que es lo que le da
-   contraste al trazo lavado y al texto. */
+   encima. Un tono más fuerte que el fondo lavado de la ficha, o se perdería
+   en él. */
 .modulo[data-activo='true'] .tituloTexto {
+  background-image: linear-gradient(var(--sd-accent-wash), var(--sd-accent-wash));
   background-size: 100% var(--sd-underline-alto);
 }
 
-.descripcion {
-  font-family: var(--sd-font-body);
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  color: var(--sd-ink-muted);
-}
-
+/*
+ * La flecha, dentro de una chapa redonda de trazo fino: suelta, una flecha de
+ * 20 px en una esquina parecía un resto. Al pasar se rellena de verde y avanza,
+ * que es el "vamos" de la ficha entera.
+ */
 .flecha {
+  box-sizing: content-box;
+  padding: 6px;
   color: var(--sd-ink);
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-pill);
   transition: var(--sd-transition);
 }
 
 a.modulo:hover .flecha {
+  color: var(--sd-accent-ink);
+  background: var(--sd-accent);
   transform: translateX(3px);
 }
 
@@ -296,8 +306,14 @@ a.modulo:hover .flecha {
  * algo que todavía no está, no como un botón roto. El "Próximamente" lo dice
  * con palabras, que es la señal que no depende del color.
  */
+/* El rayado es la misma tinta de la retícula del panel: el hueco se dibuja
+   con el papel, no con un color nuevo. */
 .modulo[data-deshabilitado] {
-  background: transparent;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--sd-grid-color) 0 1px,
+    transparent 1px 9px
+  );
   border-style: dashed;
   color: var(--sd-ink-muted);
   cursor: not-allowed;
@@ -396,14 +412,12 @@ a.modulo:hover .flecha {
   line-height: 1;
 }
 
-/* Abierto, la palabra sobra: la X ya dice "cerrar". */
-.raiz[data-abierto='true'] .pestanaTexto {
-  display: none;
-}
-
 /*
- * Las tres rayas, de largos desiguales como si estuvieran hechas a mano. Al
- * abrir se cruzan en una X: la pestaña pasa a decir "cerrar".
+ * Las tres rayas, de largos desiguales como si estuvieran hechas a mano. NO se
+ * cruzan en una X al abrir: con ratón el menú se cierra al salir de él, y un
+ * clic en la pestaña solo abre (ver `SideMenu.tsx`), así que una X prometía un
+ * botón de cerrar que no hacía nada. Con el dedo, Enter o Escape sigue
+ * cerrándose; para eso no hace falta dibujar una X.
  */
 .rayas {
   display: flex;
@@ -419,9 +433,7 @@ a.modulo:hover .flecha {
   background: currentColor;
   border-radius: var(--sd-radius-pill);
   transition:
-    width var(--sd-dur) var(--sd-ease-out),
-    transform var(--sd-dur) var(--sd-ease-out),
-    opacity var(--sd-dur) var(--sd-ease-out);
+    width var(--sd-dur) var(--sd-ease-out);
 }
 
 .rayas > span:nth-child(1) { width: 16px; }
@@ -430,18 +442,4 @@ a.modulo:hover .flecha {
 
 .pestana:hover .rayas > span {
   width: 16px;
-}
-
-.raiz[data-abierto='true'] .rayas > span:nth-child(1) {
-  width: 16px;
-  transform: translateY(7px) rotate(45deg);
-}
-
-.raiz[data-abierto='true'] .rayas > span:nth-child(2) {
-  opacity: 0;
-}
-
-.raiz[data-abierto='true'] .rayas > span:nth-child(3) {
-  width: 16px;
-  transform: translateY(-7px) rotate(-45deg);
 }

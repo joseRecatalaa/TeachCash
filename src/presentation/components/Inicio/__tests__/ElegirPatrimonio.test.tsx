@@ -33,7 +33,7 @@ describe('la primera vez', () => {
     const { usuario } = pintar({ inicial: null, onGuardado })
 
     expect(screen.getByText('¿Con cuánto empiezas?')).toBeInTheDocument()
-    await usuario.type(screen.getByLabelText('Patrimonio inicial'), '1.250,50')
+    await usuario.type(screen.getByLabelText('Patrimonio'), '1.250,50')
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }))
 
     await waitFor(() => expect(onGuardado).toHaveBeenCalled())
@@ -54,7 +54,7 @@ describe('la primera vez', () => {
   test('lo que no es un importe no se manda', async () => {
     const { usuario } = pintar({ inicial: null })
 
-    await usuario.type(screen.getByLabelText('Patrimonio inicial'), '12,3x')
+    await usuario.type(screen.getByLabelText('Patrimonio'), '12,3x')
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }))
 
     expect(await screen.findByText(/Escribe un importe/)).toBeInTheDocument()
@@ -69,7 +69,7 @@ describe('la primera vez', () => {
     })
     const { usuario } = pintar({ inicial: null })
 
-    await usuario.type(screen.getByLabelText('Patrimonio inicial'), '1')
+    await usuario.type(screen.getByLabelText('Patrimonio'), '1')
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }))
 
     expect(await screen.findByText('Importe demasiado grande')).toBeInTheDocument()
@@ -81,8 +81,8 @@ describe('al cambiarlo', () => {
     const onCancelar = vi.fn()
     const { usuario } = pintar({ inicial: 100_000, onCancelar })
 
-    expect(screen.getByText('Cambiar el patrimonio inicial')).toBeInTheDocument()
-    expect(screen.getByLabelText('Patrimonio inicial')).toHaveValue('1000,00')
+    expect(screen.getByText('Cambiar el patrimonio')).toBeInTheDocument()
+    expect(screen.getByLabelText('Patrimonio')).toHaveValue('1000,00')
     await usuario.click(screen.getByRole('button', { name: 'Cancelar' }))
 
     expect(onCancelar).toHaveBeenCalled()

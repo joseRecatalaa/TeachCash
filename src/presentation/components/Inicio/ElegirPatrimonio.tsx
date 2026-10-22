@@ -55,7 +55,7 @@ export function ElegirPatrimonio({ inicial, onCancelar, onGuardado }: ElegirPatr
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
       <p className={styles.pregunta}>
-        {inicial === null ? '¿Con cuánto empiezas?' : 'Cambiar el patrimonio inicial'}
+        {inicial === null ? '¿Con cuánto empiezas?' : 'Cambiar el patrimonio'}
       </p>
       <p className={styles.ayuda}>
         Lo que tienes hoy entre cuentas y efectivo. Lo que anotes se sumará o
@@ -63,7 +63,7 @@ export function ElegirPatrimonio({ inicial, onCancelar, onGuardado }: ElegirPatr
       </p>
 
       <MoneyInput
-        label="Patrimonio inicial"
+        label="Patrimonio"
         value={valor}
         onChange={(v) => {
           setValor(v)

@@ -31,16 +31,13 @@ type Modulo = {
   label: string
   icon: Icon
 } & (
-  | { disponible: true; href: Route; descripcion: string }
-  // Sin descripción: hasta que exista, lo único cierto que se puede decir de
-  // él es "Próximamente", y eso ya lo dice su etiqueta.
+  | { disponible: true; href: Route }
   | { disponible: false }
 )
 
 const MODULOS: Modulo[] = [
   {
     label: 'Gestión de patrimonio',
-    descripcion: 'Saldo, movimientos y planificación',
     icon: IconPigMoney,
     disponible: true,
     href: '/',
@@ -276,7 +273,8 @@ export function SideMenu() {
 
 /**
  * La ficha, de arriba abajo: la chapa con lo que va a su derecha (la flecha o
- * el "Próximamente"), el nombre del módulo a todo el ancho y su descripción.
+ * el "Próximamente") y el nombre del módulo a todo el ancho. Sin descripción: el
+ * nombre ya dice qué hay dentro, y una línea más solo alargaba la ficha.
  *
  * El nombre ocupa su propia fila para poder ser grande: al lado de la chapa no
  * cabía y se partía en una columna estrecha.
@@ -297,7 +295,6 @@ function Contenido({ modulo, extremo }: { modulo: Modulo; extremo: ReactNode }) 
       <span className={styles.titulo}>
         <span className={styles.tituloTexto}>{modulo.label}</span>
       </span>
-      {modulo.disponible && <span className={styles.descripcion}>{modulo.descripcion}</span>}
     </>
   )
 }

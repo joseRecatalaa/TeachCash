@@ -110,11 +110,11 @@ function Inicio() {
             actions={
               typeof inicial.data === 'number' &&
               !cambiandoInicial && (
-                <Tooltip label="Cambiar el patrimonio inicial">
+                <Tooltip label="Cambiar el patrimonio">
                   <ActionIcon
                     variant="subtle"
                     size="sm"
-                    aria-label="Cambiar el patrimonio inicial"
+                    aria-label="Cambiar el patrimonio"
                     onClick={() => setCambiandoInicial(true)}
                   >
                     <IconPencil size={15} stroke={2.2} />
