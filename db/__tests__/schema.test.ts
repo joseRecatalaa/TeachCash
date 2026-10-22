@@ -325,7 +325,7 @@ describe('catálogo: toda tabla de datos es de un usuario', () => {
       order by c.relname
     `)
 
-    expect(rows.map((r) => r.tabla)).toEqual(['categories', 'transactions'])
+    expect(rows.map((r) => r.tabla)).toEqual(['categories', 'profiles', 'transactions'])
     // Todas a la vez: si una falla, el diff dice cuál.
     expect(rows).toEqual(rows.map((r) => ({ ...r, rls: true, cascada: true })))
   })

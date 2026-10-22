@@ -44,8 +44,10 @@ recuperar la contraseña):
   su presupuesto. Desde aquí se anota un gasto sin cambiar de pantalla.
 
 Hay **una sola cuenta y una sola moneda**, y no se guardan en ninguna parte: el
-saldo es la suma de los movimientos. Si quieres partir del saldo real de tu
-banco, anótalo como un ingreso más ("Saldo inicial").
+saldo es la suma de los movimientos más el **patrimonio inicial**, la cifra con
+la que empiezas: la portada te la pregunta la primera vez y se puede cambiar
+desde el lápiz de la tarjeta. En Inicio, las flechas junto al mes recorren los
+meses desde enero de 2026.
 
 ## Comandos
 
@@ -72,7 +74,7 @@ test y por qué. En resumen:
 
 - **750 tests de Vitest** sobre Postgres real en proceso (PGlite), sin tocar
   Supabase, más tests de componentes con Testing Library.
-- **4 flujos end-to-end con Playwright**, solo en local, contra un segundo
+- **5 flujos end-to-end con Playwright**, solo en local, contra un segundo
   proyecto de Supabase de pruebas. Cómo montarlo, en `.env.e2e.example`.
 - **En cada commit** (Husky): ESLint sobre los ficheros que entran y el chequeo
   de tipos. Si falla, el commit no se crea.

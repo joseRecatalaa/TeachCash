@@ -10,6 +10,11 @@
  * Responde a cuatro preguntas, en este orden, que es el orden en que se miran:
  * cuánto hay, cómo va el mes, en qué se va el dinero y qué se ha movido.
  *
+ * El mes se elige con las flechas de la cabecera (`?mes=`, ver
+ * `useMesDeInicio`) y mueve las tres tarjetas del mes: cómo va, en qué se va y
+ * sus movimientos. El patrimonio NO se mueve —es siempre el de hoy— y los dos
+ * gráficos de tendencia tampoco: ya cubren los últimos doce meses.
+ *
  * Aquí no hay ni un `style` suelto a propósito: en cuanto se cuela uno, deja de
  * haber un sistema. El aspecto vive en `page.module.css`; los primitivos, en
  * `src/presentation/components/ui`.
@@ -20,9 +25,10 @@
  * haría que todas fueran la primera y salieran idénticas.
  */
 
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { Container } from '@mantine/core'
-import { IconChartPie, IconPlus, IconWallet } from '@tabler/icons-react'
+import { ActionIcon, Container, Tooltip } from '@mantine/core'
+import { IconChartPie, IconPencil, IconPlus, IconWallet } from '@tabler/icons-react'
 import { useMovimientos } from '@/src/application/hooks/useMovimientos'
 import {
   useGastoPorCategoria,
@@ -31,6 +37,7 @@ import {
   useSerieSaldo,
   useTotalesDelMes,
 } from '@/src/application/hooks/useInformes'
+import { usePatrimonioInicial } from '@/src/application/hooks/usePerfil'
 import {
   GastoPorCategoriaChart,
   IngresosVsGastosChart,
@@ -42,17 +49,26 @@ import {
   SketchButton,
   SketchCard,
 } from '@/src/presentation/components/ui'
-import { currentPeriod, monthRange } from '@/lib/dates'
+import { ElegirPatrimonio } from '@/src/presentation/components/Inicio/ElegirPatrimonio'
+import { SelectorMes } from '@/src/presentation/components/Inicio/SelectorMes'
+import { useMesDeInicio } from '@/src/presentation/components/Inicio/useMesDeInicio'
+import { monthRange } from '@/lib/dates'
 import { formatDate, formatMoney, formatPercent, formatPeriod } from '@/lib/format'
 import { DIVISA_APP, money } from '@/lib/money'
 import { INFORME_MESES_POR_DEFECTO } from '@/src/types/informe.types'
 import styles from './page.module.css'
 
-export default function InicioPage() {
-  const periodo = currentPeriod()
+function Inicio() {
+  const mes = useMesDeInicio()
+  const { periodo, esActual } = mes
   const rango = monthRange(periodo)
 
   const saldo = useSaldo()
+  const inicial = usePatrimonioInicial()
+  const [cambiandoInicial, setCambiandoInicial] = useState(false)
+  // `null` y no `undefined`: mientras carga no se sabe, y preguntar entonces
+  // haría parpadear el formulario a quien ya lo había contestado.
+  const preguntarInicial = inicial.data === null || cambiandoInicial
   const totales = useTotalesDelMes(periodo)
   const gasto = useGastoPorCategoria(periodo)
   const ingresosVsGastos = useIngresosVsGastos(INFORME_MESES_POR_DEFECTO)
@@ -74,7 +90,7 @@ export default function InicioPage() {
         <header className={styles.header}>
           <div>
             <h1 className={styles.title}>Inicio</h1>
-            <p className={styles.subtitulo}>{formatPeriod(periodo)}</p>
+            <SelectorMes {...mes} />
           </div>
         </header>
 
@@ -91,16 +107,42 @@ export default function InicioPage() {
             // (ni el E2E, que la busca como la buscaría una persona).
             role="region"
             aria-label="Patrimonio"
+            actions={
+              typeof inicial.data === 'number' &&
+              !cambiandoInicial && (
+                <Tooltip label="Cambiar el patrimonio">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    aria-label="Cambiar el patrimonio"
+                    onClick={() => setCambiandoInicial(true)}
+                  >
+                    <IconPencil size={15} stroke={2.2} />
+                  </ActionIcon>
+                </Tooltip>
+              )
+            }
           >
-            {/* Una sola cifra, sin nada alrededor: el patrimonio ES el saldo
-                (misma cifra, regla dura 7) y no necesita más contexto que su
-                propio importe. Sin signo: aquí no hay "más o menos que qué". */}
-            <div className={styles.patrimonioWrap}>
-              <AnimatedMoney
-                valor={saldo.data}
-                className={`${styles.cifraGrande} tabular`}
+            {preguntarInicial ? (
+              // Sin elegir todavía (invitado nuevo, cuenta que no lo tenía) o
+              // cambiándolo: la pregunta ocupa el sitio de la cifra.
+              <ElegirPatrimonio
+                inicial={inicial.data ?? null}
+                onCancelar={cambiandoInicial ? () => setCambiandoInicial(false) : undefined}
+                onGuardado={() => setCambiandoInicial(false)}
               />
-            </div>
+            ) : (
+              // Una sola cifra, sin nada alrededor: el patrimonio es el inicial
+              // más lo anotado (derivado, regla dura 7) y no necesita más
+              // contexto que su importe. Sin signo: aquí no hay "más o menos
+              // que qué".
+              <div className={styles.patrimonioWrap}>
+                <AnimatedMoney
+                  valor={saldo.data}
+                  className={`${styles.cifraGrande} tabular`}
+                />
+              </div>
+            )}
           </SketchCard>
 
           <SketchCard
@@ -108,7 +150,7 @@ export default function InicioPage() {
             variant="sticker"
             tilt="right"
             eyebrow={formatPeriod(periodo)}
-            title="Cómo va el mes"
+            title={esActual ? 'Cómo va el mes' : 'Cómo fue el mes'}
           >
             <div className={styles.estadisticas}>
               <div className={styles.estadistica} data-tono="ingreso">
@@ -192,7 +234,8 @@ export default function InicioPage() {
             className={styles.colMovimientos}
             variant="sticker"
             tilt="left"
-            title="Últimos movimientos"
+            title={esActual ? 'Últimos movimientos' : 'Movimientos del mes'}
+            eyebrow={formatPeriod(periodo)}
             actions={
               <Link href="/Movimientos" className={styles.enlace}>
                 Ver todos
@@ -245,5 +288,17 @@ export default function InicioPage() {
         </div>
       </div>
     </Container>
+  )
+}
+
+/**
+ * `useSearchParams` (el mes de `?mes=`) obliga a un `<Suspense>` por encima:
+ * sin él, Next no puede prerenderizar nada de esta rama y avisa en el build.
+ */
+export default function InicioPage() {
+  return (
+    <Suspense>
+      <Inicio />
+    </Suspense>
   )
 }

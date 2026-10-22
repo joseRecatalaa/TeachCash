@@ -70,7 +70,15 @@ const TRAMO_BARRA = 0.7
  */
 const CLAVE_VISTO = 'gf-splash-visto'
 
+/**
+ * Se lanza en `window` cuando la pantalla de carga termina. Lo escucha quien
+ * quiera llamar la atención justo DESPUÉS de ella y no debajo, donde nadie lo
+ * vería: el menú lateral se asoma con este evento.
+ */
+export const EVENTO_FIN_SPLASH = 'gf-splash-fin'
+
 function marcarVisto(): void {
+  window.dispatchEvent(new Event(EVENTO_FIN_SPLASH))
   try {
     window.sessionStorage.setItem(CLAVE_VISTO, '1')
   } catch {

@@ -3,6 +3,7 @@ import fc from 'fast-check'
 import {
   addDays,
   addMonths,
+  clampPeriod,
   compareDates,
   currentPeriod,
   daysBetween,
@@ -121,6 +122,17 @@ describe('periodos', () => {
     expect(addMonths('2026-01', -13)).toBe('2024-12')
     expect(addMonths('2026-06', 12)).toBe('2027-06')
     expect(addMonths('2026-06', 0)).toBe('2026-06')
+  })
+
+  test('clampPeriod acota a los dos extremos, incluidos', () => {
+    expect(clampPeriod('2026-05', '2026-01', '2026-10')).toBe('2026-05')
+    expect(clampPeriod('2025-12', '2026-01', '2026-10')).toBe('2026-01')
+    expect(clampPeriod('2026-11', '2026-01', '2026-10')).toBe('2026-10')
+    expect(clampPeriod('2026-01', '2026-01', '2026-10')).toBe('2026-01')
+    expect(clampPeriod('2026-10', '2026-01', '2026-10')).toBe('2026-10')
+    // Con el rango al revés (un reloj anterior al mínimo), gana el mínimo.
+    expect(clampPeriod('2026-05', '2026-01', '2025-06')).toBe('2026-01')
+    expect(() => clampPeriod('2026-13', '2026-01', '2026-10')).toThrow()
   })
 
   test('lastNMonths va del más antiguo al más reciente', () => {

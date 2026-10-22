@@ -1,4 +1,26 @@
+import { availableParallelism } from 'node:os'
 import { defineConfig } from 'vitest/config'
+
+/**
+ * Cuántos ficheros de test a la vez, como mucho.
+ *
+ * Cada fichero de `node` arranca su propio PGlite (Postgres en WASM) y le
+ * aplica las migraciones. Libre, eso son cientos de ms; con quince arrancando a
+ * la vez —lo que hace Vitest por defecto en una máquina de 16 núcleos: núcleos
+ * menos uno— compiten por CPU y memoria, tardan más de 30 s y revientan el
+ * `hookTimeout` de 20 s. Subir el timeout solo aplazaba el fallo: ya se subió
+ * una vez de 5 s a 20 s y el siguiente fichero con base lo volvió a romper.
+ *
+ * Medido en 16 núcleos (2026-10-22): 15 procesos, ~200 s y 10-14 ficheros en
+ * timeout; 4 → 87 s, 6 → 69 s, 8 → 60 s, todos en verde. Con menos procesos
+ * peleándose, cada uno acaba antes y la suite entera tarda un tercio.
+ *
+ * `min` con el valor por defecto para no pedir más procesos que núcleos en una
+ * máquina pequeña: el runner del CI tiene 4 y sigue con sus 3 de siempre.
+ * Global y no por proyecto: por proyecto, Vitest obliga a correr `node` y `dom`
+ * uno detrás de otro (`sequence.groupOrder`), y los dos sufren la carga.
+ */
+const MAX_PROCESOS = Math.min(8, Math.max(availableParallelism() - 1, 1))
 
 /**
  * Dos proyectos, porque hay dos clases de test y cada una necesita su entorno:
@@ -15,6 +37,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
+    maxWorkers: MAX_PROCESOS,
     // Cada test empieza con los dobles limpios: las llamadas de un test no
     // cuentan en el siguiente (clearMocks) y los `vi.spyOn` —p. ej. silenciar
     // console.error— se deshacen solos (restoreMocks).
@@ -97,7 +120,8 @@ export default defineConfig({
           exclude: ['node_modules/**', '.next/**', 'e2e/**'],
           pool: 'forks',
           // Arrancar PGlite y copiar su plantilla lleva cientos de ms; con la
-          // máquina cargada, el límite por defecto de 5 s se queda corto.
+          // máquina cargada, el límite por defecto de 5 s se queda corto. Es
+          // la red: lo que evita la carga es `MAX_PROCESOS`, no este número.
           testTimeout: 20_000,
           hookTimeout: 20_000,
         },

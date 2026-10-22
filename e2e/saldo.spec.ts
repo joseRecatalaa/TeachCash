@@ -16,9 +16,11 @@ import { MovimientosPage } from './pages/MovimientosPage'
 const CATEGORIA = 'Supermercado'
 
 test.beforeEach(async ({ page }) => {
-  // Invitado nuevo (contexto nuevo): sin movimientos, saldo cero.
+  // Invitado nuevo (contexto nuevo): sin movimientos y empezando en cero, así
+  // que el saldo es la suma de lo que anote cada test y nada más.
   const inicio = new InicioPage(page)
   await inicio.abrir()
+  await inicio.empezarEnCero()
   await inicio.esperarSaldo('0,00 €')
   await new CategoriasPage(page).crear({ nombre: CATEGORIA, presupuesto: '300' })
 })

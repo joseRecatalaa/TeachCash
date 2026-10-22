@@ -55,15 +55,6 @@
   animation: sd-underline 700ms var(--sd-ease-out) 180ms backwards;
 }
 
-.subtitulo {
-  margin: 0.25rem 0 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sd-ink-muted);
-}
-
 /* ── Rejilla ─────────────────────────────────────────────────────────────── */
 
 .grid {

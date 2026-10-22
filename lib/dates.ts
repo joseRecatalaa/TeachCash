@@ -175,6 +175,17 @@ export const addMonths = (period: Period, n: number): Period => {
   return `${pad(Math.floor(total / 12), 4)}-${pad((total % 12) + 1, 2)}`
 }
 
+/**
+ * Acota un periodo a `[min, max]`, ambos incluidos. 'YYYY-MM' con ceros a la
+ * izquierda ordena igual como texto que como fecha, así que basta comparar
+ * cadenas. Si el rango viene al revés, gana `min`.
+ */
+export const clampPeriod = (period: Period, min: Period, max: Period): Period => {
+  assertPeriod(period)
+  const techo = period > max ? max : period
+  return techo < min ? min : techo
+}
+
 /** Los n periodos que terminan en `end`, del más antiguo al más reciente. */
 export const lastNMonths = (n: number, end: Period = currentPeriod()): Period[] =>
   Array.from({ length: n }, (_, i) => addMonths(end, i - (n - 1)))

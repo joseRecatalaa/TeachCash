@@ -18,6 +18,7 @@ import { InicioPage } from './pages/InicioPage'
 test('Inicio de un invitado recién llegado @visual', async ({ page }) => {
   const inicio = new InicioPage(page)
   await inicio.abrir()
+  await inicio.empezarEnCero()
   await inicio.esperarSaldo('0,00 €')
 
   await expect(page).toHaveScreenshot('inicio.png', {

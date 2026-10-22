@@ -23,7 +23,8 @@ entre usuarios.
 
 **Hay UNA cuenta y UNA divisa, y ninguna de las dos se guarda.** No existe tabla
 de cuentas, ni columna de moneda, ni transferencias: un movimiento es un gasto o
-un ingreso, y el saldo es la suma de todos ellos.
+un ingreso, y el saldo (el "patrimonio" de la portada) es el patrimonio inicial
+que elige la persona más la suma de todos ellos.
 
 Fuera de alcance salvo que se diga lo contrario: facturación, IVA/IRPF, modelos
 tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
@@ -58,6 +59,7 @@ Cada cambio tiene un sitio y solo uno:
 | Añadir una operación que no es CRUD | Una función en el repositorio + su acción en `entity.actions.ts` + su hook |
 | Cambiar el color de una categoría en tabla y gráficos | La clave en `categories.color`; los tonos, en `app/globals.css` (`--sd-cat-*`) |
 | Añadir una entidad entera | `pnpm generate:crud` |
+| Añadir un módulo al menú lateral | `MODULOS` en `src/presentation/components/SideMenu/SideMenu.tsx` |
 
 Si te ves escribiendo un formulario a mano con `<TextInput>` sueltos, o una
 `<DataTable>` fuera de `AppTable`, párate: casi siempre significa que no has
@@ -282,7 +284,9 @@ ahorrar un viaje; el repositorio lo vuelve a comprobar sin excepción.
 
 Se calculan desde los movimientos, no se guardan. Un saldo almacenado es un saldo
 que puede divergir de sus movimientos, y entonces la cifra que ve el usuario es
-falsa. Si algún día se materializan por rendimiento, se hace en la misma
+falsa. Lo único guardado es el **patrimonio inicial** (`profiles`), que no es un
+saldo sino el punto de partida que escribe la persona: el patrimonio es ese
+inicial más los movimientos, y toda consulta de saldo tiene que sumarlo. Si algún día se materializan por rendimiento, se hace en la misma
 transacción que el movimiento y tiene que existir un test que compruebe que
 coinciden.
 
@@ -354,9 +358,9 @@ genérico.
 `useEntityFormSubmit`. Si uno diverge, el DataProvider lanza "Recurso
 desconocido" en la primera consulta.
 
-**Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo
-y las agregaciones de la portada tienen su propia Server Action y su propio hook
-escrito a mano.
+**Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo,
+el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
+de la portada tienen su propia Server Action y su propio hook escrito a mano.
 
 **Todo lo derivado se invalida a mano.** El saldo y los gráficos son sumas de
 movimientos y viven bajo la raíz de queries `['informes']`, de la que Refine no
@@ -421,6 +425,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         <entidad-plural>.repository.ts
         metadata.repository.ts        # las opciones de los select
         informes.repository.ts        # las agregaciones (no es un CRUD)
+        perfiles.repository.ts        # el patrimonio inicial: una fila por usuario
         cuenta.repository.ts          # auth.users: fecha de alta (caducidad) y borrar la cuenta
         __tests__/
     application/
@@ -429,6 +434,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         frontera.ts                   # los esquemas Zod de lo que llega del cliente
         resultado.ts                  # run(): errores esperados como valor
         informes.actions.ts
+        perfil.actions.ts             # leer y guardar el patrimonio inicial
         auth.actions.ts               # invitado, login, registro, contraseña, borrar cuenta
       hooks/
         createEntityHooks.ts          # factory genérica de hooks CRUD
@@ -437,6 +443,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         useCatalogos.ts               # las categorías del usuario
         usePaginacion.ts              # estado de la tabla
         useInformes.ts
+        usePerfil.ts                  # patrimonio inicial (cuelga de ['informes'])
         use<Entidades>.ts             # uno por entidad
       providers/
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
@@ -473,10 +480,12 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         EntityListPage.module.css
         ActionsColumn.tsx             # helpers de columna
         Charts/FinanceCharts.tsx
+        Inicio/                       # piezas de la portada: ElegirPatrimonio, SelectorMes, useMesDeInicio
         Auth/                         # formularios de login, registro…
         Cuenta/                       # CuentaMenu y AvisoInvitado (la Navbar)
         Navbar.tsx
         Navbar.module.css
+        SideMenu/                     # menú lateral de MÓDULOS (se abre al pasar el ratón)
         useEntityId.ts
   lib/
     money.ts                          # tipo Money, aritmética y DIVISA_APP
@@ -714,6 +723,14 @@ lleve hasta ella.
   `opacity: 0` y se acelera hasta lo instantáneo sigue dando un parpadeo. Y el
   CSS no llega al JavaScript: `AnimatedMoney` lo comprueba aparte con
   `matchMedia`.
+- **El aviso de invitado cerrado se decide en DOS sitios**: `AvisoInvitado.tsx`
+  y el script inline del `<head>` de `app/layout.tsx` (misma clave de
+  `localStorage`, mismo día de margen). Si divergen, la franja aparece y
+  desaparece al cargar, o se esconde cuando ya debería volver.
+- **`<SideMenu />` va DESPUÉS de `<Navbar />` en `app/layout.tsx`.** Los dos
+  (y los modales de Mantine) están a z-index 200, y a igualdad gana el último
+  del DOM: así el panel tapa la cabecera y un modal tapa el panel. Si sube por
+  encima de la Navbar, la cabecera se pinta sobre el menú abierto.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
@@ -862,7 +879,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   la CSP por hashes (SRI experimental): todas las rutas ya son dinámicas.
 - **Tests**: Vitest + fast-check sobre PGlite (Postgres real en proceso, con un
   stub del esquema `auth`, `int8` como texto igual que postgres-js); Testing
-  Library para componentes y hooks (con Refine real); Playwright para cuatro
+  Library para componentes y hooks (con Refine real); Playwright para cinco
   flujos E2E. Detalle en `docs/TESTS.md`.
 - **E2E contra un segundo proyecto de Supabase** (`teachcash-e2e`, plan gratuito)
   y el build de producción en el puerto 3100, con las claves de PRUEBA de
@@ -945,6 +962,25 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   revisión de cada sitio donde se pinta. **Los ocho valores están validados con
   el script de `dataviz`**, no elegidos a ojo: el peor par adyacente está en
   ΔE 9,1 sobre un suelo de 8. Si tocas uno, vuelve a pasarlo.
+- **Menú lateral de módulos** (`SideMenu`): la Navbar lleva las secciones del
+  módulo en el que estás; el menú lateral cambia de MÓDULO (Gestión de
+  patrimonio; Camino del héroe, aún sin hacer). Escondido, solo asoma una
+  pestaña con tres rayas en el borde izquierdo; se abre al pasar el ratón y se
+  cierra al salir, con 220 ms de margen para que una diagonal torpe no lo cierre.
+  El hover no es la única vía: la pestaña es un `<button>` (toque y Enter
+  alternan; un clic de ratón solo abre, porque el hover ya lo había abierto),
+  Escape cierra, y el panel va `inert` mientras está escondido. Un módulo por
+  llegar no es un enlace deshabilitado sino texto con "Próximamente".
+  Para que se descubra, la pestaña va en verde de marca con la palabra "Menú"
+  y, una vez por sesión, el panel se asoma al terminar la pantalla de carga
+  (escucha `EVENTO_FIN_SPLASH`; no se asoma con el movimiento reducido).
+- **El aviso de invitado se puede cerrar, pero vuelve el último día.** Antes no
+  se podía cerrar, por ser la única señal de que los datos se borran; se abrió
+  porque molestaba. El cierre se guarda en `localStorage` con la fecha de
+  borrado DE ESE invitado (otro invitado lo vuelve a ver) y deja de valer 24 h
+  antes del borrado, cuando aún se está a tiempo de crear la cuenta. El script
+  del `<head>` de `app/layout.tsx` lo esconde antes del primer pintado para que
+  no salte la página en cada recarga: clave y margen están en los dos sitios.
 - **Movimiento**: tres gestos y ni uno más (`sd-rise`, `sd-pop`, `sd-underline`
   en `globals.css`), más el conteo de las cifras grandes (`AnimatedMoney`). El
   escalonado va por `:nth-child()` en CSS y no por una variable inline en el JSX,
@@ -960,6 +996,24 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   la skill `dataviz` contra cada superficie (claro y oscuro por separado). Si los
   cambias, vuelve a pasar el validador; no los ajustes a ojo. El color nunca es
   la única señal: los importes llevan siempre su signo.
+
+- **Patrimonio inicial en `profiles`**, no como movimiento. Una fila por
+  usuario (`user_id` es la clave primaria, con RLS y cascada) con
+  `initial_net_worth` en céntimos y con signo (se puede empezar debiendo). Que
+  no haya fila es "aún no lo ha elegido", y entonces la tarjeta de Patrimonio
+  de Inicio pregunta "¿Con cuánto empiezas?" (`ElegirPatrimonio`), con
+  "Empezar en 0 €" como salida; después se cambia con el lápiz. Sustituye a la
+  antigua decisión de anotarlo como ingreso "Saldo inicial", que inflaba los
+  ingresos del mes y el gráfico de ingresos frente a gastos y obligaba a darle
+  categoría. El patrimonio sigue siendo derivado (regla dura 7): inicial + suma
+  de movimientos, y la serie de saldo arranca en el inicial.
+- **Navegar por meses en Inicio**: flechas en la cabecera, del mes actual hacia
+  atrás hasta `INICIO_MES_MINIMO` (enero de 2026). El mes va en `?mes=YYYY-MM`
+  (el actual, sin parámetro) con `router.replace`, para que "atrás" salga de
+  Inicio. Lo que llega por la URL se acota (`clampPeriod`). Se mueven las tres
+  tarjetas del mes; el patrimonio es siempre el de hoy y los dos gráficos de
+  tendencia siguen en los últimos 12 meses. El tope es de navegación y no se
+  impone en el servidor: un movimiento anterior sigue siendo válido.
 
 ## Decisiones abiertas
 
@@ -978,10 +1032,6 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
   acoplaba el resto (la divisa vivía ahí, y todo listado hacía JOIN contra ella).
   Si algún día vuelven, el saldo pasa a ser por cuenta y `getSaldoActual` deja de
   ser una sola cifra.
-- **Saldo de apertura**: no existe. El saldo arranca en cero el día del primer
-  movimiento; para partir del saldo real del banco se anota un ingreso más
-  ("Saldo inicial"). No hace falta esquema para eso, y es lo que mantiene la
-  regla dura 7 sin excepciones.
 - **Filtros de columna en modo servidor**: solo se ofrece "es igual a". Si
   Movimientos necesita operadores ricos, hay que enseñárselos al repositorio
   primero.

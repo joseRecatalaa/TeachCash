@@ -77,6 +77,16 @@
   --sd-surface: var(--papel-puro);      /* tarjetas, paneles, inputs */
   --sd-surface-sunken: var(--gris-100); /* zonas hundidas: cabecera de tabla */
   --sd-surface-muted: var(--papel-sombra);
+  /*
+   * Cristal gris: un tinte al 20 % con desenfoque y saturación por detrás, la
+   * receta de la barra de apple.com. Lo usa la pestaña del menú lateral, que
+   * flota sobre el contenido. Va sobre `--sd-ink-muted`, así que el modo oscuro
+   * lo hereda sin redefinirlo: se calcula en el mismo <html> donde el bloque
+   * oscuro cambia ese gris.
+   */
+  --sd-glass-tint: color-mix(in srgb, var(--sd-ink-muted) 20%, transparent);
+  --sd-glass-tint-hover: color-mix(in srgb, var(--sd-ink-muted) 32%, transparent);
+  --sd-glass-filter: saturate(180%) blur(12px);
 
   /* Tinta */
   --sd-ink: var(--negro-tinta);

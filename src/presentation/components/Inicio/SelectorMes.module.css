@@ -1,0 +1,51 @@
+/*
+ * Las flechas de mes, en la cabecera de Inicio. Ocupan el sitio del subtítulo
+ * que había (el nombre del mes), con su mismo aspecto: versalitas apagadas.
+ */
+
+.selector {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+/*
+ * Ancho mínimo para el mes más largo ("septiembre de 2026"): sin él, la flecha
+ * de la derecha se mueve a cada clic y el siguiente cae fuera de ella.
+ */
+.mes {
+  min-width: 11.5em;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--sd-ink-muted);
+}
+
+.hoy {
+  margin-left: 0.35rem;
+  padding: 0;
+  font-family: var(--sd-font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sd-accent);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--sd-accent-wash);
+  cursor: pointer;
+  transition: var(--sd-transition);
+}
+
+.hoy:hover {
+  border-bottom-color: var(--sd-accent);
+}
+
+.hoy:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: 2px;
+}

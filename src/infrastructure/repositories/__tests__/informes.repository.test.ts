@@ -15,7 +15,7 @@ import fc from 'fast-check'
 vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
 
 import { usarBaseDeTest } from '@/test/harness'
-import { transactions } from '@/db/schema'
+import { profiles, transactions } from '@/db/schema'
 import { addDays, compareDates, daysBetween } from '@/lib/dates'
 import {
   getGastoPorCategoria,
@@ -26,6 +26,7 @@ import {
   getSerieSaldo,
   getTotalesDelMes,
 } from '../informes.repository'
+import { guardarPatrimonioInicial } from '../perfiles.repository'
 import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 const base = usarBaseDeTest()
@@ -197,13 +198,52 @@ describe('serie de saldo', () => {
   })
 })
 
+describe('patrimonio inicial', () => {
+  test('sin elegir, el patrimonio es la suma de lo anotado', async () => {
+    await seedMovimiento(base().db, 'a', USER_A, { amount: -1000 })
+    expect(await getSaldoActual(USER_A)).toBe(-1000)
+  })
+
+  test('el patrimonio es el inicial más lo anotado', async () => {
+    await guardarPatrimonioInicial(USER_A, { patrimonioInicial: 100_000 })
+    await seedMovimiento(base().db, 'a', USER_A, { amount: -1000 })
+    await seedMovimiento(base().db, 'b', USER_A, { amount: 5000 })
+
+    expect(await getSaldoActual(USER_A)).toBe(104_000)
+  })
+
+  test('sin movimientos, el patrimonio es el inicial', async () => {
+    await guardarPatrimonioInicial(USER_A, { patrimonioInicial: 100_000 })
+    expect(await getSaldoActual(USER_A)).toBe(100_000)
+  })
+
+  test('el inicial de otro usuario no cuenta', async () => {
+    await guardarPatrimonioInicial(USER_B, { patrimonioInicial: 999_999 })
+    await seedMovimiento(base().db, 'a', USER_A, { amount: -1000 })
+    expect(await getSaldoActual(USER_A)).toBe(-1000)
+  })
+
+  test('la serie arranca en el inicial y termina en el patrimonio', async () => {
+    await guardarPatrimonioInicial(USER_A, { patrimonioInicial: 100_000 })
+    await seedMovimiento(base().db, 'a', USER_A, { date: '2026-03-02', amount: -500 })
+
+    const serie = await getSerieSaldo(USER_A, { desde: '2026-03-01', hasta: '2026-03-03' })
+
+    // Sin el inicial, el primer punto sería 0 y la serie dibujaría un patrimonio
+    // que nunca existió.
+    expect(serie.map((p) => p.saldo)).toEqual([100_000, 99_500, 99_500])
+    expect(serie.at(-1)?.saldo).toBe(await getSaldoActual(USER_A))
+  })
+})
+
 describe('el saldo es derivado (propiedad)', () => {
   /**
    * La regla dura 7 sobre datos al azar. El ejemplo fijo de arriba prueba un
    * caso; esto prueba cientos: movimientos con fechas e importes cualesquiera
    * (varios el mismo día, ingresos y gastos) y un rango que empieza en
    * cualquier punto. Cada punto de la serie tiene que ser la suma EXACTA de lo
-   * anotado hasta ese día, y el último, el saldo actual.
+   * anotado hasta ese día más el patrimonio inicial, si lo hay, y el último,
+   * el saldo actual.
    */
   const INICIO = '2026-01-01'
   const movimientos = fc.array(
@@ -219,37 +259,47 @@ describe('el saldo es derivado (propiedad)', () => {
     await seedCategoria(base().db, 'ingreso', USER_A, { kind: 'income' })
 
     await fc.assert(
-      fc.asyncProperty(movimientos, fc.integer({ min: 0, max: 100 }), async (lista, inicioRango) => {
-        // Arrange: base limpia en cada ronda (mismo PGlite) y un solo insert.
-        await base().db.delete(transactions)
-        await base().db.insert(transactions).values(
-          lista.map((m, i) => ({
-            id: `p-${i}`,
-            userId: USER_A,
-            categoryId: m.importe > 0 ? 'ingreso' : 'gasto',
-            amount: m.importe,
-            date: addDays(INICIO, m.dia),
-            description: `Movimiento ${i}`,
-          })),
-        )
-        const ultimoDia = Math.max(...lista.map((m) => m.dia))
-        const desde = addDays(INICIO, Math.min(inicioRango, ultimoDia) - 5)
-        const hasta = addDays(INICIO, ultimoDia)
+      fc.asyncProperty(
+        movimientos,
+        fc.integer({ min: 0, max: 100 }),
+        // Con o sin patrimonio inicial elegido: sin él, la serie parte de cero.
+        fc.option(fc.integer({ min: -1_000_000, max: 1_000_000 }), { nil: null }),
+        async (lista, inicioRango, inicial) => {
+          // Arrange: base limpia en cada ronda (mismo PGlite) y un solo insert.
+          await base().db.delete(transactions)
+          await base().db.delete(profiles)
+          if (inicial !== null) {
+            await guardarPatrimonioInicial(USER_A, { patrimonioInicial: inicial })
+          }
+          await base().db.insert(transactions).values(
+            lista.map((m, i) => ({
+              id: `p-${i}`,
+              userId: USER_A,
+              categoryId: m.importe > 0 ? 'ingreso' : 'gasto',
+              amount: m.importe,
+              date: addDays(INICIO, m.dia),
+              description: `Movimiento ${i}`,
+            })),
+          )
+          const ultimoDia = Math.max(...lista.map((m) => m.dia))
+          const desde = addDays(INICIO, Math.min(inicioRango, ultimoDia) - 5)
+          const hasta = addDays(INICIO, ultimoDia)
 
-        // Act
-        const serie = await getSerieSaldo(USER_A, { desde, hasta })
-        const saldo = await getSaldoActual(USER_A)
+          // Act
+          const serie = await getSerieSaldo(USER_A, { desde, hasta })
+          const saldo = await getSaldoActual(USER_A)
 
-        // Assert
-        expect(serie).toHaveLength(daysBetween(desde, hasta) + 1)
-        for (const punto of serie) {
-          const esperado = lista
-            .filter((m) => compareDates(addDays(INICIO, m.dia), punto.fecha) <= 0)
-            .reduce((acc, m) => acc + m.importe, 0)
-          expect(punto.saldo).toBe(esperado)
-        }
-        expect(serie.at(-1)?.saldo).toBe(saldo)
-      }),
+          // Assert
+          expect(serie).toHaveLength(daysBetween(desde, hasta) + 1)
+          for (const punto of serie) {
+            const esperado = lista
+              .filter((m) => compareDates(addDays(INICIO, m.dia), punto.fecha) <= 0)
+              .reduce((acc, m) => acc + m.importe, inicial ?? 0)
+            expect(punto.saldo).toBe(esperado)
+          }
+          expect(serie.at(-1)?.saldo).toBe(saldo)
+        },
+      ),
       { numRuns: 30 },
     )
   })

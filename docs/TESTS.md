@@ -15,7 +15,7 @@ usuario no se ven, y en una aplicación de dinero parecen datos.
 | `pnpm test` | Vitest: los 41 ficheros `*.test.ts(x)` (750 casos) | Nada. No toca Supabase |
 | `pnpm test:tz` | La misma suite con `TZ=Pacific/Kiritimati` (UTC+14) | Nada |
 | `pnpm test:coverage` | La suite con cobertura y los umbrales por fichero (§4) | Nada. Informe en `coverage/index.html` |
-| `pnpm test:e2e` | Playwright: 4 flujos sobre el build de producción y un Supabase de pruebas | `.env.e2e` (ver §2.4) |
+| `pnpm test:e2e` | Playwright: 5 flujos sobre el build de producción y un Supabase de pruebas | `.env.e2e` (ver §2.4) |
 | `pnpm test:e2e:ui` | Lo mismo, con la interfaz de Playwright para depurar paso a paso | `.env.e2e` |
 | `pnpm test:e2e:visual` | La regresión visual de Inicio (escritorio y móvil). La primera vez, con `--update-snapshots` | `.env.e2e` |
 
@@ -222,6 +222,7 @@ silencio:
 | Fichero | Qué comprueba |
 |---|---|
 | `saldo.spec.ts` | Anotar un gasto cambia el saldo de la portada; borrarlo lo devuelve. Sin recargar |
+| `patrimonio.spec.ts` | Un invitado nuevo ve "¿Con cuánto empiezas?", elige su patrimonio, lo cambia con el lápiz y al recargar sigue ahí (sale de `profiles`, no de la caché) |
 | `categorias.spec.ts` | Un movimiento en una categoría nueva aparece al filtrar por ella (con dos categorías, para que un filtro que no filtra no pase) y lleva su color |
 | `tipografia.spec.ts` | Nunito en el texto, Fredoka en los titulares y Geist Mono en el dinero |
 | `visual.spec.ts` | Captura de Inicio en escritorio y móvil (opt-in) |
@@ -291,6 +292,12 @@ menos).
 
 - **PGlite en varios hilos se cuelga.** Por eso el proyecto `node` usa `forks`. Si
   la suite entera se queda colgada, relánzala o pásala fichero a fichero.
+- **Muchos PGlite a la vez revientan el `hookTimeout`.** Cada fichero de `node`
+  arranca su base; con los 15 procesos que Vitest abre por defecto en 16
+  núcleos tardaban más de 30 s y fallaban 10-14 ficheros con "Hook timed out".
+  Por eso `maxWorkers` está topado a `min(8, núcleos − 1)` (`MAX_PROCESOS` en
+  `vitest.config.mts`): la suite pasa en ~1 min en vez de ~3,5. Si vuelve a
+  pasar, baja ese tope antes de subir el timeout.
 - **El reloj.** Un test que lee la fecha dos veces puede cruzar la medianoche
   entre una y otra: se congela con `vi.setSystemTime`.
 - **`int8` como texto.** Ver §2.2. Todo agregado lleva `.mapWith(Number)`.
@@ -307,6 +314,12 @@ menos).
   `.env.e2e`. Después, `pnpm start` sin un `pnpm build` previo serviría esa build.
 - **E2E: `Invalid path specified in request URL`** es la URL de Supabase con
   `/rest/v1`. Hoy `lib/env.ts` ya no arranca con ella.
+- **E2E: la primera carga de un invitado es lenta.** Las consultas de la portada
+  van detrás de crear el invitado y Next ejecuta las Server Actions de una en
+  una. Lo primero que se espera tras `abrir()` necesita 30 s (como
+  `esperarTitulo` o `esperarPregunta`), no los 10 s de una aserción normal: con
+  10 s, `patrimonio.spec.ts` fallaba a veces con todas las tarjetas en "—".
+  Para los que empiezan en cero, `InicioPage.empezarEnCero()`.
 - **E2E: el límite de invitados por hora.** Si la app se queda en "Preparando tu
   espacio…", mira el límite de usuarios anónimos del proyecto de pruebas.
 

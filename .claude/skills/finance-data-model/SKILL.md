@@ -152,10 +152,13 @@ const [row] = await db
   .where(eq(transactions.userId, userId))
 ```
 
-No hay saldo de apertura en ninguna parte: el saldo arranca en cero el día del
-primer movimiento. Para partir del saldo real del banco se anota un ingreso más
-("Saldo inicial"). Es una decisión, no un olvido — es lo que hace imposible que
-el saldo diverja de los movimientos que lo explican.
+A esa suma se le añade el **patrimonio inicial** (`profiles.initial_net_worth`,
+`getPatrimonioInicial`), que es lo que la persona dice tener al empezar. No es
+un saldo guardado: es un dato que escribe ella, y el patrimonio sigue siendo
+inicial + movimientos, calculado cada vez. Sin fila en `profiles` cuenta como
+cero (y la portada lo pregunta). Toda consulta de saldo nueva tiene que sumarlo,
+o diverge de `getSaldoActual`. Se descartó anotarlo como un ingreso "Saldo
+inicial": inflaba los ingresos del mes en que se anotaba.
 
 Hay un test que comprueba que `getSaldoActual` y el último punto de
 `getSerieSaldo` dan la misma cifra: dos caminos distintos hasta el mismo número.
