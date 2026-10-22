@@ -13,9 +13,12 @@ import { expect, test } from '@playwright/test'
 import { InicioPage } from './pages/InicioPage'
 
 test('texto en Nunito, titulares en Fredoka y dinero en Geist Mono', async ({ page }) => {
-  await new InicioPage(page).abrir()
+  const inicio = new InicioPage(page)
+  await inicio.abrir()
+  // Sin contestar la pregunta del patrimonio no hay cifra que medir.
+  await inicio.empezarEnCero()
 
   await expect(page.locator('body')).toHaveCSS('font-family', /Nunito/)
   await expect(page.getByRole('heading', { level: 1, name: 'Inicio' })).toHaveCSS('font-family', /Fredoka/)
-  await expect(new InicioPage(page).saldo).toHaveCSS('font-family', /Geist Mono/)
+  await expect(inicio.saldo).toHaveCSS('font-family', /Geist Mono/)
 })

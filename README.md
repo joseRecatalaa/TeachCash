@@ -74,7 +74,7 @@ test y por qué. En resumen:
 
 - **750 tests de Vitest** sobre Postgres real en proceso (PGlite), sin tocar
   Supabase, más tests de componentes con Testing Library.
-- **4 flujos end-to-end con Playwright**, solo en local, contra un segundo
+- **5 flujos end-to-end con Playwright**, solo en local, contra un segundo
   proyecto de Supabase de pruebas. Cómo montarlo, en `.env.e2e.example`.
 - **En cada commit** (Husky): ESLint sobre los ficheros que entran y el chequeo
   de tipos. Si falla, el commit no se crea.

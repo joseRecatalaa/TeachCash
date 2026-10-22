@@ -879,7 +879,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   la CSP por hashes (SRI experimental): todas las rutas ya son dinámicas.
 - **Tests**: Vitest + fast-check sobre PGlite (Postgres real en proceso, con un
   stub del esquema `auth`, `int8` como texto igual que postgres-js); Testing
-  Library para componentes y hooks (con Refine real); Playwright para cuatro
+  Library para componentes y hooks (con Refine real); Playwright para cinco
   flujos E2E. Detalle en `docs/TESTS.md`.
 - **E2E contra un segundo proyecto de Supabase** (`teachcash-e2e`, plan gratuito)
   y el build de producción en el puerto 3100, con las claves de PRUEBA de
