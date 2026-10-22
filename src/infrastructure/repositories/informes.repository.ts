@@ -42,6 +42,7 @@ import {
   type PuntoSaldoDto,
   type TotalesPeriodoDto,
 } from '@/src/types/informe.types'
+import { getPatrimonioInicial } from './perfiles.repository'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Consultas
@@ -164,20 +165,22 @@ export async function getTotalesDelMes(
 }
 
 /**
- * El saldo de la cuenta: la suma de todo lo anotado.
+ * El patrimonio: el inicial que eligió la persona más todo lo anotado.
  *
- * Arranca en cero el día del primer movimiento. Si hace falta partir del saldo
- * real del banco, se anota como un ingreso más ("Saldo inicial"): no hay un
- * campo de apertura escondido en ninguna parte, y esa es justo la razón de que
- * el saldo no pueda divergir de sus movimientos.
+ * Sigue siendo derivado (regla dura 7). El inicial no es un saldo guardado sino
+ * el punto de partida que escribe la persona (`profiles`); sin elegirlo, cuenta
+ * como cero. Lo que no se guarda en ninguna parte es la suma.
  */
 export async function getSaldoActual(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
-    .from(transactions)
-    .where(eq(transactions.userId, userId))
+  const [[row], inicial] = await Promise.all([
+    db
+      .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
+      .from(transactions)
+      .where(eq(transactions.userId, userId)),
+    getPatrimonioInicial(userId),
+  ])
   // Siempre una fila (agregado sin GROUP BY), y `coalesce` evita el null.
-  return row.total
+  return (inicial ?? 0) + row.total
 }
 
 /**
@@ -190,12 +193,17 @@ export async function getSerieSaldo(
   userId: string,
   options: { desde: CivilDate; hasta: CivilDate },
 ): Promise<PuntoSaldoDto[]> {
-  // Punto de partida: todo lo anterior al rango. Sin esto, una serie de los
-  // últimos tres meses arrancaría en cero y dibujaría un salto que no existió.
-  const [previo] = await db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
-    .from(transactions)
-    .where(and(eq(transactions.userId, userId), lt(transactions.date, options.desde)))
+  // Punto de partida: el patrimonio inicial más todo lo anterior al rango. Sin
+  // esto, una serie de los últimos tres meses arrancaría en cero y dibujaría un
+  // salto que no existió; y sin el inicial, su último punto dejaría de
+  // coincidir con `getSaldoActual`.
+  const [[previo], inicial] = await Promise.all([
+    db
+      .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
+      .from(transactions)
+      .where(and(eq(transactions.userId, userId), lt(transactions.date, options.desde))),
+    getPatrimonioInicial(userId),
+  ])
 
   const deltas = await db
     .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})`.mapWith(Number) })
@@ -211,7 +219,7 @@ export async function getSerieSaldo(
 
   // `sum` de un grupo que existe nunca es null; el previo, por `coalesce`, tampoco.
   const porFecha = new Map(deltas.map((d) => [d.fecha, d.total]))
-  let acumulado = previo.total
+  let acumulado = (inicial ?? 0) + previo.total
 
   return eachDay(options.desde, options.hasta).map((fecha) => {
     acumulado += porFecha.get(fecha) ?? 0

@@ -145,6 +145,33 @@ export const transactions = pgTable(
   ],
 ).enableRLS()
 
+/**
+ * Una fila por usuario con lo que la persona ELIGE sobre sí misma. Hoy, solo
+ * el patrimonio con el que empieza.
+ *
+ * `patrimonio_inicial` no es un saldo guardado (regla dura 7): es el punto de
+ * partida que escribe la persona, y el patrimonio sigue siendo derivado
+ * —inicial + suma de movimientos—. Se descartó anotarlo como un ingreso
+ * "Saldo inicial": inflaba los ingresos del mes en que se anotaba y los
+ * gráficos de ingresos frente a gastos.
+ *
+ * Que NO haya fila significa "aún no lo ha elegido", y es lo que hace que la
+ * portada lo pregunte. Por eso la columna es NOT NULL: el cero es una elección.
+ */
+export const profiles = pgTable(
+  'profiles',
+  {
+    userId: uuid('user_id')
+      .primaryKey()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    /** Céntimos CON SIGNO: se puede empezar debiendo dinero. */
+    initialNetWorth: integer('initial_net_worth').notNull(),
+    createdAt: createdAtColumn(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  () => [soloSuyo('profiles')],
+).enableRLS()
+
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
 export type Transaction = typeof transactions.$inferSelect

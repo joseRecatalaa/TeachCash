@@ -44,8 +44,10 @@ recuperar la contraseña):
   su presupuesto. Desde aquí se anota un gasto sin cambiar de pantalla.
 
 Hay **una sola cuenta y una sola moneda**, y no se guardan en ninguna parte: el
-saldo es la suma de los movimientos. Si quieres partir del saldo real de tu
-banco, anótalo como un ingreso más ("Saldo inicial").
+saldo es la suma de los movimientos más el **patrimonio inicial**, la cifra con
+la que empiezas: la portada te la pregunta la primera vez y se puede cambiar
+desde el lápiz de la tarjeta. En Inicio, las flechas junto al mes recorren los
+meses desde enero de 2026.
 
 ## Comandos
 

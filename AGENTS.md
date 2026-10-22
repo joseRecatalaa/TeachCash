@@ -23,7 +23,8 @@ entre usuarios.
 
 **Hay UNA cuenta y UNA divisa, y ninguna de las dos se guarda.** No existe tabla
 de cuentas, ni columna de moneda, ni transferencias: un movimiento es un gasto o
-un ingreso, y el saldo es la suma de todos ellos.
+un ingreso, y el saldo (el "patrimonio" de la portada) es el patrimonio inicial
+que elige la persona más la suma de todos ellos.
 
 Fuera de alcance salvo que se diga lo contrario: facturación, IVA/IRPF, modelos
 tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
@@ -283,7 +284,9 @@ ahorrar un viaje; el repositorio lo vuelve a comprobar sin excepción.
 
 Se calculan desde los movimientos, no se guardan. Un saldo almacenado es un saldo
 que puede divergir de sus movimientos, y entonces la cifra que ve el usuario es
-falsa. Si algún día se materializan por rendimiento, se hace en la misma
+falsa. Lo único guardado es el **patrimonio inicial** (`profiles`), que no es un
+saldo sino el punto de partida que escribe la persona: el patrimonio es ese
+inicial más los movimientos, y toda consulta de saldo tiene que sumarlo. Si algún día se materializan por rendimiento, se hace en la misma
 transacción que el movimiento y tiene que existir un test que compruebe que
 coinciden.
 
@@ -355,9 +358,9 @@ genérico.
 `useEntityFormSubmit`. Si uno diverge, el DataProvider lanza "Recurso
 desconocido" en la primera consulta.
 
-**Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo
-y las agregaciones de la portada tienen su propia Server Action y su propio hook
-escrito a mano.
+**Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo,
+el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
+de la portada tienen su propia Server Action y su propio hook escrito a mano.
 
 **Todo lo derivado se invalida a mano.** El saldo y los gráficos son sumas de
 movimientos y viven bajo la raíz de queries `['informes']`, de la que Refine no
@@ -422,6 +425,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         <entidad-plural>.repository.ts
         metadata.repository.ts        # las opciones de los select
         informes.repository.ts        # las agregaciones (no es un CRUD)
+        perfiles.repository.ts        # el patrimonio inicial: una fila por usuario
         cuenta.repository.ts          # auth.users: fecha de alta (caducidad) y borrar la cuenta
         __tests__/
     application/
@@ -430,6 +434,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         frontera.ts                   # los esquemas Zod de lo que llega del cliente
         resultado.ts                  # run(): errores esperados como valor
         informes.actions.ts
+        perfil.actions.ts             # leer y guardar el patrimonio inicial
         auth.actions.ts               # invitado, login, registro, contraseña, borrar cuenta
       hooks/
         createEntityHooks.ts          # factory genérica de hooks CRUD
@@ -438,6 +443,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         useCatalogos.ts               # las categorías del usuario
         usePaginacion.ts              # estado de la tabla
         useInformes.ts
+        usePerfil.ts                  # patrimonio inicial (cuelga de ['informes'])
         use<Entidades>.ts             # uno por entidad
       providers/
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
@@ -474,6 +480,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         EntityListPage.module.css
         ActionsColumn.tsx             # helpers de columna
         Charts/FinanceCharts.tsx
+        Inicio/                       # piezas de la portada: ElegirPatrimonio, SelectorMes, useMesDeInicio
         Auth/                         # formularios de login, registro…
         Cuenta/                       # CuentaMenu y AvisoInvitado (la Navbar)
         Navbar.tsx
@@ -990,6 +997,24 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   cambias, vuelve a pasar el validador; no los ajustes a ojo. El color nunca es
   la única señal: los importes llevan siempre su signo.
 
+- **Patrimonio inicial en `profiles`**, no como movimiento. Una fila por
+  usuario (`user_id` es la clave primaria, con RLS y cascada) con
+  `initial_net_worth` en céntimos y con signo (se puede empezar debiendo). Que
+  no haya fila es "aún no lo ha elegido", y entonces la tarjeta de Patrimonio
+  de Inicio pregunta "¿Con cuánto empiezas?" (`ElegirPatrimonio`), con
+  "Empezar en 0 €" como salida; después se cambia con el lápiz. Sustituye a la
+  antigua decisión de anotarlo como ingreso "Saldo inicial", que inflaba los
+  ingresos del mes y el gráfico de ingresos frente a gastos y obligaba a darle
+  categoría. El patrimonio sigue siendo derivado (regla dura 7): inicial + suma
+  de movimientos, y la serie de saldo arranca en el inicial.
+- **Navegar por meses en Inicio**: flechas en la cabecera, del mes actual hacia
+  atrás hasta `INICIO_MES_MINIMO` (enero de 2026). El mes va en `?mes=YYYY-MM`
+  (el actual, sin parámetro) con `router.replace`, para que "atrás" salga de
+  Inicio. Lo que llega por la URL se acota (`clampPeriod`). Se mueven las tres
+  tarjetas del mes; el patrimonio es siempre el de hoy y los dos gráficos de
+  tendencia siguen en los últimos 12 meses. El tope es de navegación y no se
+  impone en el servidor: un movimiento anterior sigue siendo válido.
+
 ## Decisiones abiertas
 
 Anótalas aquí al resolverlas; no las asumas en silencio.
@@ -1007,10 +1032,6 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
   acoplaba el resto (la divisa vivía ahí, y todo listado hacía JOIN contra ella).
   Si algún día vuelven, el saldo pasa a ser por cuenta y `getSaldoActual` deja de
   ser una sola cifra.
-- **Saldo de apertura**: no existe. El saldo arranca en cero el día del primer
-  movimiento; para partir del saldo real del banco se anota un ingreso más
-  ("Saldo inicial"). No hace falta esquema para eso, y es lo que mantiene la
-  regla dura 7 sin excepciones.
 - **Filtros de columna en modo servidor**: solo se ofrece "es igual a". Si
   Movimientos necesita operadores ricos, hay que enseñárselos al repositorio
   primero.
