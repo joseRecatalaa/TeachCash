@@ -32,6 +32,12 @@ updates:
         update-types: [minor, patch]
     # Las mayores van una a una: cada una trae cambios que leer (AGENTS.md
     # avisa de que este Next no es el que conoces).
+    ignore:
+      # Los tipos de Node siguen a la mayor del RUNTIME (Node 24, local y CI),
+      # no a la última: con los de la 26 el compilador aceptaría APIs que en
+      # ejecución no existen. Se sube a mano cuando se sube Node.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
