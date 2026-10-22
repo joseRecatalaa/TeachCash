@@ -291,6 +291,12 @@ menos).
 
 - **PGlite en varios hilos se cuelga.** Por eso el proyecto `node` usa `forks`. Si
   la suite entera se queda colgada, relánzala o pásala fichero a fichero.
+- **Muchos PGlite a la vez revientan el `hookTimeout`.** Cada fichero de `node`
+  arranca su base; con los 15 procesos que Vitest abre por defecto en 16
+  núcleos tardaban más de 30 s y fallaban 10-14 ficheros con "Hook timed out".
+  Por eso `maxWorkers` está topado a `min(8, núcleos − 1)` (`MAX_PROCESOS` en
+  `vitest.config.mts`): la suite pasa en ~1 min en vez de ~3,5. Si vuelve a
+  pasar, baja ese tope antes de subir el timeout.
 - **El reloj.** Un test que lee la fecha dos veces puede cruzar la medianoche
   entre una y otra: se congela con `vi.setSystemTime`.
 - **`int8` como texto.** Ver §2.2. Todo agregado lleva `.mapWith(Number)`.
