@@ -55,7 +55,7 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "4.1.12",
     "@vitest/eslint-plugin": "^1.6.27",
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.11",
@@ -68,7 +68,7 @@
     "lint-staged": "^17.6.0",
     "plop": "^4.0.5",
     "typescript": "^6",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "packageManager": "pnpm@10.28.2"
 }
