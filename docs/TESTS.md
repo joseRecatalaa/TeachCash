@@ -225,6 +225,7 @@ silencio:
 | `patrimonio.spec.ts` | Un invitado nuevo ve "¿Con cuánto empiezas?", elige su patrimonio, lo cambia con el lápiz y al recargar sigue ahí (sale de `profiles`, no de la caché) |
 | `categorias.spec.ts` | Un movimiento en una categoría nueva aparece al filtrar por ella (con dos categorías, para que un filtro que no filtra no pase) y lleva su color |
 | `tipografia.spec.ts` | Nunito en el texto, Fredoka en los titulares y Geist Mono en el dinero |
+| `heroe.spec.ts` | Camino del héroe: un invitado entra por el menú lateral, lee la primera lección de Ahorro, aprueba el minitest y vuelve al camino con sus estrellas y el siguiente nivel abierto, sin recargar |
 | `visual.spec.ts` | Captura de Inicio en escritorio y móvil (opt-in) |
 | `splash.visual.spec.ts` | Captura de la pantalla de carga con el reloj congelado: vigila que el héroe de `components/Pixel/`, compartido con el Camino del héroe, no cambie el splash (opt-in) |
 
