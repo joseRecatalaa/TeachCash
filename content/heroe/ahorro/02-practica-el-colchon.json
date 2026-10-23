@@ -1,0 +1,66 @@
+{
+  "id": "ahorro/02-practica-el-colchon",
+  "tipo": "interactivo",
+  "titulo": "Practica: monta tu colchón",
+  "descripcion": "Calcula un fondo de emergencia, ordena los pasos para reunirlo y aprende a leer una cuenta remunerada.",
+  "minutos": 3,
+  "ejercicios": [
+    {
+      "id": "calcula-fondo",
+      "tipo": "calcula",
+      "enunciado": "Marcos gasta 950 € al mes en lo imprescindible. ¿Cuánto debería tener en su fondo de emergencia para cubrir 3 meses?",
+      "unidad": "euros",
+      "solucion": 285000,
+      "tolerancia": 0,
+      "explicacion": "3 meses × 950 € = 2.850 €. Se multiplica el gasto imprescindible de un mes por los meses que quieres cubrir."
+    },
+    {
+      "id": "ordena-pasos",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los pasos para empezar tu fondo de emergencia.",
+      "pasos": [
+        "Apuntar tus gastos imprescindibles de un mes",
+        "Multiplicarlos por los meses que quieres cubrir",
+        "Abrir una cuenta separada para el fondo",
+        "Programar una transferencia automática el día de cobro"
+      ],
+      "explicacion": "Primero sabes cuánto necesitas, luego cuál es la meta, después dónde guardarlo y por último lo automatizas para no depender de la fuerza de voluntad."
+    },
+    {
+      "id": "empareja-conceptos",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada concepto con lo que significa.",
+      "pares": [
+        { "concepto": "TAE", "definicion": "Lo que rinde de verdad en un año, con comisiones incluidas" },
+        { "concepto": "TIN", "definicion": "El tipo de interés pactado, sin comisiones ni frecuencia de pago" },
+        { "concepto": "FGD", "definicion": "Protege hasta 100.000 € por titular y entidad" },
+        { "concepto": "Fondo de emergencia", "definicion": "Dinero apartado solo para imprevistos" }
+      ],
+      "explicacion": "Para comparar cuentas, mira la TAE y no el TIN: la TAE ya incluye comisiones y cada cuánto te pagan los intereses."
+    },
+    {
+      "id": "calcula-intereses",
+      "tipo": "calcula",
+      "enunciado": "Tienes 5.000 € en una cuenta remunerada al 2 % TAE. ¿Cuántos euros de intereses brutos recibirás en un año?",
+      "unidad": "euros",
+      "solucion": 10000,
+      "tolerancia": 0,
+      "explicacion": "5.000 € × 2 % = 100 € en un año. Son brutos: Hacienda retiene un 19 % de los intereses, así que llegarían 81 €."
+    },
+    {
+      "id": "cuenta-separada",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Conviene guardar el fondo de emergencia en una cuenta distinta de la que usas para los gastos del día a día.",
+      "correcta": true,
+      "explicacion": "Si está mezclado con el dinero del mes, acabas gastándolo sin darte cuenta. Separarlo hace que lo veas como lo que es: intocable salvo emergencia."
+    },
+    {
+      "id": "hueco-pagate",
+      "tipo": "hueco",
+      "enunciado": "La regla \"págate primero a ti\" consiste en ahorrar ___ de empezar a gastar.",
+      "opciones": ["antes", "después", "en lugar"],
+      "correcta": 0,
+      "explicacion": "Se ahorra antes: el día que cobras, de forma automática. Ahorrar lo que sobra a final de mes no funciona, porque casi nunca sobra."
+    }
+  ]
+}

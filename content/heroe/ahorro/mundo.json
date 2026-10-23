@@ -1,0 +1,8 @@
+{
+  "id": "ahorro",
+  "titulo": "Ahorro",
+  "descripcion": "Apartar dinero sin que duela: el colchón para imprevistos, dónde guardarlo y cómo hacer que crezca solo.",
+  "decorado": "hucha",
+  "orden": 2,
+  "niveles": ["01-fondo-de-emergencia", "02-practica-el-colchon", "03-jefe-del-ahorro"]
+}

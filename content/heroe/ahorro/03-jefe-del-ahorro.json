@@ -1,0 +1,102 @@
+{
+  "id": "ahorro/03-jefe-del-ahorro",
+  "tipo": "jefe",
+  "titulo": "El Tragaperras",
+  "descripcion": "El monstruo que se come los ahorros que no tienen un sitio. Demuestra lo que sabes del fondo de emergencia.",
+  "minutos": 4,
+  "aprobado": 70,
+  "preguntas": [
+    {
+      "id": "que-cubre",
+      "tipo": "opcion",
+      "enunciado": "¿Cuál de estos gastos debería pagarse con el fondo de emergencia?",
+      "opciones": [
+        "Unas zapatillas en rebajas",
+        "La reparación urgente de la caldera en invierno",
+        "Un viaje de fin de semana"
+      ],
+      "correcta": 1,
+      "explicacion": "Una avería urgente es justo un imprevisto. Las rebajas y los viajes son gastos que se pueden planificar o aplazar."
+    },
+    {
+      "id": "base-del-calculo",
+      "tipo": "opcion",
+      "enunciado": "El tamaño del fondo de emergencia se calcula a partir de…",
+      "opciones": ["tu sueldo bruto", "tus gastos imprescindibles", "lo que gastas en ocio"],
+      "correcta": 1,
+      "explicacion": "Lo que tiene que cubrir es lo que necesitas para vivir: vivienda, comida, suministros, transporte y deudas."
+    },
+    {
+      "id": "autonomo",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si tus ingresos varían mucho de un mes a otro, conviene un fondo más cerca de 6 meses que de 3.",
+      "correcta": true,
+      "explicacion": "Con ingresos irregulares, un mes malo es más probable. Un colchón más grande lo absorbe sin endeudarte."
+    },
+    {
+      "id": "calcula-seis-meses",
+      "tipo": "calcula",
+      "enunciado": "Tus gastos imprescindibles son 1.300 € al mes. ¿Cuánto es un fondo de 6 meses?",
+      "unidad": "euros",
+      "solucion": 780000,
+      "tolerancia": 0,
+      "explicacion": "6 × 1.300 € = 7.800 €."
+    },
+    {
+      "id": "tae-o-tin",
+      "tipo": "opcion",
+      "enunciado": "Para comparar dos cuentas remuneradas, ¿qué dato miras?",
+      "opciones": ["El TIN", "La TAE", "El nombre del banco"],
+      "correcta": 1,
+      "explicacion": "La TAE incluye comisiones y la frecuencia con la que te pagan, así que dos cuentas se comparan por su TAE."
+    },
+    {
+      "id": "fgd-repartir",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Con 150.000 € en un solo banco español, el Fondo de Garantía de Depósitos lo protege todo.",
+      "correcta": false,
+      "explicacion": "Solo hasta 100.000 € por titular y entidad. Los otros 50.000 € quedarían sin cubrir; repartirlos en otro banco los protegería."
+    },
+    {
+      "id": "hueco-automatica",
+      "tipo": "hueco",
+      "enunciado": "La forma más fiable de ahorrar es una transferencia ___ el día de cobro.",
+      "opciones": ["automática", "ocasional", "en efectivo"],
+      "correcta": 0,
+      "explicacion": "Automática: así no depende de acordarte ni de la fuerza de voluntad, y ahorras antes de gastar."
+    },
+    {
+      "id": "calcula-retencion",
+      "tipo": "calcula",
+      "enunciado": "Una cuenta te da 200 € de intereses brutos. Hacienda retiene un 19 %. ¿Cuántos euros te llegan?",
+      "unidad": "euros",
+      "solucion": 16200,
+      "tolerancia": 0,
+      "explicacion": "El 19 % de 200 € son 38 €, así que llegan 200 − 38 = 162 €."
+    },
+    {
+      "id": "bolsa-no",
+      "tipo": "opcion",
+      "enunciado": "¿Por qué el fondo de emergencia no se invierte en bolsa?",
+      "opciones": [
+        "Porque está prohibido",
+        "Porque podría valer menos justo cuando lo necesitas",
+        "Porque la bolsa no da rentabilidad"
+      ],
+      "correcta": 1,
+      "explicacion": "La bolsa sube y baja. Si el imprevisto coincide con una caída, tendrías que vender perdiendo dinero."
+    },
+    {
+      "id": "ordena-prioridades",
+      "tipo": "ordenar",
+      "enunciado": "Ordena de primero a último qué hacer con tu dinero cuando empiezas a ahorrar.",
+      "pasos": [
+        "Cubrir los gastos imprescindibles del mes",
+        "Reunir el fondo de emergencia",
+        "Ahorrar para metas concretas, como un viaje",
+        "Invertir a largo plazo lo que no vas a necesitar en años"
+      ],
+      "explicacion": "Primero vivir, luego el colchón para imprevistos, después las metas y por último invertir lo que puedes dejar quieto mucho tiempo."
+    }
+  ]
+}
