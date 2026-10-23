@@ -1,0 +1,68 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--sd-font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sd-ink-muted);
+  text-decoration: none;
+}
+
+.volver:hover {
+  color: var(--sd-ink);
+}
+
+.volver:focus-visible {
+  outline: none;
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-focus-ring);
+}
+
+/* La letra a píxel solo en los titulares del módulo: en el texto corrido se
+   lee mal. */
+.titulo {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(1.15rem, 4vw, 1.6rem);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.subtitulo {
+  margin: 0;
+  max-width: 40rem;
+  line-height: 1.5;
+  color: var(--sd-ink-muted);
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--sd-ink-muted);
+}
+
+.cargando {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}

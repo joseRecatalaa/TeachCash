@@ -8,12 +8,16 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import { renderConMantine } from '@/test/render'
-import { SideMenu } from '../SideMenu'
+import { moduloActivo, SideMenu } from '../SideMenu'
+
+const ruta = vi.hoisted(() => ({ actual: '/' as string | null }))
+vi.mock('next/navigation', () => ({ usePathname: () => ruta.actual }))
 import { EVENTO_FIN_SPLASH } from '../../Splash/SplashScreen'
 
 const pestana = () => screen.getByRole('button', { name: /menú de módulos/ })
 
 afterEach(() => {
+  ruta.actual = '/'
   vi.useRealTimers()
   window.sessionStorage.clear()
   delete document.documentElement.dataset.splash
@@ -95,13 +99,26 @@ describe('SideMenu', () => {
     expect(enlace).toHaveAttribute('aria-current', 'page')
   })
 
-  test('Camino del héroe NO es un enlace: está deshabilitado y lo dice', () => {
+  test('Camino del héroe es un enlace a su mapa, y es el actual dentro de él', () => {
+    ruta.actual = '/CaminoHeroe/Mundo'
     renderConMantine(<SideMenu />)
 
-    expect(screen.queryByRole('link', { name: /Camino del héroe/ })).not.toBeInTheDocument()
-    const modulo = screen.getByText('Camino del héroe').closest('[aria-disabled]')
-    expect(modulo).toHaveAttribute('aria-disabled', 'true')
-    expect(modulo).toHaveTextContent('Próximamente')
+    const camino = screen.getByRole('link', { name: /Camino del héroe/ })
+    expect(camino).toHaveAttribute('href', '/CaminoHeroe')
+    expect(camino).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: /Gestión de patrimonio/ })).not.toHaveAttribute('aria-current')
+  })
+
+  test.each([
+    ['/', 'Gestión de patrimonio'],
+    ['/Movimientos/Edit', 'Gestión de patrimonio'],
+    ['/CaminoHeroe', 'Camino del héroe'],
+    ['/CaminoHeroe/Nivel', 'Camino del héroe'],
+    // Un prefijo de texto no es una ruta hija.
+    ['/CaminoHeroeFalso', 'Gestión de patrimonio'],
+    [null, 'Gestión de patrimonio'],
+  ])('en %s el módulo activo es %s', (pathname, modulo) => {
+    expect(moduloActivo(pathname)).toBe(modulo)
   })
 
   test('es un `nav` con su propio nombre, distinto del de la Navbar', () => {

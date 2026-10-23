@@ -27,6 +27,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { PixelSprite } from '../Pixel/PixelSprite'
+import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
 import pixel from '../Pixel/pixel.module.css'
 import { BILLETE, PALETA_HEROE } from '../Pixel/sprites'
 import { PixelScene } from './PixelScene'
@@ -105,29 +106,6 @@ function useYaVisto(): boolean {
   return useSyncExternalStore(
     () => () => {},
     () => document.documentElement.dataset.splash === 'visto',
-    () => false,
-  )
-}
-
-const CONSULTA_MOVIMIENTO = '(prefers-reduced-motion: reduce)'
-
-/**
- * La preferencia de movimiento, leída sin romper la hidratación.
- *
- * `matchMedia` no existe en el servidor, así que el tercer argumento devuelve
- * `false` allí: React pinta lo mismo en las dos partes y ya en el cliente
- * vuelve a pintar con el valor de verdad. Leerlo con `useState` daría un aviso
- * de hidratación a quien tenga el movimiento reducido, y hacerlo dentro de un
- * efecto obligaría a un `setState` que ESLint —con razón— no quiere.
- */
-function useMovimientoReducido(): boolean {
-  return useSyncExternalStore(
-    (avisar) => {
-      const mq = window.matchMedia(CONSULTA_MOVIMIENTO)
-      mq.addEventListener('change', avisar)
-      return () => mq.removeEventListener('change', avisar)
-    },
-    () => window.matchMedia(CONSULTA_MOVIMIENTO).matches,
     () => false,
   )
 }

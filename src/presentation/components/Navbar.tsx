@@ -4,8 +4,9 @@
  * Barra de navegación superior.
  *
  * Es el sitio donde se da de alta una entidad nueva en el menú: una entrada más
- * en `ENLACES`. El generador de Plop no la toca — decidir si algo va en el menú
- * es una decisión de producto, no de andamiaje.
+ * en los enlaces de su módulo (`ENLACES_PATRIMONIO`, `ENLACES_HEROE`). El
+ * generador de Plop no la toca — decidir si algo va en el menú es una decisión
+ * de producto, no de andamiaje.
  *
  * El aspecto vive en `Navbar.module.css`. Se dejó de usar el `<Anchor>` de
  * Mantine porque el estado activo necesita tres señales a la vez (peso, trazo y
@@ -19,6 +20,7 @@ import {
   IconArrowsLeftRight,
   IconCalendarStats,
   IconLayoutDashboard,
+  IconMap,
   IconTags,
   IconWallet,
 } from '@tabler/icons-react'
@@ -26,12 +28,25 @@ import { AvisoInvitado } from './Cuenta/AvisoInvitado'
 import { CuentaMenu } from './Cuenta/CuentaMenu'
 import styles from './Navbar.module.css'
 
-const ENLACES = [
+const ENLACES_PATRIMONIO = [
   { href: '/', label: 'Inicio', icon: IconLayoutDashboard },
   { href: '/Planificacion', label: 'Planificación', icon: IconCalendarStats },
   { href: '/Categorias', label: 'Categorías', icon: IconTags },
   { href: '/Movimientos', label: 'Movimientos', icon: IconArrowsLeftRight },
 ]
+
+const ENLACES_HEROE = [{ href: '/CaminoHeroe', label: 'Mundos', icon: IconMap }]
+
+/**
+ * Los enlaces son los del MÓDULO en el que estás (el menú lateral cambia de
+ * módulo). Con las secciones de los dos a la vez, "Mundos" y "Movimientos"
+ * parecerían partes de lo mismo.
+ */
+export function enlacesDe(pathname: string) {
+  return pathname === '/CaminoHeroe' || pathname.startsWith('/CaminoHeroe/')
+    ? ENLACES_HEROE
+    : ENLACES_PATRIMONIO
+}
 
 export function Navbar() {
   const pathname = usePathname()
@@ -48,7 +63,7 @@ export function Navbar() {
           </Link>
 
           <div className={styles.links}>
-            {ENLACES.map(({ href, label, icon: Icono }) => {
+            {enlacesDe(pathname).map(({ href, label, icon: Icono }) => {
               // `startsWith` y no igualdad: /Movimientos/Create también debe
               // marcar Movimientos como sección activa.
               //

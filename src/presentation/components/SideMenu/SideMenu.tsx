@@ -20,6 +20,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import type { Route } from 'next'
 import { IconArrowRight, IconLock, IconPigMoney, IconSword, IconWallet } from '@tabler/icons-react'
 import type { Icon } from '@tabler/icons-react'
@@ -45,9 +46,23 @@ const MODULOS: Modulo[] = [
   {
     label: 'Camino del héroe',
     icon: IconSword,
-    disponible: false,
+    disponible: true,
+    href: '/CaminoHeroe',
   },
 ]
+
+/**
+ * El módulo de la pantalla actual: el que tenga la ruta más larga que sea
+ * prefijo de la actual. Gestión de patrimonio vive en la raíz y por eso se
+ * queda con todo lo que no sea de otro módulo (Inicio, Movimientos…).
+ */
+export function moduloActivo(pathname: string | null): string | undefined {
+  const ruta = pathname ?? '/'
+  return MODULOS.filter(
+    (m): m is Extract<Modulo, { disponible: true }> =>
+      m.disponible && (m.href === '/' || ruta === m.href || ruta.startsWith(`${m.href}/`)),
+  ).sort((a, b) => b.href.length - a.href.length)[0]?.label
+}
 
 /**
  * Cuánto espera a cerrarse después de que el ratón salga.
@@ -112,6 +127,7 @@ export function SideMenu() {
   // de teclado (Enter) no pasa por `pointerdown` y llega aquí como null.
   const punteroPulsado = useRef<string | null>(null)
   const panelId = useId()
+  const activo = moduloActivo(usePathname())
 
   const cancelarCierre = () => {
     if (temporizador.current) clearTimeout(temporizador.current)
@@ -251,10 +267,7 @@ export function SideMenu() {
                   {modulo.disponible ? (
                     <EnlaceModulo
                       modulo={modulo}
-                      // Mientras sea el único módulo, toda pantalla es suya.
-                      // Cuando llegue el segundo, sus rutas irán bajo su propio
-                      // prefijo y esto pasará a mirar `usePathname()`.
-                      activo
+                      activo={modulo.label === activo}
                       alElegir={() => setAbierto(false)}
                     />
                   ) : (

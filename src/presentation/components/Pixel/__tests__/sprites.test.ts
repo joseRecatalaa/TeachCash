@@ -13,11 +13,18 @@ const esSprite = (v: unknown): v is Sprite =>
   typeof v === 'object' && v !== null && 'filas' in v && Array.isArray((v as Sprite).filas)
 
 const DEL_MUNDO = new Set(['NUBE', 'PINO'])
+const DEL_CAMINO = new Set(['HUCHA', 'ESCUDO', 'MONTANA', 'TARJETA', 'LIBRO', 'MANDO', 'MONSTRUO', 'CANDADO', 'ESTRELLA'])
+
+const paletaDe = (nombre: string): Paleta => {
+  if (DEL_MUNDO.has(nombre)) return sprites.PALETA_MUNDO
+  if (DEL_CAMINO.has(nombre)) return sprites.PALETA_CAMINO
+  return sprites.PALETA_HEROE
+}
 
 const todos = Object.entries(sprites).filter((e): e is [string, Sprite] => esSprite(e[1]))
 
 describe.each(todos)('%s', (nombre, sprite) => {
-  const paleta: Paleta = DEL_MUNDO.has(nombre) ? sprites.PALETA_MUNDO : sprites.PALETA_HEROE
+  const paleta = paletaDe(nombre)
 
   test('todas sus filas miden lo mismo', () => {
     const anchos = new Set(sprite.filas.map((f) => f.length))

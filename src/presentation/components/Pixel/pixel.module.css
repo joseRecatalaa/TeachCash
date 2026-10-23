@@ -159,3 +159,56 @@
     translate: 0 -1px;
   }
 }
+
+/* ── El Camino del héroe ───────────────────────────────────────────────────
+ *
+ * Los colores de los decorados del mapa y de los nodos del camino. Como los
+ * del héroe, son de UNA ilustración y no cambian con el tema: cada mundo se
+ * reconoce por su dibujo y su nombre, y el color solo lo refuerza. Lo único
+ * que se adapta es la estrella vacía, que tiene que leerse sobre el papel
+ * claro y sobre el oscuro.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paletaCamino {
+  --px-contorno: #2b1a10;
+  --px-blanco: #ffffff;
+  --px-moneda: #f0b429;
+  --px-moneda-sombra: #c98d10;
+  --px-hucha: #f4a3b5;
+  --px-hucha-sombra: #d97a92;
+  --px-hucha-luz: #fbd0da;
+  --px-escudo: #5b8bd6;
+  --px-escudo-sombra: #3c67ab;
+  --px-escudo-luz: #a9c6f0;
+  --px-corazon: #e5484d;
+  --px-corazon-luz: #f7a1a3;
+  --px-roca: #b7bdb5;
+  --px-roca-sombra: #8f978d;
+  --px-cumbre: #ffffff;
+  --px-grafica: #2f9e5b;
+  --px-bandera: #e5484d;
+  --px-tarjeta: #8a6cd1;
+  --px-tarjeta-sombra: #6249a8;
+  --px-tarjeta-luz: #c2b0ee;
+  --px-banda: #2b1a10;
+  --px-metal: #d4dde0;
+  --px-metal-sombra: #7f8d93;
+  --px-monstruo: #9b5de5;
+  --px-monstruo-sombra: #6f3cb3;
+  --px-cuerno: #f3e3c3;
+  --px-mando: #5c6670;
+  --px-boton: #e5484d;
+  --px-linea: #b9b2a3;
+  --px-estrella: #f0b429;
+  --px-estrella-vacia: #e2ddd0;
+  --px-suelo: #a2c99e;
+  --px-suelo-luz: #c3dfbf;
+  --px-suelo-sombra: #86b083;
+}
+
+:global(:root[data-mantine-color-scheme='dark']) .paletaCamino {
+  --px-estrella-vacia: #3a3f47;
+  --px-suelo: #3a5a3e;
+  --px-suelo-luz: #4b6b4f;
+  --px-suelo-sombra: #2f4b33;
+}

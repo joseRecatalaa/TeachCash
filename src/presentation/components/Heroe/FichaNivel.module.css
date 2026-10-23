@@ -1,0 +1,43 @@
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sd-ink-muted);
+}
+
+.dato,
+.marca,
+.bloqueado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.descripcion {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.marca,
+.bloqueado {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+.bloqueado {
+  color: var(--sd-ink-muted);
+}

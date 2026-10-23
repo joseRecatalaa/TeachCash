@@ -19,6 +19,7 @@
  * pintar exactamente lo mismo o React avisa de un desajuste de hidratación.
  */
 
+import { circulo } from '../Pixel/geometria'
 import { PixelHero } from '../Pixel/PixelHero'
 import { PixelSprite } from '../Pixel/PixelSprite'
 import { BILLETE, DESTELLO, NUBE, PALETA_HEROE, PALETA_MUNDO, PINO } from '../Pixel/sprites'
@@ -90,15 +91,6 @@ const colinaCerca = lomas([
 ])
 
 const PINOS = [6, 22, 136, 150, 160].map((x) => ({ x, y: SUELO - colinaLejos(x + 4) - 12 }))
-
-function circulo(cx: number, cy: number, r: number): string {
-  let d = ''
-  for (let dy = -r; dy <= r; dy++) {
-    const m = Math.round(Math.sqrt(r * r - dy * dy))
-    d += `M${cx - m} ${cy + dy}h${m * 2 + 1}v1h-${m * 2 + 1}z`
-  }
-  return d
-}
 
 /** Las mismas posiciones en claro y en oscuro; en claro se pintan transparentes. */
 const ESTRELLAS = [

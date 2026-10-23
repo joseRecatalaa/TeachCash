@@ -306,3 +306,204 @@ export const PINO: Sprite = {
     '....t....',
   ],
 }
+
+/* ── El Camino del héroe ───────────────────────────────────────────────────
+ *
+ * Los decorados del mapa (uno por mundo) y los iconos de los nodos del
+ * camino. Usan `PALETA_CAMINO`, cuyos colores declara `.paletaCamino` en
+ * `pixel.module.css`.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export const PALETA_CAMINO: Paleta = {
+  o: 'contorno',
+  w: 'blanco',
+  y: 'moneda',
+  Y: 'moneda-sombra',
+  p: 'hucha',
+  P: 'hucha-sombra',
+  l: 'hucha-luz',
+  b: 'escudo',
+  B: 'escudo-sombra',
+  e: 'escudo-luz',
+  h: 'corazon',
+  H: 'corazon-luz',
+  m: 'roca',
+  M: 'roca-sombra',
+  n: 'cumbre',
+  g: 'grafica',
+  f: 'bandera',
+  t: 'tarjeta',
+  T: 'tarjeta-sombra',
+  u: 'tarjeta-luz',
+  k: 'banda',
+  x: 'metal',
+  X: 'metal-sombra',
+  q: 'monstruo',
+  Q: 'monstruo-sombra',
+  c: 'cuerno',
+  a: 'mando',
+  r: 'boton',
+  d: 'linea',
+  s: 'estrella',
+}
+
+/** La misma estrella, vacía: la que aún no se ha ganado. */
+export const PALETA_ESTRELLA_VACIA: Paleta = { o: 'contorno', s: 'estrella-vacia' }
+
+/** Ahorro: una hucha con su moneda entrando por la ranura. */
+export const HUCHA: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '.......oooo.........',
+    '......oyyYYo........',
+    '......oyyYYo........',
+    '.......oooo.........',
+    '....oooooooooo.oo...',
+    '..oollllllllllooPo..',
+    '.olllllloooollllllo.',
+    'opppppppppppppppopo.',
+    'oppppppppppppppppooo',
+    'oPppppppppppppppoPPo',
+    '.oPPppppppppppppoPPo',
+    '..oPPPPPPPPPPPPPooo.',
+    '..oPPooooooooPPo....',
+    '..oPPo......oPPo....',
+    '..oooo......oooo....',
+  ],
+}
+
+/** Salud financiera: un escudo con un corazón. */
+export const ESCUDO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '..oooooooooooooo..',
+    '.obbbbbbbbbbbbbBo.',
+    '.obeebbbbbbbbbbBo.',
+    '.obebbhhbbbhhbbBo.',
+    '.obbbhHhhbhhhhbBo.',
+    '.obbbhhhhhhhhhbBo.',
+    '.obbbhhhhhhhhhbBo.',
+    '.obbbbhhhhhhhbbBo.',
+    '.obbbbbhhhhhbbbBo.',
+    '..obbbbbhhhbbbBo..',
+    '..obbbbbbhbbbbBo..',
+    '...obbbbbbbbbBo...',
+    '....obbbbbbbBo....',
+    '.....obbbbbBo.....',
+    '......obbbBo......',
+    '.......oBBo.......',
+    '........oo........',
+  ],
+}
+
+/** Inversión: una montaña con su bandera y una gráfica que sube por la ladera. */
+export const MONTANA: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '..........offf........',
+    '..........offff.......',
+    '..........offf........',
+    '..........o...........',
+    '.........ono..........',
+    '........onnno.........',
+    '.......onnnnno........',
+    '......onnmnnMgo.......',
+    '.....ommmmmggMmo......',
+    '....ommmmggmMMMmo.....',
+    '...ommmggmmmMMMMmo....',
+    '..ommggmmmmmMMMMMmo...',
+    '.omggmmmmmmmMMMMMMmo..',
+    'ooooooooooooooooooooo.',
+  ],
+}
+
+/** Deuda y crédito: una tarjeta, con su banda y su chip. */
+export const TARJETA: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '.oooooooooooooooooooo.',
+    'otttttttttttttttttttTo',
+    'otuutttttttttttttttTTo',
+    'okkkkkkkkkkkkkkkkkkkko',
+    'okkkkkkkkkkkkkkkkkkkko',
+    'otttttttttttttttttttTo',
+    'ottxxxxtttttttttttttTo',
+    'ottxXXxtttttttttttttTo',
+    'ottxxxxtttttttttttttTo',
+    'otttttttttttttttttttTo',
+    'ottwwwtwwwtwwwttttttTo',
+    'oTTTTTTTTTTTTTTTTTTTTo',
+    '.oooooooooooooooooooo.',
+  ],
+}
+
+/** Nodo de lectura: un libro abierto. */
+export const LIBRO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '.ooo..ooo.',
+    'owwwoowwwo',
+    'oddwooddwo',
+    'owwwoowwwo',
+    'oddwooddwo',
+    'owwwoowwwo',
+    '.oooooooo.',
+  ],
+}
+
+/** Nodo interactivo: un mando, porque se juega. */
+export const MANDO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '.oooooooooo.',
+    'oaawaaaaraao',
+    'oawwwaaraaro',
+    'oaawaaaaraao',
+    'oaaao..oaaao',
+    '.ooo....ooo.',
+  ],
+}
+
+/** Nodo de jefe: el monstruo del mundo. Más grande que los demás a propósito. */
+export const MONSTRUO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '..oo............oo..',
+    '..oco..........oco..',
+    '...oco.oooooo.oco...',
+    '....oooqqqqqqooo....',
+    '...oqqqqqqqqqqqqo...',
+    '..oqqwwoqqqqwwoqqo..',
+    '..oqqwooqqqqwooqqo..',
+    '.oqqqqqqqqqqqqqqqqo.',
+    '.oqqoooooooooooqqqo.',
+    '.oqqowowowowowoqqqo.',
+    '.oqqqoooooooooqqqqo.',
+    '.oQqqqqqqqqqqqqqqQo.',
+    '..oQQqqqqqqqqqqQQo..',
+    '...oQQQQQQQQQQQQo...',
+    '...oQQo......oQQo...',
+    '...oooo......oooo...',
+  ],
+}
+
+/** Un nivel bloqueado. */
+export const CANDADO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['..ooo..', '.o...o.', '.o...o.', 'ooooooo', 'oxxxxxo', 'oxxoxxo', 'oxxxxxo', 'ooooooo'],
+}
+
+/** Las estrellas de un nivel. La vacía es la misma con `PALETA_ESTRELLA_VACIA`. */
+export const ESTRELLA: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['...o...', '..oso..', 'oosssoo', '.ossso.', '.ososo.', 'oso.oso', 'oo...oo'],
+}
