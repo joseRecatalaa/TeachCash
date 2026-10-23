@@ -14,6 +14,7 @@
 
 import { z } from 'zod'
 import { daysBetween, isCivilDate, isPeriod } from '@/lib/dates'
+import { LEVEL_ID, SLUG } from '@/src/types/heroe.types'
 import { NOT_FOUND, RepositoryError, type ListParams } from '@/src/infrastructure/repositories'
 import {
   BUSQUEDA_MAX,
@@ -103,3 +104,15 @@ export const validarPeriodo = (periodo: unknown): string =>
 
 export const validarMeses = (meses: unknown): number =>
   validar(MesesSchema, meses, 'Número de meses no válido')
+
+/**
+ * Los ids del Camino del héroe no son UUID sino rutas legibles del contenido
+ * (`ahorro/02-interes`). Uno con otra forma no existe: "No encontrado", como
+ * cualquier id que no casa.
+ */
+const LevelIdSchema = z.string().max(ID_MAX).regex(LEVEL_ID)
+const MundoIdSchema = z.string().max(ID_MAX).regex(SLUG)
+
+export const validarLevelId = (id: unknown): string => validar(LevelIdSchema, id, NOT_FOUND)
+
+export const validarMundoId = (id: unknown): string => validar(MundoIdSchema, id, NOT_FOUND)

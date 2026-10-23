@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { eq } from 'drizzle-orm'
 import { createTestDb, crearUsuario, USER_A, USER_B, type TestDb } from '@/db/testing'
-import { categories, transactions } from '@/db/schema'
+import { categories, heroProgress, transactions } from '@/db/schema'
 
 let ctx: TestDb
 
@@ -282,6 +282,17 @@ describe('RLS', () => {
     })
   })
 
+  test('el progreso del héroe: cada uno ve solo el suyo', async () => {
+    // Sin `id` propio (la clave es usuario + nivel), por eso no va en TABLAS.
+    await ctx.db.insert(heroProgress).values([
+      { userId: USER_A, levelId: 'ahorro/01', stars: 3 },
+      { userId: USER_B, levelId: 'ahorro/01', stars: 1 },
+    ])
+    await comoUsuario('authenticated', USER_A)
+    const { rows } = await ctx.pg.query<{ stars: number }>('select stars from hero_progress')
+    expect(rows).toEqual([{ stars: 3 }])
+  })
+
   test('no se puede insertar a nombre de otro', async () => {
     await comoUsuario('authenticated', USER_A)
     await esperarSqlstate(
@@ -325,7 +336,7 @@ describe('catálogo: toda tabla de datos es de un usuario', () => {
       order by c.relname
     `)
 
-    expect(rows.map((r) => r.tabla)).toEqual(['categories', 'profiles', 'transactions'])
+    expect(rows.map((r) => r.tabla)).toEqual(['categories', 'hero_progress', 'profiles', 'transactions'])
     // Todas a la vez: si una falla, el diff dice cuál.
     expect(rows).toEqual(rows.map((r) => ({ ...r, rls: true, cascada: true })))
   })

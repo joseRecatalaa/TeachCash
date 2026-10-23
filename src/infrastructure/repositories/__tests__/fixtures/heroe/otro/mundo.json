@@ -1,0 +1,10 @@
+{
+  "id": "otro",
+  "titulo": "Otro mundo",
+  "descripcion": "Va antes en el mapa.",
+  "decorado": "escudo",
+  "orden": 2,
+  "niveles": [
+    "01-jefe"
+  ]
+}
