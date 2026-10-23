@@ -1,0 +1,161 @@
+/*
+ * El héroe a píxel: su paleta y sus poses. Lo usan la pantalla de carga y el
+ * Camino del héroe (`PixelHero.tsx`).
+ *
+ * Los `--px-*` de aquí NO son paleta de sistema y por eso no están en
+ * `app/globals.css`: son los colores de UNA ilustración, y el héroe no cambia
+ * con el tema. El mundo que lo rodea sí cambia, y su paleta vive en el módulo
+ * de cada escena. Lo único del héroe que depende del tema es su sombra en el
+ * suelo, que tiene que leerse sobre el césped claro y sobre el oscuro.
+ *
+ * Como en toda la escena, todo se mueve A SALTOS con `steps()`: un sprite que
+ * se desliza medio píxel deja de ser un sprite.
+ */
+
+/* Para quien pinte sprites del héroe fuera de `PixelHero` (el billete del
+   splash, los destellos): basta con poner esta clase en un antepasado. */
+.paleta {
+  --px-contorno: #2b1a10;
+  --px-pelo: #9a6134;
+  --px-pelo-luz: #c08a4e;
+  --px-pelo-sombra: #68411f;
+  --px-piel: #f7c9a4;
+  --px-piel-sombra: #e3a87f;
+  --px-blanco: #ffffff;
+  --px-iris: #7a4a24;
+  --px-rubor: #f08a72;
+  --px-boca: #63301f;
+  --px-lengua: #e8697a;
+  --px-camisola: #f0b429;
+  --px-camisola-sombra: #c98d10;
+  --px-cuero: #7a4a28;
+  --px-cuero-sombra: #553218;
+  --px-cuero-luz: #9a6640;
+  --px-cuero-tira: #6b3f22;
+  --px-salvia: #c6d8c0;
+  --px-salvia-sombra: #93ab8c;
+  --px-salvia-luz: #eef5ea;
+  --px-metal: #d4dde0;
+  --px-metal-sombra: #7f8d93;
+  --px-pantalon: #2f5d46;
+  --px-pantalon-sombra: #1f4132;
+  --px-bota: #5b3720;
+  --px-billete: #3f9a5f;
+  --px-billete-sombra: #24653d;
+  --px-billete-luz: #8fd3a2;
+  --px-billete-papel: #eaf6e4;
+  --px-destello: #ffd45e;
+  --px-sombra-heroe: rgb(40 60 42 / 22%);
+}
+
+:global(:root[data-mantine-color-scheme='dark']) .paleta {
+  --px-sombra-heroe: rgb(0 0 0 / 35%);
+}
+
+/* La sombra usa la de la escena si la declara (la del splash va con su
+   mundo); si no, la suya. */
+.sombra {
+  fill: var(--px-sombra, var(--px-sombra-heroe));
+}
+
+/* ── Las poses ─────────────────────────────────────────────────────────────
+ *
+ * El estado SIN animar es el que se ve con el movimiento reducido, y tiene que
+ * ser una pose entera: el héroe que camina se queda de pie, no congelado con
+ * un pie en el aire.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paso1,
+.paso2,
+.ojosArriba,
+.lleva {
+  opacity: 0;
+}
+
+/* Quieto y celebrando, respira: el torso baja un píxel y las botas se quedan
+   clavadas. Solo hacia ABAJO, para que no se abra hueco con las piernas. */
+.respira {
+  animation: px-respira 0.9s steps(1, end) infinite;
+}
+@keyframes px-respira {
+  0% {
+    translate: 0 0;
+  }
+  50%,
+  100% {
+    translate: 0 1px;
+  }
+}
+
+/* Celebra: el billete en alto, que es el "¡objeto conseguido!" de siempre. */
+.heroe[data-pose='celebra'] .lleva {
+  opacity: 1;
+}
+.heroe[data-pose='celebra'] .brazoIzq {
+  opacity: 0;
+}
+
+/* Camina: los dos pasos se alternan cada 0,175 s y los brazos se balancean a
+   contrapié, un píxel. Andando no respira: el balanceo ya lo hace parecer
+   vivo, y los dos a la vez lo hacen temblar. */
+.heroe[data-pose='camina'] .respira {
+  animation: none;
+}
+.heroe[data-pose='camina'] .piernas {
+  animation: px-oculta 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .paso1 {
+  animation: px-paso-a 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .paso2 {
+  animation: px-paso-b 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .brazoIzq {
+  animation: px-brazo-b 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .brazoDer {
+  animation: px-brazo-a 0.35s steps(1, end) infinite;
+}
+
+@keyframes px-oculta {
+  0%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes px-paso-a {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes px-paso-b {
+  0% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes px-brazo-a {
+  0% {
+    translate: 0 -1px;
+  }
+  50%,
+  100% {
+    translate: 0 0;
+  }
+}
+@keyframes px-brazo-b {
+  0% {
+    translate: 0 0;
+  }
+  50%,
+  100% {
+    translate: 0 -1px;
+  }
+}

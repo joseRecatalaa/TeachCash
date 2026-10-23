@@ -1,11 +1,13 @@
 /*
- * Los sprites de la pantalla de carga, dibujados a píxel.
+ * Los sprites a píxel: el héroe y su mundo. Los comparten la pantalla de carga
+ * y el Camino del héroe.
  *
  * CÓMO SE LEEN
  *
  * Cada sprite es una lista de filas y cada carácter es UN píxel; el punto es
  * transparente. La letra no es un color sino una clave de la paleta de abajo,
- * que la traduce a una variable `--px-*` de `Splash.module.css`. Así el dibujo
+ * que la traduce a una variable `--px-*`: la del héroe, en `pixel.module.css`;
+ * la del mundo, en el módulo de cada escena (hoy, `Splash.module.css`). Así el dibujo
  * se puede editar a ojo aquí mismo, y el color —también el del modo oscuro—
  * sigue viviendo en el CSS, como en el resto de la aplicación.
  *
@@ -15,7 +17,7 @@
  *
  * El héroe es el mismo de siempre —pelo castaño revuelto, camiseta amarilla,
  * chaleco de cuero, hombreras salvia, bandolera y cinturón con hebilla—
- * redibujado de cuerpo entero para el futuro Camino del héroe. Si lo retocas,
+ * redibujado de cuerpo entero para el Camino del héroe. Si lo retocas,
  * mira que el contorno siga cerrado: es lo que lo separa del fondo.
  */
 
@@ -90,6 +92,55 @@ export const PIERNAS: Sprite = {
     'oBBBBBBBBooBBBBBBBBo',
     'oBBBBBBBVooVBBBBBBBo',
     'oooooooooooooooooooo',
+  ],
+}
+
+/*
+ * Los dos fotogramas de caminar: el mismo par de piernas con UNA bota
+ * levantada dos píxeles. El héroe está de frente, así que no da pasos de
+ * perfil; levantar un pie y luego el otro es como caminan los personajes de
+ * frente en los juegos de 16 bits. Se alternan por opacidad en
+ * `pixel.module.css`, con la misma raya central que `PIERNAS` para que el
+ * contorno siga cerrado.
+ */
+
+/** Paso con la bota izquierda (la de la izquierda de la pantalla) en el aire. */
+export const PIERNAS_PASO_1: Sprite = {
+  x: 6,
+  y: 32,
+  filas: [
+    '..oppppppppppppPPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoopppppPo..',
+    '..onnnnnnoopppppPo..',
+    '..oBBBBBBoopppppPo..',
+    'oBBBBBBBBoonnnnnno..',
+    'oBBBBBBBVooBBBBBBo..',
+    'oooooooooooBBBBBBBBo',
+    '..........oVBBBBBBBo',
+    '..........oooooooooo',
+  ],
+}
+
+/** El otro paso: la bota derecha en el aire. */
+export const PIERNAS_PASO_2: Sprite = {
+  x: 6,
+  y: 32,
+  filas: [
+    '..oppppppppppppPPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoopppppPo..',
+    '..opppppPoonnnnnno..',
+    '..opppppPooBBBBBBo..',
+    '..onnnnnnooBBBBBBBBo',
+    '..oBBBBBBooVBBBBBBBo',
+    'oBBBBBBBBooooooooooo',
+    'oBBBBBBBVo..........',
+    'oooooooooo..........',
   ],
 }
 

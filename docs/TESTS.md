@@ -17,7 +17,7 @@ usuario no se ven, y en una aplicación de dinero parecen datos.
 | `pnpm test:coverage` | La suite con cobertura y los umbrales por fichero (§4) | Nada. Informe en `coverage/index.html` |
 | `pnpm test:e2e` | Playwright: 5 flujos sobre el build de producción y un Supabase de pruebas | `.env.e2e` (ver §2.4) |
 | `pnpm test:e2e:ui` | Lo mismo, con la interfaz de Playwright para depurar paso a paso | `.env.e2e` |
-| `pnpm test:e2e:visual` | La regresión visual de Inicio (escritorio y móvil). La primera vez, con `--update-snapshots` | `.env.e2e` |
+| `pnpm test:e2e:visual` | La regresión visual de Inicio y de la pantalla de carga (escritorio y móvil). La primera vez, con `--update-snapshots` | `.env.e2e` |
 
 Antes de dar algo por terminado:
 
@@ -226,6 +226,7 @@ silencio:
 | `categorias.spec.ts` | Un movimiento en una categoría nueva aparece al filtrar por ella (con dos categorías, para que un filtro que no filtra no pase) y lleva su color |
 | `tipografia.spec.ts` | Nunito en el texto, Fredoka en los titulares y Geist Mono en el dinero |
 | `visual.spec.ts` | Captura de Inicio en escritorio y móvil (opt-in) |
+| `splash.visual.spec.ts` | Captura de la pantalla de carga con el reloj congelado: vigila que el héroe de `components/Pixel/`, compartido con el Camino del héroe, no cambie el splash (opt-in) |
 
 ## 4. Coverage por niveles (100 / 80 / 0)
 

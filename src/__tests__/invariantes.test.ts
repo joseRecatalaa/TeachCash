@@ -108,7 +108,10 @@ describe('sistema de diseño: el color sale de un token', () => {
    * Excepción: los colores de UNA ilustración, declarados como variables
    * locales con su explicación en el propio fichero.
    */
-  const ILUSTRACIONES = new Set(['src/presentation/components/Splash/Splash.module.css'])
+  const ILUSTRACIONES = new Set([
+    'src/presentation/components/Splash/Splash.module.css',
+    'src/presentation/components/Pixel/pixel.module.css',
+  ])
 
   const modulos = [...ficheros('src', '.module.css'), ...ficheros('app', '.module.css')]
 

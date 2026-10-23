@@ -20,15 +20,16 @@
  * sosteniendo el billete. Una barra que va por su cuenta se nota enseguida.
  *
  * El aspecto es de videojuego de 16 bits a propósito: es la puerta del Camino
- * del héroe, que será un recorrido por mundos con este mismo personaje. Los
- * sprites están en `sprites.ts` y la escena en `PixelScene.tsx`.
+ * del héroe, un recorrido por mundos con este mismo personaje. El héroe y sus
+ * sprites están en `components/Pixel/` y la escena en `PixelScene.tsx`.
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
+import { PixelSprite } from '../Pixel/PixelSprite'
+import pixel from '../Pixel/pixel.module.css'
+import { BILLETE, PALETA_HEROE } from '../Pixel/sprites'
 import { PixelScene } from './PixelScene'
-import { BILLETE, PALETA_HEROE } from './sprites'
-import { PixelSprite } from './PixelSprite'
 import styles from './Splash.module.css'
 
 /** El ciclo completo, del primer fotograma al velo blanco. */
@@ -236,7 +237,9 @@ export function SplashScreen() {
 
   return (
     <div
-      className={`${styles.raiz} ${saliendo ? styles.saliendo : ''}`}
+      // La paleta del héroe va en la raíz: el billete del rótulo y el que
+      // flota en la escena también la usan.
+      className={`${styles.raiz} ${pixel.paleta} ${saliendo ? styles.saliendo : ''}`}
       style={{ '--t': `${ciclo}ms` } as React.CSSProperties}
     >
       <PixelScene />
