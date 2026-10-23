@@ -16,19 +16,23 @@
  * tiene que poder cortarse.
  *
  * El porcentaje NO es una medida de nada real —no hay nada que medir— pero sí
- * está sincronizado con la animación: llega al 100 % justo cuando el personaje
- * levanta el pulgar. Una barra que va por su cuenta se nota enseguida.
+ * está sincronizado con la animación: llega al 100 % con el personaje ya
+ * sosteniendo el billete. Una barra que va por su cuenta se nota enseguida.
+ *
+ * El aspecto es de videojuego de 16 bits a propósito: es la puerta del Camino
+ * del héroe, que será un recorrido por mundos con este mismo personaje. Los
+ * sprites están en `sprites.ts` y la escena en `PixelScene.tsx`.
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
-import { Bill3D, PencilBill } from './Bill3D'
-import { HeroCharacter } from './HeroCharacter'
-import { PencilBackdrop } from './PencilBackdrop'
+import { PixelScene } from './PixelScene'
+import { BILLETE, PALETA_HEROE } from './sprites'
+import { PixelSprite } from './PixelSprite'
 import styles from './Splash.module.css'
 
 /** El ciclo completo, del primer fotograma al velo blanco. */
-const CICLO_MS = 4200
+const CICLO_MS = 4800
 
 /**
  * Con el movimiento reducido, `globals.css` anula la duración de TODA
@@ -47,7 +51,7 @@ const CICLO_REDUCIDO_MS = 900
 const SALIDA_MS = 420
 
 /**
- * La barra llega al 100 % en el 70 % del ciclo, que es cuando el pulgar sube.
+ * La barra llega al 100 % en el 70 % del ciclo, con el billete ya en alto.
  * El 30 % restante es la pose sostenida y el velo.
  */
 const TRAMO_BARRA = 0.7
@@ -127,12 +131,19 @@ function useMovimientoReducido(): boolean {
   )
 }
 
+/**
+ * Con tres puntos y no con "…": la tipografía de píxel no trae la elipsis y
+ * el navegador la pintaría con otra fuente, que en una línea de 8 bits canta.
+ */
 function mensaje(fase: number): string {
-  if (fase < 0.25) return 'Abriendo el cuaderno…'
-  if (fase < 0.47) return 'Contando billetes…'
-  if (fase < TRAMO_BARRA) return 'Cuadrando las cuentas…'
-  return '¡Todo listo!'
+  if (fase < 0.24) return 'Cargando el mundo...'
+  if (fase < 0.4) return 'Buscando billetes...'
+  if (fase < TRAMO_BARRA) return 'Cuadrando cuentas...'
+  return 'Listo'
 }
+
+/** Los bloques de la barra. 20 hace que cada uno valga un 5 % redondo. */
+const BLOQUES = 20
 
 export function SplashScreen() {
   const [visible, setVisible] = useState(true)
@@ -179,7 +190,7 @@ export function SplashScreen() {
      * El CSS empieza a correr en cuanto se pinta el elemento; este efecto no
      * corre hasta que React hidrata, y entre una cosa y otra puede haber medio
      * segundo largo en la primera carga. Con dos relojes distintos, el
-     * personaje llega a levantar el pulgar con la barra por la mitad. Leyendo
+     * personaje llega a coger el billete con la barra por la mitad. Leyendo
      * `currentTime` del velo —que anima el ciclo entero— van siempre a la vez.
      *
      * `getAnimations` puede no devolver nada (movimiento reducido, o el
@@ -221,57 +232,40 @@ export function SplashScreen() {
     window.setTimeout(() => setVisible(false), SALIDA_MS)
   }
 
+  const llenos = Math.floor((pct / 100) * BLOQUES)
+
   return (
     <div
       className={`${styles.raiz} ${saliendo ? styles.saliendo : ''}`}
       style={{ '--t': `${ciclo}ms` } as React.CSSProperties}
     >
-      <PencilBackdrop />
+      <PixelScene />
 
-      <div className={styles.escenaWrap}>
-        <div className={styles.escena}>
-          <PencilBill />
-          <Bill3D />
-          <HeroCharacter />
-        </div>
-      </div>
-
-      <div className={styles.fundido} />
-
-      <div className={styles.marca}>
-        <span className={styles.marcador}>
-          <svg viewBox="0 0 44 44" aria-hidden="true">
-            <path
-              d="M27,12 q-13,-6 -17,10 q-4,15 2,22 q7,8 16,3"
-              fill="none"
-              stroke="var(--sd-accent-ink)"
-              strokeWidth={4.4}
-              strokeLinecap="round"
-            />
-            <path
-              d="M8,20 h18 M8,28 h16"
-              fill="none"
-              stroke="var(--sd-accent-ink)"
-              strokeWidth={4.4}
-              strokeLinecap="round"
-            />
-          </svg>
-        </span>
+      <div className={`${styles.caja} ${styles.marca}`}>
+        <svg
+          className={styles.marcador}
+          viewBox="-5 -10 20 12"
+          shapeRendering="crispEdges"
+          aria-hidden="true"
+        >
+          <PixelSprite sprite={BILLETE} paleta={PALETA_HEROE} />
+        </svg>
         <span>
           <p className={styles.nombre}>Gestor de Finanzas</p>
           <p className={styles.lema}>Tus cuentas, en limpio</p>
         </span>
       </div>
 
-      <button type="button" className={styles.saltar} onClick={saltar}>
-        Saltar
-      </button>
-
-      <div className={styles.panel}>
-        <p className={styles.estado} aria-live="polite">
-          <span className={`${styles.punto} ${pct >= 100 ? styles.puntoFin : ''}`} />
-          <b>{mensaje(fase)}</b>
-        </p>
+      <div className={`${styles.caja} ${styles.panel}`}>
+        <div className={styles.cabeceraPanel}>
+          <p className={styles.estado} aria-live="polite">
+            <span className={`${styles.cursor} ${pct >= 100 ? styles.cursorFin : ''}`} />
+            {mensaje(fase)}
+          </p>
+          <button type="button" className={styles.saltar} onClick={saltar}>
+            Saltar »
+          </button>
+        </div>
         <div className={styles.fila}>
           <div
             className={styles.barra}
@@ -281,9 +275,11 @@ export function SplashScreen() {
             aria-valuemax={100}
             aria-valuenow={pct}
           >
-            <span className={styles.relleno} style={{ width: `${pct}%` }} />
+            {Array.from({ length: BLOQUES }, (_, i) => (
+              <i key={i} className={i < llenos ? styles.lleno : undefined} />
+            ))}
           </div>
-          <span className={styles.pct}>{pct} %</span>
+          <span className={styles.pct}>{pct}%</span>
         </div>
       </div>
 

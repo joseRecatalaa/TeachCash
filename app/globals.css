@@ -158,6 +158,8 @@
     sans-serif;
   --sd-font-body: var(--font-body), system-ui, -apple-system, sans-serif;
   --sd-font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', monospace;
+  /* Solo para el mundo de píxel (pantalla de carga, Camino del héroe). */
+  --sd-font-pixel: var(--font-pixel), ui-monospace, monospace;
 
   /* El texto que va ENCIMA de un relleno saturado (botón de peligro, chapa de
      color). No es `--sd-ink-inverse`: ese sigue al modo y en oscuro es casi
