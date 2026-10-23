@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { Fredoka, Geist_Mono, Nunito } from 'next/font/google'
+import { Fredoka, Geist_Mono, Nunito, Press_Start_2P } from 'next/font/google'
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core'
 // El orden importa y no es arbitrario: las reglas dentro de `@layer` pierden
 // siempre frente a las no capadas, y varios detalles de mantine-datatable (el
@@ -35,6 +35,10 @@ import { SplashScreen } from '@/src/presentation/components/Splash/SplashScreen'
  *   - **Geist Mono** para el dinero, y esta no es una decisión estética: las
  *     cifras tienen que ser de ancho fijo para poder compararse en columna.
  *     Ninguna tipografía redondeada garantiza eso.
+ *
+ * Y una cuarta que no es del sistema sino del MUNDO de píxel: **Press Start 2P**,
+ * solo para la pantalla de carga y el Camino del héroe. No se usa para nada que
+ * haya que leer seguido; es ancha y cansa en cuanto pasa de una línea.
  */
 const display = Fredoka({
   variable: '--font-display',
@@ -43,6 +47,7 @@ const display = Fredoka({
 })
 const body = Nunito({ variable: '--font-body', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
+const pixel = Press_Start_2P({ variable: '--font-pixel', subsets: ['latin'], weight: '400' })
 
 export const metadata: Metadata = {
   title: 'TeachCash',
@@ -84,7 +89,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
     // e2e/tipografia.spec.ts.
     <html
       lang="es"
-      className={`${display.variable} ${body.variable} ${geistMono.variable}`}
+      className={`${display.variable} ${body.variable} ${geistMono.variable} ${pixel.variable}`}
       {...mantineHtmlProps}
     >
       <head>
