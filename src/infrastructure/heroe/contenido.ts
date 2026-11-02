@@ -39,12 +39,16 @@ export interface Contenido {
  * La carpeta del contenido, relativa a la raíz del proyecto (desde donde se
  * arranca `next`). `next.config.ts` la incluye en el build con
  * `outputFileTracingIncludes`: sin eso, un despliegue empaquetado no la lleva.
+ *
+ * Las lecturas de disco llevan `turbopackIgnore`: con la ruta como variable,
+ * Turbopack no sabe acotarlas y mete el proyecto ENTERO en el servidor (avisa
+ * en el build). Lo que hace falta ya lo incluye `outputFileTracingIncludes`.
  */
 export const RAIZ_CONTENIDO = path.join(process.cwd(), 'content', 'heroe')
 
 const leerJson = async (fichero: string): Promise<unknown> => {
   try {
-    return JSON.parse(await readFile(fichero, 'utf8'))
+    return JSON.parse(await readFile(/* turbopackIgnore: true */ fichero, 'utf8'))
   } catch (e) {
     throw new Error(`Contenido del héroe: ${fichero} no es un JSON válido (${(e as Error).message})`)
   }
@@ -68,7 +72,7 @@ async function cargarMundo(raiz: string, carpeta: string, niveles: Map<string, N
     throw new Error(`Contenido del héroe: ${ficheroMundo} tiene id "${mundo.id}" y está en "${carpeta}"`)
   }
 
-  const ficheros = (await readdir(dir))
+  const ficheros = (await readdir(/* turbopackIgnore: true */ dir))
     .filter((f) => f.endsWith('.json') && f !== 'mundo.json')
     .map((f) => f.slice(0, -'.json'.length))
   const sobran = ficheros.filter((f) => !mundo.niveles.includes(f))
@@ -98,7 +102,7 @@ async function cargarMundo(raiz: string, carpeta: string, niveles: Map<string, N
 
 /** Lee y valida todo el contenido de `raiz`. Lanza al primer problema. */
 export async function cargarContenido(raiz: string = RAIZ_CONTENIDO): Promise<Contenido> {
-  const carpetas = (await readdir(raiz, { withFileTypes: true }))
+  const carpetas = (await readdir(/* turbopackIgnore: true */ raiz, { withFileTypes: true }))
     .filter((d) => d.isDirectory())
     .map((d) => d.name)
     .sort()
