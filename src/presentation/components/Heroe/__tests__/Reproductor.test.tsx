@@ -170,6 +170,17 @@ describe('lectura: lo vistoso', () => {
     expect(parrafo.textContent).toBe('Es muy importante y 3 * 4 = 12.')
   })
 
+  test('los emoticonos van aparte, para pixelarlos, y siguen siendo texto', () => {
+    jugar({
+      ...VISTOSA,
+      paginas: [{ titulo: 'Con emoticonos', bloques: [{ tipo: 'lista', items: ['✅ Sí, así', '1️⃣ Primero **esto** 🚗'] }] }],
+    })
+
+    const emoticonos = [...document.querySelectorAll('[data-emoji]')].map((e) => e.textContent)
+    expect(emoticonos).toEqual(['✅', '1️⃣', '🚗'])
+    expect(screen.getByText(/Sí, así/).textContent).toBe('✅ Sí, así')
+  })
+
   test('el dato va con su encabezado y su fuente', () => {
     jugar(VISTOSA)
 

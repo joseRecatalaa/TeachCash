@@ -16,6 +16,7 @@ import type { Route } from 'next'
 import { Container, Loader } from '@mantine/core'
 import { IconArrowLeft, IconInfoCircle } from '@tabler/icons-react'
 import { EmptyState, SketchButton, SketchTitle } from '../ui'
+import { FiltroPixel } from './reproductor/Marcado'
 import styles from './PaginaHeroe.module.css'
 
 export function PaginaHeroe({
@@ -31,6 +32,7 @@ export function PaginaHeroe({
 }) {
   return (
     <Container fluid px="xl" py="xl">
+      <FiltroPixel />
       <div className={styles.pagina}>
         <header className={styles.cabecera}>
           {volver && (

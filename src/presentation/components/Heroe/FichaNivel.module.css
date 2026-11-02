@@ -1,41 +1,94 @@
+/*
+ * La ficha de un nivel. La escena a píxel va de lado a lado, sobre el verde
+ * más suave de la marca, como la ventana de un juego; lo de debajo es
+ * interfaz y usa los tokens de la aplicación.
+ */
+
+.titulo {
+  font-family: var(--sd-font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.cuerpo {
+  padding-top: 0;
+}
+
 .ficha {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 1rem;
 }
 
-.datos {
+.escena {
+  display: block;
+  width: calc(100% + 2 * var(--mb-padding, 1rem));
+  height: auto;
+  margin: 0 calc(-1 * var(--mb-padding, 1rem));
+  background: var(--sd-accent-wash-faint);
+  border-bottom: var(--sd-border);
+}
+
+.ficha[data-tipo='jefe'] .escena {
+  background: var(--sd-surface-sunken);
+}
+
+.suelo {
+  fill: var(--sd-ink-muted);
+}
+
+/* Lo que le espera al héroe flota un píxel; el monstruo, además, respira. */
+.reto {
+  animation: ficha-flota 1.4s steps(1, end) infinite;
+}
+
+.apagado {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+@keyframes ficha-flota {
+  50%,
+  100% {
+    translate: 0 -1px;
+  }
+}
+
+.chapas {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  margin: 0;
-  font-family: var(--sd-font-display);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--sd-ink-muted);
+  gap: 0.5rem;
 }
 
-.dato,
-.marca,
-.bloqueado {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+.llamada {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .descripcion {
   margin: 0;
+  font-size: 0.92rem;
   line-height: 1.5;
+  color: var(--sd-ink-muted);
 }
 
 .marca,
 .bloqueado {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   margin: 0;
   font-family: var(--sd-font-display);
   font-weight: 600;
+}
+
+.estrellas {
+  width: 4.5rem;
+  height: auto;
 }
 
 .bloqueado {

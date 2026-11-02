@@ -223,7 +223,7 @@ export function CaminoMundo({ datos }: { datos: MundoDto }) {
         </g>
       </svg>
 
-      <FichaNivel nivel={abierto} alCerrar={() => setAbierto(null)} />
+      <FichaNivel nivel={abierto} decorado={datos.mundo.decorado} alCerrar={() => setAbierto(null)} />
     </>
   )
 }
