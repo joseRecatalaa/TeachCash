@@ -3,39 +3,99 @@
   "tipo": "lectura",
   "titulo": "El fondo de emergencia",
   "descripcion": "Por qué el primer ahorro es un colchón para imprevistos, cuánto debería tener y dónde guardarlo.",
-  "minutos": 2,
+  "minutos": 3,
   "paginas": [
     {
       "titulo": "Lo inesperado siempre llega",
       "bloques": [
         {
           "tipo": "parrafo",
-          "texto": "La lavadora se rompe, el coche pasa por el taller o un mes entra menos dinero del previsto. No sabes cuándo, pero sabes que va a pasar. Un fondo de emergencia es dinero apartado SOLO para eso, para que un imprevisto no te obligue a pedir un préstamo o a tirar de la tarjeta de crédito."
+          "texto": "No sabes cuándo. Pero sabes que va a pasar."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🧺 La lavadora dice basta.",
+            "🚗 El coche pasa por el taller.",
+            "🦷 Un dentista que no esperabas.",
+            "📉 Un mes en el que entra menos dinero."
+          ]
         },
         {
           "tipo": "idea",
-          "texto": "El fondo de emergencia no es para vacaciones ni para caprichos: es lo que te permite dormir tranquilo cuando algo sale mal."
+          "texto": "Un fondo de emergencia es dinero apartado SOLO para imprevistos. Es lo que te deja dormir tranquilamente cuando algo sale mal."
         }
       ]
     },
     {
-      "titulo": "¿Cuánto debería tener?",
+      "titulo": "¿Y si no tienes colchón?",
       "bloques": [
         {
           "tipo": "parrafo",
-          "texto": "La referencia habitual es entre 3 y 6 meses de tus gastos imprescindibles: vivienda, comida, suministros, transporte y deudas. No de tus ingresos, sino de lo que necesitas para vivir. Si tu trabajo es inestable o eres autónomo, mejor acercarse a los 6 meses."
+          "texto": "Entonces el imprevisto lo paga la tarjeta de crédito o un préstamo. Y eso tiene intereses: el susto te sale más caro de lo que costaba."
         },
         {
+          "tipo": "parrafo",
+          "texto": "Con colchón, la historia cambia: pagas, respiras y lo vuelves a llenar poco a poco. Sin deberle nada a nadie."
+        }
+      ]
+    },
+    {
+      "titulo": "¿Cuánto necesitas?",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La referencia habitual: de 3 a 6 meses de tus GASTOS imprescindibles. Ojo: de tus gastos, no de tu sueldo."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🏠 Vivienda",
+            "🛒 Comida",
+            "💡 Luz, agua e internet",
+            "🚌 Transporte",
+            "💳 Cuotas de deudas"
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Trabajo estable? Apunta a 3 meses. ¿Autónomo o con ingresos que cambian cada mes? Mejor acércate a 6."
+        }
+      ]
+    },
+    {
+      "titulo": "Las cuentas de Pepito",
+      "bloques": [
+        {
           "tipo": "ejemplo",
-          "titulo": "Los gastos imprescindibles de Lucía en un mes",
+          "titulo": "Los gastos imprescindibles de Pepito en un mes",
           "filas": [
-            { "concepto": "Alquiler", "importe": -65000 },
-            { "concepto": "Comida", "importe": -30000 },
-            { "concepto": "Luz, agua e internet", "importe": -12000 },
-            { "concepto": "Transporte", "importe": -5000 },
-            { "concepto": "Total al mes", "importe": -112000 }
+            {
+              "concepto": "Alquiler",
+              "importe": -65000
+            },
+            {
+              "concepto": "Comida",
+              "importe": -30000
+            },
+            {
+              "concepto": "Luz, agua e internet",
+              "importe": -12000
+            },
+            {
+              "concepto": "Transporte",
+              "importe": -5000
+            },
+            {
+              "concepto": "Total al mes",
+              "importe": -112000
+            }
           ],
           "nota": "Con 3 meses, su fondo sería de 3.360 €; con 6 meses, de 6.720 €."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Tu meta = gastos imprescindibles de un mes × los meses que quieres cubrir."
         }
       ]
     },
@@ -44,28 +104,56 @@
       "bloques": [
         {
           "tipo": "parrafo",
-          "texto": "El fondo tiene que estar disponible en cualquier momento y no puede perder valor de golpe. Por eso no se invierte en bolsa: si el imprevisto llega el mismo mes que una caída, tendrías que vender perdiendo dinero."
+          "texto": "Tu colchón tiene que estar a mano en cualquier momento y no puede perder valor de golpe."
         },
         {
           "tipo": "lista",
           "items": [
-            "Una cuenta de ahorro o remunerada, separada de la del día a día, para no gastarlo sin darte cuenta.",
-            "En España, el Fondo de Garantía de Depósitos protege hasta 100.000 € por titular y por entidad si el banco quiebra.",
-            "Fíjate en la TAE: es el rendimiento real en un año, con comisiones y frecuencia de pago incluidas."
+            "✅ En una cuenta de ahorro o remunerada, separada de la del día a día, para no gastarlo sin darte cuenta.",
+            "✅ Protegido: en España, el Fondo de Garantía de Depósitos cubre hasta 100.000 € por titular y por entidad si el banco quiebra.",
+            "❌ En bolsa, no: si el imprevisto llega el mismo mes que una caída, tendrías que vender perdiendo dinero."
           ]
         }
       ]
     },
     {
-      "titulo": "Cómo empezar",
+      "titulo": "TAE y TIN, sin misterio",
       "bloques": [
         {
           "tipo": "parrafo",
-          "texto": "No hace falta reunirlo de golpe. Marca una cantidad fija y programa una transferencia automática el día que cobras: así ahorras antes de gastar, y no con lo que sobre a final de mes, que casi nunca es nada."
+          "texto": "Son las dos siglas que verás en cualquier cuenta remunerada."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "📄 TIN: el tipo de interés pactado, a secas.",
+            "🎯 TAE: lo que rinde de forma efectiva en un año, con comisiones y frecuencia de pago incluidas."
+          ]
         },
         {
           "tipo": "idea",
-          "texto": "Págate primero a ti: ahorra el día que cobras, no el día antes de cobrar."
+          "texto": "Para comparar dos cuentas, mira siempre la TAE."
+        }
+      ]
+    },
+    {
+      "titulo": "Empieza hoy",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "No hace falta reunirlo de golpe. Tres pasos y en marcha:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Suma tus gastos imprescindibles de un mes.",
+            "2️⃣ Multiplícalos por 3: esa es tu primera meta.",
+            "3️⃣ Programa una transferencia automática el día que cobras."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Págate primero a ti: ahorra el día que cobras, no con lo que sobre a final de mes, que casi nunca es nada."
         }
       ]
     }
@@ -87,7 +175,11 @@
       "id": "cuantos-meses",
       "tipo": "hueco",
       "enunciado": "La referencia habitual es reunir entre 3 y ___ meses de gastos imprescindibles.",
-      "opciones": ["2", "6", "24"],
+      "opciones": [
+        "2",
+        "6",
+        "24"
+      ],
       "correcta": 1,
       "explicacion": "Entre 3 y 6 meses de gastos imprescindibles. Con un trabajo estable basta con acercarse a 3; si tus ingresos varían, mejor a 6."
     },
@@ -102,9 +194,13 @@
       "id": "fgd",
       "tipo": "opcion",
       "enunciado": "¿Hasta cuánto protege el Fondo de Garantía de Depósitos tu dinero en un banco español?",
-      "opciones": ["20.000 €", "100.000 € por titular y entidad", "Todo, sin límite"],
+      "opciones": [
+        "20.000 €",
+        "100.000 € por titular y entidad",
+        "Todo, sin límite"
+      ],
       "correcta": 1,
-      "explicacion": "El Fondo de Garantía de Depósitos cubre hasta 100.000 € por titular y por entidad. Si tienes más, repartirlo entre bancos mantiene todo protegido."
+      "explicacion": "El Fondo de Garantía de Depósitos cubre hasta 100.000 € por titular y por entidad. Si tienes más, repartirlo entre entidades distintas mantiene todo protegido."
     }
   ]
 }

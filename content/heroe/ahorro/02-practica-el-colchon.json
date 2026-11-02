@@ -31,7 +31,7 @@
       "tipo": "emparejar",
       "enunciado": "Empareja cada concepto con lo que significa.",
       "pares": [
-        { "concepto": "TAE", "definicion": "Lo que rinde de verdad en un año, con comisiones incluidas" },
+        { "concepto": "TAE", "definicion": "Lo que rinde de forma efectiva en un año, con comisiones incluidas" },
         { "concepto": "TIN", "definicion": "El tipo de interés pactado, sin comisiones ni frecuencia de pago" },
         { "concepto": "FGD", "definicion": "Protege hasta 100.000 € por titular y entidad" },
         { "concepto": "Fondo de emergencia", "definicion": "Dinero apartado solo para imprevistos" }
@@ -41,7 +41,7 @@
     {
       "id": "calcula-intereses",
       "tipo": "calcula",
-      "enunciado": "Tienes 5.000 € en una cuenta remunerada al 2 % TAE. ¿Cuántos euros de intereses brutos recibirás en un año?",
+      "enunciado": "Tienes 5.000 € en una cuenta remunerada al 2 % TAE y no sacas nada en todo el año. ¿Cuántos euros de intereses brutos recibirás en un año?",
       "unidad": "euros",
       "solucion": 10000,
       "tolerancia": 0,

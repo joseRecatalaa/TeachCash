@@ -53,9 +53,9 @@
     {
       "id": "fgd-repartir",
       "tipo": "verdaderoFalso",
-      "enunciado": "Con 150.000 € en un solo banco español, el Fondo de Garantía de Depósitos lo protege todo.",
+      "enunciado": "Con 150.000 € a tu nombre en una sola entidad española, el Fondo de Garantía de Depósitos lo protege todo.",
       "correcta": false,
-      "explicacion": "Solo hasta 100.000 € por titular y entidad. Los otros 50.000 € quedarían sin cubrir; repartirlos en otro banco los protegería."
+      "explicacion": "Solo hasta 100.000 € por titular y entidad. Los otros 50.000 € quedarían sin cubrir; repartirlos en otra entidad los protegería."
     },
     {
       "id": "hueco-automatica",
@@ -89,14 +89,13 @@
     {
       "id": "ordena-prioridades",
       "tipo": "ordenar",
-      "enunciado": "Ordena de primero a último qué hacer con tu dinero cuando empiezas a ahorrar.",
+      "enunciado": "Según lo que has visto en este mundo, ordena de primero a último qué hacer con tu dinero cuando empiezas a ahorrar.",
       "pasos": [
         "Cubrir los gastos imprescindibles del mes",
         "Reunir el fondo de emergencia",
-        "Ahorrar para metas concretas, como un viaje",
         "Invertir a largo plazo lo que no vas a necesitar en años"
       ],
-      "explicacion": "Primero vivir, luego el colchón para imprevistos, después las metas y por último invertir lo que puedes dejar quieto mucho tiempo."
+      "explicacion": "Primero vivir, luego el colchón y solo después invertir lo que puedes dejar quieto mucho tiempo: si inviertes sin colchón, el primer imprevisto te obliga a vender."
     }
   ]
 }
