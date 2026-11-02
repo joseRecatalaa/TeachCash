@@ -16,6 +16,17 @@ Gestor de finanzas personales. Aplicación web para llevar las finanzas
 personales: movimientos (gastos e ingresos), categorías y una portada que
 resume el mes. Finanzas de personas, no contabilidad de empresa.
 
+Tiene **dos módulos**, y el menú lateral cambia de uno a otro:
+
+- **Gestión de patrimonio** (la raíz, `/`): Inicio, Planificación, Categorías
+  y Movimientos. Es todo lo que describe este documento salvo que se diga otra
+  cosa.
+- **Camino del héroe** (`/CaminoHeroe`): educación financiera con forma de
+  videojuego a píxel. Mundos (planetas) con un camino de niveles: lecturas con
+  minitest, prácticas y un jefe. El plan y su porqué están en
+  `docs/CAMINO_HEROE.md`; cómo se escribe el contenido, en
+  `docs/CONTENIDO_HEROE.md`.
+
 **Es multiusuario y se usa sin registrarse.** Quien entra sin sesión recibe una
 de **invitado** (usuario anónimo de Supabase, caduca a los 4 días); si crea una
 cuenta, conserva sus datos. Cada usuario ve solo lo suyo y nada se comparte
@@ -60,6 +71,9 @@ Cada cambio tiene un sitio y solo uno:
 | Cambiar el color de una categoría en tabla y gráficos | La clave en `categories.color`; los tonos, en `app/globals.css` (`--sd-cat-*`) |
 | Añadir una entidad entera | `pnpm generate:crud` |
 | Añadir un módulo al menú lateral | `MODULOS` en `src/presentation/components/SideMenu/SideMenu.tsx` |
+| Añadir o cambiar un curso del Camino del héroe | Un JSON en `content/heroe/<mundo>/` (guía en `docs/CONTENIDO_HEROE.md`) y `pnpm heroe:validar` |
+| Cambiar el formato de ese contenido | Los esquemas Zod de `src/types/heroe.types.ts` |
+| Poner el título de una pantalla | `SketchTitle` de `src/presentation/components/ui` |
 
 Si te ves escribiendo un formulario a mano con `<TextInput>` sueltos, o una
 `<DataTable>` fuera de `AppTable`, párate: casi siempre significa que no has
@@ -104,7 +118,7 @@ cálculo. Vive en tres sitios y solo tres:
 |---|---|---|
 | **Tokens** | `app/globals.css` | Las Custom Properties `--sd-*`: color, trazo, sombra, radio, movimiento, tipografía. La única fuente de verdad |
 | **Puente con Mantine** | `src/presentation/styles/mantine-sketch.module.css` | Se engancha en el tema con `Componente.extend({ classNames })`. Hace que TODO `<Button>`, `<Paper>` o `<TextInput>` ya existente herede el aspecto sin tocarlo |
-| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `StatusBadge`, `EmptyState`, `AnimatedMoney`. Solo para lo que Mantine no da |
+| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `SketchTitle`, `StatusBadge`, `EmptyState`, `AnimatedMoney`. Solo para lo que Mantine no da |
 
 Las tres reglas de estilo del proyecto:
 
@@ -174,6 +188,7 @@ pnpm test:e2e             # Playwright contra el Supabase de pruebas (necesita .
 pnpm test:e2e:ui          # lo mismo, con la interfaz de Playwright
 pnpm test:e2e:visual      # regresión visual de Inicio (opt-in, solo local)
 pnpm generate:crud        # scaffolding de una entidad nueva (Plop)
+pnpm heroe:validar        # valida el contenido del Camino del héroe (content/heroe/)
 pnpm db:generate          # genera la migración a partir de db/schema.ts
 pnpm db:migrate           # aplica las migraciones en Supabase (lee .env.local)
 pnpm db:migrate:e2e       # lo mismo en el proyecto de los E2E (lee .env.e2e)
@@ -359,7 +374,8 @@ genérico.
 desconocido" en la primera consulta.
 
 **Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo,
-el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
+el Camino del héroe (`heroe.actions.ts`, `useHeroe.ts`, raíz de queries
+`['heroe']`), el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
 de la portada tienen su propia Server Action y su propio hook escrito a mano.
 
 **Todo lo derivado se invalida a mano.** El saldo y los gráficos son sumas de
@@ -409,16 +425,24 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
       Create/page.tsx
       Edit/page.tsx                   # lee ?id=
     Categorias/
+    CaminoHeroe/                      # el segundo módulo: mapa de mundos
+      Mundo/page.tsx                  # el camino de un mundo (?id=ahorro)
+      Nivel/page.tsx                  # el reproductor de un nivel (?id=ahorro/01-…)
     Login/ Registro/                  # pantallas de auth (sin GenericForm)
     RecuperarPassword/ CambiarPassword/ BorrarCuenta/
     auth/confirm/route.ts             # destino de los enlaces del email
   proxy.ts                            # refresca la sesión y pone la CSP (antes middleware)
+  content/heroe/                      # el CONTENIDO del Camino del héroe, en JSON
+    <mundo>/mundo.json                # el mundo y el orden de sus niveles ("niveles": [] = Próximamente)
+    <mundo>/<nivel>.json              # un nivel: lectura, interactivo o jefe
   src/
     types/
       formMetadata.types.ts
       informe.types.ts
+      heroe.types.ts                  # los esquemas Zod del contenido del héroe y sus DTO
       <entidad>.types.ts              # ListDto, SaveDto, FormDto
     infrastructure/
+      heroe/contenido.ts              # lee y valida content/heroe/ con fs: el ÚNICO que lo lee
       repositories/
         index.ts                      # REPOSITORIES: el mapa cerrado de recursos
         types.ts                      # EntityRepository, ListParams, RepositoryError
@@ -427,6 +451,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         informes.repository.ts        # las agregaciones (no es un CRUD)
         perfiles.repository.ts        # el patrimonio inicial: una fila por usuario
         cuenta.repository.ts          # auth.users: fecha de alta (caducidad) y borrar la cuenta
+        heroe.repository.ts           # progreso del héroe: desbloqueo en orden y corrección
         __tests__/
     application/
       actions/
@@ -435,6 +460,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         resultado.ts                  # run(): errores esperados como valor
         informes.actions.ts
         perfil.actions.ts             # leer y guardar el patrimonio inicial
+        heroe.actions.ts              # mapa, mundo, nivel y enviar una partida
         auth.actions.ts               # invitado, login, registro, contraseña, borrar cuenta
       hooks/
         createEntityHooks.ts          # factory genérica de hooks CRUD
@@ -444,6 +470,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         usePaginacion.ts              # estado de la tabla
         useInformes.ts
         usePerfil.ts                  # patrimonio inicial (cuelga de ['informes'])
+        useHeroe.ts                   # el Camino del héroe (cuelga de ['heroe'])
         use<Entidades>.ts             # uno por entidad
       providers/
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
@@ -462,6 +489,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
           index.ts                    # se importan SIEMPRE desde aquí
           SketchButton/               # <Link> tipado o <button>, con gesto
           SketchCard/                 # la ficha: cinta, filete, tono
+          SketchTitle/                # el título de pantalla con trazo de rotulador
           StatusBadge/                # estado → tono, en un solo sitio
         Forms/
           GenericForm/
@@ -486,6 +514,12 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         Navbar.tsx
         Navbar.module.css
         SideMenu/                     # menú lateral de MÓDULOS (se abre al pasar el ratón)
+        Splash/                       # la pantalla de carga a píxel
+        Pixel/                        # el héroe (PixelHero), los sprites y su paleta: los comparten el splash y el héroe
+        Heroe/                        # el Camino del héroe: mapa, camino, ficha del nivel
+          planeta.ts camino.ts        # la geometría a píxel, en funciones puras
+          reproductor/                # lectura, preguntas, resultado; Marcado (negrita/cursiva)
+          ejercicios/                 # los seis tipos de pregunta
         useEntityId.ts
   lib/
     money.ts                          # tipo Money, aritmética y DIVISA_APP
@@ -499,6 +533,8 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     supabase/                         # clientes de servidor y de proxy
     rutas.ts                          # filtro de redirección abierta
     csp.ts                            # la Content Security Policy y su nonce
+    heroe.ts                          # corrección y estrellas del héroe (puras)
+    marcas.ts                         # **negrita** y _cursiva_ del contenido, a nodos
     turnstile.ts
   db/
     schema.ts                         # pg-core; piezas idColumn, soloSuyo…
@@ -698,11 +734,30 @@ lleve hasta ella.
   componente cliente. La frontera es `entity.actions.ts`.
 - **El repo es LF.** Un fichero que acabe en CRLF hace que los `modify` del
   generador de Plop no casen y se salten sin avisar.
-- **Los tres títulos con trazo de rotulador leen `--sd-underline-alto`.** Ese
+- **El trazo de rotulador lee `--sd-underline-alto`**: el de los títulos de
+  pantalla (`SketchTitle`, uno para toda la app) y el del menú lateral. Ese
   token existe porque el keyframe `sd-underline` anima `background-size` y tiene
   que llegar exactamente al alto de reposo. Si escribes el alto a pelo en la
   regla y no en la variable, el trazo termina la animación en un grosor distinto
-  del que tenía sin ella.
+  del que tenía sin ella. Un título de pantalla nuevo es un `<SketchTitle>`, no
+  otro `.title` copiado en su módulo.
+- **El contenido del héroe se lee con `fs`, y nadie lo importa.** Por eso
+  `next.config.ts` lo mete en el build con `outputFileTracingIncludes`; sin eso
+  un despliegue empaquetado arranca sin cursos. En producción se carga una vez
+  por proceso (un JSON nuevo pide reiniciar); en desarrollo se lee en cada
+  petición.
+- **Un sprite con una fila de distinto ancho desplaza todo el dibujo** y una
+  letra fuera de su paleta se pinta transparente. Lo vigila
+  `components/Pixel/__tests__/sprites.test.ts`: un sprite nuevo va con su paleta
+  en ese test.
+- **El héroe celebrando asoma 10 píxeles por encima de su caja** (el billete en
+  alto). Una escena que lo ponga en `pose="celebra"` necesita ese aire por
+  arriba, o el billete se corta.
+- **Si el build falla con `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`**
+  (y "next/font/google queries have exactly one entry"), el código no tiene
+  nada: es un `.next` corrupto que deja el `pnpm dev`. Se borra `.next` entero
+  (se regenera) y se vuelve a compilar. Pasó en noviembre de 2026: el mismo
+  commit compilaba en una copia limpia y fallaba en la carpeta de trabajo.
 - **`app/globals.css` se importa EL ÚLTIMO** en `app/layout.tsx`. Si sube por
   encima de las hojas de Mantine, sus overrides de `--mantine-*` pierden por
   orden de cascada y la aplicación vuelve al gris de fábrica. No lanza ningún
@@ -887,7 +942,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   GitHub las claves de ese proyecto. Cada test es un invitado nuevo, así que no
   hay que limpiar la base. Pasos del panel en `.env.e2e.example`.
 - **Coverage por niveles, por fichero** (`vitest.config.mts`): CORE 100 % (dinero,
-  fechas, formato, rutas, CSP), CORE 90 % (repositorios, acciones, sesión,
+  fechas, formato, rutas, CSP, la corrección del héroe y las marcas del
+  contenido), CORE 90 % (repositorios, acciones, sesión,
   entorno, log), IMPORTANT 80 % (`GenericForm`, `AppTable`, hooks) e INFRA
   excluido (tipos, `src/config`, migraciones, estilos). Un umbral no se baja: se
   escribe el test o la rama inalcanzable se marca con su porqué.
@@ -964,7 +1020,9 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   ΔE 9,1 sobre un suelo de 8. Si tocas uno, vuelve a pasarlo.
 - **Menú lateral de módulos** (`SideMenu`): la Navbar lleva las secciones del
   módulo en el que estás; el menú lateral cambia de MÓDULO (Gestión de
-  patrimonio; Camino del héroe, aún sin hacer). Escondido, solo asoma una
+  patrimonio y Camino del héroe). El módulo activo sale de la ruta
+  (`moduloActivo`): el de prefijo más largo, y la raíz para todo lo demás.
+  Escondido, solo asoma una
   pestaña con tres rayas en el borde izquierdo; se abre al pasar el ratón y se
   cierra al salir, con 220 ms de margen para que una diagonal torpe no lo cierre.
   El hover no es la única vía: la pestaña es un `<button>` (toque y Enter
@@ -1014,11 +1072,50 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   tarjetas del mes; el patrimonio es siempre el de hoy y los dos gráficos de
   tendencia siguen en los últimos 12 meses. El tope es de navegación y no se
   impone en el servidor: un movimiento anterior sigue siendo válido.
+- **Camino del héroe** (plan completo en `docs/CAMINO_HEROE.md`):
+  - **El contenido es JSON en el repo; la base guarda solo el progreso**
+    (`hero_progress`: usuario + nivel, mejor marca, intentos y primera vez
+    superado). Un curso se revisa en una PR y un JSON mal escrito rompe la CI
+    (`pnpm heroe:validar`). Si algún día lo edita alguien que no programa, se
+    cambia `contenido.ts`, el único que lo lee.
+  - **Corrige el servidor** (regla dura 6). El cliente tiene las soluciones
+    para el feedback inmediato, pero manda las respuestas en bruto y el
+    repositorio calcula aciertos, estrellas y superado. La mejor marca no baja
+    al repetir (`greatest()` en el upsert).
+  - **Los mundos están libres; dentro, los niveles van en orden.** Un nivel
+    bloqueado no se lee ni se envía: "No encontrado", como uno que no existe.
+    Todo lo del mapa y del camino es derivado (regla dura 7).
+  - **Mapa**: cada mundo es un planeta a píxel con su decorado y sus
+    habitantes; se ven tres y la fila sigue al héroe, que corre al mundo
+    elegido. Un mundo con `"niveles": []` sale apagado como "Pronto".
+  - **Camino**: sube de abajo (el primer nivel) arriba (el jefe), y el jefe es
+    un monstruo de cuerpo entero del color de su mundo, no un icono.
+  - **Todo es pixel art propio** (`components/Pixel/`): sin ficheros de imagen,
+    así no se toca la CSP, no pesa y sigue el modo oscuro. Los colores de las
+    ilustraciones son variables `--px-*` locales a su módulo, no tokens
+    `--sd-*`; los únicos `*.module.css` que pueden declarar hexadecimales son
+    los de ilustración (lista en `src/__tests__/invariantes.test.ts`).
+  - **`**negrita**` y `_cursiva_` con un analizador propio** (`lib/marcas.ts`)
+    que devuelve nodos de React: nunca `dangerouslySetInnerHTML`. Bloques de
+    lectura `imagen` (un sprite de la app) y `dato` (con fuente obligatoria).
+    Los títulos del contenido no llevan emoticonos; en el texto sí, y se
+    pintan pixelados con un filtro SVG.
+  - **El personaje de los ejemplos se llama Pepito**, siempre.
+  - Aviso fijo en todo el módulo: "Contenido educativo, no asesoramiento
+    financiero".
 
 ## Decisiones abiertas
 
 Anótalas aquí al resolverlas; no las asumas en silencio.
 
+- **Camino del héroe, contenido**: Ahorro tiene niveles; Salud financiera,
+  Inversión y Deuda y crédito están como "Pronto" (`"niveles": []`) hasta que
+  se conviertan sus cursos (fase 6 de `docs/CAMINO_HEROE.md`).
+- **Camino del héroe, vidas y rachas**: fuera de la primera versión a
+  propósito. Si llegan, son progreso derivado o una tabla aparte, nunca un
+  contador guardado junto a la mejor marca.
+- **Camino del héroe, "Mi progreso"**: la Navbar del módulo solo tiene
+  "Mundos"; una pantalla de progreso global está pensada, no hecha.
 - **Presupuestos**: diseñados en la skill `finance-data-model`, sin implementar.
   La tabla `budgets` no existe todavía.
 - **Importación de extractos**: las columnas `import_hash` están, el parser no.
