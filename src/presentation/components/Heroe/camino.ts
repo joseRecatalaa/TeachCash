@@ -17,8 +17,12 @@ export type Punto = { x: number; y: number }
 
 /** El ancho del lienzo del camino. El alto depende de cuántos niveles tenga. */
 export const ANCHO_CAMINO = 160
-/** Lo que hay por encima del último nodo: el monstruo del jefe y el héroe a su lado. */
-const ARRIBA = 44
+/**
+ * Lo que hay por encima del último nodo: el monstruo del jefe y el héroe a su
+ * lado. Con todo superado el héroe celebra con el billete en alto, que asoma
+ * 10 píxeles por encima de su caja: con menos aire se cortaba arriba.
+ */
+const ARRIBA = 56
 /** La distancia vertical entre dos nodos. */
 const PASO = 64
 /** Lo que hay por debajo del primer nodo: ahí espera el héroe antes de empezar. */

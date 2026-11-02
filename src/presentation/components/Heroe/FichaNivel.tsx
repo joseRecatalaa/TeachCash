@@ -47,10 +47,13 @@ const LLAMADA: Record<TipoNivel, string> = {
 export const rutaNivel = (id: string) => `/CaminoHeroe/Nivel?id=${encodeURIComponent(id)}` as Route
 
 /* La escena de la cabecera, en píxeles de juego. El héroe a la izquierda,
-   lo que le espera a la derecha, sobre el mismo suelo. */
-const ANCHO = 128
-const ALTO = 56
-const SUELO = 52
+   lo que le espera a la derecha, sobre el mismo suelo. Por encima del héroe
+   quedan 14 píxeles libres: el billete que levanta al celebrar asoma 10 por
+   encima de su caja, y sin ese aire se cortaba contra la cabecera. */
+const ANCHO = 176
+const ALTO = 74
+const SUELO = 68
+const HEROE_X = 28
 
 /** Lo que le espera al héroe, y a qué escala: el monstruo ya es grande. */
 function Reto({ tipo }: { tipo: TipoNivel }): { sprite: Sprite; escala: number } {
@@ -63,13 +66,13 @@ function Escena({ nivel, decorado }: { nivel: NivelEnCaminoDto; decorado: Decora
   const ancho = sprite.filas[0].length * escala
   const alto = sprite.filas.length * escala
   const bloqueado = nivel.estado === 'bloqueado'
-  const x = Math.round(ANCHO * 0.68 - ancho / 2)
+  const x = Math.round(ANCHO * 0.62 - ancho / 2)
   const y = nivel.tipo === 'jefe' ? SUELO - alto : Math.round(SUELO - 14 - alto)
 
   return (
     <svg className={styles.escena} viewBox={`0 0 ${ANCHO} ${ALTO}`} shapeRendering="crispEdges" aria-hidden="true">
       <rect y={SUELO} width={ANCHO} height="2" className={styles.suelo} />
-      <g transform={`translate(10 ${SUELO - 44})`}>
+      <g transform={`translate(${HEROE_X} ${SUELO - 44})`}>
         <PixelHero pose={nivel.estado === 'hecho' ? 'celebra' : 'quieto'} />
       </g>
       <g className={pixel.paletaCamino} data-decorado={decorado}>
@@ -77,7 +80,7 @@ function Escena({ nivel, decorado }: { nivel: NivelEnCaminoDto; decorado: Decora
           <PixelSprite sprite={sprite} paleta={PALETA_CAMINO} />
         </g>
         {bloqueado && (
-          <g transform={`translate(${Math.round(ANCHO * 0.68) - 7} ${y - 18}) scale(2)`}>
+          <g transform={`translate(${Math.round(ANCHO * 0.62) - 7} ${y - 18}) scale(2)`}>
             <PixelSprite sprite={CANDADO} paleta={PALETA_CAMINO} />
           </g>
         )}

@@ -61,6 +61,12 @@ describe('posicionHeroe', () => {
     },
   )
 
+  test('celebrando junto al último nodo, el billete en alto cabe en el lienzo', () => {
+    // El billete de `celebra` asoma 10 píxeles por encima de la caja del héroe.
+    const ultimo = posicionesNodos(9).at(-1) as { x: number; y: number }
+    expect(posicionHeroe(ultimo).y - 10).toBeGreaterThanOrEqual(0)
+  })
+
   test('las botas quedan a la altura del nodo', () => {
     const nodo = posicionesNodos(1)[0]
     expect(posicionHeroe(nodo).y + ALTO_HEROE).toBeGreaterThan(nodo.y)
