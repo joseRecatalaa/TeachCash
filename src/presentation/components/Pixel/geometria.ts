@@ -13,3 +13,37 @@ export function circulo(cx: number, cy: number, r: number): string {
   }
   return d
 }
+
+/**
+ * Las celdas de un recuadro que cumplen `dentro`, como un trazo de rachas
+ * horizontales (igual que `PixelSprite`). Sirve para formas que no son un
+ * círculo entero: la sombra de un planeta es "dentro del planeta y fuera de
+ * un círculo desplazado".
+ */
+export function trazoDonde(
+  x0: number,
+  y0: number,
+  ancho: number,
+  alto: number,
+  dentro: (x: number, y: number) => boolean,
+): string {
+  let d = ''
+  for (let y = y0; y < y0 + alto; y++) {
+    let x = x0
+    while (x < x0 + ancho) {
+      if (!dentro(x, y)) {
+        x++
+        continue
+      }
+      let fin = x + 1
+      while (fin < x0 + ancho && dentro(fin, y)) fin++
+      d += `M${x} ${y}h${fin - x}v1h-${fin - x}z`
+      x = fin
+    }
+  }
+  return d
+}
+
+/** Si la celda (x, y) cae en el círculo de centro (cx, cy) y radio r, medido desde el centro de la celda. */
+export const enCirculo = (cx: number, cy: number, r: number) => (x: number, y: number) =>
+  (x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= r * r

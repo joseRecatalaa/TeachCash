@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react'
 import type { Punto } from './camino'
 import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
 
-/** Píxeles de juego por segundo. Lento a propósito: se tiene que ver andar. */
+/** Píxeles de juego por segundo, andando. Lento a propósito: se tiene que ver andar. */
 const VELOCIDAD = 40
 /** Lo que espera antes de echar a andar, para que se vea dónde estaba. */
 const ESPERA_MS = 350
@@ -32,7 +32,7 @@ export interface Caminata {
 
 const redondear = ({ x, y }: Punto): Punto => ({ x: Math.round(x), y: Math.round(y) })
 
-export function useCaminata(desde: Punto, hasta: Punto): Caminata {
+export function useCaminata(desde: Punto, hasta: Punto, velocidad = VELOCIDAD): Caminata {
   const reducido = useMovimientoReducido()
   const [pos, setPos] = useState(() => redondear(desde))
   const [arrancado, setArrancado] = useState(false)
@@ -46,7 +46,7 @@ export function useCaminata(desde: Punto, hasta: Punto): Caminata {
     let inicio: number | null = null
     const avanzar = (ahora: number) => {
       inicio ??= ahora
-      const t = Math.min(1, ((ahora - inicio) / 1000) * (VELOCIDAD / distancia))
+      const t = Math.min(1, ((ahora - inicio) / 1000) * (velocidad / distancia))
       setPos(redondear({ x: desde.x + (hasta.x - desde.x) * t, y: desde.y + (hasta.y - desde.y) * t }))
       if (t < 1) cuadro = requestAnimationFrame(avanzar)
       else setLlegado(true)

@@ -19,6 +19,8 @@ const FIXTURES = fileURLToPath(
 
 let raiz: string
 
+const mapaIds = (mundos: { id: string }[]) => mundos.map((m) => m.id)
+
 beforeEach(async () => {
   raiz = await mkdtemp(path.join(tmpdir(), 'heroe-'))
   await cp(FIXTURES, raiz, { recursive: true })
@@ -37,7 +39,7 @@ async function editar(ruta: string, cambio: (json: Record<string, unknown>) => v
 describe('un contenido bueno', () => {
   test('carga los mundos en su orden y todos sus niveles', async () => {
     const { mundos, niveles } = await cargarContenido(raiz)
-    expect(mundos.map((m) => m.id)).toEqual(['prueba', 'otro'])
+    expect(mapaIds(mundos)).toEqual(['prueba', 'otro', 'vacio'])
     expect([...niveles.keys()].sort()).toEqual([
       'otro/01-jefe',
       'prueba/01-lectura',
@@ -80,6 +82,57 @@ describe('un contenido roto se para con un mensaje que dice dónde', () => {
       delete j.minitest
     })
     await expect(cargarContenido(raiz)).rejects.toThrow(/01-lectura\.json/)
+  })
+
+  test('una negrita sin cerrar, con el campo en el mensaje', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      ;(j.minitest as Record<string, unknown>[])[1].explicacion = 'Esto es **clave'
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/minitest\.1\.explicacion: Hay una negrita \(\*\*\) sin cerrar/)
+  })
+
+  test('una cursiva sin cerrar en una página', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      const [pagina] = j.paginas as { bloques: Record<string, unknown>[] }[]
+      pagina.bloques[0].texto = 'Un _matiz sin cerrar'
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/paginas\.0\.bloques\.0\.texto: Hay una cursiva \(_\) sin cerrar/)
+  })
+
+  test('una negrita que cruza el hueco', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      ;(j.minitest as Record<string, unknown>[])[2].enunciado = '**Tres ___ cuatro**'
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/no puede cruzar el hueco/)
+  })
+
+  test('un dato sin fuente', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      const [pagina] = j.paginas as { bloques: Record<string, unknown>[] }[]
+      pagina.bloques.push({ tipo: 'dato', texto: 'Un dato llamativo.' })
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/paginas\.0\.bloques\.1\.fuente/)
+  })
+
+  test('una imagen con un sprite que no existe', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      const [pagina] = j.paginas as { bloques: Record<string, unknown>[] }[]
+      pagina.bloques.push({ tipo: 'imagen', sprite: 'dragon' })
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/paginas\.0\.bloques\.1\.sprite/)
+  })
+
+  test('marcas bien cerradas, una imagen y un dato con fuente: pasan', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      const [pagina] = j.paginas as { bloques: Record<string, unknown>[] }[]
+      pagina.bloques.push(
+        { tipo: 'parrafo', texto: 'Es **muy _importante_** y 3 * 4 = 12.' },
+        { tipo: 'imagen', sprite: 'cerdito', pie: 'Un cerdito' },
+        { tipo: 'imagen', sprite: 'nube' },
+        { tipo: 'dato', texto: 'Casi la **mitad**.', fuente: 'Banco de España' },
+      )
+    })
+    await expect(cargarContenido(raiz)).resolves.toBeDefined()
   })
 
   test('un hueco sin hueco', async () => {

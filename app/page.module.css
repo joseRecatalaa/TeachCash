@@ -35,25 +35,6 @@
  * eso el alto de la franja va en una variable — el keyframe la lee para no
  * inventarse un valor distinto del de reposo.
  */
-.title {
-  --sd-underline-alto: 0.42em;
-  margin: 0;
-  padding: 0 0.15em 0.1em;
-  font-family: var(--sd-font-display);
-  font-size: 2.1rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-
-  background-image: linear-gradient(
-    var(--sd-accent-wash),
-    var(--sd-accent-wash)
-  );
-  background-repeat: no-repeat;
-  background-size: 100% var(--sd-underline-alto);
-  background-position: 0 88%;
-
-  animation: sd-underline 700ms var(--sd-ease-out) 180ms backwards;
-}
 
 /* ── Rejilla ─────────────────────────────────────────────────────────────── */
 

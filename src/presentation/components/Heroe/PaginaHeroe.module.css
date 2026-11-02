@@ -1,8 +1,8 @@
 .pagina {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  max-width: 64rem;
+  gap: 1rem;
+  max-width: 72rem;
   margin: 0 auto;
 }
 
@@ -34,20 +34,19 @@
   box-shadow: var(--sd-focus-ring);
 }
 
-/* La letra a píxel solo en los titulares del módulo: en el texto corrido se
-   lee mal. */
-.titulo {
-  margin: 0;
-  font-family: var(--sd-font-pixel);
-  font-size: clamp(1.15rem, 4vw, 1.6rem);
-  font-weight: 400;
-  line-height: 1.35;
+/* El título y su descripción en la misma línea, apoyados en la misma base;
+   en una pantalla estrecha la descripción baja debajo. */
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
 }
 
 .subtitulo {
   margin: 0;
-  max-width: 40rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.45;
   color: var(--sd-ink-muted);
 }
 

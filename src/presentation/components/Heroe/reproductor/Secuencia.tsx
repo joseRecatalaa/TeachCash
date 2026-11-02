@@ -23,6 +23,7 @@ import type { Pregunta } from '@/src/types/heroe.types'
 import { SketchButton, StatusBadge } from '../../ui'
 import { Ejercicio } from '../ejercicios/Ejercicio'
 import { completa, solucion, valorInicial, type Respuesta } from './respuestas'
+import { Marcado } from './Marcado'
 import styles from './reproductor.module.css'
 
 export function Secuencia({
@@ -69,7 +70,7 @@ export function Secuencia({
 
       {/* El hueco lleva la frase dentro del propio ejercicio. */}
       <h2 className={styles.enunciado}>
-        {pregunta.tipo === 'hueco' ? 'Completa la frase' : pregunta.enunciado}
+        {pregunta.tipo === 'hueco' ? 'Completa la frase' : <Marcado texto={pregunta.enunciado} />}
       </h2>
 
       <Ejercicio
@@ -91,7 +92,9 @@ export function Secuencia({
                 La respuesta: <strong>{solucion(pregunta)}</strong>
               </p>
             )}
-            <p className={styles.explicacion}>{pregunta.explicacion}</p>
+            <p className={styles.explicacion}>
+              <Marcado texto={pregunta.explicacion} />
+            </p>
           </div>
         )}
       </div>

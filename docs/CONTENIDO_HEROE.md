@@ -77,11 +77,36 @@ unas 4 páginas.
 |---|---|---|
 | `parrafo` | `texto` | El texto corrido. Frases cortas |
 | `idea` | `texto` | La idea que hay que llevarse. Una por página como mucho |
+| `dato` | `texto`, `fuente` (**obligatoria**) | El gancho de la lectura: un dato llamativo. Se pinta como "¿Sabías que…?" con la fuente debajo. Un dato sin fuente no pasa el validador |
 | `ejemplo` | `titulo`, `filas` (`concepto`, `importe`), `nota` opcional | Un caso con cifras |
 | `lista` | `items` (2–8) | Pasos o consejos |
+| `imagen` | `sprite`, `pie` opcional | Un dibujo a píxel de los que ya tiene la app (abajo). El `pie` es lo que oye quien usa lector de pantalla: sin pie, el dibujo es decoración |
 
 **Los importes van en céntimos y con signo**: 650 € de gasto es `-65000`.
 Nunca un decimal.
+
+**Sprites de `imagen`**: `hucha`, `cerdito`, `escudo`, `montana`, `tarjeta`,
+`libro`, `mando`, `monstruo`, `candado`, `estrella`, `billete`, `nube`,
+`pino` y `destello`. Son los dibujos de la propia aplicación y no ficheros de
+imagen: no pesan, siguen el modo oscuro y no hay que tocar la CSP. Uno nuevo
+se dibuja en `components/Pixel/sprites.ts` y se añade a `SPRITES_IMAGEN`.
+
+### Negrita y cursiva
+
+`**negrita**` y `_cursiva_` funcionan en los textos de `parrafo`, `idea`,
+`dato`, los `items` de `lista`, el `titulo` y la `nota` de `ejemplo`, y en el
+`enunciado` y la `explicacion` de las preguntas. Se pueden anidar
+(`**muy _importante_**`).
+
+- La marca va **pegada** a lo que marca: `**así**`. Por eso `3 * 4` o
+  `2 ** 3` con espacios son texto normal, igual que un `_` dentro de una
+  palabra (`mi_cuenta`) o el `___` de un hueco.
+- **Una marca sin cerrar no pasa** `pnpm heroe:validar`, y el error dice el
+  campo: `minitest.2.explicacion: Hay una negrita (**) sin cerrar`.
+- En un `hueco`, una marca no puede cruzar el `___`: la frase se pinta en dos
+  mitades.
+- No se usan en `opciones`, `pasos`, `pares` ni el `pie` de una imagen: ahí
+  el texto va tal cual.
 
 ### Las preguntas
 

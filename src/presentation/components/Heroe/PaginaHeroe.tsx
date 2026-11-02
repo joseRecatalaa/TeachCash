@@ -1,8 +1,8 @@
 'use client'
 
 /*
- * El marco común de las pantallas del Camino del héroe: título en la letra a
- * píxel, la vuelta atrás, el aviso de que es contenido educativo y los
+ * El marco común de las pantallas del Camino del héroe: el título de toda la
+ * aplicación (`SketchTitle`) con su descripción al lado, la vuelta atrás, el aviso de que es contenido educativo y los
  * estados de carga y de error.
  *
  * El aviso va en TODAS las pantallas del módulo y no se puede cerrar: el
@@ -15,7 +15,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { Container, Loader } from '@mantine/core'
 import { IconArrowLeft, IconInfoCircle } from '@tabler/icons-react'
-import { EmptyState, SketchButton } from '../ui'
+import { EmptyState, SketchButton, SketchTitle } from '../ui'
 import styles from './PaginaHeroe.module.css'
 
 export function PaginaHeroe({
@@ -39,8 +39,10 @@ export function PaginaHeroe({
               {volver.texto}
             </Link>
           )}
-          <h1 className={styles.titulo}>{titulo}</h1>
-          {subtitulo && <p className={styles.subtitulo}>{subtitulo}</p>}
+          <div className={styles.lineaTitulo}>
+            <SketchTitle>{titulo}</SketchTitle>
+            {subtitulo && <p className={styles.subtitulo}>{subtitulo}</p>}
+          </div>
         </header>
         {children}
         <p className={styles.aviso} role="note">

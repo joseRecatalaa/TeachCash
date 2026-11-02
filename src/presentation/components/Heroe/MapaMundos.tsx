@@ -1,24 +1,52 @@
 'use client'
 
 /*
- * El mapa de mundos: una ficha por mundo, cada una con su escena a píxel.
+ * El mapa de mundos: cada mundo es un PLANETA a píxel (`planeta.ts`) con su
+ * decorado encima, y el héroe espera en el suelo, debajo del elegido.
  *
- * Los mundos están libres, así que todas las fichas son enlaces. El héroe
- * espera en el mundo del último nivel jugado (o en el primero, si aún no ha
- * jugado): es la forma de decir "por aquí ibas" sin un texto más.
+ * Se ven TRES planetas a la vez y las flechas deslizan la fila: grandes se
+ * leen mejor que cuatro pequeños, y así caben los mundos que vengan. Si al
+ * deslizar el mundo elegido sale de la vista, se elige el más cercano de los
+ * que entran, para que el héroe no se quede fuera de cuadro.
  *
- * Lo que dice cada ficha (niveles hechos, estrellas) es progreso DERIVADO que
- * calcula el servidor (regla dura 7); aquí solo se pinta.
+ * Elegir un planeta (clic, toque, o Enter con el teclado) hace que el héroe
+ * CORRA hasta ponerse debajo; "Entrar" lo hace saltar dentro del planeta y
+ * lleva a su camino. Pulsar otra vez el planeta ya elegido también entra.
+ * Encima de cada planeta van sus estrellas; los mundos aún sin niveles salen
+ * apagados y con un candado: se ven, pero no se entra.
+ *
+ * Las estrellas son progreso DERIVADO que calcula el servidor (regla dura 7).
  */
 
-import Link from 'next/link'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
-import { IconStarFilled } from '@tabler/icons-react'
+import { ActionIcon } from '@mantine/core'
+import { IconChevronLeft, IconChevronRight, IconLock, IconRocket } from '@tabler/icons-react'
 import type { Decorado, MapaDto, MundoResumenDto } from '@/src/types/heroe.types'
-import { PixelHero } from '../Pixel/PixelHero'
+import { ALTO_HEROE, ANCHO_HEROE, PixelHero } from '../Pixel/PixelHero'
 import { PixelSprite } from '../Pixel/PixelSprite'
 import pixel from '../Pixel/pixel.module.css'
-import { ESCUDO, HUCHA, MONTANA, PALETA_CAMINO, TARJETA, type Sprite } from '../Pixel/sprites'
+import {
+  BARRAS,
+  CANDADO,
+  CERDITO,
+  CORAZON,
+  ESCUDO,
+  ESTRELLA,
+  HUCHA,
+  MONEDA,
+  MONTANA,
+  PALETA_CAMINO,
+  TARJETA,
+  TARJETITA,
+  type Sprite,
+} from '../Pixel/sprites'
+import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
+import { SketchButton } from '../ui'
+import type { Punto } from './camino'
+import { PLANETAS, RADIO_PLANETA } from './planeta'
+import { useCaminata } from './useCaminata'
 import styles from './MapaMundos.module.css'
 
 const DIBUJO: Record<Decorado, Sprite> = {
@@ -28,82 +56,354 @@ const DIBUJO: Record<Decorado, Sprite> = {
   tarjeta: TARJETA,
 }
 
-/* La escena de una ficha, en píxeles de juego. El decorado va a escala 2
-   (entera, para que no se emborrone) y el héroe a escala 1: el decorado es
-   un monumento del mundo, no un objeto que se lleva en la mano. */
-const ANCHO = 112
-const ALTO = 62
-const SUELO = 54
-const ESCALA = 2
-
 export const rutaMundo = (id: string) => `/CaminoHeroe/Mundo?id=${encodeURIComponent(id)}` as Route
 
-function EscenaMundo({ decorado, conHeroe }: { decorado: Decorado; conHeroe: boolean }) {
-  const sprite = DIBUJO[decorado]
-  const ancho = sprite.filas[0].length * ESCALA
-  const alto = sprite.filas.length * ESCALA
-  // Con el héroe al lado, el decorado se aparta a la izquierda para dejarle sitio.
-  const x = Math.round((conHeroe ? ANCHO * 0.38 : ANCHO / 2) - ancho / 2)
+/* La escena, en píxeles de juego: tres huecos de planeta a la vista. De
+   arriba abajo: el nombre del mundo, sus estrellas, el decorado, el planeta y,
+   pegados abajo, el suelo y el héroe. El héroe va a escala 1,3: es el
+   protagonista y tiene que leerse al lado de planetas tan grandes. */
+const VISIBLES = 3
+const HUECO = 140
+const ANCHO = HUECO * VISIBLES
+const ALTO = 206
+const NOMBRE_Y = 12
+const MARCADOR_Y = 25
+const CENTRO_Y = 92
+const SUELO = 202
+const ESCALA_HEROE = 1.3
+/** Corriendo: el triple de rápido que andando por el camino. */
+const VELOCIDAD_CARRERA = 150
+/** Lo que dura el salto dentro del planeta. Igual que `heroe-entra` en el módulo. */
+const SALTO_MS = 520
+/** Lo que tarda la fila en deslizarse un hueco. */
+const DESLIZ_MS = 380
+/** Cuántas letras caben en una línea sobre un planeta; si no, el nombre va en dos. */
+const LETRAS_POR_LINEA = 20
+
+const centroX = (i: number) => i * HUECO + HUECO / 2
+const bajoPlaneta = (i: number): Punto => ({
+  x: Math.round(centroX(i) - (ANCHO_HEROE * ESCALA_HEROE) / 2),
+  y: Math.round(SUELO - ALTO_HEROE * ESCALA_HEROE),
+})
+const acotar = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
+
+/**
+ * Lo que puebla cada planeta: cuatro habitantes de pie en la ladera (los de
+ * la derecha, volteados: se miran) y tres satélites flotando alrededor.
+ */
+const HABITANTES: Record<Decorado, { ladera: Sprite; satelite: Sprite }> = {
+  escudo: { ladera: CORAZON, satelite: CORAZON },
+  hucha: { ladera: CERDITO, satelite: MONEDA },
+  montana: { ladera: BARRAS, satelite: ESTRELLA },
+  tarjeta: { ladera: TARJETITA, satelite: MONEDA },
+}
+/** A qué distancia del centro se plantan los de la ladera: dos a cada lado. */
+const LADERA_X = [-30, -17, 17, 30]
+/** Los satélites: [x, y] respecto al centro del planeta. */
+const SATELITES = [
+  [-RADIO_PLANETA - 14, -14],
+  [RADIO_PLANETA + 8, 4],
+  [-RADIO_PLANETA - 6, 22],
+] as const
+
+/**
+ * "Salud financiera" → ["Salud", "financiera"]: un nombre que no cabe bajo su
+ * planeta se parte por el espacio más centrado. En una línea se cortaba por
+ * el borde del mapa.
+ */
+export function partirNombre(nombre: string): string[] {
+  if (nombre.length <= LETRAS_POR_LINEA || !nombre.includes(' ')) return [nombre]
+  const espacios = [...nombre.matchAll(/ /g)].map((m) => m.index ?? 0)
+  const mitad = nombre.length / 2
+  const corte = espacios.reduce((mejor, e) => (Math.abs(e - mitad) < Math.abs(mejor - mitad) ? e : mejor))
+  return [nombre.slice(0, corte), nombre.slice(corte + 1)]
+}
+
+/** Unas pocas estrellas fijas: el fondo es el papel, con pocos detalles. */
+const ESTRELLAS = Array.from({ length: 34 }, (_, k) => [
+  (k * 53 + (k % 5) * 17) % (HUECO * 8),
+  8 + ((k * 37) % 150),
+])
+
+/**
+ * La posición de la fila, en píxeles de juego, deslizándose hasta `destino`
+ * con una curva de salida y de píxel entero en píxel entero. Con el
+ * movimiento reducido salta directamente.
+ */
+function useDesliz(destino: number): number {
+  const reducido = useMovimientoReducido()
+  const [x, setX] = useState(destino)
+  const actual = useRef(destino)
+
+  useEffect(() => {
+    if (reducido) return
+    const desde = actual.current
+    if (desde === destino) return
+    let cuadro = 0
+    let inicio: number | null = null
+    const avanzar = (ahora: number) => {
+      inicio ??= ahora
+      const t = Math.min(1, (ahora - inicio) / DESLIZ_MS)
+      const curva = 1 - (1 - t) ** 3
+      actual.current = Math.round(desde + (destino - desde) * curva)
+      setX(actual.current)
+      if (t < 1) cuadro = requestAnimationFrame(avanzar)
+    }
+    cuadro = requestAnimationFrame(avanzar)
+    return () => cancelAnimationFrame(cuadro)
+  }, [destino, reducido])
+
+  return reducido ? destino : x
+}
+
+function Planeta({
+  mundo,
+  i,
+  elegido,
+  alPulsar,
+}: {
+  mundo: MundoResumenDto
+  i: number
+  elegido: boolean
+  alPulsar: () => void
+}) {
+  const capas = PLANETAS[mundo.decorado]
+  const sprite = DIBUJO[mundo.decorado]
+  const ancho = sprite.filas[0].length
+  const alto = sprite.filas.length
+  const alTeclear = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      alPulsar()
+    }
+  }
+  const estado = mundo.proximamente ? 'próximamente' : `${mundo.hechos} de ${mundo.total} niveles`
 
   return (
-    <svg
-      className={styles.escena}
-      viewBox={`0 0 ${ANCHO} ${ALTO}`}
-      shapeRendering="crispEdges"
-      aria-hidden="true"
+    <g
+      className={`${pixel.paletaCamino} ${styles.planeta}`}
+      data-decorado={mundo.decorado}
+      data-elegido={elegido}
+      data-proximamente={mundo.proximamente}
+      transform={`translate(${centroX(i)} ${CENTRO_Y})`}
+      role="button"
+      tabIndex={0}
+      aria-pressed={elegido}
+      aria-label={`${mundo.titulo}, ${estado}`}
+      onClick={alPulsar}
+      onKeyDown={alTeclear}
     >
-      <g className={pixel.paletaCamino}>
-        <rect y={SUELO} width={ANCHO} height="1" className={styles.sueloLuz} />
-        <rect y={SUELO + 1} width={ANCHO} height={ALTO - SUELO - 1} className={styles.suelo} />
-        <path
-          d={[6, 20, 41, 63, 88, 101].map((s) => `M${s} ${SUELO - 1}h1v1h-1zM${s + 2} ${SUELO - 2}h1v2h-1z`).join('')}
-          className={styles.suelo}
-        />
-        <g transform={`translate(${x} ${SUELO - alto}) scale(${ESCALA})`}>
-          <PixelSprite sprite={sprite} paleta={PALETA_CAMINO} />
+      <g className={styles.cuerpo}>
+        <g className={styles.flota}>
+          <path d={capas.anilloDetras} className={styles.anilloDetras} />
+          <path d={capas.atmosfera} className={styles.atmosfera} />
+          <path d={capas.contorno} className={styles.contorno} />
+          <path d={capas.superficie} className={styles.superficie} />
+          <path d={capas.detalle} className={styles.detalle} />
+          <path d={capas.detalleLuz} className={styles.brillo} />
+          <path d={capas.tramado} className={styles.sombra} />
+          <path d={capas.sombra} className={styles.sombra} />
+          <path d={capas.brillo} className={styles.brillo} />
+          <path d={capas.chispa} className={styles.chispa} />
+          <path d={capas.anilloDelante} className={styles.anilloDelante} />
+          {/* Los habitantes de la ladera, a un lado y otro del decorado. */}
+          {LADERA_X.map((x) => {
+            const { ladera } = HABITANTES[mundo.decorado]
+            const w = ladera.filas[0].length
+            const h = ladera.filas.length
+            const superficie = -Math.round(Math.sqrt(RADIO_PLANETA ** 2 - x ** 2))
+            const transformacion =
+              x < 0
+                ? `translate(${x - Math.floor(w / 2)} ${superficie + 2 - h})`
+                : `translate(${x + Math.ceil(w / 2)} ${superficie + 2 - h}) scale(-1 1)`
+            return (
+              <g key={x} transform={transformacion}>
+                <PixelSprite sprite={ladera} paleta={PALETA_CAMINO} />
+              </g>
+            )
+          })}
+          {/* El decorado, de pie sobre el planeta y hundido un par de píxeles. */}
+          <g transform={`translate(${-Math.floor(ancho / 2)} ${-RADIO_PLANETA + 3 - alto})`}>
+            <PixelSprite sprite={sprite} paleta={PALETA_CAMINO} />
+          </g>
         </g>
+        {SATELITES.map(([x, y]) => (
+          <g key={`${x},${y}`} className={styles.satelite} transform={`translate(${x} ${y})`}>
+            <PixelSprite sprite={HABITANTES[mundo.decorado].satelite} paleta={PALETA_CAMINO} />
+          </g>
+        ))}
       </g>
-      {conHeroe && (
-        <g transform={`translate(${Math.round(ANCHO * 0.62)} ${SUELO - 44})`}>
-          <PixelHero pose="quieto" mirando="izq" />
-        </g>
-      )}
-    </svg>
+      {/* Encima del planeta: su nombre y, debajo, lo conseguido (sus
+          estrellas, o un candado si aún no tiene niveles). */}
+      <text y={NOMBRE_Y - CENTRO_Y} className={styles.nombre} textAnchor="middle">
+        {partirNombre(mundo.titulo).map((linea, k) => (
+          <tspan key={linea} x="0" dy={k === 0 ? 0 : 10}>
+            {linea}
+          </tspan>
+        ))}
+      </text>
+      <Marcador mundo={mundo} />
+    </g>
   )
 }
 
-function FichaMundo({ mundo, conHeroe }: { mundo: MundoResumenDto; conHeroe: boolean }) {
-  const completo = mundo.hechos === mundo.total
+/** Lo que mide de ancho una letra de la tipografía a píxel a 8 px, más o menos. */
+const ANCHO_LETRA = 6
+const ANCHO_ICONO = 7
+const HUELGO_ICONO = 3
+
+/**
+ * El marcador de encima del planeta: sus estrellas, o un candado y "Pronto".
+ * El icono y el texto se centran JUNTOS sobre el planeta, según lo largo que
+ * sea el texto: centrar solo el texto dejaba "Pronto" corrido a la derecha.
+ */
+function Marcador({ mundo }: { mundo: MundoResumenDto }) {
+  const texto = mundo.proximamente ? 'Pronto' : `${mundo.estrellas}/${mundo.estrellasMax}`
+  const ancho = ANCHO_ICONO + HUELGO_ICONO + texto.length * ANCHO_LETRA
+  const x = -Math.round(ancho / 2)
   return (
-    <Link href={rutaMundo(mundo.id)} className={styles.ficha} data-mundo={mundo.decorado}>
-      <EscenaMundo decorado={mundo.decorado} conHeroe={conHeroe} />
-      <span className={styles.cuerpo}>
-        <span className={styles.titulo}>{mundo.titulo}</span>
-        <span className={styles.descripcion}>{mundo.descripcion}</span>
-        <span className={styles.progreso}>
-          <span>
-            {completo ? 'Completado' : `${mundo.hechos} de ${mundo.total} niveles`}
-          </span>
-          <span className={styles.estrellas}>
-            <IconStarFilled size={14} aria-hidden />
-            {mundo.estrellas} de {mundo.estrellasMax} estrellas
-          </span>
-        </span>
-        {conHeroe && <span className={styles.aquiEstas}>Aquí te quedaste</span>}
-      </span>
-    </Link>
+    <g transform={`translate(${x} ${MARCADOR_Y - CENTRO_Y})`}>
+      <g transform="translate(0 -4)">
+        <PixelSprite sprite={mundo.proximamente ? CANDADO : ESTRELLA} paleta={PALETA_CAMINO} />
+      </g>
+      <text x={ANCHO_ICONO + HUELGO_ICONO} y="0" className={styles.marcador}>
+        {texto}
+      </text>
+    </g>
+  )
+}
+
+function Heroe({ desde, hasta, entrando }: { desde: Punto; hasta: Punto; entrando: boolean }) {
+  const { pos, andando, mirando } = useCaminata(desde, hasta, VELOCIDAD_CARRERA)
+  return (
+    <g transform={`translate(${pos.x} ${pos.y}) scale(${ESCALA_HEROE})`} className={styles.heroe}>
+      <g className={entrando ? styles.entrando : undefined}>
+        <PixelHero pose={andando ? 'corre' : 'quieto'} mirando={mirando} />
+      </g>
+    </g>
   )
 }
 
 export function MapaMundos({ mapa }: { mapa: MapaDto }) {
-  const conHeroe = mapa.ultimoMundo ?? mapa.mundos[0]?.id
+  const router = useRouter()
+  const reducido = useMovimientoReducido()
+  const { mundos } = mapa
+  const ultimoInicio = Math.max(0, mundos.length - VISIBLES)
+
+  const idxInicial = Math.max(
+    0,
+    mundos.findIndex((m) => m.id === (mapa.ultimoMundo ?? mundos.find((x) => !x.proximamente)?.id)),
+  )
+  const [elegido, setElegido] = useState(idxInicial)
+  const [previo, setPrevio] = useState(idxInicial)
+  const [inicio, setInicio] = useState(acotar(idxInicial - 1, 0, ultimoInicio))
+  const [entrando, setEntrando] = useState(false)
+  const desliz = useDesliz(-inicio * HUECO)
+
+  const mundo = mundos[elegido]
+  if (!mundo) return null
+
+  const elegir = (i: number) => {
+    if (i === elegido) {
+      entrar()
+      return
+    }
+    setPrevio(elegido)
+    setElegido(i)
+  }
+
+  const deslizar = (paso: -1 | 1) => {
+    const nuevo = acotar(inicio + paso, 0, ultimoInicio)
+    setInicio(nuevo)
+    // Que el héroe no se quede fuera de cuadro: si el elegido sale de la
+    // vista, se elige el más cercano de los que entran.
+    if (elegido < nuevo) elegir(nuevo)
+    else if (elegido >= nuevo + VISIBLES) elegir(nuevo + VISIBLES - 1)
+  }
+
+  function entrar() {
+    if (mundo.proximamente || entrando) return
+    if (reducido) {
+      router.push(rutaMundo(mundo.id))
+      return
+    }
+    setEntrando(true)
+    window.setTimeout(() => router.push(rutaMundo(mundo.id)), SALTO_MS)
+  }
+
+  const alTeclear = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') deslizar(-1)
+    if (e.key === 'ArrowRight') deslizar(1)
+  }
+
   return (
-    <ul className={styles.rejilla}>
-      {mapa.mundos.map((mundo) => (
-        <li key={mundo.id}>
-          <FichaMundo mundo={mundo} conHeroe={mundo.id === conHeroe} />
-        </li>
-      ))}
-    </ul>
+    <div className={styles.mapa}>
+      {/* Las flechas del teclado también deslizan, con el foco dentro del mapa. */}
+      <div className={styles.carril} onKeyDown={alTeclear}>
+        <ActionIcon
+          className={`${styles.flecha} ${styles.flechaIzq}`}
+          variant="default"
+          size="xl"
+          aria-label="Mundos anteriores"
+          disabled={inicio === 0}
+          onClick={() => deslizar(-1)}
+        >
+          <IconChevronLeft size={22} />
+        </ActionIcon>
+
+        <svg
+          className={styles.escena}
+          viewBox={`0 0 ${ANCHO} ${ALTO}`}
+          shapeRendering="crispEdges"
+          role="group"
+          aria-label={`Mapa de mundos: ${mundos.length} mundos, se ven del ${inicio + 1} al ${Math.min(mundos.length, inicio + VISIBLES)}`}
+        >
+          <g transform={`translate(${desliz} 0)`}>
+            <path d={ESTRELLAS.map(([x, y]) => `M${x} ${y}h1v1h-1z`).join('')} className={styles.estrellasFondo} />
+            <rect y={SUELO} width={Math.max(ANCHO, HUECO * mundos.length)} height="2" className={styles.suelo} />
+            <path
+              d={Array.from({ length: Math.ceil((HUECO * mundos.length) / 37) }, (_, k) => {
+                const s = k * 37 + (k % 3) * 5
+                return `M${s} ${SUELO - 1}h1v1h-1zM${s + 2} ${SUELO - 2}h1v2h-1z`
+              }).join('')}
+              className={styles.suelo}
+            />
+            {mundos.map((m, i) => (
+              <Planeta key={m.id} mundo={m} i={i} elegido={i === elegido} alPulsar={() => elegir(i)} />
+            ))}
+            <Heroe
+              key={`${previo}->${elegido}`}
+              desde={bajoPlaneta(previo)}
+              hasta={bajoPlaneta(elegido)}
+              entrando={entrando}
+            />
+          </g>
+        </svg>
+
+        <ActionIcon
+          className={`${styles.flecha} ${styles.flechaDer}`}
+          variant="default"
+          size="xl"
+          aria-label="Mundos siguientes"
+          disabled={inicio >= ultimoInicio}
+          onClick={() => deslizar(1)}
+        >
+          <IconChevronRight size={22} />
+        </ActionIcon>
+      </div>
+
+      {/* Sin ficha: el nombre y las estrellas ya están en el mapa. El botón
+          dice adónde se entra, y es lo que encuentra quien navega con teclado
+          o con lector de pantalla. */}
+      <div className={styles.entrar} aria-live="polite">
+        <SketchButton
+          onClick={entrar}
+          disabled={mundo.proximamente}
+          leftSection={mundo.proximamente ? <IconLock size={16} aria-hidden /> : <IconRocket size={16} aria-hidden />}
+        >
+          {mundo.proximamente ? `${mundo.titulo}: próximamente` : `Entrar en ${mundo.titulo}`}
+        </SketchButton>
+      </div>
+    </div>
   )
 }

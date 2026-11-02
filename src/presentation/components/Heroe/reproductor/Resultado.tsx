@@ -18,6 +18,7 @@ import { ESTRELLA, PALETA_CAMINO, PALETA_ESTRELLA_VACIA } from '../../Pixel/spri
 import { SketchButton, StatusBadge } from '../../ui'
 import { rutaNivel } from '../FichaNivel'
 import { solucion } from './respuestas'
+import { Marcado } from './Marcado'
 import styles from './reproductor.module.css'
 
 function Escena({ estrellas, celebra }: { estrellas: number; celebra: boolean }) {
@@ -80,11 +81,15 @@ export function Resultado({
                 <StatusBadge tone="danger" size="sm">
                   Fallada
                 </StatusBadge>
-                <p className={styles.repasoPregunta}>{p.enunciado}</p>
+                <p className={styles.repasoPregunta}>
+                  <Marcado texto={p.enunciado} />
+                </p>
                 <p className={styles.solucion}>
                   La respuesta: <strong>{solucion(p)}</strong>
                 </p>
-                <p className={styles.explicacion}>{p.explicacion}</p>
+                <p className={styles.explicacion}>
+                  <Marcado texto={p.explicacion} />
+                </p>
               </li>
             ))}
           </ul>

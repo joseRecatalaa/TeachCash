@@ -1,9 +1,11 @@
 /*
  * La geometría del camino de un mundo, en píxeles de juego.
  *
- * El camino es VERTICAL y baja en zigzag: centro, derecha, centro, izquierda…
- * Vertical porque se juega sobre todo en el móvil, donde lo que sobra es alto
- * y no ancho; y en zigzag para que se lea como un sendero y no como una lista.
+ * El camino es VERTICAL y SUBE en zigzag: empieza abajo y el jefe espera
+ * arriba del todo, como una montaña que se escala. Centro, derecha, centro,
+ * izquierda… Vertical porque se juega sobre todo en el móvil, donde lo que
+ * sobra es alto y no ancho; y en zigzag para que se lea como un sendero y no
+ * como una lista.
  *
  * Todo son enteros: un sprite colocado en medio píxel se emborrona, y el
  * héroe camina de píxel en píxel.
@@ -15,12 +17,12 @@ export type Punto = { x: number; y: number }
 
 /** El ancho del lienzo del camino. El alto depende de cuántos niveles tenga. */
 export const ANCHO_CAMINO = 160
-/** Lo que hay por encima del primer nodo: ahí espera el héroe antes de empezar. */
-const ARRIBA = 64
+/** Lo que hay por encima del último nodo: el monstruo del jefe y el héroe a su lado. */
+const ARRIBA = 44
 /** La distancia vertical entre dos nodos. */
 const PASO = 64
-/** Lo que queda debajo del último nodo, para sus estrellas. */
-const ABAJO = 40
+/** Lo que hay por debajo del primer nodo: ahí espera el héroe antes de empezar. */
+const ABAJO = 76
 /** Cuánto se separa un nodo del centro en el zigzag. */
 const VAIVEN = 40
 /** Cuánto se separa el héroe del centro del nodo: más que el radio del jefe con su borde (17). */
@@ -35,16 +37,19 @@ export function altoCamino(niveles: number): number {
   return ARRIBA + Math.max(0, niveles - 1) * PASO + ABAJO
 }
 
-/** El centro de cada nodo, de arriba abajo. */
+/** El centro de cada nodo, en el orden en que se juegan: de ABAJO arriba. */
 export function posicionesNodos(niveles: number): Punto[] {
+  const alto = altoCamino(niveles)
   return Array.from({ length: niveles }, (_, i) => ({
     x: CENTRO + ZIGZAG[i % ZIGZAG.length],
-    y: ARRIBA + i * PASO,
+    y: alto - ABAJO - i * PASO,
   }))
 }
 
-/** Donde arranca el sendero, encima del primer nodo. */
-export const INICIO: Punto = { x: CENTRO, y: 12 }
+/** Donde arranca el sendero, debajo del primer nodo. */
+export function inicioSendero(niveles: number): Punto {
+  return { x: CENTRO, y: altoCamino(niveles) - 8 }
+}
 
 /**
  * La esquina de arriba a la izquierda del héroe cuando espera junto a `nodo`.
@@ -56,8 +61,10 @@ export function posicionHeroe(nodo: Punto): Punto {
   return { x, y: nodo.y + PIES - ALTO_HEROE }
 }
 
-/** Antes del primer nodo, el héroe espera en el arranque del sendero. */
-export const HEROE_INICIO: Punto = { x: CENTRO - ANCHO_HEROE / 2, y: 0 }
+/** Antes del primer nodo, el héroe espera de pie en el arranque del sendero. */
+export function heroeInicio(niveles: number): Punto {
+  return { x: CENTRO - ANCHO_HEROE / 2, y: altoCamino(niveles) - 4 - ALTO_HEROE }
+}
 
 /** Cada cuántos píxeles va una piedra del sendero. */
 const ENTRE_PIEDRAS = 7

@@ -9,8 +9,9 @@ import fc from 'fast-check'
 import { ALTO_HEROE, ANCHO_HEROE } from '../../Pixel/PixelHero'
 import {
   ANCHO_CAMINO,
-  HEROE_INICIO,
   altoCamino,
+  heroeInicio,
+  inicioSendero,
   posicionHeroe,
   posicionesNodos,
   trazoSendero,
@@ -24,7 +25,7 @@ describe('posicionesNodos', () => {
     expect(xs).toEqual([80, 120, 80, 40, 80])
   })
 
-  test('propiedad: enteros, de arriba abajo y dentro del lienzo', () => {
+  test('propiedad: enteros, de ABAJO arriba y dentro del lienzo', () => {
     fc.assert(
       fc.property(fc.integer({ min: 1, max: 15 }), (n) => {
         const puntos = posicionesNodos(n)
@@ -35,9 +36,11 @@ describe('posicionesNodos', () => {
           expect(p.x).toBeLessThan(ANCHO_CAMINO)
           expect(p.y).toBeLessThan(alto)
         }
+        // El primero es el de más abajo: el camino sube hacia el jefe.
         const ys = puntos.map((p) => p.y)
-        expect(ys).toEqual([...ys].sort((a, b) => a - b))
+        expect(ys).toEqual([...ys].sort((a, b) => b - a))
         expect(new Set(ys).size).toBe(ys.length)
+        expect(Math.min(...ys)).toBeGreaterThan(0)
       }),
     )
   })
@@ -51,16 +54,26 @@ describe('posicionHeroe', () => {
       expect(enteros(h.x, h.y)).toBe(true)
       expect(h.x).toBeGreaterThanOrEqual(0)
       expect(h.x + ANCHO_HEROE).toBeLessThanOrEqual(ANCHO_CAMINO)
-      // El nodo más ancho (el jefe) tiene radio 15 + 2 de borde.
+      // Lo más ancho de un nodo: el halo de 16 de radio o el monstruo del
+      // jefe, que mide 28 (14 a cada lado).
       const solapa = h.x < nodo.x + 17 && h.x + ANCHO_HEROE > nodo.x - 17
       expect(solapa).toBe(false)
     },
   )
 
-  test('las botas quedan a la altura del nodo, y el de arranque, arriba del todo', () => {
+  test('las botas quedan a la altura del nodo', () => {
     const nodo = posicionesNodos(1)[0]
     expect(posicionHeroe(nodo).y + ALTO_HEROE).toBeGreaterThan(nodo.y)
-    expect(HEROE_INICIO.y).toBe(0)
+  })
+
+  test.each([1, 3, 9])('con %i niveles, el héroe arranca abajo del todo, debajo del primer nodo y dentro', (n) => {
+    const alto = altoCamino(n)
+    const primero = posicionesNodos(n)[0]
+    const heroe = heroeInicio(n)
+    expect(heroe.y + ALTO_HEROE).toBeLessThanOrEqual(alto)
+    // Por debajo del nodo y de sus estrellas (radio 11 + 5 + 7 de estrella).
+    expect(heroe.y).toBeGreaterThan(primero.y + 23)
+    expect(inicioSendero(n).y).toBeGreaterThan(primero.y)
   })
 })
 

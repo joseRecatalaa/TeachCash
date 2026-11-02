@@ -215,7 +215,7 @@ describe('el mapa', () => {
     await completarNivel(USER_A, INTERACTIVO, [[0, 1, 2], [0, 1, 2], 0])
 
     const mapa = await getMapa(USER_A)
-    expect(mapa.mundos.map((m) => m.id)).toEqual(['prueba', 'otro'])
+    expect(mapa.mundos.map((m) => m.id)).toEqual(['prueba', 'otro', 'vacio'])
     expect(mapa.mundos[0]).toMatchObject({ hechos: 2, total: 3, estrellas: 3 + 1, estrellasMax: 9 })
     expect(mapa.mundos[1]).toMatchObject({ hechos: 0, total: 1, estrellas: 0, estrellasMax: 3 })
   })
@@ -225,6 +225,13 @@ describe('el mapa', () => {
     await superar(USER_A, LECTURA)
     await completarNivel(USER_A, 'otro/01-jefe', Array(8).fill(false))
     expect((await getMapa(USER_A)).ultimoMundo).toBe('otro')
+  })
+
+  test('un mundo sin niveles sale como "Próximamente" y no tiene camino', async () => {
+    const vacio = (await getMapa(USER_A)).mundos.find((m) => m.id === 'vacio')
+    expect(vacio).toMatchObject({ proximamente: true, total: 0, estrellasMax: 0 })
+    expect((await getMapa(USER_A)).mundos[0].proximamente).toBe(false)
+    await expect(getMundo(USER_A, 'vacio')).rejects.toThrow('No encontrado')
   })
 
   test('los mundos son libres: se puede empezar por cualquiera', async () => {

@@ -18,7 +18,7 @@ export default function CaminoHeroePage() {
   return (
     <PaginaHeroe
       titulo="Camino del héroe"
-      subtitulo="Aprende a manejar tu dinero mundo a mundo. Cada uno es un tema: elige por dónde empezar y supera sus niveles hasta llegar al jefe."
+      subtitulo="Aprende a manejar tu dinero mundo a mundo. Cada mundo es un tema, supera sus niveles hasta llegar al jefe."
     >
       {mapa.isPending && <Cargando />}
       {mapa.error && <ErrorHeroe mensaje={mapa.error.message} volver={{ href: '/', texto: 'Volver a Inicio' }} />}

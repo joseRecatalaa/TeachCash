@@ -73,7 +73,7 @@ describe('el progreso es el de la sesión', () => {
     })
     expect(await fetchMapa()).toMatchObject({
       ok: true,
-      data: { mundos: [{ id: 'prueba', hechos: 1 }, { id: 'otro', hechos: 0 }] },
+      data: { mundos: [{ id: 'prueba', hechos: 1 }, { id: 'otro', hechos: 0 }, { id: 'vacio', proximamente: true }] },
     })
 
     harness.userId = USER_A

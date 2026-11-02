@@ -24,12 +24,13 @@ export type Respuesta = number | boolean | (number | null)[] | null
 export function barajar(n: number, aleatorio: () => number = Math.random): number[] {
   const orden = [...Array(n).keys()]
   if (n < 2) return orden
-  do {
-    for (let i = n - 1; i > 0; i--) {
-      const j = Math.floor(aleatorio() * (i + 1))
-      ;[orden[i], orden[j]] = [orden[j], orden[i]]
-    }
-  } while (orden.every((v, i) => v === i))
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(aleatorio() * (i + 1))
+    ;[orden[i], orden[j]] = [orden[j], orden[i]]
+  }
+  // Si ha salido ordenado, se rota uno: volver a barajar en bucle se
+  // colgaría con un azar que repite siempre lo mismo.
+  if (orden.every((v, i) => v === i)) orden.push(orden.shift() as number)
   return orden
 }
 

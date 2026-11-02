@@ -136,6 +136,80 @@ describe('interactivo: feedback al momento', () => {
   })
 })
 
+describe('lectura: lo vistoso', () => {
+  const VISTOSA: Nivel = {
+    id: 'ahorro/09',
+    tipo: 'lectura',
+    titulo: 'Vistosa',
+    descripcion: 'Con de todo.',
+    minutos: 2,
+    paginas: [
+      {
+        titulo: 'Todo junto',
+        bloques: [
+          { tipo: 'parrafo', texto: 'Es **muy _importante_** y 3 * 4 = 12.' },
+          { tipo: 'dato', texto: 'Casi la **mitad** no tiene colchón.', fuente: 'Banco de España' },
+          { tipo: 'imagen', sprite: 'cerdito', pie: 'Un cerdito ahorrador' },
+          { tipo: 'imagen', sprite: 'nube' },
+        ],
+      },
+    ],
+    minitest: [
+      { id: 'm1', tipo: 'verdaderoFalso', enunciado: '¿Es **clave**?', correcta: true, explicacion: 'Porque _sí_.' },
+      { id: 'm2', tipo: 'verdaderoFalso', enunciado: '¿Dos?', correcta: true, explicacion: 'Sí.' },
+      { id: 'm3', tipo: 'verdaderoFalso', enunciado: '¿Tres?', correcta: true, explicacion: 'Sí.' },
+    ],
+  }
+
+  test('negrita y cursiva son <strong> y <em>; un asterisco suelto es texto', () => {
+    jugar(VISTOSA)
+
+    const parrafo = screen.getByText(/y 3 \* 4 = 12\./)
+    const negrita = within(parrafo).getByText(/muy/, { selector: 'strong' })
+    expect(within(negrita).getByText('importante', { selector: 'em' })).toBeInTheDocument()
+    expect(parrafo.textContent).toBe('Es muy importante y 3 * 4 = 12.')
+  })
+
+  test('el dato va con su encabezado y su fuente', () => {
+    jugar(VISTOSA)
+
+    const dato = screen.getByRole('complementary', { name: '¿Sabías que…?' })
+    expect(within(dato).getByText('mitad', { selector: 'strong' })).toBeInTheDocument()
+    expect(dato).toHaveTextContent('Fuente: Banco de España')
+  })
+
+  test('la imagen: el dibujo oculto para el lector de pantalla, el pie a la vista', () => {
+    jugar(VISTOSA)
+
+    const pie = screen.getByText('Un cerdito ahorrador')
+    const figura = pie.closest('figure') as HTMLElement
+    expect(figura.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    // Sin pie, la imagen es decoración: no deja texto.
+    const figuras = document.querySelectorAll('figure')
+    expect([...figuras].filter((f) => f.querySelector('figcaption') === null)).toHaveLength(1)
+  })
+
+  test('las marcas también en el enunciado y la explicación de las preguntas', async () => {
+    acciones.enviarNivel.mockResolvedValue({
+      ok: true,
+      data: resultado({ aciertos: 2, estrellas: 0, mejorEstrellas: 0, superado: true, correccion: [false, true, true] }),
+    })
+    const { usuario } = jugar(VISTOSA)
+    await usuario.click(screen.getByRole('button', { name: 'Al minitest' }))
+
+    expect(screen.getByRole('heading', { name: '¿Es clave?' })).toContainHTML('<strong>clave</strong>')
+    // El aria-label del grupo de respuestas, sin asteriscos.
+    expect(document.querySelector('[aria-label="¿Es clave?"]')).not.toBeNull()
+    expect(document.querySelector('[aria-label*="**"]')).toBeNull()
+
+    for (let i = 0; i < 3; i++) {
+      await usuario.click(screen.getByRole('radio', { name: 'Falso' }))
+      await usuario.click(screen.getByRole('button', { name: i === 2 ? 'Terminar' : 'Siguiente' }))
+    }
+    expect(await screen.findByText('sí', { selector: 'em' })).toBeInTheDocument()
+  })
+})
+
 describe('lectura: páginas y minitest', () => {
   test('se lee página a página y el minitest no dice nada hasta el final', async () => {
     acciones.enviarNivel.mockResolvedValue({

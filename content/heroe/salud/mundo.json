@@ -1,0 +1,8 @@
+{
+  "id": "salud",
+  "titulo": "Salud financiera",
+  "descripcion": "Saber dónde estás: ingresos, gastos, presupuesto y patrimonio. El punto de partida de todo lo demás.",
+  "decorado": "escudo",
+  "orden": 1,
+  "niveles": []
+}

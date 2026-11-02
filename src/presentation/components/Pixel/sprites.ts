@@ -470,27 +470,38 @@ export const MANDO: Sprite = {
   ],
 }
 
-/** Nodo de jefe: el monstruo del mundo. Más grande que los demás a propósito. */
+/**
+ * El monstruo de un jefe, de cuerpo entero: un personaje como el héroe, no un
+ * icono. Está de pie al final del camino de su mundo, y cada mundo lo pinta
+ * de un color (`data-decorado` en `pixel.module.css`).
+ */
 export const MONSTRUO: Sprite = {
   x: 0,
   y: 0,
   filas: [
-    '..oo............oo..',
-    '..oco..........oco..',
-    '...oco.oooooo.oco...',
-    '....oooqqqqqqooo....',
-    '...oqqqqqqqqqqqqo...',
-    '..oqqwwoqqqqwwoqqo..',
-    '..oqqwooqqqqwooqqo..',
-    '.oqqqqqqqqqqqqqqqqo.',
-    '.oqqoooooooooooqqqo.',
-    '.oqqowowowowowoqqqo.',
-    '.oqqqoooooooooqqqqo.',
-    '.oQqqqqqqqqqqqqqqQo.',
-    '..oQQqqqqqqqqqqQQo..',
-    '...oQQQQQQQQQQQQo...',
-    '...oQQo......oQQo...',
-    '...oooo......oooo...',
+    '...oo..................oo...',
+    '...oco................oco...',
+    '....oco..............oco....',
+    '....ocooooooooooooooooco....',
+    '...oqqqqqqqqqqqqqqqqqqqqo...',
+    '..oqqqqqqqqqqqqqqqqqqqqqqo..',
+    '..oqqwwwwqqqqqqqqqqwwwwqqo..',
+    '..oqqwwooqqqqqqqqqqoowwqqo..',
+    '..oqqwwooqqqqqqqqqqoowwqqo..',
+    '..oqqqqqqqqqqqqqqqqqqqqqqo..',
+    '..oqqqqooooooooooooooqqqqo..',
+    '..oqqqowrwrwrwrwrwrwroqqqo..',
+    '..oqqqorrrrrrrrrrrrrroqqqo..',
+    '..oqqqqooooooooooooooqqqqo..',
+    '.ooQqqqqqqqqqqqqqqqqqqqqQoo.',
+    'oqqoQqqqqqqqqqqqqqqqqqqQoqqo',
+    'oqqoQQqqqqqqqqqqqqqqqqQQoqqo',
+    '.oo.oQQQqqqqqqqqqqqqQQQo.oo.',
+    '....oQQQQQQQQQQQQQQQQQQo....',
+    '.....oQQQQQQQQQQQQQQQQo.....',
+    '......oQQQo......oQQQo......',
+    '......oQQQo......oQQQo......',
+    '.....ooooooo....ooooooo.....',
   ],
 }
 
@@ -506,4 +517,45 @@ export const ESTRELLA: Sprite = {
   x: 0,
   y: 0,
   filas: ['...o...', '..oso..', 'oosssoo', '.ossso.', '.ososo.', 'oso.oso', 'oo...oo'],
+}
+
+/* ── Los habitantes de cada planeta ────────────────────────────────────────
+ *
+ * Pequeños, para poblar los planetas del mapa: de pie en la ladera o
+ * flotando alrededor como satélites. Usan `PALETA_CAMINO`.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Ahorro: un cerdito, mirando a la derecha. */
+export const CERDITO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['..oooooo..', '.ollllllo.', 'opppppopPo', 'oppppppPPo', '.oPPPPPPo.', '.oPo..oPo.', '.oo....oo.'],
+}
+
+/** Una moneda: la que orbita Ahorro y Deuda. */
+export const MONEDA: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['.ooo.', 'oyyyo', 'oyYyo', 'oyyYo', '.ooo.'],
+}
+
+/** Salud financiera: un corazón. */
+export const CORAZON: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['.oo.oo.', 'ohHohho', 'ohhhhho', '.ohhho.', '..oho..', '...o...'],
+}
+
+/** Inversión: tres barras que suben. */
+export const BARRAS: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['......ooo', '......ogo', '...oooogo', '...ogoogo', 'oooogoogo', 'ogoogoogo', 'ooooooooo'],
+}
+
+/** Deuda y crédito: una tarjeta pequeña. */
+export const TARJETITA: Sprite = {
+  x: 0,
+  y: 0,
+  filas: ['.ooooooo.', 'ottttttTo', 'okkkkkkko', 'otxxtttTo', 'oTTTTTTTo', '.ooooooo.'],
 }

@@ -12,6 +12,7 @@
 
 import { ActionIcon } from '@mantine/core'
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react'
+import { sinMarcas } from '@/lib/marcas'
 import type { PropsEjercicio } from './tipos'
 import styles from './ejercicios.module.css'
 
@@ -25,7 +26,7 @@ export function Ordenar({ pregunta, valor, alCambiar, bloqueado }: PropsEjercici
   }
 
   return (
-    <ol className={styles.pasos} aria-label={pregunta.enunciado}>
+    <ol className={styles.pasos} aria-label={sinMarcas(pregunta.enunciado)}>
       {orden.map((indice, posicion) => {
         const paso = pregunta.pasos[indice]
         return (

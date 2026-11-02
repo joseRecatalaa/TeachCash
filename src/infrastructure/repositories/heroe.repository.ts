@@ -107,6 +107,7 @@ export async function getMapa(userId: string): Promise<MapaDto> {
       const ids = idsDe(m)
       return {
         id: m.id,
+        proximamente: ids.length === 0,
         titulo: m.titulo,
         descripcion: m.descripcion,
         decorado: m.decorado,
@@ -123,7 +124,8 @@ export async function getMapa(userId: string): Promise<MapaDto> {
 export async function getMundo(userId: string, mundoId: string): Promise<MundoDto> {
   const datos = await contenido()
   const mundo = datos.mundos.find((m) => m.id === mundoId)
-  if (!mundo) throw new RepositoryError(NOT_FOUND)
+  // Un mundo "Próximamente" (sin niveles) no tiene camino que enseñar.
+  if (!mundo || mundo.niveles.length === 0) throw new RepositoryError(NOT_FOUND)
 
   const progreso = await progresoDe(userId)
   const estadoDe = estados(mundo, progreso)

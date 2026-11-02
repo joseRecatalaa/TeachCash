@@ -1,12 +1,13 @@
 'use client'
 
 import { Group, Radio } from '@mantine/core'
+import { sinMarcas } from '@/lib/marcas'
 import type { PropsEjercicio } from './tipos'
 
 export function VerdaderoFalso({ pregunta, valor, alCambiar, bloqueado }: PropsEjercicio<'verdaderoFalso'>) {
   return (
     <Radio.Group
-      aria-label={pregunta.enunciado}
+      aria-label={sinMarcas(pregunta.enunciado)}
       value={typeof valor === 'boolean' ? String(valor) : null}
       onChange={(v) => alCambiar(v === 'true')}
     >

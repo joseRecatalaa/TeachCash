@@ -7,6 +7,7 @@
 
 import { Group, Radio } from '@mantine/core'
 import type { PropsEjercicio } from './tipos'
+import { Marcado } from '../reproductor/Marcado'
 import styles from './ejercicios.module.css'
 
 /** El hueco vacío ocupa sitio: sin nada dentro, la línea se quedaría en un punto. */
@@ -18,11 +19,11 @@ export function Hueco({ pregunta, valor, alCambiar, bloqueado }: PropsEjercicio<
   return (
     <div className={styles.columna}>
       <p className={styles.frase}>
-        {antes}
+        <Marcado texto={antes} />
         <span className={styles.hueco} data-relleno={elegida !== null}>
           {elegida ?? VACIO}
         </span>
-        {despues}
+        <Marcado texto={despues} />
       </p>
       <Radio.Group
         aria-label="La palabra que falta"

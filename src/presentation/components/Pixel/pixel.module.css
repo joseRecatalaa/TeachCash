@@ -97,11 +97,15 @@
 
 /* Camina: los dos pasos se alternan cada 0,175 s y los brazos se balancean a
    contrapié, un píxel. Andando no respira: el balanceo ya lo hace parecer
-   vivo, y los dos a la vez lo hacen temblar. */
-.heroe[data-pose='camina'] .respira {
+   vivo, y los dos a la vez lo hacen temblar.
+   Corre: lo mismo al doble de velocidad, y el cuerpo bota un píxel en cada
+   paso. */
+.heroe[data-pose='camina'] .respira,
+.heroe[data-pose='corre'] .respira {
   animation: none;
 }
-.heroe[data-pose='camina'] .piernas {
+.heroe[data-pose='camina'] .piernas,
+.heroe[data-pose='corre'] .piernas {
   animation: px-oculta 0.35s steps(1, end) infinite;
 }
 .heroe[data-pose='camina'] .paso1 {
@@ -115,6 +119,29 @@
 }
 .heroe[data-pose='camina'] .brazoDer {
   animation: px-brazo-a 0.35s steps(1, end) infinite;
+}
+
+.heroe[data-pose='corre'] .paso1 {
+  animation: px-paso-a 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] .paso2 {
+  animation: px-paso-b 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] .brazoIzq {
+  animation: px-brazo-b 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] .brazoDer {
+  animation: px-brazo-a 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] {
+  animation: px-bota 0.09s steps(1, end) infinite;
+}
+
+@keyframes px-bota {
+  50%,
+  100% {
+    translate: 0 -1px;
+  }
 }
 
 @keyframes px-oculta {
@@ -211,4 +238,70 @@
   --px-suelo: #3a5a3e;
   --px-suelo-luz: #4b6b4f;
   --px-suelo-sombra: #2f4b33;
+}
+
+/* ── Cada mundo, su color ──────────────────────────────────────────────────
+ *
+ * El planeta del mapa y el monstruo de su jefe toman el color del mundo por
+ * `data-decorado`, que es la misma clave que elige su dibujo. El color nunca
+ * es lo único que distingue un mundo: lo dicen su nombre y su decorado.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paletaCamino[data-decorado='escudo'] {
+  --px-planeta: #7fa8e6;
+  --px-planeta-sombra: #4f78bd;
+  --px-planeta-luz: #c9dbf6;
+  --px-planeta-mancha: #5d8fd8;
+  --px-monstruo: #e5484d;
+  --px-monstruo-sombra: #b0303a;
+}
+
+.paletaCamino[data-decorado='hucha'] {
+  --px-planeta: #f4a3b5;
+  --px-planeta-sombra: #cf7590;
+  --px-planeta-luz: #fbd7df;
+  --px-planeta-mancha: #e88aa2;
+  --px-monstruo: #9b5de5;
+  --px-monstruo-sombra: #6f3cb3;
+}
+
+.paletaCamino[data-decorado='montana'] {
+  --px-planeta: #8fc79a;
+  --px-planeta-sombra: #5c9a6b;
+  --px-planeta-luz: #cfe9d4;
+  --px-planeta-mancha: #6fb27d;
+  --px-monstruo: #e98a2e;
+  --px-monstruo-sombra: #b5631a;
+}
+
+.paletaCamino[data-decorado='tarjeta'] {
+  --px-planeta: #b39ae6;
+  --px-planeta-sombra: #7f63c2;
+  --px-planeta-luz: #e0d5f7;
+  --px-planeta-mancha: #9a7fd9;
+  --px-monstruo: #3fa7a0;
+  --px-monstruo-sombra: #2a7a74;
+}
+
+/* ── El mundo del splash, fuera del splash ─────────────────────────────────
+ *
+ * La nube y el pino, para el bloque `imagen` de las lecturas. Los mismos
+ * tonos que el mundo de la pantalla de carga, que declara los suyos en su
+ * propio módulo.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paletaMundo {
+  --px-nube: #ffffff;
+  --px-nube-sombra: #dfe7de;
+  --px-hoja: #7aa47c;
+  --px-hoja-sombra: #658f68;
+  --px-tronco: #8a948a;
+}
+
+:global(:root[data-mantine-color-scheme='dark']) .paletaMundo {
+  --px-nube: #c9d3cb;
+  --px-nube-sombra: #9eaaa1;
+  --px-hoja: #4f7a55;
+  --px-hoja-sombra: #3d6243;
+  --px-tronco: #6b756c;
 }

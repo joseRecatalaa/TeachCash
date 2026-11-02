@@ -31,7 +31,7 @@ const P = {
 describe('barajar', () => {
   test('propiedad: una permutación de 0..n-1 que nunca es la identidad', () => {
     fc.assert(
-      fc.property(fc.integer({ min: 2, max: 6 }), fc.infiniteStream(fc.double({ min: 0, max: 0.999 })), (n, numeros) => {
+      fc.property(fc.integer({ min: 2, max: 6 }), fc.infiniteStream(fc.double({ min: 0, max: 0.999, noNaN: true })), (n, numeros) => {
         const it = numeros[Symbol.iterator]()
         const orden = barajar(n, () => it.next().value)
         expect([...orden].sort((a, b) => a - b)).toEqual([...Array(n).keys()])
@@ -40,12 +40,9 @@ describe('barajar', () => {
     )
   })
 
-  test('aunque el azar devuelva la identidad, vuelve a barajar', () => {
-    // Con un aleatorio que siempre da el máximo, Fisher-Yates deja la
-    // identidad la primera vez; luego cambia.
-    const valores = [0.999, 0.999, 0, 0]
-    let k = 0
-    expect(barajar(3, () => valores[k++ % valores.length])).not.toEqual([0, 1, 2])
+  test('con un azar que siempre deja el orden bueno, rota uno en vez de colgarse', () => {
+    // Siempre el máximo: Fisher-Yates intercambia cada posición consigo misma.
+    expect(barajar(3, () => 0.999)).toEqual([1, 2, 0])
   })
 
   test('con menos de dos no hay nada que barajar', () => {

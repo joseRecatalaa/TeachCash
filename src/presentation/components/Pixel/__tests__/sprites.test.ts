@@ -13,7 +13,7 @@ const esSprite = (v: unknown): v is Sprite =>
   typeof v === 'object' && v !== null && 'filas' in v && Array.isArray((v as Sprite).filas)
 
 const DEL_MUNDO = new Set(['NUBE', 'PINO'])
-const DEL_CAMINO = new Set(['HUCHA', 'ESCUDO', 'MONTANA', 'TARJETA', 'LIBRO', 'MANDO', 'MONSTRUO', 'CANDADO', 'ESTRELLA'])
+const DEL_CAMINO = new Set(['HUCHA', 'ESCUDO', 'MONTANA', 'TARJETA', 'LIBRO', 'MANDO', 'MONSTRUO', 'CANDADO', 'ESTRELLA', 'CERDITO', 'MONEDA', 'CORAZON', 'BARRAS', 'TARJETITA'])
 
 const paletaDe = (nombre: string): Paleta => {
   if (DEL_MUNDO.has(nombre)) return sprites.PALETA_MUNDO

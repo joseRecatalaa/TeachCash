@@ -14,6 +14,7 @@
  */
 
 import { z } from 'zod'
+import { errorDeMarcas } from '@/lib/marcas'
 
 /** Un tramo de id: minúsculas, cifras y guiones. Va en la URL y en la base. */
 export const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
@@ -23,6 +24,17 @@ export const LEVEL_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 const slug = z.string().regex(SLUG, 'Solo minúsculas, cifras y guiones')
 const texto = (max: number) => z.string().trim().min(1).max(max)
+
+/**
+ * Un texto que admite `**negrita**` y `_cursiva_` (`lib/marcas.ts`). Una marca
+ * sin cerrar es una errata: se rechaza, y el error lleva el campo en su ruta
+ * ("minitest.2.explicacion: Hay una negrita (**) sin cerrar").
+ */
+const textoMarcado = (max: number) =>
+  texto(max).superRefine((t, ctx) => {
+    const error = errorDeMarcas(t)
+    if (error) ctx.addIssue({ code: 'custom', message: error })
+  })
 const sinRepetidos = (lista: readonly string[]) => new Set(lista).size === lista.length
 
 /* ── Las preguntas y los ejercicios ────────────────────────────────────────
@@ -35,8 +47,8 @@ const sinRepetidos = (lista: readonly string[]) => new Set(lista).size === lista
 const base = {
   /** Único dentro del nivel. */
   id: slug,
-  enunciado: texto(400),
-  explicacion: texto(700),
+  enunciado: textoMarcado(400),
+  explicacion: textoMarcado(700),
 }
 
 const opciones = z
@@ -92,6 +104,12 @@ export const PreguntaSchema = z.discriminatedUnion('tipo', [
     .refine((p) => p.enunciado.split('___').length === 2, {
       message: 'El enunciado tiene que llevar UN hueco: ___',
       path: ['enunciado'],
+    })
+    // La frase se pinta en dos mitades, antes y después del hueco: una
+    // negrita que lo cruzara se quedaría abierta en las dos.
+    .refine((p) => p.enunciado.split('___').every((mitad) => errorDeMarcas(mitad) === null), {
+      message: 'Una negrita o cursiva no puede cruzar el hueco ___',
+      path: ['enunciado'],
     }),
   z.strictObject({
     ...base,
@@ -115,21 +133,62 @@ export type TipoPregunta = Pregunta['tipo']
 
 /* ── Las páginas de una lectura ────────────────────────────────────────── */
 
+/**
+ * Los dibujos que puede enseñar un bloque `imagen`: sprites a píxel que ya
+ * existen (`components/Pixel/sprites.ts`). Nada de ficheros de imagen: así
+ * no hay que tocar la CSP, no pesan y siguen el modo oscuro.
+ */
+export const SPRITES_IMAGEN = [
+  'hucha',
+  'cerdito',
+  'escudo',
+  'montana',
+  'tarjeta',
+  'libro',
+  'mando',
+  'monstruo',
+  'candado',
+  'estrella',
+  'billete',
+  'nube',
+  'pino',
+  'destello',
+] as const
+export type SpriteImagen = (typeof SPRITES_IMAGEN)[number]
+
 export const BloqueSchema = z.discriminatedUnion('tipo', [
-  z.strictObject({ tipo: z.literal('parrafo'), texto: texto(900) }),
+  z.strictObject({ tipo: z.literal('parrafo'), texto: textoMarcado(900) }),
   /** La idea que hay que llevarse: se pinta destacada. */
-  z.strictObject({ tipo: z.literal('idea'), texto: texto(300) }),
+  z.strictObject({ tipo: z.literal('idea'), texto: textoMarcado(300) }),
   /** Un ejemplo con cifras. Los importes, en céntimos y con signo. */
   z.strictObject({
     tipo: z.literal('ejemplo'),
-    titulo: texto(120),
+    titulo: textoMarcado(120),
     filas: z
       .array(z.strictObject({ concepto: texto(120), importe: z.number().int() }))
       .min(1)
       .max(8),
-    nota: texto(300).optional(),
+    nota: textoMarcado(300).optional(),
   }),
-  z.strictObject({ tipo: z.literal('lista'), items: z.array(texto(250)).min(2).max(8) }),
+  z.strictObject({ tipo: z.literal('lista'), items: z.array(textoMarcado(250)).min(2).max(8) }),
+  /**
+   * Un dibujo a píxel. El `pie` es lo que lee el lector de pantalla (el
+   * dibujo va oculto para él); sin pie, el dibujo es decoración.
+   */
+  z.strictObject({
+    tipo: z.literal('imagen'),
+    sprite: z.enum(SPRITES_IMAGEN),
+    pie: texto(160).optional(),
+  }),
+  /**
+   * El gancho de una lectura: un dato llamativo, con su FUENTE. Un dato sin
+   * fuente no se publica, y por eso es obligatoria.
+   */
+  z.strictObject({
+    tipo: z.literal('dato'),
+    texto: textoMarcado(400),
+    fuente: texto(120),
+  }),
 ])
 
 export type Bloque = z.infer<typeof BloqueSchema>
@@ -202,8 +261,12 @@ export const MundoSchema = z.strictObject({
   /**
    * Los niveles en el orden en que se juegan, por el nombre de su fichero sin
    * `.json`. El último tiene que ser el jefe.
+   *
+   * Vacío = el mundo aún no tiene contenido: sale en el mapa como
+   * "Próximamente" y no se puede entrar. Así el mapa enseña desde el
+   * principio todos los mundos que va a tener.
    */
-  niveles: z.array(slug).min(1).max(15).refine(sinRepetidos, 'Hay niveles repetidos'),
+  niveles: z.array(slug).max(15).refine(sinRepetidos, 'Hay niveles repetidos'),
 })
 
 export type Mundo = z.infer<typeof MundoSchema>
@@ -219,6 +282,8 @@ export type Estrellas = 0 | 1 | 2 | 3
 
 export interface MundoResumenDto {
   id: string
+  /** Sin niveles todavía: se ve en el mapa pero no se puede entrar. */
+  proximamente: boolean
   titulo: string
   descripcion: string
   decorado: Decorado
