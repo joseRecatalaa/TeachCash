@@ -175,6 +175,8 @@ Reglas:
 - Distingue lo que es un hecho (la ley, una definición) de lo que es una
   regla práctica (el 50/30/20, los 3-6 meses de colchón).
 - Lenguaje llano, frases cortas, sin anglicismos innecesarios.
+- Si un ejemplo necesita una persona, se llama Pepito. Siempre Pepito: es el
+  personaje de la casa.
 ```
 
 | Mundo | Enfoque |
@@ -199,6 +201,7 @@ src/types/heroe.types.ts:
 - Importes en céntimos y con signo; porcentajes de calcula en centésimas de
   punto.
 - Toda pregunta con una explicación que diga POR QUÉ, en una o dos frases.
+- Si un ejemplo necesita una persona, se llama Pepito (nunca otro nombre).
 - Nada que no esté en el informe y respaldado por una fuente. Ningún producto
   ni marca concretos.
 
