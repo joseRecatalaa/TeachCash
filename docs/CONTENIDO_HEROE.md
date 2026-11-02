@@ -70,7 +70,10 @@ repetir y cuenta la mejor marca.
 
 ### Las páginas de una lectura
 
-Cada página tiene un `titulo` y de 1 a 6 `bloques`. Un curso de 2 minutos son
+Cada página tiene un `titulo` y de 1 a 6 `bloques`. **Ningún título lleva
+emoticonos** (ni el de una página, ni el de un nivel, ni el de un ejemplo, ni
+el de un mundo): se comen el estilo del titular y el lector de pantalla lee su
+nombre entero antes que el título. El validador los rechaza. En el texto, sí. Un curso de 2 minutos son
 unas 4 páginas.
 
 | Bloque | Campos | Para qué |

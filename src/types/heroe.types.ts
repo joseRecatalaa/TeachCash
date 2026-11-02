@@ -26,6 +26,16 @@ const slug = z.string().regex(SLUG, 'Solo minúsculas, cifras y guiones')
 const texto = (max: number) => z.string().trim().min(1).max(max)
 
 /**
+ * Un título: sin emoticonos. Los títulos van en la letra de titulares (y los
+ * de los mundos, en la de píxel), y un emoticono a color al lado se come el
+ * estilo; además, el lector de pantalla lee su nombre entero ("cara con los
+ * dientes apretados") antes que el título. Donde sí caben es en el texto.
+ */
+const SIN_EMOTICONOS = /\p{Extended_Pictographic}/u
+const titulo = (max: number) =>
+  texto(max).refine((t) => !SIN_EMOTICONOS.test(t), 'Sin emoticonos en los títulos')
+
+/**
  * Un texto que admite `**negrita**` y `_cursiva_` (`lib/marcas.ts`). Una marca
  * sin cerrar es una errata: se rechaza, y el error lleva el campo en su ruta
  * ("minitest.2.explicacion: Hay una negrita (**) sin cerrar").
@@ -163,7 +173,7 @@ export const BloqueSchema = z.discriminatedUnion('tipo', [
   /** Un ejemplo con cifras. Los importes, en céntimos y con signo. */
   z.strictObject({
     tipo: z.literal('ejemplo'),
-    titulo: textoMarcado(120),
+    titulo: textoMarcado(120).refine((t) => !SIN_EMOTICONOS.test(t), 'Sin emoticonos en los títulos'),
     filas: z
       .array(z.strictObject({ concepto: texto(120), importe: z.number().int() }))
       .min(1)
@@ -194,7 +204,7 @@ export const BloqueSchema = z.discriminatedUnion('tipo', [
 export type Bloque = z.infer<typeof BloqueSchema>
 
 export const PaginaSchema = z.strictObject({
-  titulo: texto(120),
+  titulo: titulo(120),
   bloques: z.array(BloqueSchema).min(1).max(6),
 })
 
@@ -208,7 +218,7 @@ const preguntasSinIdsRepetidos = (lista: readonly Pregunta[]) =>
 const nivelBase = {
   /** `<mundo>/<nivel>`, y tiene que coincidir con la ruta del fichero. */
   id: z.string().regex(LEVEL_ID),
-  titulo: texto(80),
+  titulo: titulo(80),
   descripcion: texto(240),
   /** Lo que se tarda, para la ficha del camino. */
   minutos: z.number().int().min(1).max(15),
@@ -253,7 +263,7 @@ export type Decorado = (typeof DECORADOS)[number]
 export const MundoSchema = z.strictObject({
   /** Tiene que coincidir con el nombre de la carpeta. */
   id: slug,
-  titulo: texto(60),
+  titulo: titulo(60),
   descripcion: texto(240),
   decorado: z.enum(DECORADOS),
   /** Posición en el mapa. Los mundos están libres: no es un orden de desbloqueo. */

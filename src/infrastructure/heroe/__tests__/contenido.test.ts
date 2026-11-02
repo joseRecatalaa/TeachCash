@@ -106,6 +106,21 @@ describe('un contenido roto se para con un mensaje que dice dónde', () => {
     await expect(cargarContenido(raiz)).rejects.toThrow(/no puede cruzar el hueco/)
   })
 
+  test('un emoticono en el título de una página', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      const [pagina] = j.paginas as Record<string, unknown>[]
+      pagina.titulo = '🌧️ Lo inesperado'
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/paginas\.0\.titulo: Sin emoticonos en los títulos/)
+  })
+
+  test('un emoticono en el título del nivel', async () => {
+    await editar(fichero('prueba', '01-lectura.json'), (j) => {
+      j.titulo = 'Leer 🚀'
+    })
+    await expect(cargarContenido(raiz)).rejects.toThrow(/titulo: Sin emoticonos en los títulos/)
+  })
+
   test('un dato sin fuente', async () => {
     await editar(fichero('prueba', '01-lectura.json'), (j) => {
       const [pagina] = j.paginas as { bloques: Record<string, unknown>[] }[]
