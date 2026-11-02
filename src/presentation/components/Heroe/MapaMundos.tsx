@@ -4,10 +4,11 @@
  * El mapa de mundos: cada mundo es un PLANETA a píxel (`planeta.ts`) con su
  * decorado encima, y el héroe espera en el suelo, debajo del elegido.
  *
- * Se ven TRES planetas a la vez y las flechas deslizan la fila: grandes se
- * leen mejor que cuatro pequeños, y así caben los mundos que vengan. Si al
- * deslizar el mundo elegido sale de la vista, se elige el más cercano de los
- * que entran, para que el héroe no se quede fuera de cuadro.
+ * Se ven TRES planetas a la vez: grandes se leen mejor que cuatro pequeños,
+ * y así caben los mundos que vengan. La fila sigue al héroe: el mundo
+ * elegido va SIEMPRE en el centro de los tres, salvo el primero y el último,
+ * que no tienen vecino a un lado. Las flechas (y las del teclado) llevan al
+ * héroe al mundo de al lado, y la fila se desliza con él.
  *
  * Elegir un planeta (clic, toque, o Enter con el teclado) hace que el héroe
  * CORRA hasta ponerse debajo; "Entrar" lo hace saltar dentro del planeta y
@@ -296,8 +297,9 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
   )
   const [elegido, setElegido] = useState(idxInicial)
   const [previo, setPrevio] = useState(idxInicial)
-  const [inicio, setInicio] = useState(acotar(idxInicial - 1, 0, ultimoInicio))
   const [entrando, setEntrando] = useState(false)
+  // La fila se deriva del elegido: él en el centro, salvo en los extremos.
+  const inicio = acotar(elegido - 1, 0, ultimoInicio)
   const desliz = useDesliz(-inicio * HUECO)
 
   const mundo = mundos[elegido]
@@ -312,13 +314,10 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
     setElegido(i)
   }
 
+  /** Las flechas: el héroe corre al mundo de al lado (sin entrar). */
   const deslizar = (paso: -1 | 1) => {
-    const nuevo = acotar(inicio + paso, 0, ultimoInicio)
-    setInicio(nuevo)
-    // Que el héroe no se quede fuera de cuadro: si el elegido sale de la
-    // vista, se elige el más cercano de los que entran.
-    if (elegido < nuevo) elegir(nuevo)
-    else if (elegido >= nuevo + VISIBLES) elegir(nuevo + VISIBLES - 1)
+    const destino = acotar(elegido + paso, 0, mundos.length - 1)
+    if (destino !== elegido) elegir(destino)
   }
 
   function entrar() {
@@ -344,8 +343,8 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
           className={`${styles.flecha} ${styles.flechaIzq}`}
           variant="default"
           size="xl"
-          aria-label="Mundos anteriores"
-          disabled={inicio === 0}
+          aria-label="Mundo anterior"
+          disabled={elegido === 0}
           onClick={() => deslizar(-1)}
         >
           <IconChevronLeft size={22} />
@@ -384,8 +383,8 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
           className={`${styles.flecha} ${styles.flechaDer}`}
           variant="default"
           size="xl"
-          aria-label="Mundos siguientes"
-          disabled={inicio >= ultimoInicio}
+          aria-label="Mundo siguiente"
+          disabled={elegido === mundos.length - 1}
           onClick={() => deslizar(1)}
         >
           <IconChevronRight size={22} />

@@ -131,27 +131,43 @@ describe('MapaMundos', () => {
     expect(partirNombre(nombre)).toEqual(lineas)
   })
 
-  test('se ven tres a la vez; las flechas deslizan y no pasan de los extremos', async () => {
+  test('las flechas llevan al héroe al mundo de al lado, y la fila lo deja en el centro', async () => {
     const { usuario } = renderConMantine(<MapaMundos mapa={MAPA} />)
 
-    const antes = screen.getByRole('button', { name: 'Mundos anteriores' })
-    const despues = screen.getByRole('button', { name: 'Mundos siguientes' })
+    const antes = screen.getByRole('button', { name: 'Mundo anterior' })
+    const despues = screen.getByRole('button', { name: 'Mundo siguiente' })
+    // Ahorro (el 2.º) elegido: en el centro de los tres primeros.
     expect(screen.getByRole('group', { name: /se ven del 1 al 3/ })).toBeInTheDocument()
-    expect(antes).toBeDisabled()
 
     await usuario.click(despues)
+    expect(screen.getByRole('button', { name: /^Inversión/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('group', { name: /se ven del 2 al 4/ })).toBeInTheDocument()
+
+    // El último: la fila ya no se mueve y la flecha se apaga.
+    await usuario.click(despues)
+    expect(screen.getByRole('button', { name: 'Deuda y crédito, próximamente' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('group', { name: /se ven del 2 al 4/ })).toBeInTheDocument()
     expect(despues).toBeDisabled()
-    // Ahorro (el 2) sigue a la vista: sigue elegido.
-    expect(screen.getByRole('button', { name: /^Ahorro/ })).toHaveAttribute('aria-pressed', 'true')
+
+    // Y hacia atrás hasta el primero, que también se queda a un lado.
+    await usuario.click(antes)
+    await usuario.click(antes)
+    await usuario.click(antes)
+    expect(screen.getByRole('button', { name: 'Salud financiera, próximamente' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('group', { name: /se ven del 1 al 3/ })).toBeInTheDocument()
+    expect(antes).toBeDisabled()
+    // Las flechas mueven; no entran.
+    expect(navegar.push).not.toHaveBeenCalled()
   })
 
-  test('si al deslizar el elegido sale de la vista, se elige el más cercano', async () => {
-    const { usuario } = renderConMantine(<MapaMundos mapa={{ ...MAPA, ultimoMundo: 'deuda' }} />)
+  test('las flechas del teclado hacen lo mismo', async () => {
+    const { usuario } = renderConMantine(<MapaMundos mapa={MAPA} />)
 
-    expect(screen.getByRole('group', { name: /se ven del 2 al 4/ })).toBeInTheDocument()
-    await usuario.click(screen.getByRole('button', { name: 'Mundos anteriores' }))
+    screen.getByRole('button', { name: /^Ahorro/ }).focus()
+    await usuario.keyboard('{ArrowRight}')
     expect(screen.getByRole('button', { name: /^Inversión/ })).toHaveAttribute('aria-pressed', 'true')
+    await usuario.keyboard('{ArrowLeft}{ArrowLeft}')
+    expect(screen.getByRole('button', { name: 'Salud financiera, próximamente' })).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('el héroe espera en el último mundo jugado', () => {
