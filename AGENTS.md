@@ -89,7 +89,7 @@ encontrado la pieza genérica.
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
 | UI | **Mantine v9** + `mantine-datatable` | Iconos: `@tabler/icons-react` |
 | Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" |
-| Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Vía `next/font/google` |
+| Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Fredoka en `app/fonts/` (`next/font/local`); las demás, `next/font/google` |
 | Estado de servidor | **React Query v5** | Lo usa Refine por dentro |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
 | Datos | **Postgres en Supabase** + **Drizzle ORM**, driver `postgres` (postgres-js) | Por el Transaction pooler, `prepare: false` |
@@ -755,9 +755,11 @@ lleve hasta ella.
   arriba, o el billete se corta.
 - **Si el build falla con `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`**
   (y "next/font/google queries have exactly one entry"), el código no tiene
-  nada: es un `.next` corrupto que deja el `pnpm dev`. Se borra `.next` entero
-  (se regenera) y se vuelve a compilar. Pasó en noviembre de 2026: el mismo
-  commit compilaba en una copia limpia y fallaba en la carpeta de trabajo.
+  nada. Pasó dos veces en noviembre de 2026: en local, y se fue borrando `.next`;
+  y en el CI, sin `.next` previo, con Fredoka, y en una ejecución que antes
+  pasaba. La causa exacta no se ha confirmado (apunta a la descarga de Google).
+  Por eso Fredoka va en `app/fonts/`. Si le pasa a otra fuente de Google, lo
+  mismo: se baja al repo con `next/font/local`.
 - **`app/globals.css` se importa EL ÚLTIMO** en `app/layout.tsx`. Si sube por
   encima de las hojas de Mantine, sus overrides de `--mantine-*` pierden por
   orden de cascada y la aplicación vuelve al gris de fábrica. No lanza ningún
