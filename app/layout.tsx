@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { Fredoka, Geist_Mono, Nunito, Press_Start_2P } from 'next/font/google'
+import { Geist_Mono, Nunito, Press_Start_2P } from 'next/font/google'
+import localFont from 'next/font/local'
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core'
 // El orden importa y no es arbitrario: las reglas dentro de `@layer` pierden
 // siempre frente a las no capadas, y varios detalles de mantine-datatable (el
@@ -40,10 +41,15 @@ import { SplashScreen } from '@/src/presentation/components/Splash/SplashScreen'
  * solo para la pantalla de carga y el Camino del héroe. No se usa para nada que
  * haya que leer seguido; es ancha y cansa en cuanto pasa de una línea.
  */
-const display = Fredoka({
+// Fredoka va en el repo y no por next/font/google: al bajarla de Google, el build
+// falló en el CI, sin tocar el código, con "next/font/google queries have exactly
+// one entry", y pasaba al repetirlo más tarde. Variable, del 300 al 700.
+// next/font/local llama a la familia como a esta constante, y por eso se llama así:
+// e2e/tipografia.spec.ts comprueba que los titulares salen en "Fredoka".
+const Fredoka = localFont({
+  src: './fonts/fredoka-latin-wght-normal.woff2',
   variable: '--font-display',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: '300 700',
 })
 const body = Nunito({ variable: '--font-body', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
@@ -89,7 +95,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
     // e2e/tipografia.spec.ts.
     <html
       lang="es"
-      className={`${display.variable} ${body.variable} ${geistMono.variable} ${pixel.variable}`}
+      className={`${Fredoka.variable} ${body.variable} ${geistMono.variable} ${pixel.variable}`}
       {...mantineHtmlProps}
     >
       <head>

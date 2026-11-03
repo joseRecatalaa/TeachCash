@@ -1,0 +1,80 @@
+{
+  "id": "prueba/03-jefe",
+  "tipo": "jefe",
+  "titulo": "El jefe",
+  "descripcion": "El test grande.",
+  "minutos": 5,
+  "aprobado": 70,
+  "preguntas": [
+    {
+      "id": "j1",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 1?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": false
+    },
+    {
+      "id": "j2",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 2?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j3",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 3?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": false
+    },
+    {
+      "id": "j4",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 4?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j5",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 5?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": false
+    },
+    {
+      "id": "j6",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 6?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j7",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 7?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": false
+    },
+    {
+      "id": "j8",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 8?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j9",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 9?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": false
+    },
+    {
+      "id": "j10",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Jefe 10?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    }
+  ]
+}

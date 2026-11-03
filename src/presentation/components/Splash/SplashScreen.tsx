@@ -20,15 +20,17 @@
  * sosteniendo el billete. Una barra que va por su cuenta se nota enseguida.
  *
  * El aspecto es de videojuego de 16 bits a propósito: es la puerta del Camino
- * del héroe, que será un recorrido por mundos con este mismo personaje. Los
- * sprites están en `sprites.ts` y la escena en `PixelScene.tsx`.
+ * del héroe, un recorrido por mundos con este mismo personaje. El héroe y sus
+ * sprites están en `components/Pixel/` y la escena en `PixelScene.tsx`.
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
+import { PixelSprite } from '../Pixel/PixelSprite'
+import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
+import pixel from '../Pixel/pixel.module.css'
+import { BILLETE, PALETA_HEROE } from '../Pixel/sprites'
 import { PixelScene } from './PixelScene'
-import { BILLETE, PALETA_HEROE } from './sprites'
-import { PixelSprite } from './PixelSprite'
 import styles from './Splash.module.css'
 
 /** El ciclo completo, del primer fotograma al velo blanco. */
@@ -104,29 +106,6 @@ function useYaVisto(): boolean {
   return useSyncExternalStore(
     () => () => {},
     () => document.documentElement.dataset.splash === 'visto',
-    () => false,
-  )
-}
-
-const CONSULTA_MOVIMIENTO = '(prefers-reduced-motion: reduce)'
-
-/**
- * La preferencia de movimiento, leída sin romper la hidratación.
- *
- * `matchMedia` no existe en el servidor, así que el tercer argumento devuelve
- * `false` allí: React pinta lo mismo en las dos partes y ya en el cliente
- * vuelve a pintar con el valor de verdad. Leerlo con `useState` daría un aviso
- * de hidratación a quien tenga el movimiento reducido, y hacerlo dentro de un
- * efecto obligaría a un `setState` que ESLint —con razón— no quiere.
- */
-function useMovimientoReducido(): boolean {
-  return useSyncExternalStore(
-    (avisar) => {
-      const mq = window.matchMedia(CONSULTA_MOVIMIENTO)
-      mq.addEventListener('change', avisar)
-      return () => mq.removeEventListener('change', avisar)
-    },
-    () => window.matchMedia(CONSULTA_MOVIMIENTO).matches,
     () => false,
   )
 }
@@ -236,7 +215,9 @@ export function SplashScreen() {
 
   return (
     <div
-      className={`${styles.raiz} ${saliendo ? styles.saliendo : ''}`}
+      // La paleta del héroe va en la raíz: el billete del rótulo y el que
+      // flota en la escena también la usan.
+      className={`${styles.raiz} ${pixel.paleta} ${saliendo ? styles.saliendo : ''}`}
       style={{ '--t': `${ciclo}ms` } as React.CSSProperties}
     >
       <PixelScene />

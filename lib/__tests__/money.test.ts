@@ -231,25 +231,40 @@ describe('reparto justo', () => {
     expect(allocate(money(10000), [1, 1, 1]).map((m) => m.amount)).toEqual([3334, 3333, 3333])
   })
 
+  /**
+   * La parte decimal de cada parte, EXACTA: el resto de `total × peso` entre la
+   * suma de los pesos, en unidades de esa suma. Con decimales de coma flotante
+   * y un margen fijo, el test fallaba de vez en cuando con totales de decenas
+   * de millones: dos restos iguales (un empate legítimo) salían distintos en
+   * la novena cifra y parecía que `allocate` había elegido mal.
+   */
+  const restoExacto = (total: number, p: number, totalPeso: number) =>
+    (((total * p) % totalPeso) + totalPeso) % totalPeso
+
   test('nadie redondeado hacia abajo tenía más derecho al céntimo que alguien redondeado hacia arriba', () => {
     // Es la definición de "mayor parte decimal" (método del resto mayor).
     fc.assert(
       fc.property(totales, pesos, (total, w) => {
         const totalPeso = w.reduce((a, b) => a + b, 0)
         if (totalPeso === 0) return
-        const decimal = w.map((p) => {
-          const exacto = (total * p) / totalPeso
-          return exacto - Math.floor(exacto)
-        })
+        const resto = w.map((p) => restoExacto(total, p, totalPeso))
         const subidos = allocate(money(total), w).map(
           (parte, i) => parte.amount > Math.floor((total * w[i]) / totalPeso),
         )
-        const minSubido = Math.min(...decimal.filter((_, i) => subidos[i]))
-        const maxNoSubido = Math.max(...decimal.filter((_, i) => !subidos[i] && w[i] > 0))
-        // Margen para el error de coma flotante al calcular las partes decimales.
-        expect(maxNoSubido).toBeLessThanOrEqual(minSubido + 1e-9)
+        const minSubido = Math.min(...resto.filter((_, i) => subidos[i]))
+        const maxNoSubido = Math.max(...resto.filter((_, i) => !subidos[i] && w[i] > 0))
+        expect(maxNoSubido).toBeLessThanOrEqual(minSubido)
       }),
     )
+  })
+
+  test('un empate exacto de restos con un total grande se resuelve por posición', () => {
+    // El contraejemplo que hacía fallar la versión con coma flotante: los
+    // pesos 67 y 22 tienen exactamente el mismo resto (2/5) y el céntimo es
+    // para el primero.
+    const partes = allocate(money(-70_385_658), [75, 46, 67, 22]).map((m) => m.amount)
+    expect(partes).toEqual([-25_137_735, -15_417_811, -22_456_376, -7_373_736])
+    expect(partes.reduce((a, b) => a + b, 0)).toBe(-70_385_658)
   })
 
   test('a quien tiene peso 0 no le toca nada, ni el céntimo del resto', () => {

@@ -48,6 +48,7 @@ import {
   EmptyState,
   SketchButton,
   SketchCard,
+  SketchTitle,
 } from '@/src/presentation/components/ui'
 import { ElegirPatrimonio } from '@/src/presentation/components/Inicio/ElegirPatrimonio'
 import { SelectorMes } from '@/src/presentation/components/Inicio/SelectorMes'
@@ -89,7 +90,7 @@ function Inicio() {
       <div className={styles.page}>
         <header className={styles.header}>
           <div>
-            <h1 className={styles.title}>Inicio</h1>
+            <SketchTitle>Inicio</SketchTitle>
             <SelectorMes {...mes} />
           </div>
         </header>

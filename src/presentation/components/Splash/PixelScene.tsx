@@ -9,7 +9,7 @@
  * un móvil en vertical solo se ven unos 50 píxeles de ancho alrededor de
  * x = 96, y ahí tienen que caber el héroe, el billete y los destellos.
  *
- * El héroe (32x44) se apoya en x = 80, y = 48: centrado en 96 y con las botas
+ * El héroe (32x44, `PixelHero`) se apoya en x = 80, y = 48: centrado en 96 y con las botas
  * en la fila 91, justo encima del césped (`SUELO`). El billete flotante está
  * donde el billete sostenido queda con el salto en lo alto (12 px): si cambias
  * la altura del salto en el módulo, cambia `SALTO` aquí o agarrará aire.
@@ -19,24 +19,11 @@
  * pintar exactamente lo mismo o React avisa de un desajuste de hidratación.
  */
 
-import { PixelSprite } from './PixelSprite'
+import { circulo } from '../Pixel/geometria'
+import { PixelHero } from '../Pixel/PixelHero'
+import { PixelSprite } from '../Pixel/PixelSprite'
+import { BILLETE, DESTELLO, NUBE, PALETA_HEROE, PALETA_MUNDO, PINO } from '../Pixel/sprites'
 import styles from './Splash.module.css'
-import {
-  BILLETE,
-  BOCA,
-  BRAZO_ARRIBA,
-  BRAZO_DER_ABAJO,
-  BRAZO_IZQ_ABAJO,
-  CUERPO,
-  DESTELLO,
-  NUBE,
-  OJOS,
-  OJOS_ARRIBA,
-  PALETA_HEROE,
-  PALETA_MUNDO,
-  PIERNAS,
-  PINO,
-} from './sprites'
 
 const ANCHO = 192
 const ALTO = 108
@@ -104,15 +91,6 @@ const colinaCerca = lomas([
 ])
 
 const PINOS = [6, 22, 136, 150, 160].map((x) => ({ x, y: SUELO - colinaLejos(x + 4) - 12 }))
-
-function circulo(cx: number, cy: number, r: number): string {
-  let d = ''
-  for (let dy = -r; dy <= r; dy++) {
-    const m = Math.round(Math.sqrt(r * r - dy * dy))
-    d += `M${cx - m} ${cy + dy}h${m * 2 + 1}v1h-${m * 2 + 1}z`
-  }
-  return d
-}
 
 /** Las mismas posiciones en claro y en oscuro; en claro se pintan transparentes. */
 const ESTRELLAS = [
@@ -227,9 +205,9 @@ export function PixelScene() {
       />
 
       {/* ── El héroe ──────────────────────────────────────────────────── */}
+      {/* En pose de celebrar, que es la FINAL del guion: es lo que queda sin
+          animación. Las clases le enganchan la coreografía del módulo. */}
       <g transform={`translate(${HEROE_X} ${HEROE_Y})`}>
-        <path d="M8 44h16v1h-16zM6 45h20v1h-20z" fill="var(--px-sombra)" className={styles.sombraSuelo} />
-
         <g transform={`translate(0 ${-SALTO})`}>
           <g className={styles.flota}>
             <g className={styles.gira}>
@@ -238,21 +216,17 @@ export function PixelScene() {
           </g>
         </g>
 
-        <g className={styles.salta}>
-          <PixelSprite sprite={PIERNAS} paleta={PALETA_HEROE} />
-          <g className={styles.respira}>
-            <PixelSprite sprite={CUERPO} paleta={PALETA_HEROE} />
-            <PixelSprite sprite={BRAZO_IZQ_ABAJO} paleta={PALETA_HEROE} className={styles.brazoIzq} />
-            <PixelSprite sprite={BRAZO_DER_ABAJO} paleta={PALETA_HEROE} />
-            <PixelSprite sprite={OJOS} paleta={PALETA_HEROE} className={styles.ojos} />
-            <PixelSprite sprite={OJOS_ARRIBA} paleta={PALETA_HEROE} className={styles.ojosArriba} />
-            <PixelSprite sprite={BOCA} paleta={PALETA_HEROE} />
-            <g className={styles.lleva}>
-              <PixelSprite sprite={BILLETE} paleta={PALETA_HEROE} />
-              <PixelSprite sprite={BRAZO_ARRIBA} paleta={PALETA_HEROE} />
-            </g>
-          </g>
-        </g>
+        <PixelHero
+          pose="celebra"
+          clases={{
+            sombra: styles.sombraSuelo,
+            salta: styles.salta,
+            brazoIzq: styles.brazoIzq,
+            ojos: styles.ojos,
+            ojosArriba: styles.ojosArriba,
+            lleva: styles.lleva,
+          }}
+        />
 
         {DESTELLOS_COGER.map(([x, y]) => brillo(x, y, styles.brilloCoger))}
       </g>

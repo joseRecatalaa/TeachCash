@@ -12,12 +12,13 @@ usuario no se ven, y en una aplicación de dinero parecen datos.
 
 | Comando | Qué ejecuta | Necesita |
 |---|---|---|
-| `pnpm test` | Vitest: los 41 ficheros `*.test.ts(x)` (750 casos) | Nada. No toca Supabase |
+| `pnpm test` | Vitest: los 62 ficheros `*.test.ts(x)` (1093 casos) | Nada. No toca Supabase |
 | `pnpm test:tz` | La misma suite con `TZ=Pacific/Kiritimati` (UTC+14) | Nada |
 | `pnpm test:coverage` | La suite con cobertura y los umbrales por fichero (§4) | Nada. Informe en `coverage/index.html` |
-| `pnpm test:e2e` | Playwright: 5 flujos sobre el build de producción y un Supabase de pruebas | `.env.e2e` (ver §2.4) |
+| `pnpm test:e2e` | Playwright: 6 flujos sobre el build de producción y un Supabase de pruebas | `.env.e2e` (ver §2.4) |
+| `pnpm heroe:validar` | Solo `src/__tests__/contenido-heroe.test.ts`: el contenido real del Camino del héroe pasa el formato | Nada |
 | `pnpm test:e2e:ui` | Lo mismo, con la interfaz de Playwright para depurar paso a paso | `.env.e2e` |
-| `pnpm test:e2e:visual` | La regresión visual de Inicio (escritorio y móvil). La primera vez, con `--update-snapshots` | `.env.e2e` |
+| `pnpm test:e2e:visual` | La regresión visual de Inicio y de la pantalla de carga (escritorio y móvil). La primera vez, con `--update-snapshots` | `.env.e2e` |
 
 Antes de dar algo por terminado:
 
@@ -155,7 +156,7 @@ AGENTS.md.
 
 | Fichero | Casos | Qué cubre | RD |
 |---|---|---|---|
-| `lib/__tests__/money.test.ts` | 32 | Aritmética entera, signos, `mul` con negativos y `-0.5`, `allocate` justo (resto mayor), parseo de importes, que mezclar divisas lance. Propiedades con fast-check | 1, 2 |
+| `lib/__tests__/money.test.ts` | 33 | Aritmética entera, signos, `mul` con negativos y `-0.5`, `allocate` justo (resto mayor, comparado con restos EXACTOS: con decimales fallaba en los empates), parseo de importes, que mezclar divisas lance. Propiedades con fast-check | 1, 2 |
 | `lib/__tests__/format.test.ts` | 29 | `formatMoney` en es-ES, signo, ida y vuelta input → `parseMoney` | 1 |
 | `lib/__tests__/dates.test.ts` | 22 | Fechas civiles, periodos, rangos de mes, `addDays`/`daysBetween` inversos, reloj congelado | 5 |
 | `lib/__tests__/rutas.test.ts` | 12 | `rutaInterna`: ninguna redirección sale del sitio (`//x`, `/\x`, `https://…`) | — |
@@ -164,12 +165,14 @@ AGENTS.md.
 | `lib/__tests__/csp.test.ts` | 7 | La CSP con nonce y sus directivas | — |
 | `lib/__tests__/log.test.ts` | 4 | Los errores se registran sin `params` de Drizzle (ni importes ni descripciones) | — |
 | `lib/__tests__/colores.test.ts`, `ids.test.ts` | 4 + 3 | Claves de la paleta; bits de versión y variante del UUID | — |
+| `lib/__tests__/heroe.test.ts` | 23 | Camino del héroe: qué respuesta es buena (`calcula` con su tolerancia, propiedad) y las estrellas (más aciertos nunca dan menos) | 1, 6 |
+| `lib/__tests__/marcas.test.ts` | 15 | `**negrita**` y `_cursiva_` del contenido: anidadas, sin cerrar, y lo que NO es marca (`3 * 4`, `mi_cuenta`, el `___` del hueco). Propiedad: no se pierde texto | — |
 
 ### Base de datos y repositorios
 
 | Fichero | Casos | Qué cubre | RD |
 |---|---|---|---|
-| `db/__tests__/schema.test.ts` | 22 | RLS en `categories` y `transactions` (SELECT, UPDATE, DELETE, WITH CHECK); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
+| `db/__tests__/schema.test.ts` | 23 | RLS en `categories`, `transactions` y `hero_progress` (SELECT, UPDATE, DELETE, WITH CHECK); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
 | `repositories/__tests__/movimientos.repository.test.ts` | 48 | CRUD, `update` (gasto ↔ ingreso, categoría ajena), fechas futuras prohibidas, filtros, orden, paginación, idempotencia entre usuarios, aislamiento | 1, 4, 5 |
 | `repositories/__tests__/categorias.repository.test.ts` | 47 | CRUD, nombre único, ocultar/activar, borrado en cascada de sus movimientos, catálogo inicial | 4 |
 | `repositories/__tests__/informes.repository.test.ts` | 27 | Agregaciones; **el saldo actual = el último punto de la serie** (propiedad) | 7 |
@@ -178,6 +181,9 @@ AGENTS.md.
 | `repositories/__tests__/metadata.repository.test.ts` | 7 | Opciones de los select, sin claves del prototipo | — |
 | `repositories/__tests__/postgres-errors.test.ts` | 9 | Carreras contra las UNIQUE (`23505`) traducidas a id existente o error de campo | — |
 | `repositories/__tests__/types.test.ts` | 4 | `RepositoryError` y `fromFieldErrors` | — |
+| `repositories/__tests__/heroe.repository.test.ts` | 34 | Camino del héroe sobre un contenido de prueba fijo (`__tests__/fixtures/heroe/`): desbloqueo en orden, corrección en el servidor, la mejor marca no baja, mundos "Pronto", aislamiento entre usuarios | 4, 6, 7 |
+| `infrastructure/heroe/__tests__/contenido.test.ts` | 24 | La carga del contenido: cada JSON roto (errata, marca sin cerrar, emoticono en un título, dato sin fuente, nivel que falta o que sobra…) se para con un mensaje que dice el fichero y el campo | — |
+| `src/__tests__/contenido-heroe.test.ts` | 5 | El contenido REAL de `content/heroe/` (`pnpm heroe:validar`) | — |
 
 ### Acciones, proveedor y rutas
 
@@ -187,11 +193,12 @@ AGENTS.md.
 | `actions/__tests__/frontera.actions.test.ts` | 43 | Zod en la frontera: `ListParams`, ids, rango de la serie (≤ 731 días), periodo, meses, topes | 3, 6 |
 | `actions/__tests__/auth.actions.test.ts` | 65 | Invitado, login, registro (el invitado conserva su id), contraseña actual según `amr`, borrar cuenta, mensajes que no revelan si un email existe | 3 |
 | `actions/__tests__/informes.actions.test.ts` | 8 | Informes sin sesión y con error genérico | 3 |
+| `actions/__tests__/heroe.actions.test.ts` | 16 | Camino del héroe: sin sesión no hace nada, ids mal formados son "No encontrado", el progreso es el de la sesión | 3, 4 |
 | `providers/__tests__/refine-data-provider.test.ts` | 11 | La traducción Refine → Server Actions y de vuelta (errores a excepción en el cliente) | — |
 | `app/auth/confirm/__tests__/route.test.ts` | 10 | `code` frente a `token_hash`, `type` fuera de lista, enlace inválido, `next` externo filtrado | — |
 | `src/__tests__/cabeceras.test.ts` | 7 | Cabeceras de seguridad de `next.config.ts` | — |
 
-### Guardas estructurales (`src/__tests__/invariantes.test.ts`, 31 casos)
+### Guardas estructurales (`src/__tests__/invariantes.test.ts`, 44 casos)
 
 Leen el código fuente y fallan si se rompe una convención que, si no, fallaría en
 silencio:
@@ -215,7 +222,15 @@ silencio:
 | `Auth/__tests__/CambiarPasswordForm.test.tsx` | 10 | Pide la actual solo si se entró con contraseña |
 | `Auth/__tests__/validacion.test.ts` | 12 | Validación de email sin regex de retroceso cuadrático |
 | `categoria/__tests__/SelectorColor.test.tsx` | 5 | Se elige color por su nombre accesible |
-| `hooks/__tests__/*.test.tsx` | 48 | `createEntityHooks`, `useEntityFormSubmit` (invalida `['informes']`), `usePaginacion`, `useCatalogos`, `useCategorias`, `useInformes` |
+| `hooks/__tests__/*.test.tsx` | 60 | `createEntityHooks`, `useEntityFormSubmit` (invalida `['informes']`), `usePaginacion`, `useCatalogos`, `useCategorias`, `useInformes`, `usePerfil`, `useHeroe` (todo cuelga de `['heroe']` y enviar lo invalida) |
+| `SideMenu/__tests__/SideMenu.test.tsx` | 19 | Ratón, toque y teclado; el módulo activo sale de la ruta (`moduloActivo`) |
+| `Pixel/__tests__/sprites.test.ts` | 58 | Cada sprite: todas sus filas del mismo ancho y solo claves de su paleta |
+| `Pixel/__tests__/PixelHero.test.tsx` | 7 | La pose llega al `data-pose`, todas las capas existen en todas las poses, voltear |
+| `Heroe/__tests__/CaminoMundo.test.tsx` | 14 | El camino (nodos accesibles, ficha del nivel, bloqueado sin enlace) y el mapa (elegir, entrar, "Pronto", las flechas que mueven al héroe) |
+| `Heroe/__tests__/Reproductor.test.tsx` | 10 | Jugar como una persona: feedback al momento, minitest y jefe con repaso, reintentar; negrita, cursiva, emoticonos, `imagen` y `dato` |
+| `Heroe/__tests__/ejercicios.test.tsx` | 2 | Ordenar con botones y emparejar sin repetir definición |
+| `Heroe/__tests__/camino.test.ts` | 13 | La geometría del camino: enteros, dentro del lienzo, de abajo arriba, el héroe sin tapar el nodo |
+| `Heroe/__tests__/respuestas.test.ts` | 32 | La forma de cada respuesta, barajar sin dejar el orden bueno, las cifras de `calcula` |
 
 ### E2E (`e2e/*.spec.ts`)
 
@@ -225,7 +240,9 @@ silencio:
 | `patrimonio.spec.ts` | Un invitado nuevo ve "¿Con cuánto empiezas?", elige su patrimonio, lo cambia con el lápiz y al recargar sigue ahí (sale de `profiles`, no de la caché) |
 | `categorias.spec.ts` | Un movimiento en una categoría nueva aparece al filtrar por ella (con dos categorías, para que un filtro que no filtra no pase) y lleva su color |
 | `tipografia.spec.ts` | Nunito en el texto, Fredoka en los titulares y Geist Mono en el dinero |
+| `heroe.spec.ts` | Camino del héroe: un invitado entra por el menú lateral, lee la primera lección de Ahorro, aprueba el minitest y vuelve al camino con sus estrellas y el siguiente nivel abierto, sin recargar |
 | `visual.spec.ts` | Captura de Inicio en escritorio y móvil (opt-in) |
+| `splash.visual.spec.ts` | Captura de la pantalla de carga con el reloj congelado: vigila que el héroe de `components/Pixel/`, compartido con el Camino del héroe, no cambie el splash (opt-in) |
 
 ## 4. Coverage por niveles (100 / 80 / 0)
 

@@ -33,6 +33,8 @@ import {
   integer,
   pgPolicy,
   pgTable,
+  primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -170,6 +172,43 @@ export const profiles = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   () => [soloSuyo('profiles')],
+).enableRLS()
+
+/**
+ * El progreso del Camino del héroe: una fila por usuario y nivel jugado.
+ *
+ * Solo el progreso: el CONTENIDO de los niveles vive en JSON en el repo
+ * (`content/heroe/`) y `level_id` es su id estable (`ahorro/02-interes`).
+ * Por eso no hay clave ajena hacia ningún nivel: si un nivel desaparece del
+ * contenido, su fila se queda huérfana y simplemente no se enseña.
+ *
+ * Guarda la MEJOR marca, no la última: repetir un nivel puede subir las
+ * estrellas pero nunca bajarlas (`greatest()` en el upsert). Lo que se ve en
+ * el mapa —niveles hechos, estrellas totales, siguiente nivel— es derivado
+ * (regla dura 7) y se calcula desde aquí.
+ *
+ * El invitado conserva su progreso al crear cuenta, porque el `user_id` no
+ * cambia, y el job de limpieza lo borra por la cascada.
+ */
+export const heroProgress = pgTable(
+  'hero_progress',
+  {
+    userId: userIdColumn(),
+    levelId: text('level_id').notNull(),
+    /** La mejor marca, 0-3. Cero = jugado y no superado. */
+    stars: smallint('stars').notNull().default(0),
+    /** Aciertos de la mejor partida. */
+    bestScore: smallint('best_score').notNull().default(0),
+    attempts: integer('attempts').notNull().default(0),
+    /** La PRIMERA vez que se superó. `null` = aún no. Desbloquea el siguiente. */
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.levelId] }),
+    check('hero_progress_stars', sql`${t.stars} between 0 and 3`),
+    soloSuyo('hero_progress'),
+  ],
 ).enableRLS()
 
 export type Category = typeof categories.$inferSelect

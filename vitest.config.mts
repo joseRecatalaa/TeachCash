@@ -87,13 +87,14 @@ export default defineConfig({
        */
       thresholds: {
         ...Object.fromEntries(
-          ['lib/money.ts', 'lib/dates.ts', 'lib/format.ts', 'lib/rutas.ts', 'lib/csp.ts'].map(
+          ['lib/money.ts', 'lib/dates.ts', 'lib/format.ts', 'lib/rutas.ts', 'lib/csp.ts', 'lib/heroe.ts', 'lib/marcas.ts'].map(
             (f) => [f, { lines: 100, branches: 100, functions: 100, statements: 100 }],
           ),
         ),
         ...Object.fromEntries(
           [
             'src/infrastructure/repositories/**',
+            'src/infrastructure/heroe/**',
             'src/application/actions/**',
             'lib/auth.ts',
             'lib/env.ts',
