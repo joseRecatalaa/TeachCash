@@ -27,7 +27,8 @@ estado. El texto solo dice que existe y que no obliga.
 
 **Cuándo hay que volver a mirarlo**:
 
-- si el anteproyecto pasa a proyecto de ley o se publica la ley: hay que
+- cuando se constituyan las nuevas Cortes (23-12-2026) y el Gobierno vuelva a
+  mover la norma; si el anteproyecto pasa a proyecto de ley o se publica la ley, hay que
   cambiar la p. 7 de `03-tarjetas-revolving-y-usura` y la explicación de
   `fecha-directiva` en el jefe, que dicen "en noviembre de 2026 seguía en
   anteproyecto"; y repasar `descubierto` (art. 20.4 de la Ley 16/2011), por si la
@@ -43,6 +44,8 @@ estado. El texto solo dice que existe y que no obliga.
 | STS-258-2023 | Tribunal Supremo (Pleno), Sentencia 258/2023, de 15 de febrero, y STS 1378/2023, de 6 de octubre, en el comentario de la biblioteca jurídica del BOE | https://www.boe.es/biblioteca_juridica/comentarios_sentencias_unificacion_doctrina_civil_y_mercantil/abrir_pdf.php?id=COM-D-2023-2 |
 | DIR-2023-2225 | Directiva (UE) 2023/2225, de créditos al consumo (ficha del BOE) | https://www.boe.es/buscar/doc.php?id=DOUE-L-2023-81526 |
 | PCB-ANTEPROYECTO | Portal del Cliente Bancario, "Proyecto de nueva regulación de los créditos al consumo" (25-02-2026) | https://clientebancario.bde.es/pcb/es/blog/proyecto-de-nueva-regulacion-de-los-creditos-al-consumo.html |
+| RD-DISOLUCION | Real Decreto 806/2026, de 5 de octubre, de disolución del Congreso y del Senado y de convocatoria de elecciones (BOE de 6-10-2026) | https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20742 |
+| CM-REFERENCIAS | La Moncloa, referencias del Consejo de Ministros (las de octubre y la de 3-11-2026) | https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/index.aspx |
 | L-5-2019 | Ley 5/2019, de contratos de crédito inmobiliario, texto consolidado | https://www.boe.es/buscar/act.php?id=BOE-A-2019-3814 |
 | TR-AJD | Texto refundido de la Ley del ITP y AJD (art. 29, redacción del RDL 17/2018) | https://www.boe.es/buscar/act.php?id=BOE-A-1993-25359 |
 | EURIBOR-SEP | Resolución del Banco de España de 1-10-2026, tipos oficiales (septiembre de 2026) | https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20519 |
@@ -83,7 +86,7 @@ estado. El texto solo dice que existe y que no obliga.
 | Préstamos personales: la regla de los 6 puntos no se aplica tal cual, pero puede tenerse en cuenta | p. 5 | STS 1378/2023, en STS-258-2023 | VERIFICADA en el comentario del BOE |
 | Ley de 1908: nulo el préstamo con interés notablemente superior al normal; se devuelve solo lo recibido | p. 4, minitest `nulidad-usura` | L-USURA, arts. 1 y 3 | VERIFICADA |
 | Directiva (UE) 2023/2225 aplicable desde el 20-11-2026; incluye los créditos de menos de 200 € y el "compra ahora, paga después" | p. 7, minitest `directiva-200` | DIR-2023-2225 (y considerandos 15 y 16) | VERIFICADA |
-| La ley española que la incorpora seguía en noviembre de 2026 en anteproyecto, sin obligar | p. 7, minitest `anteproyecto` | PCB-ANTEPROYECTO ("no es definitivo") | VERIFICADA la entrada del Banco de España. **Comprobar antes de publicar** que sigue sin ser ley: no hay nada en el BOE, pero no se pudo consultar la web del Congreso |
+| La ley española que la incorpora seguía en noviembre de 2026 en anteproyecto, sin obligar | p. 7, minitest `anteproyecto` | PCB-ANTEPROYECTO ("no es definitivo"); referencias del Consejo de Ministros; RD-DISOLUCION | VERIFICADA el 4-11-2026: ninguna referencia del Consejo de Ministros del 6, 13, 20 y 27 de octubre ni del 3 de noviembre de 2026 recoge la segunda vuelta, y las Cortes están disueltas desde el 6-10-2026 (elecciones el 29-11-2026), así que ningún proyecto se puede tramitar hasta la nueva legislatura |
 | 2 % mensual = 26,82 % TAE; 1.000 € pagando 35 € al mes: 43 meses y unos 1.498 € | p. 2, p. 3 | — | CUENTA (simulación mes a mes: 1.497,65 €) |
 | Minicrédito de 30 € por 100 € a un mes: TAE de más del 2.000 % | p. 6 | — | CUENTA (1,3^12 − 1 = 2.229,8 %) |
 

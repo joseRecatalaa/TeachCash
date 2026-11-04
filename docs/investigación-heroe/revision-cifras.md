@@ -44,12 +44,16 @@ Dónde está cada cosa:
 
 ### Deuda y crédito
 
-- **El estado del anteproyecto en noviembre de 2026.** Comprobado que no es
-  ley: no hay nada en el BOE, y el Banco de España dice que "no es definitivo".
-  No se pudo consultar la web del Congreso. Dos frases dicen que "en noviembre
-  de 2026 seguía en anteproyecto": la p. 7 de `03-tarjetas-revolving-y-usura` y
-  la explicación de `fecha-directiva` en el jefe. **Hay que confirmarlo antes
-  de publicar.** Ninguna respuesta depende de ello.
+- **El estado del anteproyecto: VERIFICADO el 4-11-2026, sigue siendo
+  anteproyecto.** Ninguna referencia del Consejo de Ministros del 6, 13, 20 y 27
+  de octubre ni del 3 de noviembre recoge la segunda vuelta. Además, las Cortes
+  están disueltas desde el 6 de octubre (Real Decreto 806/2026, BOE-A-2026-20742;
+  elecciones el 29 de noviembre, nuevas Cámaras el 23 de diciembre), así que
+  ningún proyecto puede tramitarse hasta la nueva legislatura. Las dos frases
+  que dicen "en noviembre de 2026 seguía en anteproyecto" (la p. 7 de
+  `03-tarjetas-revolving-y-usura` y la explicación de `fecha-directiva` en el
+  jefe) son correctas. Hay que volver a mirarlas cuando la nueva legislatura
+  mueva la norma.
 - **STS 366/2026**: no aparece en CENDOJ, solo en webs de despachos. **Quitada.**
 - **STS 258/2023 y 1378/2023**: verificadas en el comentario de la biblioteca
   jurídica del BOE, no en el texto de CENDOJ.
@@ -593,7 +597,7 @@ Otras cifras de cuenta en el texto: cuadro de amortización de 02 (3.000 € al 
 | "STS 366/2026" (préstamo al 16,61 % frente a 8,10 %, nulo por 8,51 puntos) | — | — | Solo vista en webs de despachos y vLex; en poderjudicial.es aparece citada en un extracto, sin el texto | NO VERIFICADO → **quitada** del contenido |
 | Directiva (UE) 2023/2225: aplicable desde el 20-11-2026; transposición antes del 20-11-2025; deroga la 2008/48 con efectos 20-11-2026 | 03 pág. 7 y `directiva-200`; 09 `fecha-directiva` | Directiva (UE) 2023/2225 (ficha del BOE: "Aplicable desde el 20 de noviembre de 2026") | https://www.boe.es/buscar/doc.php?id=DOUE-L-2023-81526 | VERIFICADA |
 | La directiva incluye los créditos de menos de 200 € y el "compra ahora, paga después" | 03 pág. 7 y `directiva-200` | Directiva 2023/2225, considerandos 15 y 16 | (misma URL) | VERIFICADA |
-| Anteproyecto de Ley de Contratos de Crédito al Consumo: aprobado en primera vuelta el 7-1-2026; no es ley | 03 pág. 7 ("seguía en noviembre de 2026 en anteproyecto") y `anteproyecto`; 09 `fecha-directiva` (explicación) | Portal del Cliente Bancario, 25-2-2026: "Este anteproyecto no es definitivo" | https://clientebancario.bde.es/pcb/es/blog/proyecto-de-nueva-regulacion-de-los-creditos-al-consumo.html | VERIFICADA la entrada del BdE. Que siga sin ser proyecto de ley en noviembre de 2026: **no hay en el BOE ni en las fuentes oficiales ninguna ley publicada**; varias fuentes secundarias (octubre de 2026) dicen que no se ha remitido a las Cortes. No he podido consultar la web del Congreso. Comprobar antes de publicar |
+| Anteproyecto de Ley de Contratos de Crédito al Consumo: aprobado en primera vuelta el 7-1-2026; no es ley | 03 pág. 7 ("seguía en noviembre de 2026 en anteproyecto") y `anteproyecto`; 09 `fecha-directiva` (explicación) | Portal del Cliente Bancario, 25-2-2026: "Este anteproyecto no es definitivo" | https://clientebancario.bde.es/pcb/es/blog/proyecto-de-nueva-regulacion-de-los-creditos-al-consumo.html | VERIFICADA la entrada del BdE. Que siga sin ser proyecto de ley en noviembre de 2026: **no hay en el BOE ni en las fuentes oficiales ninguna ley publicada**; varias fuentes secundarias (octubre de 2026) dicen que no se ha remitido a las Cortes. No he podido consultar la web del Congreso. Comprobar antes de publicar. **Hecho el 4-11-2026: sigue en anteproyecto** (ver arriba, "NO VERIFICADO y pendiente de decidir") |
 | Topes del anteproyecto (4 % mensual, apertura 5 % con tope de 30 €, 3-12 meses, 22 % transitorio) | — | — | — | NO VERIFICADO en fuente oficial y, sobre todo, no vigente → **quitados** |
 | Gastos de la hipoteca: tasación, prestatario; notaría, registro y gestoría, prestamista; copias, quien las pida | 05 pág. 4 y `gasto-tuyo`; 06 `gastos-suyos`; 09 `gastos-marques` | Ley 5/2019, art. 14.1.e) | https://www.boe.es/buscar/act.php?id=BOE-A-2019-3814 | VERIFICADA |
 | AJD de la escritura de préstamo hipotecario: sujeto pasivo el prestamista, desde el 10-11-2018 | 05 pág. 4 | Texto refundido ITP y AJD, art. 29, redactado por el RDL 17/2018 | https://www.boe.es/buscar/act.php?id=BOE-A-1993-25359 | VERIFICADA |
