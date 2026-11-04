@@ -4,5 +4,15 @@
   "descripcion": "Préstamos, tarjetas e hipotecas: cuánto cuestan de verdad y cómo salir de una deuda.",
   "decorado": "tarjeta",
   "orden": 4,
-  "niveles": []
+  "niveles": [
+    "01-precio-real-del-credito",
+    "02-practica-equipo-de-sonido",
+    "03-tarjetas-revolving-y-usura",
+    "04-practica-frena-la-revolving",
+    "05-hipotecas-cirbe-y-morosos",
+    "06-practica-firma-de-la-hipoteca",
+    "07-salir-de-deudas",
+    "08-practica-plan-de-rescate",
+    "09-jefe-marques-del-minimo"
+  ]
 }

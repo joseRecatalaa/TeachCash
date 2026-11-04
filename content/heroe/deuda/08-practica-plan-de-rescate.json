@@ -1,0 +1,92 @@
+{
+  "id": "deuda/08-practica-plan-de-rescate",
+  "tipo": "interactivo",
+  "titulo": "El plan de rescate de Pepito",
+  "descripcion": "Pepito elige entre bola de nieve y avalancha, dice que no a una reunificación peligrosa, calcula su exoneración y reclama al banco.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "avalancha-cual",
+      "tipo": "opcion",
+      "enunciado": "La hija de Pepito tiene tres deudas y algo de margen: 400 € al 8 % TAE, 1.200 € al 22 % TAE y 3.500 € al 11 % TAE. Con la avalancha, ¿adónde va cada euro extra?",
+      "opciones": [
+        "A la de 400 €, la más pequeña",
+        "A la de 1.200 €, la de TAE más alta",
+        "A la de 3.500 €, la más grande",
+        "A partes iguales entre las tres"
+      ],
+      "correcta": 1,
+      "explicacion": "La avalancha ordena de mayor a menor TAE. Los euros que cuestan un 22 % al año son los primeros que conviene quitarse de encima."
+    },
+    {
+      "id": "bola-primer-mes",
+      "tipo": "calcula",
+      "enunciado": "Con bola de nieve ataca la de 400 €. Los mínimos son 50 € (la de 400 €), 70 € y 120 €, y tiene **300 € al mes** para deudas. ¿Cuántos euros van el primer mes a la de 400 €?",
+      "unidad": "euros",
+      "solucion": 11000,
+      "tolerancia": 0,
+      "explicacion": "Mínimos: 50 + 70 + 120 = 240 €. Sobran 300 − 240 = 60 €. A la pequeña van su mínimo y el extra: 50 + 60 = **110 €**."
+    },
+    {
+      "id": "avalancha-primer-mes",
+      "tipo": "calcula",
+      "enunciado": "Con los mismos 300 € y los mismos mínimos, si aplicara la avalancha, ¿cuántos euros irían el primer mes a la deuda de 1.200 € (mínimo de 70 €)?",
+      "unidad": "euros",
+      "solucion": 13000,
+      "tolerancia": 0,
+      "explicacion": "El extra sigue siendo 60 €, pero ahora va a la de TAE más alta: 70 + 60 = **130 €**."
+    },
+    {
+      "id": "reunificar-casa",
+      "tipo": "verdaderoFalso",
+      "enunciado": "A Pepito le ofrecen meter sus 28.000 € de préstamos y tarjetas en una hipoteca a 20 años sobre su piso, ya pagado. Aunque la cuota baje, pone en riesgo su vivienda si vuelve a no poder pagar.",
+      "correcta": true,
+      "explicacion": "Las tarjetas y los préstamos personales no tienen tu casa como garantía; una hipoteca, sí. Además, 20 años de plazo suelen sumar más intereses que los que tenía."
+    },
+    {
+      "id": "exoneracion-12000",
+      "tipo": "calcula",
+      "enunciado": "Pepito es insolvente de buena fe y pide la exoneración por primera vez. Debe **12.000 €** a Hacienda. Se cancelan enteros los primeros 5.000 € y la mitad del resto, con un tope de 10.000 €. ¿Cuántos euros se le cancelan?",
+      "unidad": "euros",
+      "solucion": 850000,
+      "tolerancia": 0,
+      "explicacion": "Primeros 5.000 €, enteros. Del resto, 7.000 €, la mitad: 3.500 €. Total: 5.000 + 3.500 = **8.500 €**, por debajo del tope."
+    },
+    {
+      "id": "conservar-casa",
+      "tipo": "opcion",
+      "enunciado": "Pepito quiere la exoneración pero sin perder su vivienda habitual. ¿Qué vía le da la ley?",
+      "opciones": [
+        "Ninguna: siempre se subasta la vivienda",
+        "La exoneración con un plan de pagos, que dura 5 años si no se vende la vivienda",
+        "Mandar una carta al banco diciendo que no la vende"
+      ],
+      "correcta": 1,
+      "explicacion": "El Texto Refundido de la Ley Concursal permite elegir entre liquidar los bienes o un plan de pagos; si conserva la vivienda habitual, el plan es de 5 años (art. 497)."
+    },
+    {
+      "id": "reclamar-comisiones",
+      "tipo": "ordenar",
+      "enunciado": "Su banco le ha cobrado 140 € de comisiones indebidas en la cuenta de la pensión. Ordena los pasos para reclamarlas.",
+      "pasos": [
+        "Reclamar por escrito al Servicio de Atención al Cliente, con los recibos",
+        "Esperar la respuesta dentro del plazo que tiene el banco",
+        "Si dice que no o no contesta, reclamar al Banco de España antes de un año",
+        "Recibir el informe del Banco de España"
+      ],
+      "explicacion": "El Banco de España solo entra después de tu banco, y la reclamación tiene que llegarle antes de que pase un año desde la que hiciste a la entidad."
+    },
+    {
+      "id": "plazo-pagos",
+      "tipo": "hueco",
+      "enunciado": "Si la reclamación de un consumidor trata de un servicio de pago, como un cargo de tarjeta, el banco tiene ___ días hábiles para responder.",
+      "opciones": [
+        "15",
+        "60",
+        "90"
+      ],
+      "correcta": 0,
+      "explicacion": "En servicios de pago son 15 días hábiles; en préstamos o hipotecas, un mes. Pasado el plazo sin respuesta, ya puedes ir al Banco de España."
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "id": "deuda/06-practica-firma-de-la-hipoteca",
+  "tipo": "interactivo",
+  "titulo": "Pepito y su pareja ante la hipoteca",
+  "descripcion": "Desistir a tiempo de un préstamo caro, leer el informe de la CIRBE, calcular el tipo de una hipoteca variable y saber qué gastos no te tocan.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "desistir",
+      "tipo": "ordenar",
+      "enunciado": "Pepito y su pareja firmaron un préstamo de 2.000 € al 7,3 % TIN y al quinto día encuentran algo mejor. Ordena los pasos para desistir.",
+      "pasos": [
+        "Comprobar que no han pasado 14 días naturales desde la firma",
+        "Comunicarlo a la entidad por un medio que deje constancia de la fecha",
+        "Calcular el capital más los intereses de los días que lo han tenido",
+        "Devolverlo antes de 30 días naturales desde que avisaron"
+      ],
+      "explicacion": "El artículo 28 de la Ley 16/2011 pide avisar dentro de los 14 días y devolver capital e intereses en un máximo de 30 días desde el aviso."
+    },
+    {
+      "id": "cuanto-devuelven",
+      "tipo": "calcula",
+      "enunciado": "Devuelven esos 2.000 € a los 10 días. El interés es del 7,3 % anual, que sobre 2.000 € son **0,40 € al día** (2.000 × 0,073 ÷ 365). ¿Cuántos euros devuelven en total?",
+      "unidad": "euros",
+      "solucion": 200400,
+      "tolerancia": 0,
+      "explicacion": "10 días × 0,40 € = 4 € de intereses. Más los 2.000 € de capital: **2.004 €**. Por desistir en plazo no hay penalización."
+    },
+    {
+      "id": "aval",
+      "tipo": "opcion",
+      "enunciado": "Pepito avaló un préstamo de 6.000 € de su hermano, que va al día. ¿Qué verá el banco en la CIRBE al estudiar la hipoteca?",
+      "opciones": [
+        "Nada: un avalista no aparece",
+        "Un riesgo indirecto, que tendrá en cuenta por si su hermano dejara de pagar",
+        "Que Pepito es moroso y no puede pedir hipoteca"
+      ],
+      "correcta": 1,
+      "explicacion": "Avalar te obliga a pagar si el titular no lo hace, y por eso la CIRBE lo recoge como riesgo indirecto. No es una mancha: es una deuda posible."
+    },
+    {
+      "id": "tipo-variable",
+      "tipo": "calcula",
+      "enunciado": "Su hipoteca variable es Euríbor a 12 meses **más 1 punto**. El Euríbor de septiembre de 2026 fue del 3,247 %. ¿Qué tipo pagarán tras la revisión? Redondea a dos decimales.",
+      "unidad": "porcentaje",
+      "solucion": 425,
+      "tolerancia": 0,
+      "explicacion": "3,247 % + 1 % = 4,247 %, que con dos decimales es **4,25 %**. En una variable se suma el índice del momento y el diferencial pactado."
+    },
+    {
+      "id": "tipos-hipoteca",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada tipo de hipoteca con lo que hace cuando se mueve el Euríbor.",
+      "pares": [
+        {
+          "concepto": "Fija",
+          "definicion": "Ni se entera: el tipo y la cuota no cambian"
+        },
+        {
+          "concepto": "Variable",
+          "definicion": "En cada revisión suma al diferencial el Euríbor de ese momento"
+        },
+        {
+          "concepto": "Mixta",
+          "definicion": "Unos primeros años fija y después pasa a variable"
+        }
+      ],
+      "explicacion": "Elegir es decidir quién carga con el riesgo: con la fija sabes siempre lo que pagas; con la variable asumes las subidas y te llevas las bajadas."
+    },
+    {
+      "id": "fein-notario",
+      "tipo": "verdaderoFalso",
+      "enunciado": "El banco tiene que darles la FEIN al menos 10 días naturales antes de firmar, y antes de la firma tienen que ir al notario a firmar un acta gratuita.",
+      "correcta": true,
+      "explicacion": "Los artículos 14 y 15 de la Ley 5/2019 dan ese tiempo para leer y comparar, y el notario comprueba que se ha cumplido antes de autorizar la escritura."
+    },
+    {
+      "id": "factura-42",
+      "tipo": "hueco",
+      "enunciado": "Su antigua compañía de luz amenaza con incluirles en un fichero de morosos por una factura errónea de 42 €. No puede: la ley no permite deudas con principal inferior a ___ euros.",
+      "opciones": [
+        "50",
+        "300",
+        "1.000"
+      ],
+      "correcta": 0,
+      "explicacion": "La disposición adicional sexta de la Ley Orgánica 3/2018 deja fuera de los ficheros las deudas de menos de 50 €. Además, si la factura está reclamada, tampoco cabe."
+    },
+    {
+      "id": "gastos-suyos",
+      "tipo": "calcula",
+      "enunciado": "Facturas de la hipoteca: tasación 380 €, notaría de la escritura 650 €, registro 320 €, gestoría 300 € y una copia que han pedido ellos, 50 €. ¿Cuántos euros les toca pagar?",
+      "unidad": "euros",
+      "solucion": 43000,
+      "tolerancia": 0,
+      "explicacion": "Pagan la tasación (380 €) y la copia que han pedido (50 €): **430 €**. Notaría, registro y gestoría son del banco por la Ley 5/2019."
+    }
+  ]
+}
