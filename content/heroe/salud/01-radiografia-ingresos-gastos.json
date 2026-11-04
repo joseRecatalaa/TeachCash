@@ -1,0 +1,152 @@
+{
+  "id": "salud/01-radiografia-ingresos-gastos",
+  "tipo": "lectura",
+  "titulo": "La radiografía de tus ingresos y gastos",
+  "descripcion": "Separa el sueldo bruto del neto, distingue gastos fijos y variables y calcula tu balance real del mes.",
+  "minutos": 3,
+  "paginas": [
+    {
+      "titulo": "¿Sabes adónde va tu sueldo?",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "billete",
+          "pie": "Un billete que sale volando antes de que acabe el mes."
+        },
+        {
+          "tipo": "dato",
+          "texto": "En 2025, el **8,5 %** de la población en España llegaba a fin de mes _con mucha dificultad_.",
+          "fuente": "INE, Encuesta de Condiciones de Vida 2025 (febrero de 2026)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Mirar la cuenta el día 30 no es tener un presupuesto. Sin orden, el dinero se va en compras que ni recuerdas."
+        }
+      ]
+    },
+    {
+      "titulo": "Bruto y neto, el dinero de verdad",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito tiene 24 años, vive en Valencia y trabaja de técnico de sonido. Comparte piso."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Su contrato dice **1.550 € brutos** al mes. A su cuenta llegan **1.350 € netos**: el resto se va en cotizaciones y en la retención del IRPF."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Tu presupuesto se hace con el **neto**: el dinero que de verdad llega a tu cuenta."
+        }
+      ]
+    },
+    {
+      "titulo": "Fijos frente a variables",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "📌 **Fijos**: el mismo importe cada mes, como el alquiler o el abono de transporte.",
+            "🔀 **Variables**: cambian según lo que consumes, como la compra o las salidas."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Ojo: hay gastos necesarios que varían, como la luz. No se eligen, pero cada mes llegan distintos. Separarlos te dice _dónde_ puedes recortar si hace falta."
+        }
+      ]
+    },
+    {
+      "titulo": "El balance de Pepito",
+      "bloques": [
+        {
+          "tipo": "ejemplo",
+          "titulo": "Un mes de Pepito",
+          "filas": [
+            { "concepto": "Nómina neta", "importe": 135000 },
+            { "concepto": "Habitación y suministros", "importe": -48000 },
+            { "concepto": "Comida y abono de transporte", "importe": -32000 },
+            { "concepto": "Ocio y salidas", "importe": -15000 },
+            { "concepto": "Le queda", "importe": 40000 }
+          ],
+          "nota": "1.350 − 480 − 320 − 150 = **400 €** para ahorrar o decidir."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Balance del mes = ingresos netos − todos los gastos."
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ **Mito**: saber cómo vas es mirar si queda saldo a final de mes.",
+            "✅ **Realidad**: el saldo no descuenta los recibos que aún no han llegado. Un presupuesto apunta los compromisos _antes_ de gastar."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Un balance positivo te da margen ante los imprevistos. Uno negativo se acaba tapando con deudas."
+        }
+      ]
+    },
+    {
+      "titulo": "Tu margen de libertad",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "No hace falta ganar una fortuna para estar tranquilo. Hace falta que entre **más de lo que sale**, mes tras mes."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Si a Pepito le sobran 400 € al mes, ¿por qué siente que el dinero se le escapa? Lo descubrirá al montar su primer presupuesto."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "base-del-presupuesto",
+      "tipo": "opcion",
+      "enunciado": "¿Qué cifra sirve de base para hacer tu presupuesto mensual?",
+      "opciones": [
+        "El sueldo bruto anual dividido entre doce",
+        "El dinero neto que llega a tu cuenta",
+        "El salario base que marca el convenio"
+      ],
+      "correcta": 1,
+      "explicacion": "Las cifras brutas incluyen cotizaciones y retenciones que nunca llegan a tu cuenta. Solo puedes gastar lo que de verdad entra: el **neto**."
+    },
+    {
+      "id": "abono-transporte",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Un abono de transporte con cuota mensual cerrada es un gasto variable, porque cada día haces trayectos distintos.",
+      "correcta": false,
+      "explicacion": "Lo que cuenta es el importe, no el trayecto: si pagas lo mismo cada mes, es un gasto **fijo**, previsible y fácil de presupuestar."
+    },
+    {
+      "id": "empareja-movimientos",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada movimiento de la cuenta de Pepito con lo que es en su presupuesto.",
+      "pares": [
+        { "concepto": "Alquiler de la habitación", "definicion": "Gasto fijo y necesario" },
+        { "concepto": "Cena de celebración en una pizzería", "definicion": "Gasto variable y prescindible" },
+        { "concepto": "Transferencia de la nómina", "definicion": "Ingreso regular neto" }
+      ],
+      "explicacion": "Distinguir lo que no puedes dejar de pagar de lo que eliges cada mes te dice de un vistazo dónde recortar si hace falta."
+    },
+    {
+      "id": "calcula-balance",
+      "tipo": "calcula",
+      "enunciado": "Pepito cobra 1.350 € netos este mes. Sus gastos fijos suman 620 € y los variables, 480 €. ¿Cuántos euros le quedan de balance?",
+      "unidad": "euros",
+      "solucion": 25000,
+      "tolerancia": 0,
+      "explicacion": "Se restan todos los gastos a lo que entra de verdad: 1.350 − 620 − 480 = **250 €**."
+    }
+  ]
+}
