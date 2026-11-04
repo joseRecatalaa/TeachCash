@@ -1,0 +1,216 @@
+{
+  "id": "inversion/05-impuestos-traspasos-y-pensiones",
+  "tipo": "lectura",
+  "titulo": "Hacienda, traspasos y planes de pensiones en 2026",
+  "descripcion": "Cómo tributan las inversiones en 2026, cómo se compensan las pérdidas, por qué los fondos se traspasan sin pagar IRPF y los ETF no, y cómo funcionan los planes de pensiones.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Hacienda solo cobra al vender",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "libro",
+          "pie": "Un libro a píxel: las reglas del IRPF para quien invierte."
+        },
+        {
+          "tipo": "dato",
+          "texto": "Desde el 1 de enero de 2025 se puede sacar sin dar motivos lo aportado a un plan de pensiones **hasta 2015**, con sus rendimientos.",
+          "fuente": "Real Decreto 62/2018 (BOE), que reforma el Reglamento de planes y fondos de pensiones"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Mientras no vendes, la subida **no paga IRPF**. Al vender con ganancia o cobrar dividendos, tributas en la _base del ahorro_. País Vasco y Navarra tienen sus propias normas."
+        }
+      ]
+    },
+    {
+      "titulo": "Los tramos del ahorro en 2026",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Al reembolsar, la entidad suele retener un **19 %** de la ganancia como adelanto. La cuenta final, en la declaración, sigue esta escalera:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Hasta 6.000 €: 19 %",
+            "2️⃣ De 6.000 € a 50.000 €: 21 %",
+            "3️⃣ De 50.000 € a 200.000 €: 23 %",
+            "4️⃣ De 200.000 € a 300.000 €: 27 %",
+            "5️⃣ Más de 300.000 €: **30 %**"
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito compensa pérdidas en Zaragoza",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito, 42 años, es autónomo en Zaragoza y vive con su pareja y sus dos hijos. El **artículo 49** de la Ley del IRPF le deja restar pérdidas:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "➖ Ganancias y pérdidas por ventas se compensan entre sí.",
+            "🔁 Si sobra pérdida, resta hasta el **25 %** de los intereses y dividendos.",
+            "🗓️ Lo que quede, a los **4 años** siguientes."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Traspaso: fondos sí, ETF no",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "✅ **Fondos de inversión**: el artículo 94 de la Ley del IRPF deja pasar el dinero a otro fondo sin tributar, conservando el valor y la fecha de compra.",
+            "❌ **ETF**: la ley los deja fuera. Cambiar de ETF es vender, y la ganancia tributa ese año."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Un traspaso **aplaza** el impuesto, no lo perdona."
+        }
+      ]
+    },
+    {
+      "titulo": "Planes de pensiones: lo que reduce tu IRPF",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Lo que aportas a un plan de pensiones reduce tu base general del IRPF, con un tope: la cifra **menor** de estas dos."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "💶 1.500 € al año.",
+            "📊 El 30 % de tus rendimientos netos del trabajo y de actividades."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Los 1.500 € suben **4.250 €** con un plan de empleo de autónomos, o **8.500 €** con un plan de empleo de tu empresa. Los dos aumentos juntos, 8.500 € como mucho."
+        }
+      ]
+    },
+    {
+      "titulo": "Cuándo y cómo se rescata un plan",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "👵 Jubilación, incapacidad, dependencia o fallecimiento.",
+            "🚑 De forma excepcional, paro de larga duración o enfermedad grave.",
+            "🔓 Lo aportado con al menos **10 años** de antigüedad, sin dar motivos."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Al rescatarlo, lo cobrado tributa como **rendimiento del trabajo**, igual que un sueldo, en la base general. No en la del ahorro."
+        }
+      ]
+    },
+    {
+      "titulo": "Un mes en casa de Pepito",
+      "bloques": [
+        {
+          "tipo": "ejemplo",
+          "titulo": "Las cuentas de la familia de Pepito",
+          "filas": [
+            {
+              "concepto": "Ingresos netos de la familia",
+              "importe": 345000
+            },
+            {
+              "concepto": "Hipoteca y suministros",
+              "importe": -112000
+            },
+            {
+              "concepto": "Comida, colegio y gastos de los dos hijos",
+              "importe": -143000
+            },
+            {
+              "concepto": "Plan de empleo simplificado de autónomos de Pepito",
+              "importe": -30000
+            },
+            {
+              "concepto": "Fondos indexados, que se pueden traspasar",
+              "importe": -60000
+            }
+          ],
+          "nota": "3.450 − 1.120 − 1.430 − 300 − 600 = 0. Pepito aporta 3.600 € al año a su plan: dentro de su tope si su 30 % lo permite."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Traspasar fondos **aplaza** impuestos, compensar pérdidas **reduce** la factura y rescatar un plan **tributa como sueldo**."
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Si gano 6.100 € en vez de 6.000 €, pago el 21 % por todo».",
+            "✅ Realidad: es una escalera. Los primeros 6.000 € siguen al 19 % y solo los **100 €** de más pagan el 21 %."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Y qué pasa cuando un anuncio en el móvil promete un **15 % al mes «seguro»** o un supuesto asesor pide tus ahorros?"
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "que-es-un-traspaso",
+      "tipo": "opcion",
+      "enunciado": "Según el artículo 94 de la Ley del IRPF, ¿qué pasa cuando traspasas el dinero de un fondo de inversión a otro sin que pase por tu cuenta corriente?",
+      "opciones": [
+        "No pagas en ese momento, y las nuevas participaciones conservan el valor y la fecha de compra originales",
+        "Hacienda perdona para siempre el impuesto acumulado hasta ese día",
+        "Pagas un 19 % en el acto, igual que al vender un ETF",
+        "Solo se puede traspasar si tienes más de 500 socios a tu cargo"
+      ],
+      "correcta": 0,
+      "explicacion": "Es un **diferimiento**, no una exención: el impuesto se aplaza hasta que reembolses el dinero a tu cuenta. Los ETF están excluidos de esta ventaja. Lo de los 500 socios es un requisito para las sociedades de inversión, no para ti."
+    },
+    {
+      "id": "rescate-base-ahorro",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Cuando rescatas un plan de pensiones, ese dinero tributa en la base del ahorro, del 19 % al 30 %, igual que un fondo de inversión.",
+      "correcta": false,
+      "explicacion": "La ley trata lo cobrado de un plan de pensiones como **rendimiento del trabajo**: se suma al sueldo o la pensión en la base general, con su escala progresiva, y no en la del ahorro."
+    },
+    {
+      "id": "hueco-limite-plan",
+      "tipo": "hueco",
+      "enunciado": "En 2026, el tope general de lo aportado a planes de pensiones que reduce el IRPF es de ___ € al año, siempre que no supere el 30 % de tus rendimientos del trabajo y de actividades.",
+      "opciones": [
+        "1.500",
+        "8.000",
+        "24.250"
+      ],
+      "correcta": 0,
+      "explicacion": "El tope general es 1.500 € al año. Solo sube con un plan de empleo: hasta 8.500 € más con contribuciones de la empresa, o 4.250 € más con un plan simplificado de autónomos."
+    },
+    {
+      "id": "anos-para-compensar",
+      "tipo": "opcion",
+      "enunciado": "Si después de compensar en el año te sigue quedando una pérdida por ventas, ¿durante cuántos años siguientes puedes usarla?",
+      "opciones": [
+        "Durante los 4 años siguientes",
+        "Solo durante enero del año siguiente",
+        "Durante 25 años",
+        "No se puede guardar: si no se usa ese año, se pierde"
+      ],
+      "correcta": 0,
+      "explicacion": "El artículo 49 de la Ley del IRPF permite compensar lo que quede en los **cuatro años siguientes**, y obliga a hacerlo en la mayor cuantía posible cada año."
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "id": "inversion/08-pepito-caza-un-chiringuito",
+  "tipo": "interactivo",
+  "titulo": "El radar antichiringuitos de Pepito",
+  "descripcion": "Ayuda a Pepito en Sevilla a detectar chiringuitos financieros, entender los test MiFID y el indicador del 1 al 7, el riesgo cripto y frenar los sesgos.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "ordena-comprobar-oferta",
+      "tipo": "ordenar",
+      "enunciado": "A Pepito le ofrecen una inversión muy atractiva de una supuesta gestora internacional. Ordena los pasos para comprobarla antes de dar ningún dato ni dinero.",
+      "pasos": [
+        "Desconfiar de las prisas y de la rentabilidad alta sin riesgo, y no pulsar enlaces recibidos",
+        "Entrar por su cuenta en la web de la CNMV o llamar al 900 535 015",
+        "Buscar el nombre exacto en el registro de entidades autorizadas",
+        "Revisar las advertencias de la CNMV y de otros supervisores, y rechazarla si no está autorizada"
+      ],
+      "explicacion": "Primero se frena la prisa, que es la herramienta del estafador. Luego se va a la fuente oficial por vía propia, se comprueba si está autorizada y se miran las advertencias publicadas."
+    },
+    {
+      "id": "empareja-sesgos",
+      "tipo": "emparejar",
+      "enunciado": "Pepito observa cómo reaccionan sus conocidos a las noticias de la bolsa. Empareja cada trampa con su ejemplo.",
+      "pares": [
+        { "concepto": "Comprar con euforia", "definicion": "Entrar en algo solo porque sale en todas las noticias tras subir muchísimo" },
+        { "concepto": "Vender con pánico", "definicion": "Reembolsar un fondo de largo plazo justo el día que la bolsa cae con fuerza" },
+        { "concepto": "Querer adivinar el mercado", "definicion": "Entrar y salir sin parar creyendo saber qué día subirá o bajará" },
+        { "concepto": "Caer en un chiringuito", "definicion": "Dar los ahorros a una entidad no registrada que promete mucho «sin riesgo»" }
+      ],
+      "explicacion": "Las cuatro tienen el mismo final: comprar caro, vender barato o perder el dinero entero. La disciplina y la comprobación en la CNMV son el antídoto."
+    },
+    {
+      "id": "calcula-baja-y-sube",
+      "tipo": "calcula",
+      "enunciado": "Un vecino de Pepito mete 1.000 € en una criptomoneda pensando que «si baja un 50 % y luego sube un 50 %, me quedo igual». El primer mes cae un 50 %; el segundo sube un 50 % sobre lo que quedaba. ¿Cuántos euros tiene al final?",
+      "unidad": "euros",
+      "solucion": 75000,
+      "tolerancia": 0,
+      "explicacion": "Tras caer un 50 %, quedan 1.000 − 500 = 500 €. La subida del 50 % se calcula sobre esos 500: 500 × 50 / 100 = 250 €. Total, **750 €**. Para volver a 1.000 € desde 500 € haría falta subir un 100 %."
+    },
+    {
+      "id": "test-gestion-carteras",
+      "tipo": "opcion",
+      "enunciado": "Pepito contrata con una entidad autorizada la gestión de su cartera: la entidad decide y gestiona las inversiones por él. ¿Qué test tiene que hacerle antes?",
+      "opciones": [
+        "El de idoneidad: conocimientos, experiencia, situación financiera y objetivos",
+        "Solo el de conveniencia, sin preguntarle cuánto gana ni qué plazo tiene",
+        "Ninguno, porque ya tiene más de 60 años",
+        "Un examen escrito sobre contabilidad en el Banco de España"
+      ],
+      "correcta": 0,
+      "explicacion": "Si la entidad va a decidir por ti, tiene que saber si esas decisiones encajan con tu dinero y tus metas, no solo si entiendes los productos. Por eso en gestión de carteras y asesoramiento toca la idoneidad."
+    },
+    {
+      "id": "entender-no-basta",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Aunque Pepito entienda perfectamente un producto complejo de riesgo 7, el test de idoneidad puede concluir que no es para él si se jubila en un año y no puede permitirse perder ese dinero.",
+      "correcta": true,
+      "explicacion": "Entender un producto no lo hace adecuado. Con un plazo corto y sin margen para soportar pérdidas, un producto de riesgo máximo no encaja en su situación."
+    },
+    {
+      "id": "hueco-chiringuito",
+      "tipo": "hueco",
+      "enunciado": "A la empresa que ofrece servicios de inversión sin estar autorizada se la llama, de forma informal, ___ financiero.",
+      "opciones": ["chiringuito", "depósito", "índice"],
+      "correcta": 0,
+      "explicacion": "La CNMV usa ese nombre informal para quien presta servicios de inversión sin autorización. Casi siempre es una tapadera para quedarse con el dinero de sus víctimas."
+    }
+  ]
+}

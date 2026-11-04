@@ -1,0 +1,80 @@
+{
+  "id": "inversion/02-pepito-invierte-su-excedente",
+  "tipo": "interactivo",
+  "titulo": "Pepito pone a trabajar su primer excedente",
+  "descripcion": "Acompaña a Pepito en Valencia en sus primeras decisiones de inversión: inflación, plazos, diversificación y tipos de activos.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "calcula-inflacion",
+      "tipo": "calcula",
+      "enunciado": "Pepito aparta 2.000 € para un gasto futuro y los deja un año en una cuenta al 0 %. Si ese año la inflación es del 3 %, ¿cuántos euros **de más** necesitará al final del año para comprar lo que al principio costaba 2.000 €?",
+      "unidad": "euros",
+      "solucion": 6000,
+      "tolerancia": 0,
+      "explicacion": "Si los precios suben un 3 %, lo que costaba 2.000 € pasa a costar un 3 % más: 2.000 × 3 / 100 = **60 €**. En total, 2.060 €."
+    },
+    {
+      "id": "ordena-antes-de-invertir",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los pasos de Pepito desde que cobra la nómina hasta que invierte a largo plazo.",
+      "pasos": [
+        "Cubrir los gastos básicos del mes: alquiler, luz, comida y transporte",
+        "Completar y mantener el fondo de emergencia en un producto líquido y seguro",
+        "Decidir cuántos años puede esperar el dinero que sobra",
+        "Invertir ese excedente en una cartera diversificada, acorde al riesgo que puede asumir"
+      ],
+      "explicacion": "Primero se vive y se protege uno de los imprevistos; solo el dinero que no hace falta para eso puede esperar años, y solo el que puede esperar tiene sentido invertirlo."
+    },
+    {
+      "id": "matricula-en-bolsa",
+      "tipo": "opcion",
+      "enunciado": "El hermano de Pepito necesita 4.000 € dentro de 8 meses para la matrícula de un máster y quiere meterlos hoy en bolsa «para sacar un pellizco». ¿Por qué es mala idea?",
+      "opciones": [
+        "Porque en España no se pueden vender acciones antes de un año",
+        "Porque 8 meses es muy poco plazo: una caída le obligaría a vender con pérdidas justo al pagar",
+        "Porque en bolsa solo se puede invertir a partir de 10.000 €",
+        "Porque las matrículas desgravan más si se pagan desde una cuenta sin remunerar"
+      ],
+      "correcta": 1,
+      "explicacion": "La renta variable oscila mucho a corto plazo. Una referencia habitual es no poner en bolsa dinero que vayas a necesitar en menos de **3 a 5 años**, para no tener que vender en un mal momento."
+    },
+    {
+      "id": "bono-antes-de-vencer",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Aunque se llame «renta fija», si Pepito compra un bono a 10 años y lo vende antes de que venza, después de que hayan subido los tipos de interés, puede perder dinero.",
+      "correcta": true,
+      "explicacion": "Lo fijo es el interés pactado si aguantas hasta el vencimiento. Su **precio de mercado** se mueve cada día: si los tipos suben, los bonos antiguos valen menos y venderlos antes puede dar pérdida."
+    },
+    {
+      "id": "todo-en-su-empresa",
+      "tipo": "opcion",
+      "enunciado": "Pepito piensa invertir todos sus ahorros de largo plazo en acciones del laboratorio farmacéutico donde trabaja, «porque lo conoce por dentro». ¿Qué fallo comete?",
+      "opciones": [
+        "Falta de diversificación: su sueldo y sus ahorros dependerían de la misma empresa",
+        "Exceso de diversificación: debería comprar solo bonos de su empresa",
+        "Plazo excesivo: las acciones farmacéuticas caducan a los dos años",
+        "Infracción fiscal: está prohibido tener acciones del sector donde trabajas"
+      ],
+      "correcta": 0,
+      "explicacion": "Si la empresa pasa una crisis grave, Pepito podría perder a la vez el trabajo y los ahorros. Repartir entre muchos sectores y países evita depender de una sola compañía."
+    },
+    {
+      "id": "hueco-acciones",
+      "tipo": "hueco",
+      "enunciado": "Al comprar una acción, Pepito pasa a ser copropietario de un trocito de la empresa: eso es renta ___.",
+      "opciones": ["variable", "fija", "garantizada"],
+      "correcta": 0,
+      "explicacion": "Se llama variable porque ni los beneficios futuros ni el precio de la acción están asegurados de antemano: dependen de cómo le vaya al negocio y al mercado."
+    },
+    {
+      "id": "calcula-cartera-mixta",
+      "tipo": "calcula",
+      "enunciado": "Pepito reparte sus primeros 1.000 € a medias: 500 € en renta fija y 500 € en renta variable. En un año, sin meter ni sacar nada, la parte fija gana un 4 % y la variable un 8 %. ¿Cuántos euros de **beneficio bruto total** tiene?",
+      "unidad": "euros",
+      "solucion": 6000,
+      "tolerancia": 0,
+      "explicacion": "Se calcula cada parte por separado: 500 × 4 / 100 = 20 € y 500 × 8 / 100 = 40 €. Juntas, **60 €**. Son cifras de ejemplo: ninguna de las dos rentabilidades está asegurada."
+    }
+  ]
+}
