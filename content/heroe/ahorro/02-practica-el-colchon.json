@@ -8,11 +8,11 @@
     {
       "id": "calcula-fondo",
       "tipo": "calcula",
-      "enunciado": "Marcos gasta 950 € al mes en lo imprescindible. ¿Cuánto debería tener en su fondo de emergencia para cubrir 3 meses?",
+      "enunciado": "Pepito gasta **950 €** al mes en lo imprescindible. ¿Cuánto debería tener en su fondo de emergencia para cubrir **3 meses**?",
       "unidad": "euros",
       "solucion": 285000,
       "tolerancia": 0,
-      "explicacion": "3 meses × 950 € = 2.850 €. Se multiplica el gasto imprescindible de un mes por los meses que quieres cubrir."
+      "explicacion": "3 meses × 950 € = **2.850 €**. Se multiplica el gasto imprescindible de un mes por los meses que quieres cubrir."
     },
     {
       "id": "ordena-pasos",
@@ -24,7 +24,7 @@
         "Abrir una cuenta separada para el fondo",
         "Programar una transferencia automática el día de cobro"
       ],
-      "explicacion": "Primero sabes cuánto necesitas, luego cuál es la meta, después dónde guardarlo y por último lo automatizas para no depender de la fuerza de voluntad."
+      "explicacion": "Primero sabes cuánto necesitas, luego cuál es la meta, después dónde guardarlo y por último lo **automatizas** para no depender de la fuerza de voluntad."
     },
     {
       "id": "empareja-conceptos",
@@ -36,23 +36,23 @@
         { "concepto": "FGD", "definicion": "Protege hasta 100.000 € por titular y entidad" },
         { "concepto": "Fondo de emergencia", "definicion": "Dinero apartado solo para imprevistos" }
       ],
-      "explicacion": "Para comparar cuentas, mira la TAE y no el TIN: la TAE ya incluye comisiones y cada cuánto te pagan los intereses."
+      "explicacion": "Para comparar cuentas, mira la **TAE** y no el TIN: la TAE ya incluye comisiones y cada cuánto te pagan los intereses."
     },
     {
       "id": "calcula-intereses",
       "tipo": "calcula",
-      "enunciado": "Tienes 5.000 € en una cuenta remunerada al 2 % TAE y no sacas nada en todo el año. ¿Cuántos euros de intereses brutos recibirás en un año?",
+      "enunciado": "Pepito tiene **5.000 €** en una cuenta remunerada al **2 % TAE** y no saca nada en todo el año. ¿Cuántos euros de intereses brutos recibirá en un año?",
       "unidad": "euros",
       "solucion": 10000,
       "tolerancia": 0,
-      "explicacion": "5.000 € × 2 % = 100 € en un año. Son brutos: Hacienda retiene un 19 % de los intereses, así que llegarían 81 €."
+      "explicacion": "5.000 € × 2 % = **100 €** en un año. Son _brutos_: Hacienda retiene un 19 % de los intereses, así que llegarían 81 €."
     },
     {
       "id": "cuenta-separada",
       "tipo": "verdaderoFalso",
       "enunciado": "Conviene guardar el fondo de emergencia en una cuenta distinta de la que usas para los gastos del día a día.",
       "correcta": true,
-      "explicacion": "Si está mezclado con el dinero del mes, acabas gastándolo sin darte cuenta. Separarlo hace que lo veas como lo que es: intocable salvo emergencia."
+      "explicacion": "Si está mezclado con el dinero del mes, acabas gastándolo sin darte cuenta. Separarlo hace que lo veas como lo que es: **intocable** salvo emergencia."
     },
     {
       "id": "hueco-pagate",
@@ -60,7 +60,7 @@
       "enunciado": "La regla \"págate primero a ti\" consiste en ahorrar ___ de empezar a gastar.",
       "opciones": ["antes", "después", "en lugar"],
       "correcta": 0,
-      "explicacion": "Se ahorra antes: el día que cobras, de forma automática. Ahorrar lo que sobra a final de mes no funciona, porque casi nunca sobra."
+      "explicacion": "Se ahorra **antes**: el día que cobras, de forma automática. Ahorrar lo que sobra a final de mes no funciona, porque casi nunca sobra."
     }
   ]
 }

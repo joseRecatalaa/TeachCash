@@ -1,0 +1,187 @@
+{
+  "id": "ahorro/07-inflacion-y-compuesto",
+  "tipo": "lectura",
+  "titulo": "Inflación, interés compuesto y metas con fecha",
+  "descripcion": "Por qué el dinero quieto pierde valor, qué mide el IPC, cómo crecen los intereses sobre intereses y cuánto apartar al mes para llegar a una meta.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "El ladrón silencioso",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "nube",
+          "pie": "Una nube gris a píxel: la inflación, que encoge el dinero sin hacer ruido."
+        },
+        {
+          "tipo": "dato",
+          "texto": "En septiembre de 2026 los precios estaban un **4,9 %** más altos que un año antes: la tasa más alta desde febrero de 2023.",
+          "fuente": "INE, IPC de septiembre de 2026 (14 de octubre de 2026)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Eso es la _inflación_: con el mismo dinero compras **menos cosas**. El billete sigue diciendo 50 €, pero llega para menos."
+        }
+      ]
+    },
+    {
+      "titulo": "Qué es el IPC",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "El **IPC** (Índice de Precios de Consumo) mide cómo cambian los precios de lo que compran los hogares. Lo publica el **INE** cada mes."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "📅 A final de mes, un _indicador adelantado_.",
+            "📊 A mediados del mes siguiente, el dato completo."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "La compra de Pepito",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito, 29 años, comparte piso en Valencia y gasta 300 € al mes en la compra."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "La misma compra, con precios un 5 % más altos",
+          "filas": [
+            { "concepto": "Compra de un mes, este año", "importe": -30000 },
+            { "concepto": "La misma compra, un año después", "importe": -31500 },
+            { "concepto": "Lo que paga de más cada mes", "importe": -1500 }
+          ],
+          "nota": "Inflación **ilustrativa** del 5 %."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Si tu ahorro rinde menos que la inflación, pierde **poder adquisitivo**."
+        }
+      ]
+    },
+    {
+      "titulo": "El mito del dinero quieto",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Si no lo toco, no pierdo nada».",
+            "✅ Realidad: los euros no bajan, pero **lo que compran**, sí. Si los precios suben un 5 %, lo que hoy cuesta 1.000 € costará **1.050 €**, y tus 1.000 € ya no llegan."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Interés simple y compuesto",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Con interés _simple_, solo cobra lo que metiste. Con interés _compuesto_, los intereses se suman al capital y **también cobran**."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Intereses de 10.000 € al 2 % en 2 años, antes de impuestos",
+          "filas": [
+            { "concepto": "Simple: 200 € + 200 €", "importe": 40000 },
+            { "concepto": "Compuesto: 200 € + 204 €", "importe": 40400 }
+          ],
+          "nota": "El segundo año, el compuesto cobra también por los 200 € del primero."
+        }
+      ]
+    },
+    {
+      "titulo": "El tiempo es el truco",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Al principio la diferencia es pequeña. Con los años se nota cada vez más, porque cada año hay más intereses que cobran intereses."
+        },
+        {
+          "tipo": "idea",
+          "texto": "El interés compuesto premia la **paciencia**: cuanto antes empiezas, más trabaja."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Ojo: con las deudas funciona igual, pero **en tu contra**."
+        }
+      ]
+    },
+    {
+      "titulo": "Metas con fecha",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Una meta con fecha se convierte en una cuota: **lo que necesitas ÷ los meses que faltan**."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "La moto de Pepito, dentro de 18 meses",
+          "filas": [
+            { "concepto": "Precio de la moto", "importe": -360000 },
+            { "concepto": "Ahorro al mes (3.600 € ÷ 18)", "importe": 20000 }
+          ],
+          "nota": "Sin contar intereses. Y si los precios suben, la meta **también**."
+        }
+      ]
+    },
+    {
+      "titulo": "Tu turno",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Pon precio y fecha a tu meta.",
+            "2️⃣ Resta lo que ya tienes y divide entre los meses que faltan.",
+            "3️⃣ Programa esa cantidad **el día que cobras**."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Y si Pepito ya tiene algo ahorrado, o su meta sube de precio? Lo calculas en la práctica."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "que-mide-ipc",
+      "tipo": "opcion",
+      "enunciado": "¿Qué mide el IPC?",
+      "opciones": [
+        "Cómo cambian los precios de lo que consumen los hogares",
+        "Lo que gana de media una persona que trabaja",
+        "El tipo de interés de los depósitos"
+      ],
+      "correcta": 0,
+      "explicacion": "Es el **Índice de Precios de Consumo**: sigue los precios de una cesta de bienes y servicios. Su variación en un año es la inflación."
+    },
+    {
+      "id": "rinde-menos",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si tu cuenta te da un 1 % al año y los precios suben un 4 %, al final del año tu dinero compra más que antes.",
+      "correcta": false,
+      "explicacion": "Tienes un 1 % más de euros, pero las cosas cuestan un 4 % más. Con tu dinero compras **menos**: has perdido poder adquisitivo."
+    },
+    {
+      "id": "calcula-compuesto",
+      "tipo": "calcula",
+      "enunciado": "Pepito mete **5.000 €** al **4 %** de interés compuesto anual y no saca nada en 2 años. Antes de impuestos, ¿cuántos euros tiene al final?",
+      "unidad": "euros",
+      "solucion": 540800,
+      "tolerancia": 0,
+      "explicacion": "Año 1: 5.000 € + 200 € = 5.200 €. Año 2: 5.200 € + 208 € = **5.408 €**. El segundo año también cobran los 200 € del primero."
+    },
+    {
+      "id": "hueco-meta",
+      "tipo": "hueco",
+      "enunciado": "Para reunir 3.000 € en 12 meses, sin contar intereses, hay que apartar ___ al mes.",
+      "opciones": ["250 €", "300 €", "200 €"],
+      "correcta": 0,
+      "explicacion": "La cuota es la meta entre los meses: 3.000 € ÷ 12 = **250 €**."
+    }
+  ]
+}

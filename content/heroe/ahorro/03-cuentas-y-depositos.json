@@ -1,0 +1,155 @@
+{
+  "id": "ahorro/03-cuentas-y-depositos",
+  "tipo": "lectura",
+  "titulo": "Cuentas remuneradas y depósitos a plazo",
+  "descripcion": "Dónde cobra intereses tu ahorro, qué pasa si sacas un depósito antes de tiempo, la TAE con números y cuánto se queda Hacienda.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Tu ahorro también puede cobrar",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "cerdito",
+          "pie": "Un cerdito hucha a píxel: el dinero que espera también puede ganar algo."
+        },
+        {
+          "tipo": "dato",
+          "texto": "Si cancelas un depósito antes de tiempo, la penalización **no puede superar los intereses brutos** que llevabas ganados.",
+          "fuente": "Banco de España, Portal del Cliente Bancario"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "El dinero quieto en la cuenta de la nómina no suele ganar nada. Hay dos sitios típicos para que cobre: la **cuenta remunerada** y el **depósito a plazo**."
+        }
+      ]
+    },
+    {
+      "titulo": "Cuenta remunerada o depósito",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "💧 **Cuenta remunerada**: te paga intereses por el saldo y sacas el dinero cuando quieras.",
+            "🔒 **Depósito a plazo**: dejas el dinero un tiempo fijo (3 meses, 1 año…) a cambio de un tipo pactado.",
+            "🔍 Letra pequeña: hasta qué saldo paga y durante cuánto tiempo."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "La cuenta te da **libertad**; el depósito, un tipo fijado a cambio de esperar."
+        }
+      ]
+    },
+    {
+      "titulo": "El mito del depósito que nunca pierde",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «En un depósito siempre recuperas lo que metiste».",
+            "✅ Realidad: si lo cancelas antes, pagas la penalización del contrato y Hacienda retiene igual. Puedes cobrar **menos de lo que depositaste**."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Algunos depósitos **no se pueden cancelar** antes, y otros se renuevan solos al vencer (_prórroga automática_). Todo eso lo dice el contrato: léelo antes de firmar."
+        }
+      ]
+    },
+    {
+      "titulo": "TIN y TAE, con números",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "El TIN es el interés pactado. La _TAE_ añade cada cuánto te pagan y las comisiones."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "📅 TIN del 3 % pagado una vez al año, sin comisiones: TAE del 3 %.",
+            "🗓️ TIN del 3 % pagado cada mes: TAE de unos **3,04 %**, porque los intereses de cada mes también cobran."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Entre dos ofertas, compara la **TAE**: está pensada justo para eso."
+        }
+      ]
+    },
+    {
+      "titulo": "El depósito de Pepito",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito, 34 años, de Zaragoza, ya tiene colchón. Mete en un depósito a 1 año **10.000 €** que no va a tocar."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Un año de depósito al 3 % TIN, intereses al vencer",
+          "filas": [
+            { "concepto": "Intereses brutos (3 % de 10.000 €)", "importe": 30000 },
+            { "concepto": "Retención para Hacienda (19 %)", "importe": -5700 },
+            { "concepto": "Intereses que le llegan", "importe": 24300 }
+          ],
+          "nota": "Tipo **ilustrativo**, no la oferta de ninguna entidad. Al vencer cobra **243 €** de intereses."
+        }
+      ]
+    },
+    {
+      "titulo": "Hacienda también cobra",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Los intereses son _rendimientos del capital mobiliario_. La entidad te retiene un **19 %** y lo adelanta a Hacienda."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Luego van a la renta, en la _base del ahorro_: en 2026, los primeros 6.000 € tributan al 19 % y lo que pase, a tipos más altos."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Sabrías elegir entre dos ofertas y decir cuánto te llega? Pruébalo en la práctica."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "cancelar-siempre",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Todos los depósitos a plazo se pueden cancelar antes de que venzan.",
+      "correcta": false,
+      "explicacion": "Depende del **contrato**: unos permiten sacar el dinero antes, con penalización, y otros no. Por eso se lee antes de firmar."
+    },
+    {
+      "id": "frecuencia-tae",
+      "tipo": "opcion",
+      "enunciado": "Dos depósitos sin comisiones tienen el mismo TIN del 3 %. Uno paga los intereses cada mes y el otro, al final del año. ¿Cuál tiene la TAE más alta?",
+      "opciones": [
+        "El que paga cada mes",
+        "El que paga al final del año",
+        "Los dos tienen la misma"
+      ],
+      "correcta": 0,
+      "explicacion": "Si te pagan cada mes, esos intereses empiezan a **cobrar intereses** antes. La TAE recoge ese efecto y por eso sale algo más alta."
+    },
+    {
+      "id": "hueco-retencion",
+      "tipo": "hueco",
+      "enunciado": "Al pagarte los intereses de una cuenta, la entidad te retiene un ___ para Hacienda.",
+      "opciones": ["19 %", "21 %", "10 %"],
+      "correcta": 0,
+      "explicacion": "La retención sobre los intereses es del **19 %** (Reglamento del IRPF, art. 90). Es un adelanto: el impuesto final se ajusta en la declaración de la renta."
+    },
+    {
+      "id": "calcula-neto",
+      "tipo": "calcula",
+      "enunciado": "Un depósito de **8.000 €** a 1 año al **2 % TIN**, con los intereses pagados al vencer. Con la retención del 19 %, ¿cuántos euros de intereses te llegan?",
+      "unidad": "euros",
+      "solucion": 12960,
+      "tolerancia": 0,
+      "explicacion": "Brutos: 8.000 € × 2 % = 160 €. Retención: 160 € × 19 % = 30,40 €. Netos: 160 € − 30,40 € = **129,60 €**."
+    }
+  ]
+}

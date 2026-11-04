@@ -1,0 +1,99 @@
+{
+  "id": "ahorro/06-practica-fgd-y-letras",
+  "tipo": "interactivo",
+  "titulo": "Practica: ahorro a salvo con el FGD y las Letras",
+  "descripcion": "Pepito pone a salvo sus ahorros y el dinero de vender su piso: cobertura del Fondo de Garantía, cuentas conjuntas y Letras del Tesoro.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "calcula-descubierto",
+      "tipo": "calcula",
+      "enunciado": "Pepito ha ido ahorrando **120.000 €**, a su nombre y repartidos en dos cuentas de la misma entidad. ¿Cuántos euros quedan fuera de la cobertura del Fondo de Garantía de Depósitos?",
+      "unidad": "euros",
+      "solucion": 2000000,
+      "tolerancia": 0,
+      "explicacion": "El límite es de 100.000 € por titular y **entidad**, sumando todas sus cuentas en ella: 120.000 € − 100.000 € = **20.000 €** sin cubrir."
+    },
+    {
+      "id": "como-cubrirlo",
+      "tipo": "opcion",
+      "enunciado": "¿Qué puede hacer Pepito para que sus 120.000 € queden cubiertos?",
+      "opciones": [
+        "Pasar al menos 20.000 € a otra entidad distinta",
+        "Abrir una tercera cuenta en la misma entidad",
+        "Nada: ya está todo cubierto"
+      ],
+      "correcta": 0,
+      "explicacion": "Otra cuenta en la misma entidad suma para **el mismo límite**. En otra entidad, ese dinero tiene su propia cobertura de 100.000 €."
+    },
+    {
+      "id": "venta-del-piso",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Meses después, Pepito vende su vivienda y tiene en el banco el dinero de la venta. Durante 3 meses, ese dinero está cubierto aunque pase de 100.000 €.",
+      "correcta": true,
+      "explicacion": "La ley cubre **sin límite durante 3 meses** el dinero que viene de vender una vivienda, porque es un saldo alto y pasajero."
+    },
+    {
+      "id": "cuenta-hermana",
+      "tipo": "calcula",
+      "enunciado": "Pepito y su hermana comparten una cuenta con **180.000 €** y el contrato no dice cómo se reparte. ¿Cuántos euros le corresponden a cada uno para el Fondo de Garantía?",
+      "unidad": "euros",
+      "solucion": 9000000,
+      "tolerancia": 0,
+      "explicacion": "Si el contrato no dice nada, se reparte **a partes iguales**: 180.000 € ÷ 2 = 90.000 €. Cada parte cabe en su límite de 100.000 €."
+    },
+    {
+      "id": "empareja-letras",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada concepto con lo que significa.",
+      "pares": [
+        { "concepto": "Letra del Tesoro", "definicion": "Préstamo al Estado a 3, 6, 9 o 12 meses" },
+        { "concepto": "Al descuento", "definicion": "Pagas menos de lo que cobrarás al vencer" },
+        { "concepto": "Cuenta Directa", "definicion": "Cuenta en el Banco de España para comprar deuda del Estado sin intermediarios" },
+        { "concepto": "Subasta", "definicion": "El proceso en el que se fija el precio de las Letras nuevas" }
+      ],
+      "explicacion": "Con estas cuatro piezas entiendes cualquier anuncio de Letras: qué compras, **cómo ganas**, dónde y a qué precio."
+    },
+    {
+      "id": "calcula-letras",
+      "tipo": "calcula",
+      "enunciado": "Con parte del dinero, Pepito compra **5 Letras a 6 meses** a 990 € cada una (precio ilustrativo). ¿Cuántos euros gana al vencer, antes de impuestos?",
+      "unidad": "euros",
+      "solucion": 5000,
+      "tolerancia": 0,
+      "explicacion": "Paga 5 × 990 € = 4.950 € y cobra 5 × 1.000 € = 5.000 €. La diferencia, **50 €**, es su ganancia."
+    },
+    {
+      "id": "ordena-compra-letra",
+      "tipo": "ordenar",
+      "enunciado": "Pepito compra sus Letras directamente en el Tesoro. Ordena los pasos.",
+      "pasos": [
+        "Hacer la petición antes de la subasta y adelantar el dinero",
+        "El Tesoro celebra la subasta y fija el precio",
+        "Le devuelven la diferencia entre lo adelantado y el precio",
+        "Al vencer, cobra 1.000 € por cada Letra"
+      ],
+      "explicacion": "Se pide y se paga **antes** de saber el precio exacto; la subasta lo fija y lo que sobra vuelve unos días después."
+    },
+    {
+      "id": "hueco-retencion-letra",
+      "tipo": "hueco",
+      "enunciado": "Al cobrar sus Letras compradas en el Tesoro, la retención que le hacen a Pepito es ___.",
+      "opciones": ["cero", "del 19 %", "del 21 %"],
+      "correcta": 0,
+      "explicacion": "Las Letras están **exentas de retención**, pero no de impuestos: la ganancia tributa en la base del ahorro."
+    },
+    {
+      "id": "entidad-ue",
+      "tipo": "opcion",
+      "enunciado": "Pepito abre una cuenta en una entidad de otro país de la UE que trabaja en España. ¿Qué fondo protege ese dinero?",
+      "opciones": [
+        "El fondo de garantía del país de la entidad",
+        "Ninguno: solo protege el fondo español",
+        "El fondo español, sin límite"
+      ],
+      "correcta": 0,
+      "explicacion": "Cada entidad está en el fondo de **su país**. La normativa europea exige que cubra al menos lo mismo que el español."
+    }
+  ]
+}
