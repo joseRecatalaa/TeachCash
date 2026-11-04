@@ -65,7 +65,7 @@ Reglas para TODAS las preguntas:
 
 ═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
 1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
-2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso…
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
 3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
 4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
 5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
@@ -164,7 +164,7 @@ Reglas para TODAS las preguntas:
 
 ═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
 1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
-2. PERSONAJE: alguien con nombre en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Varía nombres, edades, ciudades y vidas: estudiante, autónoma, pareja con hijos, persona jubilada, alguien que comparte piso…
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
 3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
 4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
 5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
@@ -263,7 +263,7 @@ Reglas para TODAS las preguntas:
 
 ═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
 1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
-2. PERSONAJE: alguien con nombre en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Varía nombres, edades, ciudades y vidas: estudiante, autónoma, pareja con hijos, persona jubilada, alguien que comparte piso…
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
 3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
 4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
 5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
@@ -361,7 +361,7 @@ Reglas para TODAS las preguntas:
 
 ═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
 1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
-2. PERSONAJE: alguien con nombre en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Varía nombres, edades, ciudades y vidas: estudiante, autónoma, pareja con hijos, persona jubilada, alguien que comparte piso…
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
 3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
 4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
 5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
@@ -473,14 +473,16 @@ Lectura, Interactivo, Lectura, Interactivo y Jefe.
     · el gancho final del informe como último párrafo.
 - INTERACTIVO: de 5 a 7 ejercicios, mezclando al menos cuatro de los seis
   tipos y con al menos un "calcula". Que cuenten la historia del personaje.
-- JEFE: 10 preguntas, "aprobado": 70, con los seis tipos y al menos dos
+- JEFE: las 12 preguntas del informe, "aprobado": 70, con los seis tipos y al menos dos
   "calcula". Su titulo es el nombre del villano del informe y la descripcion
   lo presenta.
 - "minutos" realistas: lectura de 2 a 4, interactivo de 3 a 4, jefe de 4 a 5.
 
 ━━ QUE ENTRE POR LOS OJOS (sin pasarse) ━━
-- Un emoji al principio de cada título de página, y como viñeta en las listas
-  (como en content/heroe/ahorro/01-fondo-de-emergencia.json).
+- Emoji como viñeta en las listas (como en
+  content/heroe/ahorro/01-fondo-de-emergencia.json) y, si ayuda, en el texto.
+  NUNCA en un título (de nivel, de página ni de ejemplo): el validador los
+  rechaza.
 - **negrita** para la palabra o la cifra clave de cada página y _cursiva_
   para términos y matices. Dos o tres marcas por página como mucho: si todo
   va en negrita, nada destaca.

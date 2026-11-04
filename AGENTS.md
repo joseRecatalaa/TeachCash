@@ -1110,9 +1110,11 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 
 Anótalas aquí al resolverlas; no las asumas en silencio.
 
-- **Camino del héroe, contenido**: Ahorro tiene niveles; Salud financiera,
-  Inversión y Deuda y crédito están como "Pronto" (`"niveles": []`) hasta que
-  se conviertan sus cursos (fase 6 de `docs/CAMINO_HEROE.md`).
+- **Camino del héroe, contenido**: los cuatro mundos tienen sus 9 niveles,
+  escritos y **pendientes de revisión humana**. La lista de cifras oficiales,
+  con su estado (verificada, corregida o no verificada) y su fuente, está en
+  `docs/investigación-heroe/revision-cifras.md`; nada se publica sin esa
+  lectura (fase 6 de `docs/CAMINO_HEROE.md`).
 - **Camino del héroe, vidas y rachas**: fuera de la primera versión a
   propósito. Si llegan, son progreso derivado o una tabla aparte, nunca un
   contador guardado junto a la mejor marca.
