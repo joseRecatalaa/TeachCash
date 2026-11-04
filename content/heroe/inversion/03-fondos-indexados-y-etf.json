@@ -1,0 +1,196 @@
+{
+  "id": "inversion/03-fondos-indexados-y-etf",
+  "tipo": "lectura",
+  "titulo": "Fondos, indexados, ETF y el bocado de las comisiones",
+  "descripcion": "Cómo funcionan los fondos de inversión, los indexados y los ETF, por qué las comisiones pesan tanto a 20 o 30 años y la ventaja de aportar cada mes.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "La cesta de millones de personas",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "hucha",
+          "pie": "Una hucha a píxel: el dinero de mucha gente junto en un mismo sitio."
+        },
+        {
+          "tipo": "dato",
+          "texto": "A finales de 2025 el patrimonio de las instituciones de inversión colectiva españolas rozaba los **486.000 millones de euros**, y los fondos tenían unos **5,7 millones** de inversores.",
+          "fuente": "CNMV, Informe anual 2025"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Un **fondo de inversión** junta el dinero de miles de personas para comprar una cesta diversificada de activos. Tú compras _participaciones_ de esa cesta."
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito compara comisiones en Vigo",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito, 34 años, diseñador web autónomo en Vigo, quiere invertir 10.000 € durante 30 años. Para el ejemplo, los dos fondos ganan un **6 % al año** antes de comisiones, siempre igual."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🧑‍💼 Fondo activo: cobra un 1,8 % al año por intentar elegir las mejores empresas. Neto: 4,2 %.",
+            "🤖 Fondo indexado: copia un índice mundial y cobra un 0,3 %. Neto: 5,7 %."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "El bocado silencioso a 30 años",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Un 1,5 % de diferencia al año parece poco. Pero el _interés compuesto_ la multiplica con el tiempo."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "10.000 € de Pepito al cabo de 30 años",
+          "filas": [
+            {
+              "concepto": "Fondo indexado, al 5,7 % neto",
+              "importe": 5275300
+            },
+            {
+              "concepto": "Fondo activo, al 4,2 % neto",
+              "importe": 3435800
+            },
+            {
+              "concepto": "Lo que se comen las comisiones de más",
+              "importe": -1839500
+            }
+          ],
+          "nota": "Cuenta: 10.000 × 1,057 elevado a 30, y 10.000 × 1,042 elevado a 30, redondeado al euro. Rentabilidad **supuesta**, no prometida."
+        }
+      ]
+    },
+    {
+      "titulo": "Fondo indexado frente a ETF",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Los dos suelen copiar un índice y cobrar poco, pero se compran distinto. El **ETF** (_exchange-traded fund_) es un fondo cotizado."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🕔 Fondo de inversión: se compra o se vende a un solo precio al día, el valor liquidativo, que se conoce después.",
+            "⚡ ETF: se compra y se vende en bolsa durante la sesión, como una acción."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "El poder de aportar cada mes",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Esperar al «momento perfecto» para entrar suele salir mal. Una referencia habitual es programar una **aportación fija cada mes**."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Un mes de Pepito, autónomo",
+          "filas": [
+            {
+              "concepto": "Ingresos medios netos",
+              "importe": 220000
+            },
+            {
+              "concepto": "Alquiler del estudio y suministros",
+              "importe": -75000
+            },
+            {
+              "concepto": "Cuota de autónomos y gastos profesionales",
+              "importe": -36000
+            },
+            {
+              "concepto": "Comida y gastos personales",
+              "importe": -69000
+            },
+            {
+              "concepto": "Aportación automática a su fondo indexado",
+              "importe": -40000
+            }
+          ],
+          "nota": "2.200 − 750 − 360 − 690 − 400 = 0: cada euro tiene su sitio."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Los fondos diversifican desde pocos euros; **vigilar las comisiones y aportar cada mes** marca la diferencia a décadas vista."
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Si un fondo cobra un 2 % al año en vez de un 0,2 %, será porque gana mucho más para el cliente».",
+            "✅ Realidad: la comisión de gestión sobre el patrimonio ya viene **descontada del valor liquidativo**, gane o pierda el fondo. Cobrar más no garantiza mejores resultados."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "La duda de Pepito",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito duda entre un fondo indexado y un ETF: los dos cobran poco. Pero ¿por qué Hacienda los trata **tan distinto** cuando quieres cambiar de uno a otro?"
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "activo-o-indexado",
+      "tipo": "opcion",
+      "enunciado": "¿Cuál es la diferencia principal entre un fondo de gestión activa y un fondo indexado?",
+      "opciones": [
+        "El activo intenta batir al mercado eligiendo valores y suele cobrar más; el indexado copia un índice y suele cobrar mucho menos",
+        "El activo está garantizado por el Estado y el indexado no lo supervisa la CNMV",
+        "El indexado solo invierte en renta fija española y el activo solo en criptomonedas",
+        "En el activo no se pagan comisiones si el mercado baja"
+      ],
+      "correcta": 0,
+      "explicacion": "En la gestión activa un equipo decide qué comprar para intentar superar a su índice, y ese trabajo encarece el fondo. El indexado se limita a copiar el índice, a una fracción del coste."
+    },
+    {
+      "id": "hueco-etf",
+      "tipo": "hueco",
+      "enunciado": "Un ___ es un fondo cotizado: una cesta diversificada que se compra y se vende en bolsa en tiempo real, como una acción.",
+      "opciones": [
+        "ETF",
+        "IPC",
+        "TIN"
+      ],
+      "correcta": 0,
+      "explicacion": "ETF son las siglas en inglés de _exchange-traded fund_. Junta la diversificación de un fondo con la compraventa en bolsa durante la sesión. El IPC mide precios y el TIN es un tipo de interés."
+    },
+    {
+      "id": "comision-en-anos-malos",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Un fondo cobra su comisión de gestión sobre el patrimonio. Si un año pierde dinero, la gestora no cobra esa comisión ese año.",
+      "correcta": false,
+      "explicacion": "Una comisión sobre el patrimonio se carga al propio fondo y ya viene descontada del valor liquidativo, suba o baje el mercado. Solo la que se calcula sobre los **resultados** depende de que el fondo gane."
+    },
+    {
+      "id": "ventaja-aportar",
+      "tipo": "opcion",
+      "enunciado": "¿Qué ventaja tiene invertir una cantidad fija cada mes frente a esperar a adivinar cuándo está la bolsa más barata?",
+      "opciones": [
+        "Elimina por completo el riesgo de que la bolsa baje",
+        "Promedia el precio de compra y crea un hábito que no depende de las emociones",
+        "Hace que las ganancias no paguen impuestos",
+        "Obliga al banco a devolver el doble si el índice cierra en negativo"
+      ],
+      "correcta": 1,
+      "explicacion": "Con el mismo importe, en los meses de caída compras **más** participaciones y en los de subida, menos. Así no te juegas todo a entrar justo en un pico. El riesgo de que baje sigue ahí."
+    }
+  ]
+}

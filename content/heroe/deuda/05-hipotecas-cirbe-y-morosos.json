@@ -1,0 +1,201 @@
+{
+  "id": "deuda/05-hipotecas-cirbe-y-morosos",
+  "tipo": "lectura",
+  "titulo": "Hipotecas, CIRBE y ficheros de morosos",
+  "descripcion": "Tu derecho a desistir en 14 días, hipotecas fijas, variables y mixtas, quién paga los gastos y la diferencia entre la CIRBE y un fichero de morosos.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Catorce días para pensarlo",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "candado",
+          "pie": "Un candado: los derechos que te protegen al firmar"
+        },
+        {
+          "tipo": "dato",
+          "texto": "El Euríbor a 12 meses, la referencia de muchas hipotecas variables, cerró **octubre de 2026 en el 3,239 %**.",
+          "fuente": "Banco de España, Resolución de 3-11-2026 (BOE-A-2026-23168)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "En un préstamo al consumo tienes **14 días naturales** para desistir, sin dar motivos ni pagar penalización. Después, 30 días para devolver el capital y los intereses de esos días."
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito y su pareja, en Zaragoza",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito vive en Zaragoza con su pareja y su hijo. Antes de pedir hipoteca, repasan el mes."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "El mes de la familia",
+          "filas": [
+            {
+              "concepto": "Dos nóminas netas",
+              "importe": 320000
+            },
+            {
+              "concepto": "Alquiler actual",
+              "importe": -82000
+            },
+            {
+              "concepto": "Compra y comedor",
+              "importe": -68000
+            },
+            {
+              "concepto": "Luz, agua y gas",
+              "importe": -13500
+            },
+            {
+              "concepto": "Margen antes de otros gastos",
+              "importe": 156500
+            }
+          ],
+          "nota": "Una hipoteca de 150.000 € a 25 años al 4,247 % tendría una cuota de unos **812 €** al mes."
+        }
+      ]
+    },
+    {
+      "titulo": "Fija, variable o mixta",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "🔒 **Fija**: el mismo tipo y la misma cuota toda la vida del préstamo.",
+            "📈 **Variable**: un índice, normalmente el Euríbor, más un diferencial; se revisa cada cierto tiempo.",
+            "🔀 **Mixta**: unos años a tipo fijo y después variable."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "La **FEIN** te llega al menos 10 días naturales antes de firmar, y en el notario firmas un acta _gratis_."
+        }
+      ]
+    },
+    {
+      "titulo": "Quién paga qué",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La Ley 5/2019 reparte los gastos de constituir la hipoteca:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🧑 Tú: la **tasación** y las copias que pidas.",
+            "🏦 El banco: la notaría de la escritura, el registro y la gestoría.",
+            "🧾 El impuesto de la escritura del préstamo (AJD): también el banco, desde noviembre de 2018."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "La CIRBE no es una lista de morosos",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La **CIRBE** es la base de datos del Banco de España con tus préstamos, créditos y avales, estés al día o no."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "En tu informe salen las entidades con las que acumulas **1.000 € o más**. Hasta 2020 eran 9.000 €."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "❌ Mito: «Si sales en la CIRBE, eres moroso». ✅ Realidad: quien lleva su hipoteca al día también sale."
+        }
+      ]
+    },
+    {
+      "titulo": "Los ficheros de morosos",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Son registros **privados**, no la CIRBE. La ley pone condiciones:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "✅ Que sea cierta, vencida y exigible.",
+            "❌ Que no la hayas reclamado ante un juez o la Administración.",
+            "❌ Que el principal no sea **inferior a 50 €**.",
+            "📣 Que te hayan avisado de que podían incluirte.",
+            "⏳ Como mucho, 5 años desde el vencimiento."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Lo que viene",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Hace cinco días, Pepito y su pareja firmaron un préstamo caro en el concesionario. ¿Cuánto les cuesta echarse atrás, y qué gastos de la hipoteca no les toca pagar? Al siguiente nivel."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "gasto-tuyo",
+      "tipo": "opcion",
+      "enunciado": "Según la Ley 5/2019, ¿cuál de estos gastos de la hipoteca pagas tú?",
+      "opciones": [
+        "El registro de la propiedad",
+        "La tasación de la vivienda",
+        "La gestoría",
+        "La notaría de la escritura del préstamo"
+      ],
+      "correcta": 1,
+      "explicacion": "El artículo 14.1.e) de la Ley 5/2019 pone la tasación a cargo de quien pide la hipoteca; notaría, registro y gestoría son del banco. Las copias las paga quien las pide."
+    },
+    {
+      "id": "dias-desistir",
+      "tipo": "hueco",
+      "enunciado": "En un préstamo al consumo tienes ___ días naturales desde la firma para desistir sin dar explicaciones.",
+      "opciones": [
+        "14",
+        "7",
+        "60"
+      ],
+      "correcta": 0,
+      "explicacion": "Lo fija el artículo 28 de la Ley 16/2011. Se cuentan desde la firma, o desde que recibes el contrato y su información si es más tarde."
+    },
+    {
+      "id": "factura-35",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Una compañía puede meterte en un fichero de morosos por una factura de 35 € que no has pagado.",
+      "correcta": false,
+      "explicacion": "La Ley Orgánica 3/2018 (disposición adicional sexta) no permite incluir deudas cuyo principal sea inferior a 50 €."
+    },
+    {
+      "id": "que-es-cirbe",
+      "tipo": "opcion",
+      "enunciado": "¿Qué es la CIRBE?",
+      "opciones": [
+        "Una lista privada de personas que no pagan",
+        "La base de datos del Banco de España con tus préstamos, créditos y avales, estés al día o no",
+        "Un registro solo de hipotecas impagadas"
+      ],
+      "correcta": 1,
+      "explicacion": "La CIRBE recoge riesgos, no impagos. Sirve para que las entidades vean cuánto debes y avalas antes de prestarte más."
+    },
+    {
+      "id": "umbral-cirbe",
+      "tipo": "hueco",
+      "enunciado": "En tu informe de la CIRBE aparecen las entidades con las que acumulas ___ euros o más de riesgo.",
+      "opciones": [
+        "1.000",
+        "50",
+        "100.000"
+      ],
+      "correcta": 0,
+      "explicacion": "La Orden ETD/699/2020 bajó ese umbral de 9.000 € a 1.000 € desde 2021, así que hoy casi cualquier préstamo aparece."
+    }
+  ]
+}

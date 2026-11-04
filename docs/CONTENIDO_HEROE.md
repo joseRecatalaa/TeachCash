@@ -23,6 +23,13 @@ concretos.
    pregunta tenga UNA respuesta buena sin trampa. Nada se publica sin esta
    lectura.
 
+Los prompts que se usaron de verdad, ya rellenados por mundo, están en
+`docs/prompt-cursos.txt` (y el de la conversión de los cuatro mundos a la vez,
+en `docs/prompt-primeros-cursos.txt`). Los informes de investigación y la lista
+de cifras comprobadas, con su estado y su fuente, están en
+`docs/investigación-heroe/` (`revision-cifras.md`). Los informes son un
+borrador: una cifra no es cierta porque salga ahí.
+
 ## Dónde va cada cosa
 
 ```
@@ -64,6 +71,9 @@ Todo nivel lleva `id`, `tipo`, `titulo`, `descripcion` (la ficha del camino) y
 | `lectura` | `paginas` (1–8) y `minitest` (3–5 preguntas) | 60 % del minitest |
 | `interactivo` | `ejercicios` (3–12). **Sin minitest**: ya hace de test | 60 % |
 | `jefe` | `preguntas` (8–12) y `aprobado` (50–100, en %) | Su `aprobado` |
+
+El jefe de los cuatro mundos lleva **12 preguntas** (el máximo) de todo el
+mundo, con los seis tipos, y `"aprobado": 70`.
 
 **Estrellas**: 3 si es perfecto, 2 si llega al 80 %, 1 si se supera. Se puede
 repetir y cuenta la mejor marca.
@@ -195,8 +205,8 @@ EXACTAMENTE docs/CONTENIDO_HEROE.md y los esquemas de
 src/types/heroe.types.ts:
 
 - mundo.json con decorado "<decorado>" y orden <orden>.
-- 9 niveles: L, I, L, I, L, I, L, I y el jefe al final (10 preguntas,
-  aprobado 70). Cada lectura de unas 4 páginas y 4 preguntas de minitest;
+- 9 niveles: L, I, L, I, L, I, L, I y el jefe al final (hasta 12
+  preguntas, aprobado 70). Cada lectura de unas 4 páginas y 4 preguntas de minitest;
   cada interactivo, de 5 a 7 ejercicios mezclando los seis tipos.
 - Importes en céntimos y con signo; porcentajes de calcula en centésimas de
   punto.

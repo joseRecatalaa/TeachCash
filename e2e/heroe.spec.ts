@@ -21,8 +21,13 @@ test('un invitado supera la primera lección de Ahorro y se le abre la siguiente
   await page.getByRole('navigation', { name: 'Módulos' }).getByRole('link', { name: /Camino del héroe/ }).click()
   await expect(page.getByRole('heading', { name: 'Camino del héroe' })).toBeVisible({ timeout: 30_000 })
 
-  // En el mapa, Ahorro sale ya elegido (es el primer mundo con niveles).
-  await expect(page.getByRole('button', { name: 'Ahorro, 0 de 3 niveles' })).toHaveAttribute('aria-pressed', 'true')
+  // El mapa arranca en el primer mundo con niveles, que es Salud financiera
+  // (`orden` 1), así que hay que elegir Ahorro. Un solo clic: pulsar el que
+  // ya está elegido es entrar en él.
+  const ahorro = page.getByRole('button', { name: 'Ahorro, 0 de 9 niveles' })
+  await expect(ahorro).toHaveAttribute('aria-pressed', 'false')
+  await ahorro.click()
+  await expect(ahorro).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: 'Entrar en Ahorro' }).click()
   const primero = page.getByRole('button', { name: /El fondo de emergencia, disponible/ })
   await expect(primero).toBeVisible({ timeout: 30_000 })

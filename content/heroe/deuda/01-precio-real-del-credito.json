@@ -1,0 +1,210 @@
+{
+  "id": "deuda/01-precio-real-del-credito",
+  "tipo": "lectura",
+  "titulo": "El precio real del crédito",
+  "descripcion": "Qué separa una deuda que ayuda de una que hunde, cómo comparar préstamos con el TIN y la TAE y por qué al principio pagas más intereses.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Deuda que impulsa y deuda que hunde",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "tarjeta",
+          "pie": "Una tarjeta de crédito, la puerta de entrada a muchas deudas"
+        },
+        {
+          "tipo": "dato",
+          "texto": "La deuda de los hogares españoles bajó al **41,9 % del PIB** en el segundo trimestre de 2026, un mínimo histórico.",
+          "fuente": "Banco de España, Cuentas Financieras 2T 2026 (nota del 8-10-2026)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Pedir prestado no es bueno ni malo: depende de **para qué**."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "✅ Ayuda: formación, una vivienda asumible o una herramienta de trabajo.",
+            "❌ Hunde: gastos del día a día o caprichos que se acaban antes que las cuotas."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Las cuentas de Pepito",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito, 29 años, técnico de sonido en Valencia, necesita un equipo de 3.000 €. Antes de pedirlo, mira su mes."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "El mes de Pepito antes del préstamo",
+          "filas": [
+            {
+              "concepto": "Nómina neta",
+              "importe": 165000
+            },
+            {
+              "concepto": "Alquiler compartido",
+              "importe": -48000
+            },
+            {
+              "concepto": "Supermercado",
+              "importe": -24000
+            },
+            {
+              "concepto": "Factura de la luz",
+              "importe": -6500
+            },
+            {
+              "concepto": "Margen antes de otros gastos",
+              "importe": 86500
+            }
+          ],
+          "nota": "Una referencia habitual: que tus cuotas no pasen del **35 %** de tus ingresos netos. Para Pepito, 577,50 €."
+        }
+      ]
+    },
+    {
+      "titulo": "TIN, TAE y coste total",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "📄 **TIN**: lo que te cobran solo por prestarte el dinero.",
+            "🎯 **TAE**: junta el TIN, las comisiones obligatorias y el plazo en un porcentaje anual.",
+            "💶 **Coste total**: todo lo que devuelves menos lo que te prestaron."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Para comparar préstamos del mismo importe y plazo, mira la TAE y el coste total en euros, no el TIN."
+        }
+      ]
+    },
+    {
+      "titulo": "El sistema francés por dentro",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Casi todos los préstamos en España usan el **sistema francés**: con tipo fijo, pagas la misma cuota todos los meses."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Lo que cambia es lo de dentro. Los intereses se calculan sobre lo que aún debes, así que al principio la cuota es casi toda _intereses_ y al final, casi toda capital."
+        }
+      ]
+    },
+    {
+      "titulo": "El mito del cero por ciento",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "❌ Mito: «Un préstamo al 0 % TIN me sale gratis»."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "✅ Realidad: si hay una comisión de apertura obligatoria, la **TAE** ya no es 0 % y devuelves más de lo que te dieron."
+        }
+      ]
+    },
+    {
+      "titulo": "Mismo dinero, distinto precio",
+      "bloques": [
+        {
+          "tipo": "ejemplo",
+          "titulo": "Dos préstamos de 3.000 € a 2 años",
+          "filas": [
+            {
+              "concepto": "Préstamo A (5 % TIN): comisión de apertura",
+              "importe": -6000
+            },
+            {
+              "concepto": "Préstamo B (6 % TIN): comisión de apertura",
+              "importe": 0
+            }
+          ],
+          "nota": "A tiene el TIN más bajo, pero su TAE es del **7,2 %**; la de B, del 6,17 %. B sale más barato."
+        }
+      ]
+    },
+    {
+      "titulo": "Antes de firmar",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Mira cuánto te queda al mes de verdad.",
+            "2️⃣ Comprueba que la cuota cabe en tu referencia.",
+            "3️⃣ Compara ofertas por la **TAE** y el coste total.",
+            "4️⃣ Pide el cuadro de amortización y léelo."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito tiene tres ofertas sobre la mesa. ¿Cuál esconde más comisiones detrás de un interés que parece bajo? Lo descubres en el siguiente nivel."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "comparar-tae",
+      "tipo": "opcion",
+      "enunciado": "Pepito compara dos préstamos de 3.000 € a 2 años. A: 5 % TIN con 60 € de comisión de apertura, **TAE del 7,2 %**. B: 6 % TIN sin comisiones, TAE del 6,17 %. ¿Cuál le cuesta menos?",
+      "opciones": [
+        "El A, porque su TIN es más bajo",
+        "El B, porque con el mismo importe y plazo su TAE es más baja",
+        "Cuestan lo mismo, porque piden lo mismo",
+        "El A, porque las comisiones no cuentan como coste"
+      ],
+      "correcta": 1,
+      "explicacion": "El TIN deja fuera la comisión de apertura. La TAE la incluye, y con el mismo importe y plazo la TAE más baja es la del préstamo que menos cuesta."
+    },
+    {
+      "id": "frances-principio",
+      "tipo": "verdaderoFalso",
+      "enunciado": "En un préstamo con sistema francés a tipo fijo, los primeros meses pagas más intereses que los últimos.",
+      "correcta": true,
+      "explicacion": "Los intereses de cada mes se calculan sobre la deuda que queda. Al principio debes casi todo, así que esa parte de la cuota es la mayor; luego baja mes a mes."
+    },
+    {
+      "id": "referencia-35",
+      "tipo": "hueco",
+      "enunciado": "Una referencia habitual es que todas tus cuotas de deuda no pasen del ___ de tus ingresos netos.",
+      "opciones": [
+        "35 %",
+        "60 %",
+        "80 %"
+      ],
+      "correcta": 0,
+      "explicacion": "Es una regla práctica, no una ley: por encima de esa franja, las cuotas empiezan a comerse lo que necesitas para vivir y para ahorrar."
+    },
+    {
+      "id": "conceptos-prestamo",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada concepto con su definición.",
+      "pares": [
+        {
+          "concepto": "Capital",
+          "definicion": "El dinero que te prestan y que falta por devolver, sin intereses"
+        },
+        {
+          "concepto": "TIN",
+          "definicion": "El precio por prestarte el dinero, sin comisiones"
+        },
+        {
+          "concepto": "TAE",
+          "definicion": "Junta interés, comisiones obligatorias y plazo en un porcentaje anual"
+        },
+        {
+          "concepto": "Cuota",
+          "definicion": "El recibo de cada mes: una parte de capital y otra de intereses"
+        }
+      ],
+      "explicacion": "Separar lo que debes (capital) de lo que pagas por deberlo (intereses y comisiones) es lo que te deja ver cuánto cuesta de verdad el dinero prestado."
+    }
+  ]
+}

@@ -4,5 +4,15 @@
   "descripcion": "Saber dónde estás: ingresos, gastos, presupuesto y patrimonio. El punto de partida de todo lo demás.",
   "decorado": "escudo",
   "orden": 1,
-  "niveles": []
+  "niveles": [
+    "01-radiografia-ingresos-gastos",
+    "02-practica-primer-presupuesto",
+    "03-regla-50-30-20-y-alquiler",
+    "04-practica-gastos-hormiga",
+    "05-nomina-bruto-neto-mei",
+    "06-practica-revisa-la-nomina",
+    "07-patrimonio-neto-y-metas-smart",
+    "08-practica-plan-de-patrimonio",
+    "09-jefe-niebla-financiera"
+  ]
 }

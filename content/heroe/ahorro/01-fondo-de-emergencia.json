@@ -9,8 +9,14 @@
       "titulo": "Lo inesperado siempre llega",
       "bloques": [
         {
-          "tipo": "parrafo",
-          "texto": "No sabes cuándo. Pero sabes que va a pasar."
+          "tipo": "imagen",
+          "sprite": "hucha",
+          "pie": "Una hucha a píxel llena de monedas: el colchón para los imprevistos."
+        },
+        {
+          "tipo": "dato",
+          "texto": "En 2025, **más de un tercio** de la población (el 36,4 %) no podía afrontar un gasto imprevisto con sus propios recursos.",
+          "fuente": "INE, Encuesta de Condiciones de Vida 2025 (5 de febrero de 2026)"
         },
         {
           "tipo": "lista",
@@ -23,7 +29,7 @@
         },
         {
           "tipo": "idea",
-          "texto": "Un fondo de emergencia es dinero apartado SOLO para imprevistos. Es lo que te deja dormir tranquilamente cuando algo sale mal."
+          "texto": "Un **fondo de emergencia** es dinero apartado _solo_ para imprevistos."
         }
       ]
     },
@@ -31,12 +37,15 @@
       "titulo": "¿Y si no tienes colchón?",
       "bloques": [
         {
-          "tipo": "parrafo",
-          "texto": "Entonces el imprevisto lo paga la tarjeta de crédito o un préstamo. Y eso tiene intereses: el susto te sale más caro de lo que costaba."
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Para eso ya está la tarjeta».",
+            "✅ Realidad: el imprevisto pagado con tarjeta de crédito o con un préstamo lleva **intereses**. El susto te sale más caro de lo que costaba."
+          ]
         },
         {
           "tipo": "parrafo",
-          "texto": "Con colchón, la historia cambia: pagas, respiras y lo vuelves a llenar poco a poco. Sin deberle nada a nadie."
+          "texto": "Con colchón, la historia cambia: pagas, respiras y lo vuelves a llenar poco a poco. _Sin deberle nada a nadie._"
         }
       ]
     },
@@ -45,7 +54,7 @@
       "bloques": [
         {
           "tipo": "parrafo",
-          "texto": "La referencia habitual: de 3 a 6 meses de tus GASTOS imprescindibles. Ojo: de tus gastos, no de tu sueldo."
+          "texto": "La referencia habitual: de **3 a 6 meses** de tus gastos _imprescindibles_. Ojo: de tus gastos, no de tu sueldo."
         },
         {
           "tipo": "lista",
@@ -59,7 +68,7 @@
         },
         {
           "tipo": "parrafo",
-          "texto": "¿Trabajo estable? Apunta a 3 meses. ¿Autónomo o con ingresos que cambian cada mes? Mejor acércate a 6."
+          "texto": "¿Trabajo estable? Apunta a **3 meses**. ¿Autónomo o con ingresos que cambian cada mes? Mejor acércate a 6."
         }
       ]
     },
@@ -91,11 +100,11 @@
               "importe": -112000
             }
           ],
-          "nota": "Con 3 meses, su fondo sería de 3.360 €; con 6 meses, de 6.720 €."
+          "nota": "Con 3 meses, su fondo sería de **3.360 €**; con 6 meses, de **6.720 €**."
         },
         {
           "tipo": "idea",
-          "texto": "Tu meta = gastos imprescindibles de un mes × los meses que quieres cubrir."
+          "texto": "Tu meta = gastos imprescindibles de un mes × **los meses que quieres cubrir**."
         }
       ]
     },
@@ -104,14 +113,14 @@
       "bloques": [
         {
           "tipo": "parrafo",
-          "texto": "Tu colchón tiene que estar a mano en cualquier momento y no puede perder valor de golpe."
+          "texto": "Tu colchón tiene que estar **a mano** y no puede perder valor de golpe."
         },
         {
           "tipo": "lista",
           "items": [
-            "✅ En una cuenta de ahorro o remunerada, separada de la del día a día, para no gastarlo sin darte cuenta.",
-            "✅ Protegido: en España, el Fondo de Garantía de Depósitos cubre hasta 100.000 € por titular y por entidad si el banco quiebra.",
-            "❌ En bolsa, no: si el imprevisto llega el mismo mes que una caída, tendrías que vender perdiendo dinero."
+            "✅ En una cuenta de ahorro o remunerada, **separada** de la del día a día.",
+            "✅ Protegido: el Fondo de Garantía de Depósitos cubre hasta **100.000 €** por titular y entidad.",
+            "❌ En bolsa, no: si el imprevisto coincide con una caída, venderías perdiendo dinero."
           ]
         }
       ]
@@ -126,13 +135,13 @@
         {
           "tipo": "lista",
           "items": [
-            "📄 TIN: el tipo de interés pactado, a secas.",
-            "🎯 TAE: lo que rinde de forma efectiva en un año, con comisiones y frecuencia de pago incluidas."
+            "📄 _TIN_: el tipo de interés pactado, a secas.",
+            "🎯 _TAE_: lo que rinde de forma efectiva en un año, con comisiones y frecuencia de pago incluidas."
           ]
         },
         {
           "tipo": "idea",
-          "texto": "Para comparar dos cuentas, mira siempre la TAE."
+          "texto": "Para comparar dos cuentas, mira siempre la **TAE**."
         }
       ]
     },
@@ -140,20 +149,20 @@
       "titulo": "Empieza hoy",
       "bloques": [
         {
-          "tipo": "parrafo",
-          "texto": "No hace falta reunirlo de golpe. Tres pasos y en marcha:"
-        },
-        {
           "tipo": "lista",
           "items": [
             "1️⃣ Suma tus gastos imprescindibles de un mes.",
-            "2️⃣ Multiplícalos por 3: esa es tu primera meta.",
-            "3️⃣ Programa una transferencia automática el día que cobras."
+            "2️⃣ Multiplícalos por **3**: esa es tu primera meta.",
+            "3️⃣ Programa una transferencia **automática** el día que cobras."
           ]
         },
         {
           "tipo": "idea",
-          "texto": "Págate primero a ti: ahorra el día que cobras, no con lo que sobre a final de mes, que casi nunca es nada."
+          "texto": "Págate primero a ti: ahorra el día que cobras, no con lo que sobre a final de mes."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Cuánto te daría tu colchón en una cuenta remunerada? Lo calculas en la práctica."
         }
       ]
     }
@@ -169,7 +178,7 @@
         "Para invertir en bolsa cuando baje"
       ],
       "correcta": 1,
-      "explicacion": "Es dinero reservado para lo inesperado: una avería, una factura médica o un mes sin ingresos. Las vacaciones se planifican, así que tienen su propio ahorro."
+      "explicacion": "Es dinero reservado para **lo inesperado**: una avería, una factura médica o un mes sin ingresos. Las vacaciones se planifican, así que tienen su propio ahorro."
     },
     {
       "id": "cuantos-meses",
@@ -181,14 +190,14 @@
         "24"
       ],
       "correcta": 1,
-      "explicacion": "Entre 3 y 6 meses de gastos imprescindibles. Con un trabajo estable basta con acercarse a 3; si tus ingresos varían, mejor a 6."
+      "explicacion": "Entre **3 y 6 meses** de gastos imprescindibles. Con un trabajo estable basta con acercarse a 3; si tus ingresos varían, mejor a 6."
     },
     {
       "id": "en-bolsa",
       "tipo": "verdaderoFalso",
       "enunciado": "Es buena idea tener el fondo de emergencia invertido en bolsa para que rinda más.",
       "correcta": false,
-      "explicacion": "La bolsa puede caer justo cuando necesitas el dinero, y tendrías que vender con pérdidas. El fondo de emergencia tiene que estar disponible y estable."
+      "explicacion": "La bolsa puede caer justo cuando necesitas el dinero, y tendrías que vender con pérdidas. El fondo de emergencia tiene que estar **disponible y estable**."
     },
     {
       "id": "fgd",
@@ -200,7 +209,7 @@
         "Todo, sin límite"
       ],
       "correcta": 1,
-      "explicacion": "El Fondo de Garantía de Depósitos cubre hasta 100.000 € por titular y por entidad. Si tienes más, repartirlo entre entidades distintas mantiene todo protegido."
+      "explicacion": "El Fondo de Garantía de Depósitos cubre hasta **100.000 € por titular y por entidad**. Si tienes más, repartirlo entre entidades distintas mantiene todo protegido."
     }
   ]
 }

@@ -1,0 +1,77 @@
+{
+  "id": "salud/08-practica-plan-de-patrimonio",
+  "tipo": "interactivo",
+  "titulo": "El plan de patrimonio del camionero Pepito",
+  "descripcion": "Calcula el patrimonio de Pepito, compáralo con el de un compañero que cobra más, fija una meta SMART y haz su revisión mensual.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "calcula-patrimonio-noviembre",
+      "tipo": "calcula",
+      "enunciado": "En noviembre de 2026, Pepito tiene 3.200 € en la cuenta y una furgoneta tasada en 11.500 €. Debe 4.100 € del préstamo de la furgoneta y 1.600 € de la tarjeta. ¿Cuántos euros vale su patrimonio neto?",
+      "unidad": "euros",
+      "solucion": 900000,
+      "tolerancia": 0,
+      "explicacion": "Activos: 3.200 + 11.500 = 14.700 €. Pasivos: 4.100 + 1.600 = 5.700 €. Patrimonio neto: 14.700 − 5.700 = **9.000 €**."
+    },
+    {
+      "id": "quien-tiene-mas",
+      "tipo": "opcion",
+      "enunciado": "Pepito cobra 2.100 € netos al mes. Un compañero cobra 3.600 €, pero debe 18.000 € de un préstamo y 4.000 € de tarjetas, y solo tiene 500 € en la cuenta y bienes por 8.000 €. ¿Quién está mejor?",
+      "opciones": [
+        "Pepito: su patrimonio es de +9.000 € y el del compañero, de −13.500 €",
+        "El compañero, porque cobra mucho más al mes",
+        "Los dos igual, porque los dos tienen trabajo"
+      ],
+      "correcta": 0,
+      "explicacion": "El compañero tiene 500 + 8.000 = 8.500 € y debe 18.000 + 4.000 = 22.000 €: 8.500 − 22.000 = −13.500 €. Cobrar más no sirve si las deudas superan lo que tienes."
+    },
+    {
+      "id": "ordena-cita-mensual",
+      "tipo": "ordenar",
+      "enunciado": "Pepito se sienta a revisar sus cuentas del mes. Ordena los pasos.",
+      "pasos": [
+        "Descargar el extracto y apuntar los gastos reales del mes",
+        "Compararlos con lo que había presupuestado",
+        "Dar de baja los cobros erróneos o que no necesita",
+        "Anotar su patrimonio neto y preparar el mes siguiente"
+      ],
+      "explicacion": "Primero los datos reales, luego ver dónde se ha desviado, después quitar lo que sobra y, con todo eso, planificar el mes que empieza."
+    },
+    {
+      "id": "hueco-meta-especifica",
+      "tipo": "hueco",
+      "enunciado": "Decidir que apartará exactamente 150 € cada día 1 durante seis meses para pagar una deuda hace que su meta sea ___ y medible.",
+      "opciones": ["específica", "ambigua", "abstracta"],
+      "correcta": 0,
+      "explicacion": "Dice cuánto, cuándo y para qué, así que no deja dudas de qué hay que hacer. Lo ambiguo y lo abstracto es justo lo contrario."
+    },
+    {
+      "id": "patrimonio-negativo",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si lo que una persona debe supera el valor de todo lo que tiene, su patrimonio neto es negativo.",
+      "correcta": true,
+      "explicacion": "Al restar a lo que tienes unas deudas mayores, el resultado sale por debajo de cero. Es la señal de que hay que reducir deudas antes que nada."
+    },
+    {
+      "id": "empareja-metas",
+      "tipo": "emparejar",
+      "enunciado": "Pepito duda entre tres metas para el año que viene. Empareja cada una con lo que es.",
+      "pares": [
+        { "concepto": "Pagar 1.600 € de deuda en 8 meses, apartando 200 € al mes", "definicion": "Meta SMART bien planteada" },
+        { "concepto": "Intentar no gastar tanto en caprichos", "definicion": "Deseo sin cifra ni plazo" },
+        { "concepto": "Ahorrar 50.000 € en dos meses cobrando el salario mínimo", "definicion": "Meta que no es alcanzable" }
+      ],
+      "explicacion": "Una meta útil tiene cifra, plazo y es realista con lo que ganas: 200 × 8 = 1.600 € cuadra; 50.000 € en dos meses con el salario mínimo, no."
+    },
+    {
+      "id": "calcula-amortizacion",
+      "tipo": "calcula",
+      "enunciado": "En su cita mensual, Pepito ve que le sobran 250 € al mes. Decide dedicar el 80 % a pagar antes su deuda y el 20 % a ahorrar. ¿Cuántos euros dedica cada mes a la deuda?",
+      "unidad": "euros",
+      "solucion": 20000,
+      "tolerancia": 0,
+      "explicacion": "250 × 0,80 = **200 €** a la deuda, y los otros 50 € al ahorro. Así coincide con su meta: 1.600 € en 8 meses."
+    }
+  ]
+}

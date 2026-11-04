@@ -1,0 +1,181 @@
+{
+  "id": "ahorro/05-fgd-y-letras-del-tesoro",
+  "tipo": "lectura",
+  "titulo": "El Fondo de Garantía y las Letras del Tesoro",
+  "descripcion": "La letra pequeña del Fondo de Garantía de Depósitos, las cuentas con varios titulares y cómo prestarle tus ahorros al Estado.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Si tu banco cae",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "escudo",
+          "pie": "Un escudo a píxel: la protección de tus depósitos."
+        },
+        {
+          "tipo": "dato",
+          "texto": "Si una entidad no puede devolver los depósitos, el Fondo de Garantía de Depósitos tiene **7 días hábiles** para pagarte lo que cubre.",
+          "fuente": "Real Decreto 2606/1996, art. 9.1.a (BOE)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "En el primer nivel viste la cifra: **100.000 €** por titular y entidad. Ahora toca la letra pequeña."
+        }
+      ]
+    },
+    {
+      "titulo": "Qué cubre y qué no",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "✅ Cuentas y **depósitos a plazo**, con los intereses ganados.",
+            "✅ Aparte, hasta 100.000 € en valores que dejaste en la entidad y no te devuelve.",
+            "❌ Lo que pierdes si tu inversión **baja de precio**.",
+            "❌ Los planes de pensiones.",
+            "🇪🇺 Entidad de otro país de la UE: te cubre el fondo de **su** país."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Cuentas con varios titulares",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "El saldo se reparte según el contrato o, si no dice nada, **a partes iguales**. Cada titular tiene su propio límite. Una persona solo _autorizada_ no cuenta."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "La cuenta de Pepito y su hermana",
+          "filas": [
+            { "concepto": "Saldo de la cuenta conjunta", "importe": 15000000 },
+            { "concepto": "Parte de Pepito (50 %)", "importe": 7500000 },
+            { "concepto": "Parte de su hermana (50 %)", "importe": 7500000 }
+          ],
+          "nota": "Ninguna parte pasa de 100.000 €: los **150.000 €** están cubiertos."
+        }
+      ]
+    },
+    {
+      "titulo": "El mito de perderlo todo",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Si mi banco quiebra, pierdo todos mis ahorros».",
+            "✅ Realidad: hasta **100.000 €** por titular y entidad están cubiertos. Si tienes más, repartirlo entre entidades distintas amplía la protección."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Vendes tu vivienda o cobras la indemnización de un despido? Ese dinero queda cubierto **sin límite durante 3 meses**."
+        }
+      ]
+    },
+    {
+      "titulo": "Prestarle al Estado",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Una Letra del Tesoro es un préstamo corto al Estado: a **3, 6, 9 o 12 meses**."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "💶 Cada Letra te devuelve **1.000 €** al vencer; se piden de 1.000 en 1.000.",
+            "🏷️ Normalmente se compra _al descuento_: pagas menos de 1.000 € y la diferencia es tu ganancia.",
+            "🔨 El precio sale de una subasta del Tesoro."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Cómo se compran",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "🏛️ Directamente en la web del Tesoro (con certificado digital, DNI electrónico o Cl@ve) o en el Banco de España, con cita previa.",
+            "🆓 Abrir y mantener la _Cuenta Directa_ no cuesta nada; solo se cobra una pequeña comisión al transferirte el dinero cuando vence.",
+            "🏦 También a través de un banco o una agencia de valores, con **sus comisiones**."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito compra Letras",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito tiene 41 años y vive en Sevilla. Compra **3 Letras a 12 meses** a 985 € cada una."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Tres Letras a 12 meses",
+          "filas": [
+            { "concepto": "Paga por las 3 Letras (3 × 985 €)", "importe": -295500 },
+            { "concepto": "Cobra al vencer (3 × 1.000 €)", "importe": 300000 },
+            { "concepto": "Ganancia antes de impuestos", "importe": 4500 }
+          ],
+          "nota": "Precio **ilustrativo**, no el de ninguna subasta real."
+        }
+      ]
+    },
+    {
+      "titulo": "Y Hacienda, ¿qué?",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La ganancia de una Letra **no lleva retención**: al cobrar no te descuentan nada. Pero tributa igual: va a la declaración de la renta, en la _base del ahorro_."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Estarían cubiertos Pepito y su hermana con 180.000 €? ¿Cuánto gana con cinco Letras? Compruébalo en la práctica."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "cuenta-conjunta",
+      "tipo": "opcion",
+      "enunciado": "Pepito y su pareja tienen una cuenta conjunta con **160.000 €**, al 50 % cada uno, en una entidad española. ¿Cuánto cubre el Fondo de Garantía de Depósitos?",
+      "opciones": [
+        "100.000 € en total",
+        "Los 160.000 €: 80.000 € de cada titular",
+        "Nada: las cuentas conjuntas no están cubiertas"
+      ],
+      "correcta": 1,
+      "explicacion": "El límite es **por titular**. A cada uno le corresponden 80.000 €, por debajo de los 100.000 €, así que está todo cubierto."
+    },
+    {
+      "id": "perdidas-inversion",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si compras acciones a través de tu banco y bajan de precio, el Fondo de Garantía de Depósitos te paga lo que has perdido.",
+      "correcta": false,
+      "explicacion": "El Fondo responde si la entidad **no te devuelve** tu dinero o tus valores. Que una inversión baje es el riesgo de invertir, y eso no lo cubre nadie."
+    },
+    {
+      "id": "hueco-valor-letra",
+      "tipo": "hueco",
+      "enunciado": "Al vencer, cada Letra del Tesoro te devuelve ___.",
+      "opciones": ["1.000 €", "100 €", "10.000 €"],
+      "correcta": 0,
+      "explicacion": "Su valor al vencer es de **1.000 €**. Como normalmente la pagas por menos, la diferencia es lo que ganas."
+    },
+    {
+      "id": "letra-hacienda",
+      "tipo": "opcion",
+      "enunciado": "¿Qué pasa en el IRPF con la ganancia de una Letra del Tesoro?",
+      "opciones": [
+        "No lleva retención, pero se declara en la renta",
+        "Está exenta de impuestos",
+        "Le retienen un 19 % al cobrarla"
+      ],
+      "correcta": 0,
+      "explicacion": "Las Letras están **exentas de retención**, no de impuestos: la ganancia es un rendimiento del capital mobiliario y se declara en la base del ahorro."
+    }
+  ]
+}
