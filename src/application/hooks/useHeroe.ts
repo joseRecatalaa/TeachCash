@@ -59,6 +59,12 @@ export function useEnviarNivel() {
   return useMutation({
     mutationFn: async ({ levelId, respuestas }: { levelId: string; respuestas: unknown[] }) =>
       unwrap(await enviarNivel(levelId, respuestas)),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CLAVE_HEROE }),
+    // Las partidas también mueven el Cuadro de mando (estrellas y estadísticas),
+    // que cuelga de `['informes']`, y la tienda, que cuelga de esta misma raíz.
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: CLAVE_HEROE }),
+        queryClient.invalidateQueries({ queryKey: ['informes', 'cuadro'] }),
+      ]),
   })
 }

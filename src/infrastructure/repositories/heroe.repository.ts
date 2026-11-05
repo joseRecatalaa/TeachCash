@@ -158,6 +158,18 @@ export async function getNivel(userId: string, levelId: string): Promise<NivelDt
   }
 }
 
+/**
+ * Todas las estrellas ganadas, sumando solo niveles que existen en el contenido:
+ * lo mismo que enseña el mapa. Son lo que se puede gastar en la tienda.
+ */
+export async function getEstrellasGanadas(userId: string): Promise<number> {
+  const { mundos } = await contenido()
+  const progreso = await progresoDe(userId)
+  return mundos
+    .flatMap(idsDe)
+    .reduce((suma, id) => suma + estrellasDe(progreso, id), 0)
+}
+
 /* ── Enviar una partida ───────────────────────────────────────────────── */
 
 /** Lo que se corrige de un nivel: el minitest, los ejercicios o las preguntas del jefe. */

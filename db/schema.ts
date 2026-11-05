@@ -211,6 +211,34 @@ export const heroProgress = pgTable(
   ],
 ).enableRLS()
 
+/**
+ * Lo que un usuario ha comprado en la tienda del héroe, una fila por objeto.
+ *
+ * `item_id` es el id estable del catálogo (`lib/tienda.ts`), sin clave ajena
+ * porque el catálogo vive en código. `price_paid` se guarda porque las estrellas
+ * gastadas son la suma de lo que se pagó: si cambiara con el precio del catálogo,
+ * subir un precio le quitaría estrellas a quien ya compró.
+ *
+ * Las estrellas disponibles son derivadas (regla dura 7): las ganadas, de
+ * `hero_progress`, menos esta suma.
+ */
+export const heroItems = pgTable(
+  'hero_items',
+  {
+    userId: userIdColumn(),
+    itemId: text('item_id').notNull(),
+    pricePaid: integer('price_paid').notNull(),
+    /** Lo lleva puesto. Hay uno por hueco; lo garantiza el repositorio. */
+    equipped: boolean('equipped').notNull().default(true),
+    createdAt: createdAtColumn(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.itemId] }),
+    check('hero_items_price', sql`${t.pricePaid} >= 0`),
+    soloSuyo('hero_items'),
+  ],
+).enableRLS()
+
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert
 export type Transaction = typeof transactions.$inferSelect

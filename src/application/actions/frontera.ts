@@ -116,3 +116,6 @@ const MundoIdSchema = z.string().max(ID_MAX).regex(SLUG)
 export const validarLevelId = (id: unknown): string => validar(LevelIdSchema, id, NOT_FOUND)
 
 export const validarMundoId = (id: unknown): string => validar(MundoIdSchema, id, NOT_FOUND)
+
+/** Solo la forma: si existe lo decide el catálogo, en el repositorio. */
+export const validarObjetoId = (id: unknown): string => validar(z.string().max(ID_MAX), id, NOT_FOUND)
