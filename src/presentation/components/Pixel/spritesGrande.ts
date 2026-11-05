@@ -14,7 +14,18 @@
 
 import { PALETA_HEROE, type Paleta, type Sprite } from './sprites'
 
-export const PALETA_HEROE_GRANDE: Paleta = PALETA_HEROE
+/**
+ * La del héroe más la del equipo. El color del equipo depende de su calidad, y
+ * por eso son cuatro variables que `pixel.module.css` reapunta con `data-calidad`:
+ * un mismo dibujo vale para el cuero, el hierro y el oro.
+ */
+export const PALETA_HEROE_GRANDE: Paleta = {
+  ...PALETA_HEROE,
+  k: 'equipo',
+  K: 'equipo-sombra',
+  j: 'equipo-luz',
+  J: 'equipo-detalle',
+}
 
 /** Piernas y botas. No respiran: el torso sube y baja y las botas se quedan clavadas. */
 export const GRANDE_PIERNAS: Sprite = {
@@ -157,5 +168,270 @@ export const GRANDE_CABEZA: Sprite = {
     '.....osssssssssssssssssssSSSSSo.....',
     '......oosssssssssssssssSSSSSoo......',
     '........oooooooooooooooooooo........',
+  ],
+}
+
+/* ── El equipo: cada pieza se apoya en las coordenadas del héroe. Alas, arma y
+ * escudo salen de su caja a propósito. ──────────────────────────────────── */
+
+/** Tapa el pelo hasta las cejas. */
+export const OBJETO_CASCO: Sprite = {
+  x: 8,
+  y: -1,
+  filas: [
+    '.........oooooooooooooo.........',
+    '......oookkkkkkJJkkkkkkooo......',
+    '....ookkjjjjjjjJJkkkkkkkkkoo....',
+    '...okkjjjjjjkkkJJkkkkkkkkkkko...',
+    '..okkjjjjkkkkkkJJkkkkkkkkkkKKo..',
+    '.okkjjjkkkkkkkkJJkkkkkkkkkkKKko.',
+    'okkjjjkkkkkkkkkJJkkkkkkkkkkKKKKo',
+    'okkjjkkkkkkkkkkJJkkkkkkkkkkKKKKo',
+    'okkjjkkkkkkkkkkJJkkkkkkkkkkKKKKo',
+    'okkkkkkkkkkkkkkJJkkkkkkkkkkKKKKo',
+    'okkkkkkkkkkkkkkJJkkkkkkkkkkKKKKo',
+    'okkkkkkkkkkkkkkkkkkkkkkkkkkkkKKo',
+    'ojjjjjjjjjjjjjjjjjjjjjjjjjjjjjjo',
+    'oKKKKJKKKKJKKKKKKKKKKJKKKKJKKKKo',
+    'oKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKo',
+    'ojkkooooooooooooooooooooooooKKKo',
+    'ojkko......................oKKKo',
+    'ojkko......................oKKKo',
+    'ojkko......................oKKKo',
+    'ojkko......................oKKKo',
+    'okkko......................oKKKo',
+    '.ooo........................ooo.',
+  ],
+}
+
+/** Encima del torso, debajo de los brazos. */
+export const OBJETO_ARMADURA: Sprite = {
+  x: 4,
+  y: 25,
+  filas: [
+    '..oooooooooo................oooooooooo..',
+    '.okjjjjjkkkko..............okjjjjjkkkko.',
+    '.okkkkkkkkkko..............okkkkkkkkkko.',
+    'okjjjjkkkkkKKo............okjjjjkkkkkKKo',
+    'okjjkkkkkkkKKoo..........ookjjkkkkkkkKKo',
+    'okkkkkJJkkkKKkko........okkkkkkkJJkkkKKo',
+    'okkkkkkkkkkKKkkko......okkkkkkkkkkkkkKKo',
+    'oKKKKKKKKKKKKkkkkooooookkkkKKKKKKKKKKKKo',
+    'oKKKKKKKKKKKKkkkkkkKKkkkkkkKKKKKKKKKKKKo',
+    '.oooooooojjjjjjkkkkKKkkkkkkkKKKoooooooo.',
+    '........ojjjjjjkkkkKKkkkkkkkKKKo........',
+    '........ojjjkkkkkkjjjjkkkkkkKKKo........',
+    '........ojjjkkkkkkJJJJkkkkkkKKKo........',
+    '........ojjjkkkkkkJJJJkkkkkkKKKo........',
+    '........ojjjkkkkkkJJJJkkkkkkKKKo........',
+    '........ojjjkkkkkkkKKkkkkkkkKKKo........',
+    '........ojjjKKKKKKkKKkKKKKKKKKKo........',
+    '........ojjjkkkkkkkKKkkkkkkkKKKo........',
+    '........ojjjkkkkkkkKKkkkkkkkKKKo........',
+    '........oKKKKKKKKKKKKKKKKKKKKKKo........',
+    '.........oooooooooooooooooooooo.........',
+  ],
+}
+
+/** Las dos manos en un mismo sprite. */
+export const OBJETO_GUANTES: Sprite = {
+  x: 5,
+  y: 40,
+  filas: [
+    '.oooooo........................oooooo.',
+    'ojjjjjjo......................ojjjjjjo',
+    'okkkkkko......................okkkkkko',
+    'okkJJkko......................okkJJkko',
+    'oKKKKKKo......................oKKKKKKo',
+    '.ojjkKo........................ojjkKo.',
+    '.ojjkKo........................ojjkKo.',
+    '.ojjkKo........................ojjkKo.',
+    '.oKKKKo........................oKKKKo.',
+    '..oooo..........................oooo..',
+  ],
+}
+
+/** No respiran, como las piernas que cubren. */
+export const OBJETO_BOTAS: Sprite = {
+  x: 8,
+  y: 54,
+  filas: [
+    '....ooooooooooo..ooooooooooo....',
+    '...ojjjjjjjjjjjoojjjjjjjjjjjo...',
+    '...oKKKKKKKKKKKooKKKKKKKKKKKo...',
+    '...ojjkkkkkkkKKoojjkkkkkkkKKo...',
+    '...ojjkkkkkkkKKoojjkkkkkkkKKo...',
+    '...ojjkJJJJJkKKoojjkJJJJJkKKo...',
+    '...ojjkkkkkkkKKoojjkkkkkkkKKo...',
+    '.ooojjkkkkkkkKKoojjkkkkkkkKKooo.',
+    'ojjjjjkkkkkkkkkoojjjjjkkkkkkkkko',
+    'okkkkkkkkkkkkkkookkkkkkkkkkkkkko',
+    'oKKKKKKKKKKKKKKooKKKKKKKKKKKKKKo',
+    '.oooooooooooooo..oooooooooooooo.',
+  ],
+}
+
+/** En diagonal desde la mano derecha de la pantalla, para no tapar el brazo. */
+export const OBJETO_ESPADA: Sprite = {
+  x: 35,
+  y: 18,
+  filas: [
+    '...............................o.',
+    '..............................oko',
+    '.............................okko',
+    '............................okko.',
+    '............................oooo.',
+    '...........................ojkkko',
+    '..........................ojjkKko',
+    '.........................ojjkKKo.',
+    '........................ojjkKKo..',
+    '.......................ojjkKKo...',
+    '......................ojjkKKo....',
+    '.....................ojjkKKo.....',
+    '....................ojjkKKo......',
+    '...................ojjkKKo.......',
+    '..................ojjkKKo........',
+    '.................ojjkKKo.........',
+    '................ojjkKKo..........',
+    '...............ojjkKKo...........',
+    '..............ojjkKKo............',
+    '.............ojjkKKo.............',
+    '............ojjkKKo..............',
+    '...o.......ojjkKKo...............',
+    '..oko.....ojjkKKo................',
+    '..oKko...ojjkKKo.................',
+    '...oKkooojjkKKo..................',
+    '....oKJJkjkKKo...................',
+    '.....oJJkkkKo....................',
+    '....oVVKkooo.....................',
+    '...oVVVoKko......................',
+    '..oVVVo.oKko.....................',
+    '.oVVVo...oKko....................',
+    'oVVVo.....oKKo...................',
+    'oVVo.......oo....................',
+    '.oo..............................',
+  ],
+}
+
+/** Como la espada: comparten el hueco del arma. */
+export const OBJETO_MARTILLO: Sprite = {
+  x: 36,
+  y: 16,
+  filas: [
+    '.....................oo.............',
+    '....................oKKo............',
+    '...................ojjKKo...........',
+    '..................ojjkkKKo..........',
+    '.................ojjkkkkKKo.........',
+    '................ojjkkkkKKKKo........',
+    '...............ojjkkkkKKkkKKo.......',
+    '..............ojjkkkkKKkkkkKKo......',
+    '.............ojjkkkkKKkkkkkkKKo.....',
+    '............ojjkkkkKKkkJJkkkkKKo....',
+    '.............ojjkkKKkkJJJJkkkkKKo...',
+    '..............ojjKKkkJJJJJJkkKKKKo..',
+    '...............ojjkkkkJJJJkkKKkkKKo.',
+    '................ojjkkkkJJkkKKkkkkKKo',
+    '.................ojjkkkkkkKKkkkkKKo.',
+    '..................ojjkkkkKKkkkkKKo..',
+    '.................oVVjjkkKKkkkkKKo...',
+    '................oVVVojjKKkkkkKKo....',
+    '...............oVVVo.ojjkkkkKKo.....',
+    '..............oVVVo...ojjkkKKo......',
+    '.............oVVVo.....ojjKKo.......',
+    '............oVVVo.......ojjo........',
+    '...........oVVVo.........oo.........',
+    '..........oVVVo.....................',
+    '.........oVVVo......................',
+    '........oVVVo.......................',
+    '.......oVVVo........................',
+    '......oVVVo.........................',
+    '.....oVVVo..........................',
+    '....oVVVo...........................',
+    '...oVVVo............................',
+    '..oVVVo.............................',
+    '.oVVVo..............................',
+    'oVVVo...............................',
+    'oVVo................................',
+    '.oo.................................',
+  ],
+}
+
+/** Delante de la mano izquierda de la pantalla. */
+export const OBJETO_ESCUDO: Sprite = {
+  x: -6,
+  y: 31,
+  filas: [
+    '..oooooooooooooooooooo..',
+    '.okkkkkkkkkkkkkkkkkkkko.',
+    'okjjjjjjjjjjjjjjjjjjjjko',
+    'ojjkkkkkkkkkkkkkkkkkkKKo',
+    'ojjkkkkkkkKKKKkkkkkkkKKo',
+    'ojjkkkkkkkKKKKkkkkkkkKKo',
+    'ojjkkkkkkkKKKKkkkkkkkKKo',
+    'ojjkkkkkkkKKKKkkkkkkkKKo',
+    'ojjkkkkkkkKKKKkkkkkkkKKo',
+    'ojjkkkkkkjjjjjjkkkkkkKKo',
+    'ojjKKKKKKJJJJJJKKKKKKKKo',
+    'ojjKKKKKKJJJJJJKKKKKKKKo',
+    'ojjKKKKKKJJJJJJKKKKKKKKo',
+    'ojjKKKKKKJJJJJJKKKKKKKKo',
+    'ojjkkkkkkJJJJJJkkkkkkKKo',
+    'ojjkkkkkkkKKKKkkkkkkkKKo',
+    '.okkkkkkkkKKKKkkkkkkKKo.',
+    '.okkkkkkkkKKKKkkkkkkKKo.',
+    '..okkkkkkkKKKKkkkkkKKo..',
+    '...okkkkkkKKKKkkkkKKo...',
+    '....okkkkkKKKKkkkKKo....',
+    '.....okkkkKKKKkkKKo.....',
+    '......okkkKKKKkKKo......',
+    '.......okkKKKKKKo.......',
+    '........okkkkKKo........',
+    '.........okkKKo.........',
+    '..........oooo..........',
+  ],
+}
+
+/** Detrás de todo, las dos en un mismo sprite. */
+export const OBJETO_ALAS: Sprite = {
+  x: -16,
+  y: 13,
+  filas: [
+    '.o............................................................................o.',
+    'ojoo........................................................................oojo',
+    'ojjjo......................................................................ojjjo',
+    'ojjjjoo..................................................................oojjjjo',
+    'okjkjjjo................................................................ojjjkjko',
+    'okkkjjjjoo............................................................oojjjjkkko',
+    'okkKkjkjjjoo........................................................oojjjkjkKkko',
+    'okkKkkkjjjjjo......................................................ojjjjjkkkKkko',
+    'okkKkkkkjkjjjoo..................................................oojjjkjkkkkKkko',
+    'okkKkkkkkkjjjjjo................................................ojjjjjkkkkkkKkko',
+    'okkKkkkkKkkkkjjjoo............................................oojjjkkkkKkkkkKkko',
+    'okkKkkkkKkkkkjjjjjoo........................................oojjjjjkkkkKkkkkKkko',
+    'okkKkkkkKkkkkkkkjjjjo......................................ojjjjkkkkkkkKkkkkKkko',
+    'okkKkkkkKkkkkKkkjjjjjoo..................................oojjjjjkkKkkkkKkkkkKkko',
+    'okkKkkkkKkkkkKkkkkkjjjjo................................ojjjjkkkkkKkkkkKkkkkKkko',
+    'okkKkkkkKkkkkKkkkkkkjjjjoo............................oojjjjkkkkkkKkkkkKkkkkKkko',
+    'okkKkkkkKkkkkKkkkkKkkkjjjjoo........................oojjjjkkkKkkkkKkkkkKkkkkKkko',
+    'okkKkkkkKkkkkKkkkkKkkkkjjjjjo......................ojjjjjkkkkKkkkkKkkkkKkkkkKkko',
+    'okkKkkkkKkkkkKkkkkKkkkkkkjjjjo....................ojjjjkkkkkkKkkkkKkkkkKkkkkKkko',
+    'oKkKKkkkKkkkkKkkkkKkkkkKkkjkjo....................ojkjkkKkkkkKkkkkKkkkkKkkkKKkKo',
+    '.oKKoKkkKkkkkKkkkkKkkkkKkkkkjo....................ojkkkkKkkkkKkkkkKkkkkKkkKoKKo.',
+    '..oo.okkKkkkkKkkkkKkkkkKkkkkko....................okkkkkKkkkkKkkkkKkkkkKkko.oo..',
+    '.....oKKKKkkkKkkkkKkkkkKkkkkko....................okkkkkKkkkkKkkkkKkkkKKKKo.....',
+    '......ooKoKkkKkkkkKkkkkKkkkkko....................okkkkkKkkkkKkkkkKkkKoKoo......',
+    '........o.okkKKkkkKkkkkKkkkkko....................okkkkkKkkkkKkkkKKkko.o........',
+    '..........oKKKokkkKkkkkKkkkkko....................okkkkkKkkkkKkkkoKKKo..........',
+    '...........ooKoKkkKkkkkKkkkkko....................okkkkkKkkkkKkkKoKoo...........',
+    '.............o.oKkKKkkkKkkkkko....................okkkkkKkkkKKkKo.o.............',
+    '................oKKokkkKkkkkko....................okkkkkKkkkoKKo................',
+    '.................oooKkkKkkkkko....................okkkkkKkkKooo.................',
+    '....................oKkKKkkkko....................okkkkKKkKo....................',
+    '.....................oKKoKkkko....................okkkKoKKo.....................',
+    '......................oo.okkko....................okkko.oo......................',
+    '.........................oKKko....................okKKo.........................',
+    '..........................ooKo....................oKoo..........................',
+    '............................o......................o............................',
   ],
 }

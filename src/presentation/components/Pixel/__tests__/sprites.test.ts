@@ -41,7 +41,7 @@ describe.each(todos)('%s', (nombre, sprite) => {
 
 const grandes = Object.entries(spritesGrande).filter((e): e is [string, Sprite] => esSprite(e[1]))
 
-describe.each(grandes)('%s', (_, sprite) => {
+describe.each(grandes)('%s', (nombre, sprite) => {
   test('todas sus filas miden lo mismo', () => {
     expect(new Set(sprite.filas.map((f) => f.length)).size).toBe(1)
   })
@@ -51,7 +51,8 @@ describe.each(grandes)('%s', (_, sprite) => {
     expect([...claves].filter((c) => !(c in spritesGrande.PALETA_HEROE_GRANDE))).toEqual([])
   })
 
-  test('cabe en la caja del héroe', () => {
+  // El equipo puede salirse: alas, arma y escudo van fuera de la caja a propósito.
+  test.runIf(nombre.startsWith('GRANDE_'))('cabe en la caja del héroe', () => {
     expect(sprite.x).toBeGreaterThanOrEqual(0)
     expect(sprite.y).toBeGreaterThanOrEqual(0)
     expect(sprite.x + sprite.filas[0].length).toBeLessThanOrEqual(ANCHO_HEROE_GRANDE)
