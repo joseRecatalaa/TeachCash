@@ -11,7 +11,7 @@ import { ANCHO_HEROE, PixelHero, type PoseHeroe } from '../PixelHero'
 const pintar = (ui: React.ReactElement) => render(<svg>{ui}</svg>).container.querySelector('svg > g')!
 
 describe('PixelHero', () => {
-  test.each<PoseHeroe>(['quieto', 'camina', 'celebra'])('la pose %s llega al data-pose', (pose) => {
+  test.each<PoseHeroe>(['quieto', 'agacha', 'camina', 'celebra'])('la pose %s llega al data-pose', (pose) => {
     const heroe = pintar(<PixelHero pose={pose} />)
     expect(heroe.getAttribute('data-pose')).toBe(pose)
   })

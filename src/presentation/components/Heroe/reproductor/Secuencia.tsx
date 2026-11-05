@@ -16,7 +16,6 @@
  */
 
 import { useState } from 'react'
-import { Progress } from '@mantine/core'
 import { IconArrowRight, IconCheck } from '@tabler/icons-react'
 import { esCorrecta } from '@/lib/heroe'
 import type { Pregunta } from '@/src/types/heroe.types'
@@ -24,6 +23,7 @@ import { SketchButton, StatusBadge } from '../../ui'
 import { Ejercicio } from '../ejercicios/Ejercicio'
 import { completa, solucion, valorInicial, type Respuesta } from './respuestas'
 import { Marcado } from './Marcado'
+import { ProgresoNivel } from './ProgresoNivel'
 import styles from './reproductor.module.css'
 
 export function Secuencia({
@@ -61,12 +61,7 @@ export function Secuencia({
 
   return (
     <section className={styles.secuencia} aria-label={`Pregunta ${i + 1} de ${preguntas.length}`}>
-      <div className={styles.progreso}>
-        <span>
-          Pregunta {i + 1} de {preguntas.length}
-        </span>
-        <Progress value={(i / preguntas.length) * 100} aria-hidden className={styles.barra} />
-      </div>
+      <ProgresoNivel texto={`Pregunta ${i + 1} de ${preguntas.length}`} valor={(i / preguntas.length) * 100} />
 
       {/* El hueco lleva la frase dentro del propio ejercicio. */}
       <h2 className={styles.enunciado}>

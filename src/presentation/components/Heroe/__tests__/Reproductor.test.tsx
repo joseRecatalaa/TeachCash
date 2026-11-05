@@ -222,6 +222,17 @@ describe('lectura: lo vistoso', () => {
 })
 
 describe('lectura: páginas y minitest', () => {
+  test('el héroe acompaña agachándose en la lectura y en el minitest, sin contar nada al lector de pantalla', async () => {
+    const { usuario, container } = jugar(LECTURA)
+    const heroe = () => container.querySelector('svg[aria-hidden="true"] [data-pose="agacha"]')
+
+    expect(heroe()).not.toBeNull()
+    await usuario.click(screen.getByRole('button', { name: 'Siguiente' }))
+    await usuario.click(screen.getByRole('button', { name: 'Al minitest' }))
+    expect(screen.getByText('Pregunta 1 de 3')).toBeInTheDocument()
+    expect(heroe()).not.toBeNull()
+  })
+
   test('se lee página a página y el minitest no dice nada hasta el final', async () => {
     acciones.enviarNivel.mockResolvedValue({
       ok: true,

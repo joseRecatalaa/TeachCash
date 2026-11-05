@@ -32,10 +32,20 @@ export interface Caminata {
 
 const redondear = ({ x, y }: Punto): Punto => ({ x: Math.round(x), y: Math.round(y) })
 
-export function useCaminata(desde: Punto, hasta: Punto, velocidad = VELOCIDAD): Caminata {
+export interface OpcionesCaminata {
+  velocidad?: number
+  /** Con 0 echa a andar en el mismo pintado: es para responder a la mano. */
+  espera?: number
+}
+
+export function useCaminata(
+  desde: Punto,
+  hasta: Punto,
+  { velocidad = VELOCIDAD, espera = ESPERA_MS }: OpcionesCaminata = {},
+): Caminata {
   const reducido = useMovimientoReducido()
   const [pos, setPos] = useState(() => redondear(desde))
-  const [arrancado, setArrancado] = useState(false)
+  const [arrancado, setArrancado] = useState(espera === 0)
   const [llegado, setLlegado] = useState(false)
   const distancia = Math.hypot(hasta.x - desde.x, hasta.y - desde.y)
   const mirando = hasta.x < desde.x ? 'izq' : 'der'
@@ -51,12 +61,16 @@ export function useCaminata(desde: Punto, hasta: Punto, velocidad = VELOCIDAD): 
       if (t < 1) cuadro = requestAnimationFrame(avanzar)
       else setLlegado(true)
     }
-    const espera = window.setTimeout(() => {
+    if (espera === 0) {
+      cuadro = requestAnimationFrame(avanzar)
+      return () => cancelAnimationFrame(cuadro)
+    }
+    const temporizador = window.setTimeout(() => {
       setArrancado(true)
       cuadro = requestAnimationFrame(avanzar)
-    }, ESPERA_MS)
+    }, espera)
     return () => {
-      window.clearTimeout(espera)
+      window.clearTimeout(temporizador)
       cancelAnimationFrame(cuadro)
     }
     // El trayecto no cambia durante la vida del componente (ver la `key`).

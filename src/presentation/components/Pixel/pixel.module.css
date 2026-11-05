@@ -87,6 +87,33 @@
   }
 }
 
+/* Agacha: baja el torso dos píxeles, se queda un momento y vuelve a subir, con
+   más rato de pie que abajo. Acompaña a quien está leyendo, y por eso es
+   lenta: si llamara la atención, estorbaría. Las botas no se mueven y el torso
+   tapa lo alto de las piernas, que es lo que hace que parezca que dobla las
+   rodillas. Sin animación se queda de pie. */
+.heroe[data-pose='agacha'] .respira {
+  animation: px-agacha 3.2s steps(1, end) infinite;
+}
+@keyframes px-agacha {
+  0% {
+    translate: 0 0;
+  }
+  35% {
+    translate: 0 1px;
+  }
+  45% {
+    translate: 0 2px;
+  }
+  65% {
+    translate: 0 1px;
+  }
+  75%,
+  100% {
+    translate: 0 0;
+  }
+}
+
 /* Celebra: el billete en alto, que es el "¡objeto conseguido!" de siempre. */
 .heroe[data-pose='celebra'] .lleva {
   opacity: 1;

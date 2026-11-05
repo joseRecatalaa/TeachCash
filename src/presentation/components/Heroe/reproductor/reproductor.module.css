@@ -47,6 +47,30 @@
   color: var(--sd-ink-muted);
 }
 
+/* El héroe se apoya en la barra: el margen negativo de abajo anula el `gap`
+   de `.progreso`, y el texto recupera esa misma distancia con su padding. */
+.progresoFila {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: -0.4rem;
+}
+
+.progresoTexto {
+  padding-bottom: 0.4rem;
+}
+
+/* 4rem de ancho son 2 px de pantalla por píxel de juego: un múltiplo entero,
+   para que ninguna fila salga más gorda que otra. Sube hacia el relleno de la
+   tarjeta para no empujar tanto la lectura. */
+.heroeGuia {
+  flex: 0 0 auto;
+  width: 4rem;
+  height: 5.5rem;
+  margin-top: -0.75rem;
+  margin-right: 0.5rem;
+}
+
 .barra {
   border: var(--sd-border-hair);
 }
