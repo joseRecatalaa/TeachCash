@@ -1,0 +1,343 @@
+/*
+ * Inicio.
+ *
+ * La única página con tarjetas "de portada": el resto de la aplicación es
+ * trabajo (tablas y formularios) y no debe competir con esta.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Cabecera ────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/*
+ * El trazo de rotulador del título.
+ *
+ * Es un `background-image` y NO un pseudoelemento con `z-index: -1`: un `-1`
+ * saca la decoración del contexto de apilamiento del título y acaba tapada por
+ * el fondo del ancestro más cercano que tenga uno. El fondo, en cambio, se pinta
+ * siempre detrás del texto y delante del papel, que es exactamente lo que se
+ * quiere. `background-size` lo estrecha a una franja y `background-position` la
+ * baja hasta la línea base.
+ *
+ * Se dibuja al entrar: la animación interpola ese mismo `background-size`, y por
+ * eso el alto de la franja va en una variable — el keyframe la lee para no
+ * inventarse un valor distinto del de reposo.
+ */
+
+/* ── Rejilla ─────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.grid > * {
+  grid-column: span 12;
+}
+
+/*
+ * Dos saltos y no uno: a 48em ya caben dos columnas y el saldo deja de ocupar
+ * el ancho entero, que es donde peor se ve — una cifra sola en una caja de
+ * 1200 px de ancho.
+ */
+@media (min-width: 48em) {
+  .colSaldo {
+    grid-column: span 5;
+  }
+
+  .colMes {
+    grid-column: span 7;
+  }
+}
+
+@media (min-width: 75em) {
+  .colSaldo {
+    grid-column: span 4;
+  }
+
+  .colMes {
+    grid-column: span 8;
+  }
+
+  .colSerie {
+    grid-column: span 7;
+  }
+
+  .colCategorias {
+    grid-column: span 5;
+  }
+
+  .colBarras {
+    grid-column: span 5;
+  }
+
+  .colMovimientos {
+    grid-column: span 7;
+  }
+}
+
+/* ── Cifras ──────────────────────────────────────────────────────────────── */
+
+/*
+ * El patrimonio no lleva nada alrededor —ni pie, ni fecha—, así que es la
+ * cifra la que tiene que llenar la tarjeta. `patrimonioWrap` crece dentro del
+ * `body` (ver SketchCard.module.css) y centra la cifra en el alto que le deje
+ * la fila de la rejilla, en vez de dejarla arriba con un hueco debajo.
+ */
+.patrimonioWrap {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0.5rem 0;
+}
+
+.cifraGrande {
+  display: block;
+  font-family: var(--sd-font-mono);
+  font-size: clamp(2.2rem, 1.3rem + 2.6vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--sd-ink);
+  text-align: center;
+}
+
+/*
+ * Tres fichas dentro de la tarjeta del mes. `auto-fit` y no tres columnas fijas:
+ * en móvil se apilan solas sin necesidad de otra media query.
+ */
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: 0.75rem;
+}
+
+/*
+ * Cada ficha con un filete de su color arriba. El tono llega por `data-tono`
+ * —una clave— y se traduce aquí a un token: escribir el color en el JSX sería
+ * un valor que el modo oscuro no sabe traducir.
+ */
+.estadistica {
+  position: relative;
+  padding: 0.8rem 0.85rem 0.7rem;
+  overflow: hidden;
+  background: var(--sd-surface);
+  border: var(--sd-border-hair);
+  border-radius: var(--sd-radius-sm);
+}
+
+.estadistica::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  background: var(--ficha-tono, var(--sd-accent));
+  opacity: 0.85;
+}
+
+.estadistica[data-tono='ingreso'] {
+  --ficha-tono: var(--income);
+}
+
+.estadistica[data-tono='gasto'] {
+  --ficha-tono: var(--expense);
+}
+
+.estadistica[data-tono='neto'] {
+  --ficha-tono: var(--sd-accent);
+}
+
+.estadisticaEtiqueta {
+  display: block;
+  font-family: var(--sd-font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sd-ink-muted);
+  margin-bottom: 0.2rem;
+}
+
+.estadisticaValor {
+  display: block;
+  font-family: var(--sd-font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* El color es la SEGUNDA señal; la primera es el signo del propio importe. */
+.ingreso {
+  color: var(--income);
+}
+
+.gasto {
+  color: var(--expense);
+}
+
+/* ── Top de categorías ───────────────────────────────────────────────────── */
+
+.top {
+  display: flex;
+  flex-direction: column;
+  margin: 0.9rem 0 0;
+  padding: 0.7rem 0 0;
+  list-style: none;
+  border-top: var(--sd-stroke-hair) dashed var(--sd-grid-color);
+}
+
+.topFila {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0.1rem;
+  font-size: 0.8125rem;
+}
+
+.topNombre {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topImporte {
+  flex: 0 0 auto;
+  font-family: var(--sd-font-mono);
+  font-weight: 600;
+}
+
+.topPeso {
+  flex: 0 0 3.5ch;
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--sd-ink-muted);
+}
+
+/* ── Listas tipo libreta ─────────────────────────────────────────────────── */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * La línea discontinua entre filas es lo que da el aspecto de libreta. Va en el
+ * borde INFERIOR y se quita en la última: un separador colgando al final de la
+ * lista es la marca de la casa de las listas mal hechas.
+ */
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.15rem;
+  border-bottom: var(--sd-stroke-hair) dashed var(--sd-grid-color);
+  transition: background-color var(--sd-dur) ease;
+}
+
+.fila:last-child {
+  border-bottom: none;
+}
+
+.fila:hover {
+  background: var(--sd-accent-wash-faint);
+}
+
+.filaFecha {
+  flex: 0 0 auto;
+  min-width: 3.6rem;
+  font-family: var(--sd-font-mono);
+  font-size: 0.75rem;
+  color: var(--sd-ink-muted);
+}
+
+.filaTexto {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.filaImporte {
+  flex: 0 0 auto;
+  font-family: var(--sd-font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ── La chapa de color de una categoría ──────────────────────────────────── */
+
+/*
+ * El punto que identifica una categoría, en la lista de movimientos y en el top
+ * de gasto. Traduce la CLAVE (`data-color="cat-3"`) a su token; el JSX nunca
+ * toca un color.
+ *
+ * Es decorativa y va con `aria-hidden`: quien no la ve tiene el nombre de la
+ * categoría al lado, o en la tabla de Movimientos.
+ */
+.chapaColor {
+  flex: 0 0 auto;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--chapa-tono, var(--sd-surface-muted));
+  border: var(--sd-stroke-hair) solid var(--sd-stroke-color);
+}
+
+.chapaColor[data-color='ninguno'] {
+  --chapa-tono: transparent;
+  border-style: dashed;
+}
+
+.chapaColor[data-color='cat-1'] { --chapa-tono: var(--sd-cat-1); }
+.chapaColor[data-color='cat-2'] { --chapa-tono: var(--sd-cat-2); }
+.chapaColor[data-color='cat-3'] { --chapa-tono: var(--sd-cat-3); }
+.chapaColor[data-color='cat-4'] { --chapa-tono: var(--sd-cat-4); }
+.chapaColor[data-color='cat-5'] { --chapa-tono: var(--sd-cat-5); }
+.chapaColor[data-color='cat-6'] { --chapa-tono: var(--sd-cat-6); }
+.chapaColor[data-color='cat-7'] { --chapa-tono: var(--sd-cat-7); }
+.chapaColor[data-color='cat-8'] { --chapa-tono: var(--sd-cat-8); }
+
+/* ── Enlaces ─────────────────────────────────────────────────────────────── */
+
+.enlace {
+  font-family: var(--sd-font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sd-accent);
+  text-decoration: none;
+  border-bottom: 2px solid var(--sd-accent-wash);
+  transition: var(--sd-transition);
+}
+
+.enlace:hover {
+  border-bottom-color: var(--sd-accent);
+}
+
+.enlace:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: 2px;
+}

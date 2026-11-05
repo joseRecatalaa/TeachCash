@@ -5,7 +5,7 @@
  */
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import { renderConMantine } from '@/test/render'
 import { moduloActivo, SideMenu } from '../SideMenu'
@@ -91,11 +91,29 @@ describe('SideMenu', () => {
     expect(pestana()).toHaveAttribute('aria-expanded', 'false')
   })
 
-  test('Gestión de patrimonio es un enlace a Inicio, marcado como actual', () => {
+  test('el Cuadro de mando es un enlace a la portada, marcado como actual', () => {
+    renderConMantine(<SideMenu />)
+
+    const enlace = screen.getByRole('link', { name: /Cuadro de mando/ })
+    expect(enlace).toHaveAttribute('href', '/')
+    expect(enlace).toHaveAttribute('aria-current', 'page')
+  })
+
+  test('los módulos van en orden: Cuadro de mando, Camino del héroe, Gestión de patrimonio', () => {
+    renderConMantine(<SideMenu />)
+
+    const nombres = within(screen.getByRole('navigation', { name: 'Módulos' }))
+      .getAllByRole('link')
+      .map((enlace) => enlace.textContent)
+    expect(nombres).toEqual(['Cuadro de mando', 'Camino del héroe', 'Gestión de patrimonio'])
+  })
+
+  test('Gestión de patrimonio lleva a su Inicio, ya fuera de la portada', () => {
+    ruta.actual = '/Movimientos'
     renderConMantine(<SideMenu />)
 
     const enlace = screen.getByRole('link', { name: /Gestión de patrimonio/ })
-    expect(enlace).toHaveAttribute('href', '/')
+    expect(enlace).toHaveAttribute('href', '/Patrimonio')
     expect(enlace).toHaveAttribute('aria-current', 'page')
   })
 
@@ -110,13 +128,19 @@ describe('SideMenu', () => {
   })
 
   test.each([
-    ['/', 'Gestión de patrimonio'],
+    ['/', 'Cuadro de mando'],
+    ['/Tienda', 'Cuadro de mando'],
+    ['/Patrimonio', 'Gestión de patrimonio'],
+    ['/Planificacion', 'Gestión de patrimonio'],
+    ['/Categorias/Create', 'Gestión de patrimonio'],
     ['/Movimientos/Edit', 'Gestión de patrimonio'],
     ['/CaminoHeroe', 'Camino del héroe'],
     ['/CaminoHeroe/Nivel', 'Camino del héroe'],
     // Un prefijo de texto no es una ruta hija.
-    ['/CaminoHeroeFalso', 'Gestión de patrimonio'],
-    [null, 'Gestión de patrimonio'],
+    ['/CaminoHeroeFalso', 'Cuadro de mando'],
+    // Las pantallas de la cuenta no son de ningún módulo.
+    ['/Login', 'Cuadro de mando'],
+    [null, 'Cuadro de mando'],
   ])('en %s el módulo activo es %s', (pathname, modulo) => {
     expect(moduloActivo(pathname)).toBe(modulo)
   })

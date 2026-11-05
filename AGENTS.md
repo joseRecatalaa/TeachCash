@@ -16,9 +16,12 @@ Gestor de finanzas personales. Aplicación web para llevar las finanzas
 personales: movimientos (gastos e ingresos), categorías y una portada que
 resume el mes. Finanzas de personas, no contabilidad de empresa.
 
-Tiene **dos módulos**, y el menú lateral cambia de uno a otro:
+Tiene **tres módulos**, y el menú lateral cambia de uno a otro:
 
-- **Gestión de patrimonio** (la raíz, `/`): Inicio, Planificación, Categorías
+- **Cuadro de mando** (la raíz, `/`): la portada. Patrimonio total, estrellas, el
+  héroe con su equipo y sus estadísticas. De aquí cuelga la **Tienda** (`/Tienda`),
+  donde las estrellas de los cursos compran el equipo.
+- **Gestión de patrimonio** (`/Patrimonio`): Inicio, Planificación, Categorías
   y Movimientos. Es todo lo que describe este documento salvo que se diga otra
   cosa.
 - **Camino del héroe** (`/CaminoHeroe`): educación financiera con forma de
@@ -74,6 +77,8 @@ Cada cambio tiene un sitio y solo uno:
 | Añadir o cambiar un curso del Camino del héroe | Un JSON en `content/heroe/<mundo>/` (guía en `docs/CONTENIDO_HEROE.md`) y `pnpm heroe:validar` |
 | Cambiar el formato de ese contenido | Los esquemas Zod de `src/types/heroe.types.ts` |
 | Poner el título de una pantalla | `SketchTitle` de `src/presentation/components/ui` |
+| Añadir o cambiar un objeto de la tienda | `CATALOGO` en `lib/tienda.ts`; si es un tipo nuevo, su sprite en `Pixel/spritesGrande.ts` y `SPRITE_OBJETO` |
+| Cambiar cómo se calcula una estadística del héroe | `lib/estadisticas.ts` |
 
 Si te ves escribiendo un formulario a mano con `<TextInput>` sueltos, o una
 `<DataTable>` fuera de `AppTable`, párate: casi siempre significa que no has
@@ -417,8 +422,10 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
 ```
 .
   app/                                # rutas, en PascalCase
-    page.tsx                          # Inicio: saldo, mes, gráficos y últimos
+    page.tsx                          # Cuadro de mando: patrimonio, estrellas, héroe y radar
     page.module.css                   # su aspecto: cada vista lleva el suyo
+    Patrimonio/                       # Inicio: saldo, mes, gráficos y últimos
+    Tienda/page.tsx                   # lo que se compra con las estrellas
     layout.tsx                        # Providers + Navbar + CSS de Mantine
     Movimientos/                      # una carpeta por entidad
       page.tsx                        # listado
@@ -452,6 +459,8 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         perfiles.repository.ts        # el patrimonio inicial: una fila por usuario
         cuenta.repository.ts          # auth.users: fecha de alta (caducidad) y borrar la cuenta
         heroe.repository.ts           # progreso del héroe: desbloqueo en orden y corrección
+        tienda.repository.ts          # estrellas, compras y equipo
+        cuadro.repository.ts          # reúne lo que enseña el Cuadro de mando
         __tests__/
     application/
       actions/
@@ -461,6 +470,8 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         informes.actions.ts
         perfil.actions.ts             # leer y guardar el patrimonio inicial
         heroe.actions.ts              # mapa, mundo, nivel y enviar una partida
+        tienda.actions.ts             # leer la tienda, comprar, equipar y quitar
+        cuadro.actions.ts             # leer el Cuadro de mando
         auth.actions.ts               # invitado, login, registro, contraseña, borrar cuenta
       hooks/
         createEntityHooks.ts          # factory genérica de hooks CRUD
@@ -471,6 +482,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         useInformes.ts
         usePerfil.ts                  # patrimonio inicial (cuelga de ['informes'])
         useHeroe.ts                   # el Camino del héroe (cuelga de ['heroe'])
+        useCuadro.ts                  # el cuadro (['informes', 'cuadro']) y la tienda (['heroe', 'tienda'])
         use<Entidades>.ts             # uno por entidad
       providers/
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
@@ -516,6 +528,9 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         SideMenu/                     # menú lateral de MÓDULOS (se abre al pasar el ratón)
         Splash/                       # la pantalla de carga a píxel
         Pixel/                        # el héroe (PixelHero), los sprites y su paleta: los comparten el splash y el héroe
+          HeroeGrande.tsx spritesGrande.ts  # el héroe de 48x66 con su equipo: Cuadro de mando y Tienda
+        Cuadro/                       # las tarjetas del Cuadro de mando
+        Tienda/                       # el probador y la rejilla de objetos
         Heroe/                        # el Camino del héroe: mapa, camino, ficha del nivel
           planeta.ts camino.ts        # la geometría a píxel, en funciones puras
           reproductor/                # lectura, preguntas, resultado; Marcado (negrita/cursiva)
@@ -535,6 +550,8 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     csp.ts                            # la Content Security Policy y su nonce
     heroe.ts                          # corrección y estrellas del héroe (puras)
     marcas.ts                         # **negrita** y _cursiva_ del contenido, a nodos
+    tienda.ts                         # el catálogo de objetos y sus precios
+    estadisticas.ts                   # las siete estadísticas del héroe (puras)
     turnstile.ts
   db/
     schema.ts                         # pg-core; piezas idColumn, soloSuyo…
@@ -788,6 +805,15 @@ lleve hasta ella.
   (y los modales de Mantine) están a z-index 200, y a igualdad gana el último
   del DOM: así el panel tapa la cabecera y un modal tapa el panel. Si sube por
   encima de la Navbar, la cabecera se pinta sobre el menú abierto.
+- **El Cuadro de mando depende de movimientos, de partidas y de compras.** Cuelga de
+  `['informes', 'cuadro']`: lo tira `useInvalidarDerivados()`, y `useEnviarNivel` y
+  las mutaciones de la tienda lo invalidan a mano. Una mutación nueva que lo cambie
+  y no lo invalide deja al héroe y al radar con lo de antes, sin ningún error.
+- **`.escena` va en múltiplos enteros del `viewBox` de `EscenaHeroe`** (92x70: 276,
+  368 y 460 de ancho). A cualquier otra escala los píxeles salen de anchos
+  distintos y el héroe deja de verse nítido, sin que falle nada.
+- **Una pieza de equipo se pinta en el orden de `HeroeGrande`.** Si se cambia, una
+  acaba tapando a otra. Los sprites se apoyan en las coordenadas del héroe de 48x66.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
@@ -1108,6 +1134,35 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   - **El personaje de los ejemplos se llama Pepito**, siempre.
   - Aviso fijo en todo el módulo: "Contenido educativo, no asesoramiento
     financiero".
+- **Cuadro de mando y Tienda**:
+  - **`/` es el Cuadro de mando** y el Inicio de siempre se mudó a `/Patrimonio`.
+    Cada módulo declara sus rutas (`MODULOS` en `SideMenu.tsx`) y `moduloActivo`
+    decide también los enlaces de la Navbar. Lo que no es de ninguno, como Login,
+    se queda en el Cuadro. Quien aún no ha elegido patrimonio inicial lo ve como un
+    enlace en la tarjeta; la pregunta sigue en `/Patrimonio`.
+  - **Dos héroes**: el pequeño (32x44) en el splash y en los caminos, sin equipo, y
+    el grande (48x66) en el Cuadro y la Tienda. Se probó uno de 64x88 con más
+    detalle y se descartó: dejaba de ser el personaje. El grande es el pequeño
+    calcado; si retocas uno, compáralo con el otro.
+  - **Estrellas derivadas** (regla dura 7): las ganadas salen de `hero_progress`, las
+    gastadas de `hero_items.price_paid`, y no se guarda ningún saldo. Comprar no le
+    quita nada a un nivel. Solo se ganan con los cursos: inventarse movimientos no
+    da nada en la tienda, solo sube Riqueza y Constancia.
+  - **Comprar va con candado** (`pg_advisory_xact_lock` por usuario, dentro de la
+    transacción): sin él, dos clics seguidos gastan dos veces las mismas estrellas.
+    PGlite tiene una sola conexión, así que el test de compras simultáneas no
+    distingue si el candado está o no: lo sostiene esta nota.
+  - **Catálogo en código** (`lib/tienda.ts`), con tres calidades por tipo que son un
+    dibujo y tres paletas (`data-calidad`). Precios contra las 108 estrellas que
+    existen: ir entero de lo mejor cuesta 75, pero no da para comprarlo todo. Se
+    guarda lo pagado para que cambiar un precio no altere lo ya gastado. Las
+    compras no se devuelven.
+  - **Siete estadísticas de 0 a 100, derivadas** (`lib/estadisticas.ts`): una por
+    mundo (niveles superados), Riqueza por tramos de ganancia (ni porcentaje, que
+    divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses
+    en positivo de los últimos 12) y Poder (precio de lo EQUIPADO sobre lo máximo
+    equipable: quitarse algo lo baja). El radar lleva el dominio fijo de 0 a 100, y
+    la lista de debajo es su alternativa accesible.
 
 ## Decisiones abiertas
 
@@ -1123,6 +1178,11 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
   contador guardado junto a la mejor marca.
 - **Camino del héroe, "Mi progreso"**: la Navbar del módulo solo tiene
   "Mundos"; una pantalla de progreso global está pensada, no hecha.
+- **Trampas en la tienda**: `soloSuyo` deja a cada usuario escribir sus propias
+  filas de `hero_items` y `hero_progress` por la API REST de Supabase, así que
+  alguien podría regalarse objetos o estrellas a sí mismo. Es un juego de un solo
+  jugador y no afecta a nadie más; si un día hay ranking, esas dos tablas pasan a
+  política de solo lectura.
 - **Presupuestos**: diseñados en la skill `finance-data-model`, sin implementar.
   La tabla `budgets` no existe todavía.
 - **Importación de extractos**: las columnas `import_hash` están, el parser no.

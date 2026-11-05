@@ -21,7 +21,7 @@ export default function CaminoHeroePage() {
       subtitulo="Aprende a manejar tu dinero mundo a mundo. Cada mundo es un tema, supera sus niveles hasta llegar al jefe."
     >
       {mapa.isPending && <Cargando />}
-      {mapa.error && <ErrorHeroe mensaje={mapa.error.message} volver={{ href: '/', texto: 'Volver a Inicio' }} />}
+      {mapa.error && <ErrorHeroe mensaje={mapa.error.message} volver={{ href: '/', texto: 'Volver al inicio' }} />}
       {mapa.data && <MapaMundos mapa={mapa.data} />}
     </PaginaHeroe>
   )

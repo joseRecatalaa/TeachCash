@@ -181,6 +181,8 @@ AGENTS.md.
 | `repositories/__tests__/metadata.repository.test.ts` | 7 | Opciones de los select, sin claves del prototipo | — |
 | `repositories/__tests__/postgres-errors.test.ts` | 9 | Carreras contra las UNIQUE (`23505`) traducidas a id existente o error de campo | — |
 | `repositories/__tests__/types.test.ts` | 4 | `RepositoryError` y `fromFieldErrors` | — |
+| `repositories/__tests__/tienda.repository.test.ts` | 19 | Tienda: no se gastan estrellas que no hay, precio del catálogo, un equipado por hueco, aislamiento entre usuarios. El candado de las compras simultáneas no se puede distinguir en PGlite, que tiene una sola conexión | 4, 6, 7 |
+| `repositories/__tests__/cuadro.repository.test.ts` | 6 | Cuadro de mando: que la ganancia no cuenta el inicial y que junta bien lo de los demás repositorios | 4, 7 |
 | `repositories/__tests__/heroe.repository.test.ts` | 34 | Camino del héroe sobre un contenido de prueba fijo (`__tests__/fixtures/heroe/`): desbloqueo en orden, corrección en el servidor, la mejor marca no baja, mundos "Pronto", aislamiento entre usuarios | 4, 6, 7 |
 | `infrastructure/heroe/__tests__/contenido.test.ts` | 24 | La carga del contenido: cada JSON roto (errata, marca sin cerrar, emoticono en un título, dato sin fuente, nivel que falta o que sobra…) se para con un mensaje que dice el fichero y el campo | — |
 | `src/__tests__/contenido-heroe.test.ts` | 5 | El contenido REAL de `content/heroe/` (`pnpm heroe:validar`) | — |
@@ -227,6 +229,8 @@ silencio:
 | `Pixel/__tests__/sprites.test.ts` | 58 | Cada sprite: todas sus filas del mismo ancho y solo claves de su paleta |
 | `Pixel/__tests__/PixelHero.test.tsx` | 7 | La pose llega al `data-pose`, todas las capas existen en todas las poses, voltear |
 | `Heroe/__tests__/CaminoMundo.test.tsx` | 14 | El camino (nodos accesibles, ficha del nivel, bloqueado sin enlace) y el mapa (elegir, entrar, "Pronto", las flechas que mueven al héroe) |
+| `Tienda/__tests__/Tienda.test.tsx` | 8 | Qué botón sale en cada estado, que comprar solo manda el id, el filtro y el probador con ratón y con teclado |
+| `Cuadro/__tests__/CuadroMando.test.tsx` | 8 | El signo de la ganancia, lo que se enseña a quien empieza y la lista legible de las estadísticas |
 | `Heroe/__tests__/Reproductor.test.tsx` | 10 | Jugar como una persona: feedback al momento, minitest y jefe con repaso, reintentar; negrita, cursiva, emoticonos, `imagen` y `dato` |
 | `Heroe/__tests__/ejercicios.test.tsx` | 2 | Ordenar con botones y emparejar sin repetir definición |
 | `Heroe/__tests__/camino.test.ts` | 13 | La geometría del camino: enteros, dentro del lienzo, de abajo arriba, el héroe sin tapar el nodo |
