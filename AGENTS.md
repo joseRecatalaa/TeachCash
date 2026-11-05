@@ -1118,9 +1118,11 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     elegido. Un mundo con `"niveles": []` sale apagado como "Pronto".
   - **Camino**: sube de abajo (el primer nivel) arriba (el jefe), y el jefe es
     un monstruo de cuerpo entero del color de su mundo, no un icono.
-  - **El héroe acompaña mientras se juega**: de pie sobre la barra de progreso,
-    arriba a la derecha de la lectura y de las preguntas (`ProgresoNivel`), con
-    la pose `agacha`: lenta y de solo dos píxeles, para no distraer de la lectura.
+  - **El héroe acompaña mientras se juega**: de pie sobre el borde superior de la
+    tarjeta y por fuera, a la derecha, en la lectura y las preguntas
+    (`ProgresoNivel`), con la pose `agacha`: lenta y de solo dos píxeles. Va en
+    absoluto porque no debe alargar la página: un nivel tiene que caber en la
+    pantalla. La cabecera le reserva el sitio (`heroeEncima` de `PaginaHeroe`).
   - **Todo es pixel art propio** (`components/Pixel/`): sin ficheros de imagen,
     así no se toca la CSP, no pesa y sigue el modo oscuro. Los colores de las
     ilustraciones son variables `--px-*` locales a su módulo, no tokens

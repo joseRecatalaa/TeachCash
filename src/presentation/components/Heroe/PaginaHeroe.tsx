@@ -23,15 +23,18 @@ export function PaginaHeroe({
   titulo,
   subtitulo,
   volver,
+  heroeEncima = false,
   children,
 }: {
   titulo: string
   subtitulo?: string
   volver?: { href: Route; texto: string }
+  /** Hay un héroe de pie sobre la tarjeta (`ProgresoNivel`): la cabecera le deja sitio. */
+  heroeEncima?: boolean
   children: ReactNode
 }) {
   return (
-    <Container fluid px="xl" py="xl">
+    <Container fluid px="xl" py={heroeEncima ? 'md' : 'xl'}>
       <FiltroPixel />
       <div className={styles.pagina}>
         <header className={styles.cabecera}>
@@ -41,7 +44,7 @@ export function PaginaHeroe({
               {volver.texto}
             </Link>
           )}
-          <div className={styles.lineaTitulo}>
+          <div className={styles.lineaTitulo} data-heroe-encima={heroeEncima || undefined}>
             <SketchTitle>{titulo}</SketchTitle>
             {subtitulo && <p className={styles.subtitulo}>{subtitulo}</p>}
           </div>
