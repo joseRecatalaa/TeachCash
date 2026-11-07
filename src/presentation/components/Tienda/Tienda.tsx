@@ -148,7 +148,7 @@ export function Tienda({ tienda }: { tienda: TiendaDto }) {
               onBlur={() => setProbando(null)}
             >
               <span className={styles.dibujo}>
-                <ObjetoPixel objeto={objeto} />
+                <ObjetoPixel objeto={objeto} caja={160} />
               </span>
               <span className={styles.nombre}>{objeto.nombre}</span>
               <span className={styles.accion}>

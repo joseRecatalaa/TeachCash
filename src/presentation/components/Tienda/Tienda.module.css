@@ -39,7 +39,7 @@
 
 .objetos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   gap: 0.9rem;
   margin: 0;
   padding: 0;
@@ -62,12 +62,13 @@
   border: var(--sd-border-bold);
 }
 
-/* Todas las fichas con el dibujo a la misma altura, sea cual sea el objeto. */
+/* Todas las fichas con el dibujo a la misma altura, sea cual sea el objeto. La
+   caja es la de `ObjetoPixel` (160): a 12rem de ficha caben las alas a escala 2. */
 .dibujo {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 122px;
+  height: 162px;
 }
 
 .nombre {

@@ -267,7 +267,9 @@ export function RadarEstadisticas({ datos }: { datos: readonly Estadistica[] }) 
   return (
     <div className={styles.chartWrap} aria-hidden="true">
       <ResponsiveContainer width="100%" height={300}>
-        <RadarChart data={filas} outerRadius="72%">
+        {/* Margen a los lados y radio por debajo del máximo: las etiquetas van
+            fuera del polígono, y a 390 px de ancho "CON 0" y "ATQ 0" se cortaban. */}
+        <RadarChart data={filas} outerRadius="64%" margin={{ top: 8, right: 28, bottom: 8, left: 28 }}>
           <PolarGrid stroke="var(--sd-ink-muted)" opacity={0.4} />
           <PolarAngleAxis
             dataKey="etiqueta"
