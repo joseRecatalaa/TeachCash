@@ -111,6 +111,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generado por drizzle-kit, y los informes de coverage y de Playwright.
     "db/migrations/**",
+    // Un paquete CommonJS que sustituye a otro de node_modules (ver su index.js):
+    // no es código de la aplicación y usa `require`.
+    "patches/**",
     "coverage/**",
     "playwright-report/**",
     "test-results/**",

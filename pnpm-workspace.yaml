@@ -31,8 +31,13 @@ overrides:
   brace-expansion@>=4 <6: ^5.0.12
   # GHSA-g3hv-75wg-m249: DoS por amplificación de patrones glob. El parche solo
   # existe en la 11, que tiene la misma API que la 10 (`{ minimatch }`). La traen
-  # typescript-estree y sonarjs. La 3 se queda: ver `auditConfig`, abajo.
+  # typescript-estree y sonarjs.
   minimatch@>=10 <11: ^11.0.1
+  # El mismo aviso en la 3, que no tiene versión con parche: la traen eslint y sus
+  # plugins, que la llaman como función (`require('minimatch')(…)`), y la 11 ya no
+  # exporta eso. `patches/minimatch-compat` es la 11 con la forma de la 3. Se
+  # quita cuando eslint deje la 3 (`pnpm why minimatch`).
+  minimatch@<4: file:patches/minimatch-compat
   # DoS por claves de merge. La trae eslint > @eslint/eslintrc (^4.1.0).
   js-yaml: ^4.3.2
   # GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f (críticas) y GHSA-xw65-4hp5-5hc7:
@@ -55,17 +60,9 @@ overrides:
   #     mismo; el parche de abajo cambia esa única llamada.
   'findup-sync>micromatch': npm:picomatch@^4.0.7
 
-# Avisos ignorados: SOLO falsos positivos comprobados contra el código instalado.
-auditConfig:
-  ignoreGhsas:
-    # El rango del aviso (<11.0.1) cubre minimatch@3, pero su código vulnerable
-    # (firstPhasePreProcess, optimizationLevel >= 2) no existe en la 3.1.5: se
-    # comprobó con un grep del paquete. Y no se puede subir: eslint-plugin-import
-    # la llama como función (`minimatch(...)`), y la 11 ya no exporta eso. Ignorarlo
-    # solo es seguro porque el override de arriba saca la 10 del árbol: si la 10
-    # volviera a entrar, este aviso ya no la enseñaría. Quitarlo cuando eslint y
-    # sus plugins dejen la 3.
-    - GHSA-g3hv-75wg-m249
+# Sin avisos ignorados (`auditConfig.ignoreGhsas`): cada aviso se arregla arriba.
+# Si alguna vez hace falta ignorar uno, que sea un falso positivo comprobado
+# contra el código instalado y con su porqué escrito al lado.
 
 # Parches sobre paquetes de terceros. Cada uno explica su porqué dentro del diff.
 patchedDependencies:
