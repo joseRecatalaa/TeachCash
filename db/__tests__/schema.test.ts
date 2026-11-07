@@ -293,6 +293,54 @@ describe('RLS', () => {
     expect(rows).toEqual([{ stars: 3 }])
   })
 
+  /*
+   * El progreso y las compras del héroe son de SOLO LECTURA para la API: las
+   * escribe el servidor, que corrige las partidas y cobra las estrellas. Si un
+   * usuario pudiera escribirlas con su propia sesión, se regalaría estrellas u
+   * objetos sin jugar. La app no se entera: su rol se salta RLS.
+   */
+  describe.each([
+    {
+      tabla: 'hero_progress',
+      fila: { columnas: 'user_id, level_id, stars', valores: `'${USER_A}', 'ahorro/09', 3` },
+      cambio: 'stars = 3',
+    },
+    {
+      tabla: 'hero_items',
+      fila: { columnas: 'user_id, item_id, price_paid', valores: `'${USER_A}', 'alas-alta', 0` },
+      cambio: 'price_paid = 0',
+    },
+  ])('$tabla: solo lectura', ({ tabla, fila, cambio }) => {
+    beforeEach(async () => {
+      await ctx.pg.exec(`
+        insert into hero_progress (user_id, level_id, stars) values ('${USER_A}', 'ahorro/01', 1), ('${USER_B}', 'ahorro/01', 2);
+        insert into hero_items (user_id, item_id, price_paid) values ('${USER_A}', 'casco-basica', 3), ('${USER_B}', 'casco-basica', 3);
+      `)
+    })
+
+    test('cada uno lee lo suyo y nada más', async () => {
+      await comoUsuario('authenticated', USER_A)
+      const { rows } = await ctx.pg.query<{ user_id: string }>(`select user_id from ${tabla}`)
+      expect(rows).toEqual([{ user_id: USER_A }])
+    })
+
+    test('no puede añadirse filas, ni a su nombre', async () => {
+      await comoUsuario('authenticated', USER_A)
+      await esperarSqlstate(
+        ctx.pg.query(`insert into ${tabla} (${fila.columnas}) values (${fila.valores})`),
+        SQL.RLS,
+      )
+    })
+
+    test('no puede cambiar ni borrar sus propias filas', async () => {
+      await comoUsuario('authenticated', USER_A)
+      const editadas = await ctx.pg.query(`update ${tabla} set ${cambio} where user_id = $1`, [USER_A])
+      const borradas = await ctx.pg.query(`delete from ${tabla} where user_id = $1`, [USER_A])
+      expect(editadas.affectedRows).toBe(0)
+      expect(borradas.affectedRows).toBe(0)
+    })
+  })
+
   test('no se puede insertar a nombre de otro', async () => {
     await comoUsuario('authenticated', USER_A)
     await esperarSqlstate(

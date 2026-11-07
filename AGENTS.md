@@ -918,7 +918,9 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   (regla dura 4). supabase-js se usa solo para Auth.
 - **RLS como red, no como mecanismo.** Toda tabla lleva RLS "solo lo suyo"
   (`soloSuyo`) para que la API REST de Supabase, que cualquiera puede llamar con
-  la clave pública, no sirva para leer nada ajeno. La app no depende de ella.
+  la clave pública, no sirva para leer nada ajeno. La app no depende de ella. Lo
+  que calcula el servidor (el progreso y las compras del héroe) va con
+  `soloLeerLoSuyo`: se lee lo suyo y no se escribe nada.
 - **Ids `text` con UUID que pone la base, no `uuid`.** Un id mal formado que
   llegue del cliente no casa con nada y da "No encontrado", en vez de que
   Postgres reviente con un error de sintaxis que acabaría como error genérico.
@@ -1159,6 +1161,13 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     existen: ir entero de lo mejor cuesta 75, pero no da para comprarlo todo. Se
     guarda lo pagado para que cambiar un precio no altere lo ya gastado. Las
     compras no se devuelven.
+  - **El progreso y las compras son de solo lectura para la API**
+    (`soloLeerLoSuyo` en `hero_progress` y `hero_items`, en vez de `soloSuyo`):
+    con su propia sesión, cualquiera podía escribir esas filas por la API REST de
+    Supabase y regalarse estrellas u objetos. Las escribe solo el servidor, cuyo
+    rol se salta RLS. Lo que sigue siendo posible, y se acepta: sacar 3 estrellas
+    mirando las soluciones que el navegador recibe para corregir al momento, e
+    inflar Riqueza y Constancia inventándose movimientos (que no dan estrellas).
   - **Siete estadísticas de 0 a 100, derivadas** (`lib/estadisticas.ts`): una por
     mundo (niveles superados), Riqueza por tramos de ganancia (ni porcentaje, que
     divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses
@@ -1180,11 +1189,6 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
   contador guardado junto a la mejor marca.
 - **Camino del héroe, "Mi progreso"**: la Navbar del módulo solo tiene
   "Mundos"; una pantalla de progreso global está pensada, no hecha.
-- **Trampas en la tienda**: `soloSuyo` deja a cada usuario escribir sus propias
-  filas de `hero_items` y `hero_progress` por la API REST de Supabase, así que
-  alguien podría regalarse objetos o estrellas a sí mismo. Es un juego de un solo
-  jugador y no afecta a nadie más; si un día hay ranking, esas dos tablas pasan a
-  política de solo lectura.
 - **Presupuestos**: diseñados en la skill `finance-data-model`, sin implementar.
   La tabla `budgets` no existe todavía.
 - **Importación de extractos**: las columnas `import_hash` están, el parser no.

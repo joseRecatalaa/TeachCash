@@ -76,6 +76,20 @@ export const soloSuyo = (tabla: string) =>
     withCheck: sql`${authUid} = user_id`,
   })
 
+/**
+ * Como `soloSuyo`, pero sin escribir: cada usuario LEE lo suyo y nada más. Para
+ * lo que solo debe escribir el servidor, porque lo calcula él: el progreso del
+ * héroe (corrige las partidas) y sus compras (cobra las estrellas). Con
+ * `soloSuyo`, cualquiera podría regalarse estrellas u objetos llamando a la API
+ * REST de Supabase con su propia sesión. La app no se entera: su rol se salta RLS.
+ */
+export const soloLeerLoSuyo = (tabla: string) =>
+  pgPolicy(`${tabla}_solo_leer_lo_suyo`, {
+    for: 'select',
+    to: authenticatedRole,
+    using: sql`${authUid} = user_id`,
+  })
+
 export const categories = pgTable(
   'categories',
   {
@@ -207,7 +221,7 @@ export const heroProgress = pgTable(
   (t) => [
     primaryKey({ columns: [t.userId, t.levelId] }),
     check('hero_progress_stars', sql`${t.stars} between 0 and 3`),
-    soloSuyo('hero_progress'),
+    soloLeerLoSuyo('hero_progress'),
   ],
 ).enableRLS()
 
@@ -235,7 +249,7 @@ export const heroItems = pgTable(
   (t) => [
     primaryKey({ columns: [t.userId, t.itemId] }),
     check('hero_items_price', sql`${t.pricePaid} >= 0`),
-    soloSuyo('hero_items'),
+    soloLeerLoSuyo('hero_items'),
   ],
 ).enableRLS()
 

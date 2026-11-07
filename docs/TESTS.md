@@ -172,7 +172,7 @@ AGENTS.md.
 
 | Fichero | Casos | Qué cubre | RD |
 |---|---|---|---|
-| `db/__tests__/schema.test.ts` | 23 | RLS en `categories`, `transactions` y `hero_progress` (SELECT, UPDATE, DELETE, WITH CHECK); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
+| `db/__tests__/schema.test.ts` | 29 | RLS en `categories`, `transactions` y `hero_progress` (SELECT, UPDATE, DELETE, WITH CHECK); `hero_progress` y `hero_items` de solo lectura para la API (nada de INSERT, UPDATE ni DELETE, ni de lo propio); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
 | `repositories/__tests__/movimientos.repository.test.ts` | 48 | CRUD, `update` (gasto ↔ ingreso, categoría ajena), fechas futuras prohibidas, filtros, orden, paginación, idempotencia entre usuarios, aislamiento | 1, 4, 5 |
 | `repositories/__tests__/categorias.repository.test.ts` | 47 | CRUD, nombre único, ocultar/activar, borrado en cascada de sus movimientos, catálogo inicial | 4 |
 | `repositories/__tests__/informes.repository.test.ts` | 27 | Agregaciones; **el saldo actual = el último punto de la serie** (propiedad) | 7 |

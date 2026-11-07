@@ -29,6 +29,20 @@
       "when": 1793915060497,
       "tag": "0003_equipo_heroe",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794094398421,
+      "tag": "0004_heroe_quitar_escritura",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794094400600,
+      "tag": "0005_heroe_solo_lectura",
+      "breakpoints": true
     }
   ]
 }
