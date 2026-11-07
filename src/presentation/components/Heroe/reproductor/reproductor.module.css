@@ -35,6 +35,11 @@
   }
 }
 
+.secuencia,
+.lectura {
+  position: relative;
+}
+
 .progreso {
   display: flex;
   flex-direction: column;
@@ -45,6 +50,21 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--sd-ink-muted);
+}
+
+/* El héroe, de pie sobre el borde de la tarjeta y por fuera. Va en absoluto
+   para no alargar la página. `bottom` se mide desde dentro del borde, y por eso
+   suma su grosor: sin eso, las botas se meterían en el trazo.
+   4rem de ancho son 2 px de pantalla por píxel de juego: un múltiplo entero,
+   para que ninguna fila salga más gorda que otra. Si cambias `right` o `width`,
+   cambia la reserva de `.lineaTitulo` en `PaginaHeroe.module.css`. */
+.heroeGuia {
+  position: absolute;
+  right: 1.5rem;
+  bottom: calc(100% + var(--sd-stroke));
+  width: 4rem;
+  height: 5.5rem;
+  pointer-events: none;
 }
 
 .barra {

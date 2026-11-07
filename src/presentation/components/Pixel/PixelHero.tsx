@@ -34,7 +34,7 @@ import {
   PIERNAS_PASO_2,
 } from './sprites'
 
-export type PoseHeroe = 'quieto' | 'camina' | 'corre' | 'celebra'
+export type PoseHeroe = 'quieto' | 'agacha' | 'camina' | 'corre' | 'celebra'
 export type MirandoHeroe = 'izq' | 'der'
 
 /** Las capas a las que una escena puede engancharle su propia animación. */

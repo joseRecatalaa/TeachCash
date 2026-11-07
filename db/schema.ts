@@ -76,6 +76,20 @@ export const soloSuyo = (tabla: string) =>
     withCheck: sql`${authUid} = user_id`,
   })
 
+/**
+ * Como `soloSuyo`, pero sin escribir: cada usuario LEE lo suyo y nada más. Para
+ * lo que solo debe escribir el servidor, porque lo calcula él: el progreso del
+ * héroe (corrige las partidas) y sus compras (cobra las estrellas). Con
+ * `soloSuyo`, cualquiera podría regalarse estrellas u objetos llamando a la API
+ * REST de Supabase con su propia sesión. La app no se entera: su rol se salta RLS.
+ */
+export const soloLeerLoSuyo = (tabla: string) =>
+  pgPolicy(`${tabla}_solo_leer_lo_suyo`, {
+    for: 'select',
+    to: authenticatedRole,
+    using: sql`${authUid} = user_id`,
+  })
+
 export const categories = pgTable(
   'categories',
   {
@@ -207,7 +221,35 @@ export const heroProgress = pgTable(
   (t) => [
     primaryKey({ columns: [t.userId, t.levelId] }),
     check('hero_progress_stars', sql`${t.stars} between 0 and 3`),
-    soloSuyo('hero_progress'),
+    soloLeerLoSuyo('hero_progress'),
+  ],
+).enableRLS()
+
+/**
+ * Lo que un usuario ha comprado en la tienda del héroe, una fila por objeto.
+ *
+ * `item_id` es el id estable del catálogo (`lib/tienda.ts`), sin clave ajena
+ * porque el catálogo vive en código. `price_paid` se guarda porque las estrellas
+ * gastadas son la suma de lo que se pagó: si cambiara con el precio del catálogo,
+ * subir un precio le quitaría estrellas a quien ya compró.
+ *
+ * Las estrellas disponibles son derivadas (regla dura 7): las ganadas, de
+ * `hero_progress`, menos esta suma.
+ */
+export const heroItems = pgTable(
+  'hero_items',
+  {
+    userId: userIdColumn(),
+    itemId: text('item_id').notNull(),
+    pricePaid: integer('price_paid').notNull(),
+    /** Lo lleva puesto. Hay uno por hueco; lo garantiza el repositorio. */
+    equipped: boolean('equipped').notNull().default(true),
+    createdAt: createdAtColumn(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.itemId] }),
+    check('hero_items_price', sql`${t.pricePaid} >= 0`),
+    soloLeerLoSuyo('hero_items'),
   ],
 ).enableRLS()
 

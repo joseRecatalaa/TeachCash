@@ -10,7 +10,6 @@
  */
 
 import { useState } from 'react'
-import { Progress } from '@mantine/core'
 import { IconArrowLeft, IconArrowRight, IconBulb, IconSparkles, IconSword } from '@tabler/icons-react'
 import { formatMoneySigned } from '@/lib/format'
 import { DIVISA_APP, money } from '@/lib/money'
@@ -40,6 +39,7 @@ import {
 } from '../../Pixel/sprites'
 import { SketchButton } from '../../ui'
 import { Marcado } from './Marcado'
+import { ProgresoNivel } from './ProgresoNivel'
 import styles from './reproductor.module.css'
 
 function BloqueLectura({ bloque }: { bloque: Bloque }) {
@@ -159,12 +159,7 @@ export function Lectura({ paginas, alTerminar }: { paginas: Pagina[]; alTerminar
 
   return (
     <article className={styles.lectura} aria-label={`Página ${i + 1} de ${paginas.length}`}>
-      <div className={styles.progreso}>
-        <span>
-          Página {i + 1} de {paginas.length}
-        </span>
-        <Progress value={((i + 1) / paginas.length) * 100} aria-hidden className={styles.barra} />
-      </div>
+      <ProgresoNivel texto={`Página ${i + 1} de ${paginas.length}`} valor={((i + 1) / paginas.length) * 100} />
 
       <h2 className={styles.enunciado}>{pagina.titulo}</h2>
       {pagina.bloques.map((bloque, k) => (

@@ -44,7 +44,7 @@ function Contenido() {
     )
   }
   return (
-    <PaginaHeroe titulo={nivel.data.nivel.titulo} subtitulo={nivel.data.nivel.descripcion} volver={cabecera}>
+    <PaginaHeroe titulo={nivel.data.nivel.titulo} subtitulo={nivel.data.nivel.descripcion} volver={cabecera} heroeEncima>
       <Reproductor
         key={`${id}#${partida}`}
         nivel={nivel.data.nivel}

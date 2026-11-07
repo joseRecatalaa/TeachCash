@@ -3,7 +3,7 @@
 /**
  * Menú lateral de MÓDULOS: las grandes áreas de la aplicación, no sus pantallas.
  *
- * La Navbar lleva las secciones del módulo en el que estás (Inicio,
+ * La Navbar lleva las secciones del módulo en el que estás (Tienda,
  * Movimientos…); este menú cambia de módulo. Por eso son dos piezas y no una:
  * mezclar los dos niveles en la misma lista haría que "Movimientos" y "Camino
  * del héroe" parecieran cosas del mismo tamaño.
@@ -22,7 +22,7 @@ import type { KeyboardEvent, PointerEvent, ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Route } from 'next'
-import { IconArrowRight, IconLock, IconPigMoney, IconSword, IconWallet } from '@tabler/icons-react'
+import { IconArrowRight, IconGauge, IconLock, IconPigMoney, IconSword, IconWallet } from '@tabler/icons-react'
 import type { Icon } from '@tabler/icons-react'
 import { StatusBadge } from '../ui'
 import { EVENTO_FIN_SPLASH } from '../Splash/SplashScreen'
@@ -32,36 +32,51 @@ type Modulo = {
   label: string
   icon: Icon
 } & (
-  | { disponible: true; href: Route }
+  | {
+      disponible: true
+      href: Route
+      /** Las rutas que son de este módulo. La `/` cuenta sola, sin sus hijas. */
+      rutas: readonly string[]
+    }
   | { disponible: false }
 )
 
 const MODULOS: Modulo[] = [
   {
-    label: 'Gestión de patrimonio',
-    icon: IconPigMoney,
+    label: 'Cuadro de mando',
+    icon: IconGauge,
     disponible: true,
     href: '/',
+    rutas: ['/', '/Tienda'],
   },
   {
     label: 'Camino del héroe',
     icon: IconSword,
     disponible: true,
     href: '/CaminoHeroe',
+    rutas: ['/CaminoHeroe'],
+  },
+  {
+    label: 'Gestión de patrimonio',
+    icon: IconPigMoney,
+    disponible: true,
+    href: '/Patrimonio',
+    rutas: ['/Patrimonio', '/Planificacion', '/Categorias', '/Movimientos'],
   },
 ]
 
+const esDeLaRuta = (ruta: string, base: string) =>
+  ruta === base || (base !== '/' && ruta.startsWith(`${base}/`))
+
 /**
- * El módulo de la pantalla actual: el que tenga la ruta más larga que sea
- * prefijo de la actual. Gestión de patrimonio vive en la raíz y por eso se
- * queda con todo lo que no sea de otro módulo (Inicio, Movimientos…).
+ * El módulo de la pantalla actual, que decide también los enlaces de la Navbar.
+ * Lo que no es de ninguno (las pantallas de la cuenta) se queda en el Cuadro de
+ * mando, que es la portada.
  */
-export function moduloActivo(pathname: string | null): string | undefined {
+export function moduloActivo(pathname: string | null): string {
   const ruta = pathname ?? '/'
-  return MODULOS.filter(
-    (m): m is Extract<Modulo, { disponible: true }> =>
-      m.disponible && (m.href === '/' || ruta === m.href || ruta.startsWith(`${m.href}/`)),
-  ).sort((a, b) => b.href.length - a.href.length)[0]?.label
+  const modulo = MODULOS.find((m) => m.disponible && m.rutas.some((base) => esDeLaRuta(ruta, base)))
+  return modulo?.label ?? MODULOS[0].label
 }
 
 /**

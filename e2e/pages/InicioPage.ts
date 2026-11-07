@@ -35,7 +35,7 @@ export class InicioPage {
 
   /** Entrada en frío: la primera visita de un contexto nuevo crea el invitado. */
   async abrir(): Promise<void> {
-    await this.page.goto('/')
+    await this.page.goto('/Patrimonio')
     await esperarTitulo(this.page, 'Inicio')
   }
 

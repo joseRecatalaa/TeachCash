@@ -42,6 +42,11 @@ import {
   CartesianGrid,
   Cell,
   Legend,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -50,6 +55,7 @@ import {
 import type { TooltipContentProps } from 'recharts'
 import { formatDate, formatMoney, formatMoneyCompact, formatPeriodShort } from '@/lib/format'
 import { colorDeCategoria } from '@/lib/colores'
+import type { Estadistica } from '@/lib/estadisticas'
 import { DIVISA_APP, money } from '@/lib/money'
 import { EmptyState } from '@/src/presentation/components/ui'
 import type {
@@ -234,6 +240,51 @@ export function SerieSaldoChart({ datos }: { datos: PuntoSaldoDto[] }) {
             activeDot={{ r: 5, stroke: 'var(--sd-surface)', strokeWidth: 2, fill: 'var(--sd-accent)' }}
           />
         </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Las estadísticas del héroe. Una sola serie: no lleva leyenda, y el color de
+ * marca no significa nada más que "esto es lo tuyo".
+ *
+ * El dominio va FIJO de 0 a 100. Sin él, Recharts escala al valor más alto y un
+ * héroe con todo a 5 llena el gráfico igual que uno con todo a 100.
+ *
+ * Sin tooltip, como las barras: cada eje lleva su cifra en la etiqueta y la lista
+ * que va debajo (`Cuadro/`) dice qué es cada una y de dónde sale. Esa lista es
+ * también la alternativa accesible al dibujo, que por eso queda oculto al lector
+ * de pantalla.
+ */
+export function RadarEstadisticas({ datos }: { datos: readonly Estadistica[] }) {
+  const filas = useMemo(
+    () => datos.map((e) => ({ etiqueta: `${e.clave} ${e.valor}`, valor: e.valor })),
+    [datos],
+  )
+  return (
+    <div className={styles.chartWrap} aria-hidden="true">
+      <ResponsiveContainer width="100%" height={300}>
+        {/* Margen a los lados y radio por debajo del máximo: las etiquetas van
+            fuera del polígono, y a 390 px de ancho "CON 0" y "ATQ 0" se cortaban. */}
+        <RadarChart data={filas} outerRadius="64%" margin={{ top: 8, right: 28, bottom: 8, left: 28 }}>
+          <PolarGrid stroke="var(--sd-ink-muted)" opacity={0.4} />
+          <PolarAngleAxis
+            dataKey="etiqueta"
+            tick={{ fontSize: 13, fontWeight: 700, fill: 'var(--sd-ink)' }}
+          />
+          <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} tickCount={5} />
+          <Radar
+            dataKey="valor"
+            stroke="var(--sd-accent)"
+            strokeWidth={2}
+            fill="var(--sd-accent)"
+            fillOpacity={0.25}
+            isAnimationActive={false}
+          />
+        </RadarChart>
       </ResponsiveContainer>
     </div>
   )

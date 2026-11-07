@@ -8,6 +8,8 @@
 import { describe, expect, test } from 'vitest'
 import * as sprites from '../sprites'
 import type { Paleta, Sprite } from '../sprites'
+import * as spritesGrande from '../spritesGrande'
+import { ALTO_HEROE_GRANDE, ANCHO_HEROE_GRANDE } from '../HeroeGrande'
 
 const esSprite = (v: unknown): v is Sprite =>
   typeof v === 'object' && v !== null && 'filas' in v && Array.isArray((v as Sprite).filas)
@@ -34,6 +36,27 @@ describe.each(todos)('%s', (nombre, sprite) => {
   test('solo usa claves de su paleta', () => {
     const claves = new Set(sprite.filas.join('').replaceAll('.', ''))
     expect([...claves].filter((c) => !(c in paleta))).toEqual([])
+  })
+})
+
+const grandes = Object.entries(spritesGrande).filter((e): e is [string, Sprite] => esSprite(e[1]))
+
+describe.each(grandes)('%s', (nombre, sprite) => {
+  test('todas sus filas miden lo mismo', () => {
+    expect(new Set(sprite.filas.map((f) => f.length)).size).toBe(1)
+  })
+
+  test('solo usa claves de su paleta', () => {
+    const claves = new Set(sprite.filas.join('').replaceAll('.', ''))
+    expect([...claves].filter((c) => !(c in spritesGrande.PALETA_HEROE_GRANDE))).toEqual([])
+  })
+
+  // El equipo puede salirse: alas, arma y escudo van fuera de la caja a propósito.
+  test.runIf(nombre.startsWith('GRANDE_'))('cabe en la caja del héroe', () => {
+    expect(sprite.x).toBeGreaterThanOrEqual(0)
+    expect(sprite.y).toBeGreaterThanOrEqual(0)
+    expect(sprite.x + sprite.filas[0].length).toBeLessThanOrEqual(ANCHO_HEROE_GRANDE)
+    expect(sprite.y + sprite.filas.length).toBeLessThanOrEqual(ALTO_HEROE_GRANDE)
   })
 })
 

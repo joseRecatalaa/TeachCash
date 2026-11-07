@@ -4,7 +4,7 @@
  * Barra de navegación superior.
  *
  * Es el sitio donde se da de alta una entidad nueva en el menú: una entrada más
- * en los enlaces de su módulo (`ENLACES_PATRIMONIO`, `ENLACES_HEROE`). El
+ * en los enlaces de su módulo (`ENLACES_CUADRO`, `ENLACES_PATRIMONIO`, `ENLACES_HEROE`). El
  * generador de Plop no la toca — decidir si algo va en el menú es una decisión
  * de producto, no de andamiaje.
  *
@@ -18,7 +18,9 @@ import { usePathname } from 'next/navigation'
 import { Container } from '@mantine/core'
 import {
   IconArrowsLeftRight,
+  IconBuildingStore,
   IconCalendarStats,
+  IconGauge,
   IconLayoutDashboard,
   IconMap,
   IconTags,
@@ -26,10 +28,16 @@ import {
 } from '@tabler/icons-react'
 import { AvisoInvitado } from './Cuenta/AvisoInvitado'
 import { CuentaMenu } from './Cuenta/CuentaMenu'
+import { moduloActivo } from './SideMenu/SideMenu'
 import styles from './Navbar.module.css'
 
+const ENLACES_CUADRO = [
+  { href: '/', label: 'Cuadro de mando', icon: IconGauge },
+  { href: '/Tienda', label: 'Tienda', icon: IconBuildingStore },
+]
+
 const ENLACES_PATRIMONIO = [
-  { href: '/', label: 'Inicio', icon: IconLayoutDashboard },
+  { href: '/Patrimonio', label: 'Inicio', icon: IconLayoutDashboard },
   { href: '/Planificacion', label: 'Planificación', icon: IconCalendarStats },
   { href: '/Categorias', label: 'Categorías', icon: IconTags },
   { href: '/Movimientos', label: 'Movimientos', icon: IconArrowsLeftRight },
@@ -43,9 +51,14 @@ const ENLACES_HEROE = [{ href: '/CaminoHeroe', label: 'Mundos', icon: IconMap }]
  * parecerían partes de lo mismo.
  */
 export function enlacesDe(pathname: string) {
-  return pathname === '/CaminoHeroe' || pathname.startsWith('/CaminoHeroe/')
-    ? ENLACES_HEROE
-    : ENLACES_PATRIMONIO
+  switch (moduloActivo(pathname)) {
+    case 'Camino del héroe':
+      return ENLACES_HEROE
+    case 'Gestión de patrimonio':
+      return ENLACES_PATRIMONIO
+    default:
+      return ENLACES_CUADRO
+  }
 }
 
 export function Navbar() {
@@ -68,8 +81,8 @@ export function Navbar() {
               // marcar Movimientos como sección activa.
               //
               // La raíz es la excepción y hay que tratarla aparte: TODA ruta
-              // empieza por '/', así que con la regla general Inicio saldría
-              // activo en las tres pantallas a la vez.
+              // empieza por '/', así que con la regla general el Cuadro de
+              // mando saldría activo a la vez que la Tienda.
               const activo =
                 href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
               return (

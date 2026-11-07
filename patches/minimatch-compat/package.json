@@ -1,0 +1,11 @@
+{
+  "name": "minimatch-compat",
+  "version": "3.1.5-compat.1",
+  "private": true,
+  "description": "minimatch@11 con la forma de minimatch@3 (module.exports es la función). Ver index.js y pnpm-workspace.yaml.",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "minimatch": "^11.0.4"
+  }
+}

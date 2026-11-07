@@ -87,6 +87,33 @@
   }
 }
 
+/* Agacha: baja el torso dos píxeles, se queda un momento y vuelve a subir, con
+   más rato de pie que abajo. Acompaña a quien está leyendo, y por eso es
+   lenta: si llamara la atención, estorbaría. Las botas no se mueven y el torso
+   tapa lo alto de las piernas, que es lo que hace que parezca que dobla las
+   rodillas. Sin animación se queda de pie. */
+.heroe[data-pose='agacha'] .respira {
+  animation: px-agacha 3.2s steps(1, end) infinite;
+}
+@keyframes px-agacha {
+  0% {
+    translate: 0 0;
+  }
+  35% {
+    translate: 0 1px;
+  }
+  45% {
+    translate: 0 2px;
+  }
+  65% {
+    translate: 0 1px;
+  }
+  75%,
+  100% {
+    translate: 0 0;
+  }
+}
+
 /* Celebra: el billete en alto, que es el "¡objeto conseguido!" de siempre. */
 .heroe[data-pose='celebra'] .lleva {
   opacity: 1;
@@ -304,4 +331,63 @@
   --px-hoja: #4f7a55;
   --px-hoja-sombra: #3d6243;
   --px-tronco: #6b756c;
+}
+
+/* ── El equipo del héroe grande ────────────────────────────────────────────
+ *
+ * Un mismo dibujo por tipo de objeto: la calidad reapunta sus cuatro tonos. Como
+ * los del héroe, no cambian con el tema. La calidad nunca se distingue solo por
+ * el color: el nombre del objeto dice de qué es.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.equipo[data-calidad='basica'] {
+  --px-equipo: #9a6640;
+  --px-equipo-sombra: #6b3f22;
+  --px-equipo-luz: #c08a5e;
+  --px-equipo-detalle: #f0b429;
+}
+
+.equipo[data-calidad='media'] {
+  --px-equipo: #aeb9bf;
+  --px-equipo-sombra: #6f7a80;
+  --px-equipo-luz: #e8eef0;
+  --px-equipo-detalle: #5b8bd6;
+}
+
+.equipo[data-calidad='alta'] {
+  --px-equipo: #f0b429;
+  --px-equipo-sombra: #b67d0e;
+  --px-equipo-luz: #ffe28a;
+  --px-equipo-detalle: #e5484d;
+}
+
+/* Las alas básicas son de plumas: el cuero no vuela. */
+.equipo[data-hueco='alas'][data-calidad='basica'] {
+  --px-equipo: #eef0ea;
+  --px-equipo-sombra: #b9bfb4;
+  --px-equipo-luz: #ffffff;
+  --px-equipo-detalle: #c6d8c0;
+}
+
+/* Múltiplos enteros del `viewBox` de 92x70 de `EscenaHeroe`: 3, 4 y 5 píxeles de
+   pantalla por píxel de juego. */
+.escena {
+  display: block;
+  width: 276px;
+  height: 210px;
+  margin-inline: auto;
+}
+
+@media (min-width: 30em) {
+  .escena {
+    width: 368px;
+    height: 280px;
+  }
+}
+
+@media (min-width: 87.5em) {
+  .escena {
+    width: 460px;
+    height: 350px;
+  }
 }

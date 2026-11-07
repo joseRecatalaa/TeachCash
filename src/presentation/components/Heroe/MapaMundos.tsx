@@ -19,7 +19,7 @@
  * Las estrellas son progreso DERIVADO que calcula el servidor (regla dura 7).
  */
 
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { ActionIcon } from '@mantine/core'
@@ -72,12 +72,10 @@ const MARCADOR_Y = 25
 const CENTRO_Y = 92
 const SUELO = 202
 const ESCALA_HEROE = 1.3
-/** Corriendo: el triple de rápido que andando por el camino. */
-const VELOCIDAD_CARRERA = 150
+/** Píxeles de juego por segundo: un hueco en 400 ms. Lo comparten el héroe y la fila. */
+const VELOCIDAD_CARRERA = 350
 /** Lo que dura el salto dentro del planeta. Igual que `heroe-entra` en el módulo. */
 const SALTO_MS = 520
-/** Lo que tarda la fila en deslizarse un hueco. */
-const DESLIZ_MS = 380
 /** Cuántas letras caben en una línea sobre un planeta; si no, el nombre va en dos. */
 const LETRAS_POR_LINEA = 20
 
@@ -128,8 +126,12 @@ const ESTRELLAS = Array.from({ length: 34 }, (_, k) => [
 
 /**
  * La posición de la fila, en píxeles de juego, deslizándose hasta `destino`
- * con una curva de salida y de píxel entero en píxel entero. Con el
- * movimiento reducido salta directamente.
+ * de píxel entero en píxel entero. Con el movimiento reducido salta
+ * directamente.
+ *
+ * Va a velocidad constante y a la MISMA que el héroe, y por eso él se queda
+ * clavado en pantalla mientras el mundo pasa. Con una curva de salida la fila
+ * le ganaba al principio y lo arrastraba hacia atrás justo al pulsar la flecha.
  */
 function useDesliz(destino: number): number {
   const reducido = useMovimientoReducido()
@@ -144,9 +146,8 @@ function useDesliz(destino: number): number {
     let inicio: number | null = null
     const avanzar = (ahora: number) => {
       inicio ??= ahora
-      const t = Math.min(1, (ahora - inicio) / DESLIZ_MS)
-      const curva = 1 - (1 - t) ** 3
-      actual.current = Math.round(desde + (destino - desde) * curva)
+      const t = Math.min(1, ((ahora - inicio) / 1000) * (VELOCIDAD_CARRERA / Math.abs(destino - desde)))
+      actual.current = Math.round(desde + (destino - desde) * t)
       setX(actual.current)
       if (t < 1) cuadro = requestAnimationFrame(avanzar)
     }
@@ -155,6 +156,16 @@ function useDesliz(destino: number): number {
   }, [destino, reducido])
 
   return reducido ? destino : x
+}
+
+/**
+ * La fila que se desliza. Es un componente aparte, con los planetas como
+ * `children`, para que su estado no repinte el mapa en cada cuadro: `children`
+ * llega ya creado y React no vuelve a pintar lo de dentro.
+ */
+function Fila({ destino, children }: { destino: number; children: ReactNode }) {
+  const x = useDesliz(destino)
+  return <g transform={`translate(${x} 0)`}>{children}</g>
 }
 
 function Planeta({
@@ -274,8 +285,21 @@ function Marcador({ mundo }: { mundo: MundoResumenDto }) {
   )
 }
 
-function Heroe({ desde, hasta, entrando }: { desde: Punto; hasta: Punto; entrando: boolean }) {
-  const { pos, andando, mirando } = useCaminata(desde, hasta, VELOCIDAD_CARRERA)
+function Heroe({
+  desde,
+  hasta,
+  entrando,
+  posicionRef,
+}: {
+  desde: Punto
+  hasta: Punto
+  entrando: boolean
+  posicionRef: RefObject<Punto>
+}) {
+  const { pos, andando, mirando } = useCaminata(desde, hasta, { velocidad: VELOCIDAD_CARRERA, espera: 0 })
+  useEffect(() => {
+    posicionRef.current = pos
+  }, [pos, posicionRef])
   return (
     <g transform={`translate(${pos.x} ${pos.y}) scale(${ESCALA_HEROE})`} className={styles.heroe}>
       <g className={entrando ? styles.entrando : undefined}>
@@ -296,11 +320,13 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
     mundos.findIndex((m) => m.id === (mapa.ultimoMundo ?? mundos.find((x) => !x.proximamente)?.id)),
   )
   const [elegido, setElegido] = useState(idxInicial)
-  const [previo, setPrevio] = useState(idxInicial)
+  // De dónde sale el héroe: donde esté, aunque vaya a medio camino. Si saliera
+  // siempre del planeta anterior, pulsar dos veces seguidas lo teletransportaría.
+  const [desde, setDesde] = useState(() => bajoPlaneta(idxInicial))
+  const posicionRef = useRef(desde)
   const [entrando, setEntrando] = useState(false)
   // La fila se deriva del elegido: él en el centro, salvo en los extremos.
   const inicio = acotar(elegido - 1, 0, ultimoInicio)
-  const desliz = useDesliz(-inicio * HUECO)
 
   const mundo = mundos[elegido]
   if (!mundo) return null
@@ -310,7 +336,7 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
       entrar()
       return
     }
-    setPrevio(elegido)
+    setDesde(posicionRef.current)
     setElegido(i)
   }
 
@@ -357,7 +383,7 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
           role="group"
           aria-label={`Mapa de mundos: ${mundos.length} mundos, se ven del ${inicio + 1} al ${Math.min(mundos.length, inicio + VISIBLES)}`}
         >
-          <g transform={`translate(${desliz} 0)`}>
+          <Fila destino={-inicio * HUECO}>
             <path d={ESTRELLAS.map(([x, y]) => `M${x} ${y}h1v1h-1z`).join('')} className={styles.estrellasFondo} />
             <rect y={SUELO} width={Math.max(ANCHO, HUECO * mundos.length)} height="2" className={styles.suelo} />
             <path
@@ -371,12 +397,13 @@ export function MapaMundos({ mapa }: { mapa: MapaDto }) {
               <Planeta key={m.id} mundo={m} i={i} elegido={i === elegido} alPulsar={() => elegir(i)} />
             ))}
             <Heroe
-              key={`${previo}->${elegido}`}
-              desde={bajoPlaneta(previo)}
+              key={`${desde.x},${desde.y}->${elegido}`}
+              desde={desde}
               hasta={bajoPlaneta(elegido)}
               entrando={entrando}
+              posicionRef={posicionRef}
             />
-          </g>
+          </Fila>
         </svg>
 
         <ActionIcon

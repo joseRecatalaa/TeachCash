@@ -40,7 +40,7 @@ export function useMesDeInicio(): MesDeInicio {
     (destino: Period) =>
       // `replace` y no `push`: pasar meses no es navegar, y "atrás" tiene que
       // salir de Inicio, no deshacer cada flecha.
-      router.replace(destino === actual ? '/' : `/?mes=${destino}`, { scroll: false }),
+      router.replace(destino === actual ? '/Patrimonio' : `/Patrimonio?mes=${destino}`, { scroll: false }),
     [router, actual],
   )
 
