@@ -65,11 +65,11 @@ describe('qué mes enseña', () => {
 describe('ir a otro mes', () => {
   test('un mes pasado va en la URL', () => {
     conMes(null).ir('2026-04')
-    expect(nav.replace).toHaveBeenCalledWith('/?mes=2026-04', { scroll: false })
+    expect(nav.replace).toHaveBeenCalledWith('/Patrimonio?mes=2026-04', { scroll: false })
   })
 
-  test('el actual, sin parámetro: `/` sigue siendo "hoy"', () => {
+  test('el actual, sin parámetro: `/Patrimonio` sigue siendo "hoy"', () => {
     conMes('2026-04').ir('2026-10')
-    expect(nav.replace).toHaveBeenCalledWith('/', { scroll: false })
+    expect(nav.replace).toHaveBeenCalledWith('/Patrimonio', { scroll: false })
   })
 })

@@ -1,0 +1,14 @@
+/* Los emoticonos, pixelados: la marca de la casa en el Camino del héroe. El
+   id del filtro es `ID_FILTRO_PIXEL` en `Marcado.tsx`. */
+.emoji {
+  display: inline-block;
+  filter: url('#tc-pixelar');
+}
+
+/* El `<svg>` que solo declara el filtro: no ocupa sitio ni se ve. */
+.filtro {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

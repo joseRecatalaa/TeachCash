@@ -8,7 +8,7 @@ import { useMemo } from 'react'
 import { IconTags } from '@tabler/icons-react'
 import { usePaginacion } from '@/src/application/hooks/usePaginacion'
 import { useCategorias, type CategoriasFilters } from '@/src/application/hooks/useCategorias'
-import { categoriaColumns } from '@/src/config/categorias/columns'
+import { categoriaColumns } from '@/src/presentation/entidades/categorias/tabla'
 import { EntityListPage } from '@/src/presentation/components/EntityListPage'
 import type { CategoriaListDto } from '@/src/types/categoria.types'
 

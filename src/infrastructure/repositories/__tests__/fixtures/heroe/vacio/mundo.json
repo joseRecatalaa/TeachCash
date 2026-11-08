@@ -1,0 +1,8 @@
+{
+  "id": "vacio",
+  "titulo": "Mundo vacío",
+  "descripcion": "Aún sin niveles.",
+  "decorado": "tarjeta",
+  "orden": 3,
+  "niveles": []
+}

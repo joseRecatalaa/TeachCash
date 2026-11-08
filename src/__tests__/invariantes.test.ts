@@ -53,7 +53,7 @@ describe('regla dura 1: el dinero es type "money"', () => {
   const NO_SON_DINERO = new Set(['usos'])
   const PARECE_DINERO = /importe|presupuesto|saldo|amount|total|precio|gasto|ingreso/i
 
-  test.each(ficheros('src/config', '.ts'))('%s', (ruta) => {
+  test.each(ficheros('src/presentation/entidades', '.ts'))('%s', (ruta) => {
     const codigo = leer(ruta)
     // Cada objeto con `type: 'number'`: busca su `accessor` o su `name`.
     const numericos = [...codigo.matchAll(/\{[^{}]*type: 'number'[^{}]*\}/g)].map(
@@ -66,13 +66,13 @@ describe('regla dura 1: el dinero es type "money"', () => {
     }
   })
 
-  test('src/config no lleva JSX (son .ts, nunca .tsx)', () => {
-    expect(ficheros('src/config', '.tsx')).toEqual([])
+  test('src/presentation/entidades no lleva JSX (son .ts, nunca .tsx)', () => {
+    expect(ficheros('src/presentation/entidades', '.tsx')).toEqual([])
   })
 })
 
 describe('campos con marcado propio', () => {
-  test.each(ficheros('src/config', 'sections.ts'))(
+  test.each(ficheros('src/presentation/entidades', 'formularios.ts'))(
     '%s: todo component o render declara su dependsOn',
     (ruta) => {
       // Sin `dependsOn`, el campo deja de repintarse cuando cambia lo que lee,
@@ -108,7 +108,10 @@ describe('sistema de diseño: el color sale de un token', () => {
    * Excepción: los colores de UNA ilustración, declarados como variables
    * locales con su explicación en el propio fichero.
    */
-  const ILUSTRACIONES = new Set(['src/presentation/components/Splash/Splash.module.css'])
+  const ILUSTRACIONES = new Set([
+    'src/presentation/components/Splash/Splash.module.css',
+    'src/presentation/components/Pixel/pixel.module.css',
+  ])
 
   const modulos = [...ficheros('src', '.module.css'), ...ficheros('app', '.module.css')]
 

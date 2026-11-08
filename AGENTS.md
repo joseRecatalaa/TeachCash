@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -15,6 +15,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Gestor de finanzas personales. Aplicación web para llevar las finanzas
 personales: movimientos (gastos e ingresos), categorías y una portada que
 resume el mes. Finanzas de personas, no contabilidad de empresa.
+
+Tiene **tres módulos**, y el menú lateral cambia de uno a otro:
+
+- **Cuadro de mando** (la raíz, `/`): la portada. Patrimonio total, estrellas, el
+  héroe con su equipo y sus estadísticas. De aquí cuelga la **Tienda** (`/Tienda`),
+  donde las estrellas de los cursos compran el equipo.
+- **Gestión de patrimonio** (`/Patrimonio`): Inicio, Planificación, Categorías
+  y Movimientos. Es todo lo que describe este documento salvo que se diga otra
+  cosa.
+- **Camino del héroe** (`/CaminoHeroe`): educación financiera con forma de
+  videojuego a píxel. Mundos (planetas) con un camino de niveles: lecturas con
+  minitest, prácticas y un jefe. El plan y su porqué están en
+  `docs/CAMINO_HEROE.md`; cómo se escribe el contenido, en
+  `docs/CONTENIDO_HEROE.md`.
 
 **Es multiusuario y se usa sin registrarse.** Quien entra sin sesión recibe una
 de **invitado** (usuario anónimo de Supabase, caduca a los 4 días); si crea una
@@ -37,7 +51,8 @@ tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
 3. Si vas a añadir una entidad, usa `pnpm generate:crud` y lee **Añadir una
    entidad**.
 4. Si vas a tocar un formulario o una tabla, lee **Cómo se declara una vista**.
-   La regla que sorprende: los ficheros de `src/config/` no pueden llevar JSX.
+   La regla que sorprende: los ficheros de `src/presentation/entidades/` no pueden
+   llevar JSX.
 5. Antes de terminar, mira las **trampas**. Todas fallan en silencio.
 6. Si vas a escribir o arreglar un test, lee **`docs/TESTS.md`**: cómo está
    montado, qué cubre cada fichero y qué no merece test.
@@ -48,8 +63,8 @@ Cada cambio tiene un sitio y solo uno:
 
 | Si vas a… | Toca |
 |---|---|
-| Cambiar qué campos tiene un formulario | `src/config/<entidad>/sections.ts` |
-| Cambiar qué columnas tiene una tabla | `src/config/<entidad>/columns.ts` |
+| Cambiar qué campos tiene un formulario | `src/presentation/entidades/<entidad>/formularios.ts` |
+| Cambiar qué columnas tiene una tabla | `src/presentation/entidades/<entidad>/tabla.ts` |
 | Cambiar una regla de negocio o una validación | `src/infrastructure/repositories/<entidad>.repository.ts` |
 | Cambiar el aspecto de TODOS los formularios | `src/presentation/components/Forms/GenericForm/` |
 | Cambiar el aspecto de TODAS las tablas | `src/presentation/components/AppTable/` |
@@ -60,6 +75,11 @@ Cada cambio tiene un sitio y solo uno:
 | Cambiar el color de una categoría en tabla y gráficos | La clave en `categories.color`; los tonos, en `app/globals.css` (`--sd-cat-*`) |
 | Añadir una entidad entera | `pnpm generate:crud` |
 | Añadir un módulo al menú lateral | `MODULOS` en `src/presentation/components/SideMenu/SideMenu.tsx` |
+| Añadir o cambiar un curso del Camino del héroe | Un JSON en `content/heroe/<mundo>/` (guía en `docs/CONTENIDO_HEROE.md`) y `pnpm heroe:validar` |
+| Cambiar el formato de ese contenido | Los esquemas Zod de `src/types/heroe.types.ts` |
+| Poner el título de una pantalla | `SketchTitle` de `src/presentation/components/ui` |
+| Añadir o cambiar un objeto de la tienda | `CATALOGO` en `lib/tienda.ts`; si es un tipo nuevo, su sprite en `Pixel/spritesGrande.ts` y `SPRITE_OBJETO` |
+| Cambiar cómo se calcula una estadística del héroe | `lib/estadisticas.ts` |
 
 Si te ves escribiendo un formulario a mano con `<TextInput>` sueltos, o una
 `<DataTable>` fuera de `AppTable`, párate: casi siempre significa que no has
@@ -75,7 +95,7 @@ encontrado la pieza genérica.
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
 | UI | **Mantine v9** + `mantine-datatable` | Iconos: `@tabler/icons-react` |
 | Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" |
-| Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Vía `next/font/google` |
+| Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Fredoka en `app/fonts/` (`next/font/local`); las demás, `next/font/google` |
 | Estado de servidor | **React Query v5** | Lo usa Refine por dentro |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
 | Datos | **Postgres en Supabase** + **Drizzle ORM**, driver `postgres` (postgres-js) | Por el Transaction pooler, `prepare: false` |
@@ -104,7 +124,7 @@ cálculo. Vive en tres sitios y solo tres:
 |---|---|---|
 | **Tokens** | `app/globals.css` | Las Custom Properties `--sd-*`: color, trazo, sombra, radio, movimiento, tipografía. La única fuente de verdad |
 | **Puente con Mantine** | `src/presentation/styles/mantine-sketch.module.css` | Se engancha en el tema con `Componente.extend({ classNames })`. Hace que TODO `<Button>`, `<Paper>` o `<TextInput>` ya existente herede el aspecto sin tocarlo |
-| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `StatusBadge`, `EmptyState`, `AnimatedMoney`. Solo para lo que Mantine no da |
+| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `SketchTitle`, `StatusBadge`, `EmptyState`, `AnimatedMoney`. Solo para lo que Mantine no da |
 
 Las tres reglas de estilo del proyecto:
 
@@ -174,6 +194,7 @@ pnpm test:e2e             # Playwright contra el Supabase de pruebas (necesita .
 pnpm test:e2e:ui          # lo mismo, con la interfaz de Playwright
 pnpm test:e2e:visual      # regresión visual de Inicio (opt-in, solo local)
 pnpm generate:crud        # scaffolding de una entidad nueva (Plop)
+pnpm heroe:validar        # valida el contenido del Camino del héroe (content/heroe/)
 pnpm db:generate          # genera la migración a partir de db/schema.ts
 pnpm db:migrate           # aplica las migraciones en Supabase (lee .env.local)
 pnpm db:migrate:e2e       # lo mismo en el proyecto de los E2E (lee .env.e2e)
@@ -292,7 +313,7 @@ coinciden.
 
 ## Arquitectura
 
-Clean Architecture en cinco capas. La dirección de las dependencias es de abajo
+Clean Architecture en cuatro capas. La dirección de las dependencias es de abajo
 arriba y no se cruza:
 
 | Capa | Dónde | Qué es |
@@ -300,13 +321,12 @@ arriba y no se cruza:
 | **Types** | `src/types/` | Los DTOs. Tres por entidad. No importa de nadie |
 | **Infrastructure** | `src/infrastructure/` | Los repositorios sobre Drizzle. **Solo servidor** |
 | **Application** | `src/application/` | Server Actions, DataProvider, providers y hooks |
-| **Config** | `src/config/` | La vista DECLARADA. **Solo `.ts`, sin JSX** |
-| **Presentation** | `src/presentation/` | Los componentes que pintan |
+| **Presentation** | `src/presentation/` | Los componentes que pintan y, en `entidades/`, los formularios y tablas DECLARADOS (**solo `.ts`, sin JSX**) |
 
 Reglas de dependencia:
 
-- `src/config` y `src/presentation` **no importan de `src/infrastructure`**. Lo
-  que compartan sube a `src/types`.
+- `src/presentation` **no importa de `src/infrastructure`**. Lo que compartan
+  sube a `src/types`.
 - `lib/` y `db/` no importan de `src/`.
 - Los repositorios son lo **único** que importa `@/db`, y por eso son lo único
   que no puede aparecer en un componente cliente.
@@ -359,7 +379,8 @@ genérico.
 desconocido" en la primera consulta.
 
 **Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo,
-el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
+el Camino del héroe (`heroe.actions.ts`, `useHeroe.ts`, raíz de queries
+`['heroe']`), el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
 de la portada tienen su propia Server Action y su propio hook escrito a mano.
 
 **Todo lo derivado se invalida a mano.** El saldo y los gráficos son sumas de
@@ -401,24 +422,34 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
 ```
 .
   app/                                # rutas, en PascalCase
-    page.tsx                          # Inicio: saldo, mes, gráficos y últimos
+    page.tsx                          # Cuadro de mando: patrimonio, estrellas, héroe y radar
     page.module.css                   # su aspecto: cada vista lleva el suyo
+    Patrimonio/                       # Inicio: saldo, mes, gráficos y últimos
+    Tienda/page.tsx                   # lo que se compra con las estrellas
     layout.tsx                        # Providers + Navbar + CSS de Mantine
     Movimientos/                      # una carpeta por entidad
       page.tsx                        # listado
       Create/page.tsx
       Edit/page.tsx                   # lee ?id=
     Categorias/
+    CaminoHeroe/                      # el segundo módulo: mapa de mundos
+      Mundo/page.tsx                  # el camino de un mundo (?id=ahorro)
+      Nivel/page.tsx                  # el reproductor de un nivel (?id=ahorro/01-…)
     Login/ Registro/                  # pantallas de auth (sin GenericForm)
     RecuperarPassword/ CambiarPassword/ BorrarCuenta/
     auth/confirm/route.ts             # destino de los enlaces del email
   proxy.ts                            # refresca la sesión y pone la CSP (antes middleware)
+  content/heroe/                      # el CONTENIDO del Camino del héroe, en JSON
+    <mundo>/mundo.json                # el mundo y el orden de sus niveles ("niveles": [] = Próximamente)
+    <mundo>/<nivel>.json              # un nivel: lectura, interactivo o jefe
   src/
     types/
       formMetadata.types.ts
       informe.types.ts
+      heroe.types.ts                  # los esquemas Zod del contenido del héroe y sus DTO
       <entidad>.types.ts              # ListDto, SaveDto, FormDto
     infrastructure/
+      heroe/contenido.ts              # lee y valida content/heroe/ con fs: el ÚNICO que lo lee
       repositories/
         index.ts                      # REPOSITORIES: el mapa cerrado de recursos
         types.ts                      # EntityRepository, ListParams, RepositoryError
@@ -427,6 +458,9 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         informes.repository.ts        # las agregaciones (no es un CRUD)
         perfiles.repository.ts        # el patrimonio inicial: una fila por usuario
         cuenta.repository.ts          # auth.users: fecha de alta (caducidad) y borrar la cuenta
+        heroe.repository.ts           # progreso del héroe: desbloqueo en orden y corrección
+        tienda.repository.ts          # estrellas, compras y equipo
+        cuadro.repository.ts          # reúne lo que enseña el Cuadro de mando
         __tests__/
     application/
       actions/
@@ -435,6 +469,9 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         resultado.ts                  # run(): errores esperados como valor
         informes.actions.ts
         perfil.actions.ts             # leer y guardar el patrimonio inicial
+        heroe.actions.ts              # mapa, mundo, nivel y enviar una partida
+        tienda.actions.ts             # leer la tienda, comprar, equipar y quitar
+        cuadro.actions.ts             # leer el Cuadro de mando
         auth.actions.ts               # invitado, login, registro, contraseña, borrar cuenta
       hooks/
         createEntityHooks.ts          # factory genérica de hooks CRUD
@@ -444,17 +481,19 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         usePaginacion.ts              # estado de la tabla
         useInformes.ts
         usePerfil.ts                  # patrimonio inicial (cuelga de ['informes'])
+        useHeroe.ts                   # el Camino del héroe (cuelga de ['heroe'])
+        useCuadro.ts                  # el cuadro (['informes', 'cuadro']) y la tienda (['heroe', 'tienda'])
         use<Entidades>.ts             # uno por entidad
       providers/
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
         refine-data-provider.ts       # Refine → Server Actions
         CuentaProvider.tsx            # sesión en el cliente; crea el invitado
-    config/                           # SOLO .ts, SIN JSX
-      _shared/types.ts
-      <entidad-en-kebab>/
-        sections.ts                   # el formulario
-        columns.ts                    # el listado
     presentation/
+      entidades/                      # SOLO .ts, SIN JSX: formularios y tablas declarados
+        _shared/types.ts              # alias de los tipos de GenericForm y AppTable
+        <entidad-en-kebab>/
+          formularios.ts              # el formulario (o los formularios) de la entidad
+          tabla.ts                    # el listado
       styles/
         mantine-sketch.module.css     # el puente con el tema de Mantine
       components/
@@ -462,6 +501,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
           index.ts                    # se importan SIEMPRE desde aquí
           SketchButton/               # <Link> tipado o <button>, con gesto
           SketchCard/                 # la ficha: cinta, filete, tono
+          SketchTitle/                # el título de pantalla con trazo de rotulador
           StatusBadge/                # estado → tono, en un solo sitio
         Forms/
           GenericForm/
@@ -469,7 +509,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
             GenericForm.module.css
             FieldRenderer.tsx         # FieldType → componente de Mantine
             MoneyInput.tsx            # el input de dinero (regla dura 1)
-            types.ts                  # el contrato con src/config
+            types.ts                  # el contrato con presentation/entidades
           EntityForms/
             <entidad>/                # camelCase SINGULAR
               <Entidad>FormRefine.tsx
@@ -486,6 +526,15 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         Navbar.tsx
         Navbar.module.css
         SideMenu/                     # menú lateral de MÓDULOS (se abre al pasar el ratón)
+        Splash/                       # la pantalla de carga a píxel
+        Pixel/                        # el héroe (PixelHero), los sprites y su paleta: los comparten el splash y el héroe
+          HeroeGrande.tsx spritesGrande.ts  # el héroe de 48x66 con su equipo: Cuadro de mando y Tienda
+        Cuadro/                       # las tarjetas del Cuadro de mando
+        Tienda/                       # el probador y la rejilla de objetos
+        Heroe/                        # el Camino del héroe: mapa, camino, ficha del nivel
+          planeta.ts camino.ts        # la geometría a píxel, en funciones puras
+          reproductor/                # lectura, preguntas, resultado; Marcado (negrita/cursiva)
+          ejercicios/                 # los seis tipos de pregunta
         useEntityId.ts
   lib/
     money.ts                          # tipo Money, aritmética y DIVISA_APP
@@ -499,6 +548,10 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
     supabase/                         # clientes de servidor y de proxy
     rutas.ts                          # filtro de redirección abierta
     csp.ts                            # la Content Security Policy y su nonce
+    heroe.ts                          # corrección y estrellas del héroe (puras)
+    marcas.ts                         # **negrita** y _cursiva_ del contenido, a nodos
+    tienda.ts                         # el catálogo de objetos y sus precios
+    estadisticas.ts                   # las siete estadísticas del héroe (puras)
     turnstile.ts
   db/
     schema.ts                         # pg-core; piezas idColumn, soloSuyo…
@@ -525,17 +578,21 @@ Es lo más distintivo del proyecto y lo que más sorprende al llegar: **un
 formulario y una tabla no se escriben, se declaran**.
 
 ```
-src/config/movimientos/sections.ts ──►  <GenericForm sections={…} />
-src/config/movimientos/columns.ts  ──►  <AppTable columns={…} />
+src/presentation/entidades/movimientos/formularios.ts ──►  <GenericForm sections={…} />
+src/presentation/entidades/movimientos/tabla.ts       ──►  <AppTable columns={…} />
 ```
 
-`src/config` **describe** la vista; `src/presentation` la **pinta**.
+`entidades/` **describe** el formulario y la tabla; `GenericForm` y `AppTable`
+los **pintan**. Vive dentro de `presentation` porque depende de ella (los tipos
+de `GenericForm` y `AppTable`, los helpers de columna, los componentes propios
+que referencia con `component:`): en `application` invertiría las capas.
 
-### La invariante: `src/config` no lleva JSX
+### La invariante: `entidades/` no lleva JSX
 
-Los ficheros de `src/config/` son `.ts`, nunca `.tsx`. Es una invariante que
-impone el compilador: si aparece JSX, deja de compilar. Eso es lo que mantiene la
-configuración declarativa y evita que se acabe colando lógica de pintado en el
+Los ficheros de `src/presentation/entidades/` son `.ts`, nunca `.tsx`. Es una
+invariante que impone el compilador: si aparece JSX, deja de compilar, y la
+vigila además `src/__tests__/invariantes.test.ts` por carpeta. Eso es lo que
+mantiene la definición declarativa y evita que se acabe colando lógica de pintado en el
 sitio donde solo debería haber descripción.
 
 Cuando un campo o una columna necesita marcado propio:
@@ -634,9 +691,9 @@ producto, no de andamiaje.
 2. **Repositorio** → `src/infrastructure/repositories/<entidad-plural>.repository.ts`,
    y darlo de alta en `REPOSITORIES` (`index.ts`)
 3. **Hooks** → `src/application/hooks/use<Entidades>.ts` (factory + reexports)
-4. **Sections** → `src/config/<entidad-en-kebab>/sections.ts`. `.ts` sin JSX,
-   `export function <entidad>Sections()`
-5. **Columns** → `src/config/<entidad-en-kebab>/columns.ts`. `.ts` sin JSX, sin
+4. **Formularios** → `src/presentation/entidades/<entidad-en-kebab>/formularios.ts`.
+   `.ts` sin JSX, `export function <entidad>Sections()`
+5. **Tabla** → `src/presentation/entidades/<entidad-en-kebab>/tabla.ts`. `.ts` sin JSX, sin
    argumentos salvo que necesite opciones de un catálogo para los filtros
 6. **Form** → `EntityForms/<entidad>/<Entidad>FormRefine.tsx`. Los componentes
    propios de la entidad van también aquí, en `.tsx`
@@ -652,7 +709,7 @@ Se derivan de la ruta de `app/`, no unas de otras. Se cumple sin excepciones:
 | Carpeta | Caso | Ejemplo (`app/Movimientos`) | Qué contiene |
 |---|---|---|---|
 | `app/` | PascalCase **plural** | `app/Movimientos/` | Las tres pages: listado, Create y Edit |
-| `src/config/` | kebab-case (la ruta en kebab) | `src/config/movimientos/` | `sections.ts` y `columns.ts` |
+| `entidades/` | kebab-case (la ruta en kebab) | `src/presentation/entidades/movimientos/` | `formularios.ts` y `tabla.ts` |
 | `EntityForms/` | camelCase **singular** | `EntityForms/movimiento/` | El `FormRefine` y los componentes propios |
 | `repositories/` | kebab-case plural + `.repository.ts` | `movimientos.repository.ts` | Las consultas y las reglas |
 
@@ -664,7 +721,7 @@ recurso son cuatro nombres que tienen que coincidir".
 Todas tienen algo en común: **fallan en silencio**. Ninguna da un error que te
 lleve hasta ella.
 
-- **`src/config/*.ts` no puede llevar JSX.** Es deliberado. Si necesitas marcado,
+- **`src/presentation/entidades/` no puede llevar JSX.** Es deliberado. Si necesitas marcado,
   crea el componente en `EntityForms/<entidad>/` y referéncialo con `component:`.
 - **Un importe nunca es `type: 'number'`.** Ni en un formulario ni en una tabla.
   Es `'money'`, siempre. Ver la regla dura 1.
@@ -698,11 +755,32 @@ lleve hasta ella.
   componente cliente. La frontera es `entity.actions.ts`.
 - **El repo es LF.** Un fichero que acabe en CRLF hace que los `modify` del
   generador de Plop no casen y se salten sin avisar.
-- **Los tres títulos con trazo de rotulador leen `--sd-underline-alto`.** Ese
+- **El trazo de rotulador lee `--sd-underline-alto`**: el de los títulos de
+  pantalla (`SketchTitle`, uno para toda la app) y el del menú lateral. Ese
   token existe porque el keyframe `sd-underline` anima `background-size` y tiene
   que llegar exactamente al alto de reposo. Si escribes el alto a pelo en la
   regla y no en la variable, el trazo termina la animación en un grosor distinto
-  del que tenía sin ella.
+  del que tenía sin ella. Un título de pantalla nuevo es un `<SketchTitle>`, no
+  otro `.title` copiado en su módulo.
+- **El contenido del héroe se lee con `fs`, y nadie lo importa.** Por eso
+  `next.config.ts` lo mete en el build con `outputFileTracingIncludes`; sin eso
+  un despliegue empaquetado arranca sin cursos. En producción se carga una vez
+  por proceso (un JSON nuevo pide reiniciar); en desarrollo se lee en cada
+  petición.
+- **Un sprite con una fila de distinto ancho desplaza todo el dibujo** y una
+  letra fuera de su paleta se pinta transparente. Lo vigila
+  `components/Pixel/__tests__/sprites.test.ts`: un sprite nuevo va con su paleta
+  en ese test.
+- **El héroe celebrando asoma 10 píxeles por encima de su caja** (el billete en
+  alto). Una escena que lo ponga en `pose="celebra"` necesita ese aire por
+  arriba, o el billete se corta.
+- **Si el build falla con `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`**
+  (y "next/font/google queries have exactly one entry"), el código no tiene
+  nada. Pasó dos veces en noviembre de 2026: en local, y se fue borrando `.next`;
+  y en el CI, sin `.next` previo, con Fredoka, y en una ejecución que antes
+  pasaba. La causa exacta no se ha confirmado (apunta a la descarga de Google).
+  Por eso Fredoka va en `app/fonts/`. Si le pasa a otra fuente de Google, lo
+  mismo: se baja al repo con `next/font/local`.
 - **`app/globals.css` se importa EL ÚLTIMO** en `app/layout.tsx`. Si sube por
   encima de las hojas de Mantine, sus overrides de `--mantine-*` pierden por
   orden de cascada y la aplicación vuelve al gris de fábrica. No lanza ningún
@@ -731,6 +809,15 @@ lleve hasta ella.
   (y los modales de Mantine) están a z-index 200, y a igualdad gana el último
   del DOM: así el panel tapa la cabecera y un modal tapa el panel. Si sube por
   encima de la Navbar, la cabecera se pinta sobre el menú abierto.
+- **El Cuadro de mando depende de movimientos, de partidas y de compras.** Cuelga de
+  `['informes', 'cuadro']`: lo tira `useInvalidarDerivados()`, y `useEnviarNivel` y
+  las mutaciones de la tienda lo invalidan a mano. Una mutación nueva que lo cambie
+  y no lo invalide deja al héroe y al radar con lo de antes, sin ningún error.
+- **`.escena` va en múltiplos enteros del `viewBox` de `EscenaHeroe`** (92x70: 276,
+  368 y 460 de ancho). A cualquier otra escala los píxeles salen de anchos
+  distintos y el héroe deja de verse nítido, sin que falle nada.
+- **Una pieza de equipo se pinta en el orden de `HeroeGrande`.** Si se cambia, una
+  acaba tapando a otra. Los sprites se apoyan en las coordenadas del héroe de 48x66.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
@@ -823,10 +910,17 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 
 ## Decisiones tomadas
 
-- **Arquitectura**: Clean Architecture en cinco capas con Refine.dev + Mantine.
+- **Arquitectura**: Clean Architecture en cuatro capas con Refine.dev + Mantine.
   El DataProvider de Refine va sobre Server Actions y no sobre HTTP. Se descartó
   levantar route handlers REST: habrían añadido un salto de red contra la propia
   base y duplicado la comprobación de sesión en cada handler.
+- **Formularios y tablas declarados en `src/presentation/entidades/`**, por
+  entidad (`formularios.ts` y `tabla.ts`). Antes eran una capa aparte,
+  `src/config/` con `sections.ts` y `columns.ts`, pero importaban de
+  `presentation` (tipos, helpers de columna, componentes propios): eran
+  presentación declarada. No se movieron a `application` porque esa capa no
+  puede depender de `presentation`. Siguen siendo una carpeta propia para que
+  la regla de "sin JSX" se vigile por ruta.
 - **Persistencia**: **Postgres en Supabase** (plan gratuito, región eu-west-3) +
   Drizzle ORM con **postgres-js**. Sustituyó a SQLite local al pasar a
   multiusuario. Se empezó de cero, sin migrar los datos de SQLite.
@@ -835,7 +929,9 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   (regla dura 4). supabase-js se usa solo para Auth.
 - **RLS como red, no como mecanismo.** Toda tabla lleva RLS "solo lo suyo"
   (`soloSuyo`) para que la API REST de Supabase, que cualquiera puede llamar con
-  la clave pública, no sirva para leer nada ajeno. La app no depende de ella.
+  la clave pública, no sirva para leer nada ajeno. La app no depende de ella. Lo
+  que calcula el servidor (el progreso y las compras del héroe) va con
+  `soloLeerLoSuyo`: se lee lo suyo y no se escribe nada.
 - **Ids `text` con UUID que pone la base, no `uuid`.** Un id mal formado que
   llegue del cliente no casa con nada y da "No encontrado", en vez de que
   Postgres reviente con un error de sintaxis que acabaría como error genérico.
@@ -887,9 +983,10 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   GitHub las claves de ese proyecto. Cada test es un invitado nuevo, así que no
   hay que limpiar la base. Pasos del panel en `.env.e2e.example`.
 - **Coverage por niveles, por fichero** (`vitest.config.mts`): CORE 100 % (dinero,
-  fechas, formato, rutas, CSP), CORE 90 % (repositorios, acciones, sesión,
+  fechas, formato, rutas, CSP, la corrección del héroe y las marcas del
+  contenido), CORE 90 % (repositorios, acciones, sesión,
   entorno, log), IMPORTANT 80 % (`GenericForm`, `AppTable`, hooks) e INFRA
-  excluido (tipos, `src/config`, migraciones, estilos). Un umbral no se baja: se
+  excluido (tipos, `src/presentation/entidades`, migraciones, estilos). Un umbral no se baja: se
   escribe el test o la rama inalcanzable se marca con su porqué.
 - **Quality gates gratis**: Husky + lint-staged en cada commit (ESLint sobre lo
   que entra y `typecheck`) y GitHub Actions en cada PR a `develop`
@@ -932,8 +1029,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   y agrupado.
 - **El repo es LF** (`.gitattributes`): un CRLF hace que los `modify` de Plop no
   casen y se salten en silencio.
-- **Las capas, impuestas por ESLint** (`no-restricted-imports`): `src/config` y
-  `src/presentation` no importan de `src/infrastructure`, solo los repositorios
+- **Las capas, impuestas por ESLint** (`no-restricted-imports`): `src/presentation`
+  no importa de `src/infrastructure`, solo los repositorios
   importan `@/db`, y `lib/`/`db/` no importan de `src/`. También sonarjs
   (complejidad 15), `no-console` y las reglas de Vitest (sin `.only`, todo test
   con aserción).
@@ -964,7 +1061,9 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   ΔE 9,1 sobre un suelo de 8. Si tocas uno, vuelve a pasarlo.
 - **Menú lateral de módulos** (`SideMenu`): la Navbar lleva las secciones del
   módulo en el que estás; el menú lateral cambia de MÓDULO (Gestión de
-  patrimonio; Camino del héroe, aún sin hacer). Escondido, solo asoma una
+  patrimonio y Camino del héroe). El módulo activo sale de la ruta
+  (`moduloActivo`): el de prefijo más largo, y la raíz para todo lo demás.
+  Escondido, solo asoma una
   pestaña con tres rayas en el borde izquierdo; se abre al pasar el ratón y se
   cierra al salir, con 220 ms de margen para que una diagonal torpe no lo cierre.
   El hover no es la única vía: la pestaña es un `<button>` (toque y Enter
@@ -1014,11 +1113,93 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   tarjetas del mes; el patrimonio es siempre el de hoy y los dos gráficos de
   tendencia siguen en los últimos 12 meses. El tope es de navegación y no se
   impone en el servidor: un movimiento anterior sigue siendo válido.
+- **Camino del héroe** (plan completo en `docs/CAMINO_HEROE.md`):
+  - **El contenido es JSON en el repo; la base guarda solo el progreso**
+    (`hero_progress`: usuario + nivel, mejor marca, intentos y primera vez
+    superado). Un curso se revisa en una PR y un JSON mal escrito rompe la CI
+    (`pnpm heroe:validar`). Si algún día lo edita alguien que no programa, se
+    cambia `contenido.ts`, el único que lo lee.
+  - **Corrige el servidor** (regla dura 6). El cliente tiene las soluciones
+    para el feedback inmediato, pero manda las respuestas en bruto y el
+    repositorio calcula aciertos, estrellas y superado. La mejor marca no baja
+    al repetir (`greatest()` en el upsert).
+  - **Los mundos están libres; dentro, los niveles van en orden.** Un nivel
+    bloqueado no se lee ni se envía: "No encontrado", como uno que no existe.
+    Todo lo del mapa y del camino es derivado (regla dura 7).
+  - **Mapa**: cada mundo es un planeta a píxel con su decorado y sus
+    habitantes; se ven tres y la fila sigue al héroe, que corre al mundo
+    elegido. Un mundo con `"niveles": []` sale apagado como "Pronto".
+  - **Camino**: sube de abajo (el primer nivel) arriba (el jefe), y el jefe es
+    un monstruo de cuerpo entero del color de su mundo, no un icono.
+  - **El héroe acompaña mientras se juega**: de pie sobre el borde superior de la
+    tarjeta y por fuera, a la derecha, en la lectura y las preguntas
+    (`ProgresoNivel`), con la pose `agacha`: lenta y de solo dos píxeles. Va en
+    absoluto porque no debe alargar la página: un nivel tiene que caber en la
+    pantalla. La cabecera le reserva el sitio (`heroeEncima` de `PaginaHeroe`).
+  - **Todo es pixel art propio** (`components/Pixel/`): sin ficheros de imagen,
+    así no se toca la CSP, no pesa y sigue el modo oscuro. Los colores de las
+    ilustraciones son variables `--px-*` locales a su módulo, no tokens
+    `--sd-*`; los únicos `*.module.css` que pueden declarar hexadecimales son
+    los de ilustración (lista en `src/__tests__/invariantes.test.ts`).
+  - **`**negrita**` y `_cursiva_` con un analizador propio** (`lib/marcas.ts`)
+    que devuelve nodos de React: nunca `dangerouslySetInnerHTML`. Bloques de
+    lectura `imagen` (un sprite de la app) y `dato` (con fuente obligatoria).
+    Los títulos del contenido no llevan emoticonos; en el texto sí, y se
+    pintan pixelados con un filtro SVG.
+  - **El personaje de los ejemplos se llama Pepito**, siempre.
+  - Aviso fijo en todo el módulo: "Contenido educativo, no asesoramiento
+    financiero".
+- **Cuadro de mando y Tienda**:
+  - **`/` es el Cuadro de mando** y el Inicio de siempre se mudó a `/Patrimonio`.
+    Cada módulo declara sus rutas (`MODULOS` en `SideMenu.tsx`) y `moduloActivo`
+    decide también los enlaces de la Navbar. Lo que no es de ninguno, como Login,
+    se queda en el Cuadro. Quien aún no ha elegido patrimonio inicial lo ve como un
+    enlace en la tarjeta; la pregunta sigue en `/Patrimonio`.
+  - **Dos héroes**: el pequeño (32x44) en el splash y en los caminos, sin equipo, y
+    el grande (48x66) en el Cuadro y la Tienda. Se probó uno de 64x88 con más
+    detalle y se descartó: dejaba de ser el personaje. El grande es el pequeño
+    calcado; si retocas uno, compáralo con el otro.
+  - **Estrellas derivadas** (regla dura 7): las ganadas salen de `hero_progress`, las
+    gastadas de `hero_items.price_paid`, y no se guarda ningún saldo. Comprar no le
+    quita nada a un nivel. Solo se ganan con los cursos: inventarse movimientos no
+    da nada en la tienda, solo sube Riqueza y Constancia.
+  - **Comprar va con candado** (`pg_advisory_xact_lock` por usuario, dentro de la
+    transacción): sin él, dos clics seguidos gastan dos veces las mismas estrellas.
+    PGlite tiene una sola conexión, así que el test de compras simultáneas no
+    distingue si el candado está o no: lo sostiene esta nota.
+  - **Catálogo en código** (`lib/tienda.ts`), con tres calidades por tipo que son un
+    dibujo y tres paletas (`data-calidad`). Precios contra las 108 estrellas que
+    existen: ir entero de lo mejor cuesta 75, pero no da para comprarlo todo. Se
+    guarda lo pagado para que cambiar un precio no altere lo ya gastado. Las
+    compras no se devuelven.
+  - **El progreso y las compras son de solo lectura para la API**
+    (`soloLeerLoSuyo` en `hero_progress` y `hero_items`, en vez de `soloSuyo`):
+    con su propia sesión, cualquiera podía escribir esas filas por la API REST de
+    Supabase y regalarse estrellas u objetos. Las escribe solo el servidor, cuyo
+    rol se salta RLS. Lo que sigue siendo posible, y se acepta: sacar 3 estrellas
+    mirando las soluciones que el navegador recibe para corregir al momento, e
+    inflar Riqueza y Constancia inventándose movimientos (que no dan estrellas).
+  - **Siete estadísticas de 0 a 100, derivadas** (`lib/estadisticas.ts`): una por
+    mundo (niveles superados), Riqueza por tramos de ganancia (ni porcentaje, que
+    divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses
+    en positivo de los últimos 12) y Poder (precio de lo EQUIPADO sobre lo máximo
+    equipable: quitarse algo lo baja). El radar lleva el dominio fijo de 0 a 100, y
+    la lista de debajo es su alternativa accesible.
 
 ## Decisiones abiertas
 
 Anótalas aquí al resolverlas; no las asumas en silencio.
 
+- **Camino del héroe, contenido**: los cuatro mundos tienen sus 9 niveles,
+  escritos y **pendientes de revisión humana**. La lista de cifras oficiales,
+  con su estado (verificada, corregida o no verificada) y su fuente, está en
+  `docs/investigación-heroe/revision-cifras.md`; nada se publica sin esa
+  lectura (fase 6 de `docs/CAMINO_HEROE.md`).
+- **Camino del héroe, vidas y rachas**: fuera de la primera versión a
+  propósito. Si llegan, son progreso derivado o una tabla aparte, nunca un
+  contador guardado junto a la mejor marca.
+- **Camino del héroe, "Mi progreso"**: la Navbar del módulo solo tiene
+  "Mundos"; una pantalla de progreso global está pensada, no hecha.
 - **Presupuestos**: diseñados en la skill `finance-data-model`, sin implementar.
   La tabla `budgets` no existe todavía.
 - **Importación de extractos**: las columnas `import_hash` están, el parser no.

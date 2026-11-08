@@ -17,7 +17,7 @@
 
 import { useMemo, useState } from 'react'
 import { Modal } from '@mantine/core'
-import { movimientoModalSections } from '@/src/config/movimientos/sections'
+import { movimientoModalSections } from '@/src/presentation/entidades/movimientos/formularios'
 import { useCatalogos } from '@/src/application/hooks/useCatalogos'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import { formatDateLong } from '@/lib/format'

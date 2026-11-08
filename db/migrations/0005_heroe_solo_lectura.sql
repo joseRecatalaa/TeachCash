@@ -1,0 +1,2 @@
+CREATE POLICY "hero_items_solo_leer_lo_suyo" ON "hero_items" AS PERMISSIVE FOR SELECT TO "authenticated" USING ((select auth.uid()) = user_id);--> statement-breakpoint
+CREATE POLICY "hero_progress_solo_leer_lo_suyo" ON "hero_progress" AS PERMISSIVE FOR SELECT TO "authenticated" USING ((select auth.uid()) = user_id);

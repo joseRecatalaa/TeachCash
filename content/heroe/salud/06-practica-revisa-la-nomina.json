@@ -1,0 +1,74 @@
+{
+  "id": "salud/06-practica-revisa-la-nomina",
+  "tipo": "interactivo",
+  "titulo": "Pepito revisa su nómina línea a línea",
+  "descripcion": "Comprueba las cotizaciones de 2026 de una nómina, calcula el MEI y llega hasta el neto que se ingresa en la cuenta.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "empareja-cotizaciones",
+      "tipo": "emparejar",
+      "enunciado": "Pepito tiene contrato indefinido y revisa su nómina de 2026. Empareja cada concepto con lo que aporta él.",
+      "pares": [
+        { "concepto": "Contingencias comunes", "definicion": "4,70 %" },
+        { "concepto": "Desempleo", "definicion": "1,55 %" },
+        { "concepto": "Formación profesional", "definicion": "0,10 %" },
+        { "concepto": "MEI", "definicion": "0,15 %" }
+      ],
+      "explicacion": "Son las cuatro cotizaciones que se descuentan a quien trabaja con contrato indefinido en 2026. El resto, hasta llegar al total de cada tipo, lo paga la empresa."
+    },
+    {
+      "id": "calcula-total-cotizacion",
+      "tipo": "calcula",
+      "enunciado": "Suma lo que aporta Pepito: contingencias comunes (4,70 %), desempleo (1,55 %), formación profesional (0,10 %) y MEI (0,15 %). ¿Qué porcentaje de su base de cotización le descuentan en total?",
+      "unidad": "porcentaje",
+      "solucion": 650,
+      "tolerancia": 0,
+      "explicacion": "4,70 + 1,55 + 0,10 + 0,15 = **6,50 %**. Es la cifra que verás sumada en el apartado de deducciones de la nómina."
+    },
+    {
+      "id": "calcula-mei",
+      "tipo": "calcula",
+      "enunciado": "En su nómina de noviembre de 2026, la base de contingencias comunes de Pepito es de 2.000 €. Su parte del MEI es el 0,15 %. ¿Cuántos euros le descuentan por el MEI?",
+      "unidad": "euros",
+      "solucion": 300,
+      "tolerancia": 0,
+      "explicacion": "Se aplica el tipo sobre la base: 2.000 × 0,0015 = **3 €**. Es pequeño porque la mayor parte del MEI, el 0,75 %, la paga la empresa."
+    },
+    {
+      "id": "ordena-hasta-el-neto",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los pasos para pasar del sueldo bruto de Pepito al dinero que le llega a la cuenta.",
+      "pasos": [
+        "Sumar el salario base y los complementos brutos",
+        "Restar sus cotizaciones a la Seguridad Social",
+        "Restar la retención del IRPF",
+        "Obtener el líquido a percibir"
+      ],
+      "explicacion": "Se parte de todo lo que se gana en bruto y se le quitan los descuentos. Lo que queda, el líquido a percibir, es lo que se ingresa en tu cuenta."
+    },
+    {
+      "id": "calcula-neto-opciones",
+      "tipo": "opcion",
+      "enunciado": "Pepito cobra 2.000 € brutos al mes en 12 pagas. Le descuentan un 6,50 % de Seguridad Social (130 €) y un 10 % de IRPF (200 €). ¿Cuánto le llega a la cuenta?",
+      "opciones": ["1.670 €", "1.870 €", "1.800 €"],
+      "correcta": 0,
+      "explicacion": "Hay que restar los dos descuentos: 2.000 − 130 − 200 = 1.670 €. Las otras cifras se olvidan de uno de ellos."
+    },
+    {
+      "id": "base-con-pagas-extra",
+      "tipo": "verdaderoFalso",
+      "enunciado": "La base de cotización de cada mes incluye la parte proporcional de las pagas extra, aunque se cobren en 14 pagas.",
+      "correcta": true,
+      "explicacion": "Las pagas extra se reparten para cotizar todos los meses por igual, se cobren juntas o prorrateadas. Por eso cada mes se cotiza por una base que ya las tiene en cuenta."
+    },
+    {
+      "id": "hueco-renta",
+      "tipo": "hueco",
+      "enunciado": "Si a Pepito le retienen todo el año menos IRPF del que le toca por su sueldo, lo normal es que su declaración de la Renta salga a ___.",
+      "opciones": ["pagar", "devolver", "cero"],
+      "correcta": 0,
+      "explicacion": "La retención es un adelanto. Si adelantó menos de lo que le toca pagar en el año, la diferencia la paga en la declaración."
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 /**
- * El contrato entre `src/config/` y `src/presentation/`.
+ * El contrato entre `src/presentation/entidades/` y el `GenericForm`.
  *
- * Un `sections.ts` DESCRIBE la vista con estos tipos; el `GenericForm` la pinta.
- * Por eso `sections.ts` es `.ts` y no `.tsx`: si aparece JSX, deja de compilar,
- * y esa es la invariante que mantiene la config declarativa.
+ * Un `formularios.ts` DESCRIBE el formulario con estos tipos; el `GenericForm`
+ * lo pinta. Por eso `formularios.ts` es `.ts` y no `.tsx`: si aparece JSX, deja
+ * de compilar, y esa es la invariante que mantiene la definición declarativa.
  *
  * El tipo de campo que más importa aquí es **`money`**: ver su nota en
  * `FieldType`.

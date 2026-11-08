@@ -12,7 +12,7 @@ import vitest from "@vitest/eslint-plugin";
 const SIN_INFRAESTRUCTURA = {
   group: ["@/src/infrastructure", "@/src/infrastructure/**", "**/infrastructure/**"],
   message:
-    "config/ y presentation/ no importan de src/infrastructure: lo que compartan sube a src/types. Los repositorios importan @/db y no pueden acabar en el navegador.",
+    "presentation/ no importa de src/infrastructure: lo que compartan sube a src/types. Los repositorios importan @/db y no pueden acabar en el navegador.",
 };
 
 const SIN_DB = {
@@ -57,7 +57,7 @@ const eslintConfig = defineConfig([
   // Una regla por grupo de ficheros: en ESLint plano, un segundo
   // `no-restricted-imports` para el mismo fichero SUSTITUYE al primero.
   {
-    files: ["src/config/**", "src/presentation/**"],
+    files: ["src/presentation/**"],
     rules: { "no-restricted-imports": restringir(SIN_INFRAESTRUCTURA, SIN_DB) },
   },
   {
@@ -111,6 +111,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generado por drizzle-kit, y los informes de coverage y de Playwright.
     "db/migrations/**",
+    // Un paquete CommonJS que sustituye a otro de node_modules (ver su index.js):
+    // no es código de la aplicación y usa `require`.
+    "patches/**",
     "coverage/**",
     "playwright-report/**",
     "test-results/**",

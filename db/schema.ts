@@ -33,6 +33,8 @@ import {
   integer,
   pgPolicy,
   pgTable,
+  primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -72,6 +74,20 @@ export const soloSuyo = (tabla: string) =>
     to: authenticatedRole,
     using: sql`${authUid} = user_id`,
     withCheck: sql`${authUid} = user_id`,
+  })
+
+/**
+ * Como `soloSuyo`, pero sin escribir: cada usuario LEE lo suyo y nada más. Para
+ * lo que solo debe escribir el servidor, porque lo calcula él: el progreso del
+ * héroe (corrige las partidas) y sus compras (cobra las estrellas). Con
+ * `soloSuyo`, cualquiera podría regalarse estrellas u objetos llamando a la API
+ * REST de Supabase con su propia sesión. La app no se entera: su rol se salta RLS.
+ */
+export const soloLeerLoSuyo = (tabla: string) =>
+  pgPolicy(`${tabla}_solo_leer_lo_suyo`, {
+    for: 'select',
+    to: authenticatedRole,
+    using: sql`${authUid} = user_id`,
   })
 
 export const categories = pgTable(
@@ -170,6 +186,71 @@ export const profiles = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   () => [soloSuyo('profiles')],
+).enableRLS()
+
+/**
+ * El progreso del Camino del héroe: una fila por usuario y nivel jugado.
+ *
+ * Solo el progreso: el CONTENIDO de los niveles vive en JSON en el repo
+ * (`content/heroe/`) y `level_id` es su id estable (`ahorro/02-interes`).
+ * Por eso no hay clave ajena hacia ningún nivel: si un nivel desaparece del
+ * contenido, su fila se queda huérfana y simplemente no se enseña.
+ *
+ * Guarda la MEJOR marca, no la última: repetir un nivel puede subir las
+ * estrellas pero nunca bajarlas (`greatest()` en el upsert). Lo que se ve en
+ * el mapa —niveles hechos, estrellas totales, siguiente nivel— es derivado
+ * (regla dura 7) y se calcula desde aquí.
+ *
+ * El invitado conserva su progreso al crear cuenta, porque el `user_id` no
+ * cambia, y el job de limpieza lo borra por la cascada.
+ */
+export const heroProgress = pgTable(
+  'hero_progress',
+  {
+    userId: userIdColumn(),
+    levelId: text('level_id').notNull(),
+    /** La mejor marca, 0-3. Cero = jugado y no superado. */
+    stars: smallint('stars').notNull().default(0),
+    /** Aciertos de la mejor partida. */
+    bestScore: smallint('best_score').notNull().default(0),
+    attempts: integer('attempts').notNull().default(0),
+    /** La PRIMERA vez que se superó. `null` = aún no. Desbloquea el siguiente. */
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.levelId] }),
+    check('hero_progress_stars', sql`${t.stars} between 0 and 3`),
+    soloLeerLoSuyo('hero_progress'),
+  ],
+).enableRLS()
+
+/**
+ * Lo que un usuario ha comprado en la tienda del héroe, una fila por objeto.
+ *
+ * `item_id` es el id estable del catálogo (`lib/tienda.ts`), sin clave ajena
+ * porque el catálogo vive en código. `price_paid` se guarda porque las estrellas
+ * gastadas son la suma de lo que se pagó: si cambiara con el precio del catálogo,
+ * subir un precio le quitaría estrellas a quien ya compró.
+ *
+ * Las estrellas disponibles son derivadas (regla dura 7): las ganadas, de
+ * `hero_progress`, menos esta suma.
+ */
+export const heroItems = pgTable(
+  'hero_items',
+  {
+    userId: userIdColumn(),
+    itemId: text('item_id').notNull(),
+    pricePaid: integer('price_paid').notNull(),
+    /** Lo lleva puesto. Hay uno por hueco; lo garantiza el repositorio. */
+    equipped: boolean('equipped').notNull().default(true),
+    createdAt: createdAtColumn(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.itemId] }),
+    check('hero_items_price', sql`${t.pricePaid} >= 0`),
+    soloLeerLoSuyo('hero_items'),
+  ],
 ).enableRLS()
 
 export type Category = typeof categories.$inferSelect

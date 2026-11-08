@@ -23,8 +23,8 @@ const FICHEROS = [
   'src/types/{{camelCase name}}.types.ts',
   'src/infrastructure/repositories/{{dashCase pluralName}}.repository.ts',
   'src/application/hooks/use{{pascalCase pluralName}}.ts',
-  'src/config/{{dashCase pluralName}}/sections.ts',
-  'src/config/{{dashCase pluralName}}/columns.ts',
+  'src/presentation/entidades/{{dashCase pluralName}}/formularios.ts',
+  'src/presentation/entidades/{{dashCase pluralName}}/tabla.ts',
   'src/presentation/components/Forms/EntityForms/{{camelCase name}}/{{pascalCase name}}FormRefine.tsx',
   'app/{{pascalCase pluralName}}/page.tsx',
   'app/{{pascalCase pluralName}}/Create/page.tsx',
@@ -95,8 +95,8 @@ export default function generadorCrud(plop) {
         'types.hbs',
         'repository.hbs',
         'hooks.hbs',
-        'sections.hbs',
-        'columns.hbs',
+        'formularios.hbs',
+        'tabla.hbs',
         'form.hbs',
         'list-page.hbs',
         'create-page.hbs',
@@ -185,8 +185,8 @@ Quedan cuatro TODO, en este orden:
      con su divisa al lado; una fecha de movimiento es 'YYYY-MM-DD'.
   2. src/infrastructure/repositories/${kebab}.repository.ts
      La tabla real y su esquema Zod. El userId va DENTRO del where, siempre.
-  3. src/config/${kebab}/sections.ts       — los campos del formulario
-  4. src/config/${kebab}/columns.ts        — las columnas del listado
+  3. src/presentation/entidades/${kebab}/formularios.ts— los campos del formulario
+  4. src/presentation/entidades/${kebab}/tabla.ts      — las columnas del listado
 
 Dos cosas que el generador no puede saber:
   - Si la entidad necesita tabla nueva, créala en db/schema.ts y pasa

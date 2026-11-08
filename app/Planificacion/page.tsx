@@ -20,7 +20,7 @@ import { IconTargetArrow } from '@tabler/icons-react'
 import { useCategorias } from '@/src/application/hooks/useCategorias'
 import { useGastoPorCategoria, useTotalesDelMes } from '@/src/application/hooks/useInformes'
 import { MovimientoRapidoModal } from '@/src/presentation/components/Forms/EntityForms/movimiento/MovimientoRapidoModal'
-import { AnimatedMoney, EmptyState, SketchButton, SketchCard } from '@/src/presentation/components/ui'
+import { AnimatedMoney, EmptyState, SketchButton, SketchCard, SketchTitle } from '@/src/presentation/components/ui'
 import { currentPeriod } from '@/lib/dates'
 import { formatMoney, formatPeriod } from '@/lib/format'
 import { DIVISA_APP, money } from '@/lib/money'
@@ -61,7 +61,7 @@ export default function PlanificacionPage() {
       <div className={styles.page}>
         <header className={styles.header}>
           <div>
-            <h1 className={styles.title}>Planificación mensual</h1>
+            <SketchTitle>Planificación mensual</SketchTitle>
             <p className={styles.subtitulo}>{formatPeriod(periodo)}</p>
           </div>
         </header>

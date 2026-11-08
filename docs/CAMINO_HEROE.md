@@ -4,6 +4,35 @@ Segundo módulo de TeachCash: educación financiera con forma de videojuego.
 Este documento es el plan de construcción; cuando una fase se entregue, lo que
 quede como decisión pasa a `AGENTS.md`.
 
+## Estado (noviembre de 2026)
+
+**Fases 1 a 5 entregadas** en la rama `feat/CaminoDelHeroe`, más un rediseño
+después de probarlo. **La fase 6 está escrita y pendiente de revisión
+humana** (rama `feat/PrimerosCursosMundos`): los cuatro mundos tienen sus 9
+niveles (lectura, interactivo ×4 y el jefe de 12 preguntas). Las cifras
+oficiales, con su estado y su fuente, están en
+`docs/investigación-heroe/revision-cifras.md`, y nada se publica sin que una
+persona la lea. Lo que se decidió por el camino ya está en `AGENTS.md`
+("Decisiones tomadas"); este documento se queda como el plan original.
+
+### Lo que cambió respecto al plan
+
+- **El mapa no son fichas: son planetas** (`Heroe/planeta.ts`), con su decorado,
+  habitantes y satélites. Se ven tres; las flechas mueven al héroe al mundo de
+  al lado y la fila lo deja en el centro. Nombre y estrellas encima; sin ficha.
+- **Los mundos sin niveles se declaran igualmente** (`"niveles": []`) y salen
+  como "Pronto": el mapa enseña desde el principio los cuatro.
+- **El camino sube**: el primer nivel abajo y el jefe arriba, y el jefe es un
+  monstruo de cuerpo entero del color de su mundo, no un nodo con icono.
+- **El mundo no tiene `icono`**, solo `decorado` (el dibujo y la clave de color).
+- **"Ordenar" se hace con botones de subir y bajar**, no arrastrando: el
+  arrastre no se puede hacer con teclado ni con lector de pantalla.
+- **No hay regla de ESLint para `content/`**: nadie lo importa; solo lo lee
+  `contenido.ts` del disco.
+- **El contenido admite más que el formato inicial**: `**negrita**`,
+  `_cursiva_` y los bloques `imagen` y `dato` (`docs/CONTENIDO_HEROE.md`).
+- **El E2E se adelantó a la fase 5**, junto al reproductor.
+
 ## Qué es
 
 El SideMenu ya anuncia el módulo **Camino del héroe** (`disponible: false`).
@@ -243,18 +272,19 @@ financiero".
 
 Una PR por fase, sobre `develop`.
 
-1. **Héroe reutilizable**: `PixelHero`, la paleta compartida, los fotogramas de
+1. ✔ **Héroe reutilizable**: `PixelHero`, la paleta compartida, los fotogramas de
    caminar y el splash migrado.
-2. **Datos**: tabla + migración, esquemas Zod, `contenido.ts`, repositorio,
+2. ✔ **Datos**: tabla + migración, esquemas Zod, `contenido.ts`, repositorio,
    acciones, hooks y tests.
-3. **Contenido piloto**: un mundo (Ahorro) con 3 niveles, uno de cada tipo, para
+3. ✔ **Contenido piloto**: un mundo (Ahorro) con 3 niveles, uno de cada tipo, para
    probar el formato. Más `docs/CONTENIDO_HEROE.md` con los prompts de Gemini.
-4. **Mapa y camino**: páginas, SideMenu, Navbar por módulo y el héroe caminando.
-5. **Reproductor**: lectura, minitest, los 6 ejercicios, jefe, resultado y
+4. ✔ **Mapa y camino**: páginas, SideMenu, Navbar por módulo y el héroe caminando.
+5. ✔ **Reproductor**: lectura, minitest, los 6 ejercicios, jefe, resultado y
    estrellas.
-6. **Contenido completo** de los 4 mundos, más el E2E y la actualización de
-   `AGENTS.md` (estructura, una entrada en "Decisiones tomadas" y vidas/rachas
-   en "Decisiones abiertas").
+6. **Contenido completo** de los 4 mundos: escrito (9 niveles por mundo,
+   jefe de 12 preguntas) y **pendiente de revisión humana** con
+   `docs/investigación-heroe/revision-cifras.md`. El E2E (✔) y la
+   actualización de `AGENTS.md` (✔) ya están.
 
 ## Ficheros
 

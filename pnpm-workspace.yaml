@@ -18,8 +18,9 @@ onlyBuiltDependencies:
 # los comentarios. Si los tocas, revisa el diff.
 overrides:
   # PRODUCCIÓN ─────────────────────────────────────────────────────────────────
-  # GHSA-x5fp-wj9c-mxmx y GHSA-4mjr-xmp4-gh2g. La trae @refinedev/core (^6.10.1).
-  qs: ^6.16.0
+  # GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g y GHSA-6pq8-jhm2-2vcw. La trae
+  # @refinedev/core (^6.10.1).
+  qs: ^6.16.1
   # DoS del event loop con mapas de código manipulados. La trae next > postcss (^1.2.1).
   source-map-js: ^1.2.2
 
@@ -28,6 +29,15 @@ overrides:
   # minimatch@3) y la 5 (typescript-estree > minimatch@10).
   brace-expansion@<2: ^1.1.21
   brace-expansion@>=4 <6: ^5.0.12
+  # GHSA-g3hv-75wg-m249: DoS por amplificación de patrones glob. El parche solo
+  # existe en la 11, que tiene la misma API que la 10 (`{ minimatch }`). La traen
+  # typescript-estree y sonarjs.
+  minimatch@>=10 <11: ^11.0.1
+  # El mismo aviso en la 3, que no tiene versión con parche: la traen eslint y sus
+  # plugins, que la llaman como función (`require('minimatch')(…)`), y la 11 ya no
+  # exporta eso. `patches/minimatch-compat` es la 11 con la forma de la 3. Se
+  # quita cuando eslint deje la 3 (`pnpm why minimatch`).
+  minimatch@<4: file:patches/minimatch-compat
   # DoS por claves de merge. La trae eslint > @eslint/eslintrc (^4.1.0).
   js-yaml: ^4.3.2
   # GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f (críticas) y GHSA-xw65-4hp5-5hc7:
@@ -49,6 +59,10 @@ overrides:
   #     picomatch es el motor de micromatch y `picomatch(patrón, opts)` hace lo
   #     mismo; el parche de abajo cambia esa única llamada.
   'findup-sync>micromatch': npm:picomatch@^4.0.7
+
+# Sin avisos ignorados (`auditConfig.ignoreGhsas`): cada aviso se arregla arriba.
+# Si alguna vez hace falta ignorar uno, que sea un falso positivo comprobado
+# contra el código instalado y con su porqué escrito al lado.
 
 # Parches sobre paquetes de terceros. Cada uno explica su porqué dentro del diff.
 patchedDependencies:

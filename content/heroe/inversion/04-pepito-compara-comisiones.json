@@ -1,0 +1,78 @@
+{
+  "id": "inversion/04-pepito-compara-comisiones",
+  "tipo": "interactivo",
+  "titulo": "Pepito compara comisiones y aporta cada mes",
+  "descripcion": "Ayuda a Pepito en Vigo a calcular lo que cuestan las comisiones, programar sus aportaciones y distinguir fondos activos, indexados y ETF.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "calcula-ahorro-comision",
+      "tipo": "calcula",
+      "enunciado": "Pepito invierte 10.000 € y no mete ni saca nada en todo el año. Un fondo activo cobra un 1,8 % al año sobre esos 10.000 €; uno indexado, un 0,3 %. Con la misma rentabilidad antes de comisiones, ¿cuántos euros se ahorra en comisiones ese primer año con el indexado?",
+      "unidad": "euros",
+      "solucion": 15000,
+      "tolerancia": 0,
+      "explicacion": "El activo cobra 10.000 × 1,8 / 100 = 180 €; el indexado, 10.000 × 0,3 / 100 = 30 €. La diferencia es **150 €**, solo el primer año: la comisión se cobra todos los años."
+    },
+    {
+      "id": "empareja-vehiculos",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada tipo de producto con lo que lo define.",
+      "pares": [
+        {
+          "concepto": "Fondo de gestión activa",
+          "definicion": "Un equipo elige valores para intentar batir a un índice, a cambio de una comisión mayor"
+        },
+        {
+          "concepto": "Fondo indexado",
+          "definicion": "Fondo que no cotiza en bolsa y copia un índice con comisiones muy bajas"
+        },
+        {
+          "concepto": "ETF",
+          "definicion": "Fondo cuyas participaciones se compran y venden en bolsa en tiempo real, como acciones"
+        }
+      ],
+      "explicacion": "Los tres juntan el dinero de muchos inversores. Se distinguen por si intentan batir al índice o copiarlo, y por si cotizan en bolsa durante la sesión."
+    },
+    {
+      "id": "calcula-participaciones",
+      "tipo": "calcula",
+      "enunciado": "Pepito aporta 200 € cada mes a su fondo indexado. En enero cada participación cuesta 20 €; en febrero el mercado baja y cuesta 10 €. ¿Cuántas participaciones ha comprado en total en los dos meses?",
+      "unidad": "numero",
+      "solucion": 30,
+      "tolerancia": 0,
+      "explicacion": "En enero, 200 / 20 = 10 participaciones; en febrero, con los mismos 200 €, 200 / 10 = 20. En total **30**: la bajada le permite comprar el doble con el mismo dinero."
+    },
+    {
+      "id": "ordena-diversificacion",
+      "tipo": "ordenar",
+      "enunciado": "Ordena de **menos** a **más** diversificada estas tres formas de invertir 1.000 € en renta variable.",
+      "pasos": [
+        "Comprar acciones de una sola empresa española de telecomunicaciones",
+        "Un fondo que replica el Ibex 35, con las 35 empresas de ese índice español",
+        "Un fondo indexado global que reparte el dinero entre miles de empresas de decenas de países"
+      ],
+      "explicacion": "Una acción concentra todo en una compañía; un índice nacional reparte entre 35 empresas, pero de un solo país; un fondo global extiende el reparto a muchas economías y sectores."
+    },
+    {
+      "id": "minimo-50000",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Para invertir de forma diversificada en renta fija y variable a la vez hacen falta al menos 50.000 €, porque los fondos no admiten importes pequeños.",
+      "correcta": false,
+      "explicacion": "Una de las grandes ventajas de los fondos es que dividen su patrimonio en participaciones pequeñas: cualquiera puede acceder a una cartera muy diversificada con poco dinero. Cada fondo indica en su folleto si exige un mínimo."
+    },
+    {
+      "id": "bolsa-baja-un-5",
+      "tipo": "opcion",
+      "enunciado": "A los seis meses de empezar su plan a 20 años, Pepito ve que ese mes la bolsa ha bajado un 5 %. ¿Qué tiene más sentido según lo que sabe?",
+      "opciones": [
+        "Mantener su aportación mensual: ese mes compra participaciones más baratas y su plazo es de 20 años",
+        "Venderlo todo ya para no ver números rojos en el móvil",
+        "Pedir un préstamo al 12 % TAE para doblar la apuesta ese mismo día",
+        "Cambiar el fondo por acciones de una empresa que subió mucho la semana pasada"
+      ],
+      "correcta": 0,
+      "explicacion": "Con 20 años por delante, las caídas de unos meses son normales en renta variable. Seguir aportando aprovecha los precios bajos; vender con pánico convierte una bajada temporal en una pérdida real."
+    }
+  ]
+}

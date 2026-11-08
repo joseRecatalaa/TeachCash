@@ -3,7 +3,7 @@
 /**
  * Menú lateral de MÓDULOS: las grandes áreas de la aplicación, no sus pantallas.
  *
- * La Navbar lleva las secciones del módulo en el que estás (Inicio,
+ * La Navbar lleva las secciones del módulo en el que estás (Tienda,
  * Movimientos…); este menú cambia de módulo. Por eso son dos piezas y no una:
  * mezclar los dos niveles en la misma lista haría que "Movimientos" y "Camino
  * del héroe" parecieran cosas del mismo tamaño.
@@ -20,8 +20,9 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import type { Route } from 'next'
-import { IconArrowRight, IconLock, IconPigMoney, IconSword, IconWallet } from '@tabler/icons-react'
+import { IconArrowRight, IconGauge, IconLock, IconPigMoney, IconSword, IconWallet } from '@tabler/icons-react'
 import type { Icon } from '@tabler/icons-react'
 import { StatusBadge } from '../ui'
 import { EVENTO_FIN_SPLASH } from '../Splash/SplashScreen'
@@ -31,23 +32,52 @@ type Modulo = {
   label: string
   icon: Icon
 } & (
-  | { disponible: true; href: Route }
+  | {
+      disponible: true
+      href: Route
+      /** Las rutas que son de este módulo. La `/` cuenta sola, sin sus hijas. */
+      rutas: readonly string[]
+    }
   | { disponible: false }
 )
 
 const MODULOS: Modulo[] = [
   {
-    label: 'Gestión de patrimonio',
-    icon: IconPigMoney,
+    label: 'Cuadro de mando',
+    icon: IconGauge,
     disponible: true,
     href: '/',
+    rutas: ['/', '/Tienda'],
   },
   {
     label: 'Camino del héroe',
     icon: IconSword,
-    disponible: false,
+    disponible: true,
+    href: '/CaminoHeroe',
+    rutas: ['/CaminoHeroe'],
+  },
+  {
+    label: 'Gestión de patrimonio',
+    icon: IconPigMoney,
+    disponible: true,
+    href: '/Patrimonio',
+    rutas: ['/Patrimonio', '/Planificacion', '/Categorias', '/Movimientos'],
   },
 ]
+
+const esDeLaRuta = (ruta: string, base: string) =>
+  ruta === base || (base !== '/' && ruta.startsWith(`${base}/`))
+
+/**
+ * El módulo de la pantalla actual, que decide también los enlaces de la Navbar.
+ * Lo que no es de ninguno (las pantallas de la cuenta) se queda en el Cuadro de
+ * mando, que es la portada.
+ */
+export function moduloActivo(pathname: string | null): string {
+  const ruta = pathname ?? '/'
+  const modulo = MODULOS.find((m) => m.disponible && m.rutas.some((base) => esDeLaRuta(ruta, base)))
+  return modulo?.label ?? MODULOS[0].label
+}
 
 /**
  * Cuánto espera a cerrarse después de que el ratón salga.
@@ -112,6 +142,7 @@ export function SideMenu() {
   // de teclado (Enter) no pasa por `pointerdown` y llega aquí como null.
   const punteroPulsado = useRef<string | null>(null)
   const panelId = useId()
+  const activo = moduloActivo(usePathname())
 
   const cancelarCierre = () => {
     if (temporizador.current) clearTimeout(temporizador.current)
@@ -251,10 +282,7 @@ export function SideMenu() {
                   {modulo.disponible ? (
                     <EnlaceModulo
                       modulo={modulo}
-                      // Mientras sea el único módulo, toda pantalla es suya.
-                      // Cuando llegue el segundo, sus rutas irán bajo su propio
-                      // prefijo y esto pasará a mirar `usePathname()`.
-                      activo
+                      activo={modulo.label === activo}
                       alElegir={() => setAbierto(false)}
                     />
                   ) : (

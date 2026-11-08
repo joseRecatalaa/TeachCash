@@ -3,12 +3,12 @@
 /**
  * Cableado del formulario de Movimiento.
  *
- * El reparto es el de siempre: `src/config/movimientos/sections.ts` DESCRIBE los
+ * El reparto es el de siempre: `src/presentation/entidades/movimientos/formularios.ts` DESCRIBE los
  * campos (sin JSX) y este fichero los conecta con los catálogos y el submit.
  */
 
 import { useMemo, useState } from 'react'
-import { movimientoSections } from '@/src/config/movimientos/sections'
+import { movimientoSections } from '@/src/presentation/entidades/movimientos/formularios'
 import { useCatalogos } from '@/src/application/hooks/useCatalogos'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import { useMovimiento } from '@/src/application/hooks/useMovimientos'

@@ -19,6 +19,7 @@
     "db:migrate": "node --env-file-if-exists=.env.local db/migrate.mts",
     "db:migrate:e2e": "node --env-file=.env.e2e db/migrate.mts",
     "db:studio": "drizzle-kit studio",
+    "heroe:validar": "vitest run --project node src/__tests__/contenido-heroe.test.ts",
     "generate:crud": "plop --plopfile plopfile.mjs crud",
     "prepare": "husky"
   },

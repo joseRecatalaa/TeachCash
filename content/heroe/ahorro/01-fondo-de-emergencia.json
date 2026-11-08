@@ -1,0 +1,215 @@
+{
+  "id": "ahorro/01-fondo-de-emergencia",
+  "tipo": "lectura",
+  "titulo": "El fondo de emergencia",
+  "descripcion": "Por qué el primer ahorro es un colchón para imprevistos, cuánto debería tener y dónde guardarlo.",
+  "minutos": 3,
+  "paginas": [
+    {
+      "titulo": "Lo inesperado siempre llega",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "hucha",
+          "pie": "Una hucha a píxel llena de monedas: el colchón para los imprevistos."
+        },
+        {
+          "tipo": "dato",
+          "texto": "En 2025, **más de un tercio** de la población (el 36,4 %) no podía afrontar un gasto imprevisto con sus propios recursos.",
+          "fuente": "INE, Encuesta de Condiciones de Vida 2025 (5 de febrero de 2026)"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🧺 La lavadora dice basta.",
+            "🚗 El coche pasa por el taller.",
+            "🦷 Un dentista que no esperabas.",
+            "📉 Un mes en el que entra menos dinero."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Un **fondo de emergencia** es dinero apartado _solo_ para imprevistos."
+        }
+      ]
+    },
+    {
+      "titulo": "¿Y si no tienes colchón?",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Para eso ya está la tarjeta».",
+            "✅ Realidad: el imprevisto pagado con tarjeta de crédito o con un préstamo lleva **intereses**. El susto te sale más caro de lo que costaba."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Con colchón, la historia cambia: pagas, respiras y lo vuelves a llenar poco a poco. _Sin deberle nada a nadie._"
+        }
+      ]
+    },
+    {
+      "titulo": "¿Cuánto necesitas?",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La referencia habitual: de **3 a 6 meses** de tus gastos _imprescindibles_. Ojo: de tus gastos, no de tu sueldo."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🏠 Vivienda",
+            "🛒 Comida",
+            "💡 Luz, agua e internet",
+            "🚌 Transporte",
+            "💳 Cuotas de deudas"
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Trabajo estable? Apunta a **3 meses**. ¿Autónomo o con ingresos que cambian cada mes? Mejor acércate a 6."
+        }
+      ]
+    },
+    {
+      "titulo": "Las cuentas de Pepito",
+      "bloques": [
+        {
+          "tipo": "ejemplo",
+          "titulo": "Los gastos imprescindibles de Pepito en un mes",
+          "filas": [
+            {
+              "concepto": "Alquiler",
+              "importe": -65000
+            },
+            {
+              "concepto": "Comida",
+              "importe": -30000
+            },
+            {
+              "concepto": "Luz, agua e internet",
+              "importe": -12000
+            },
+            {
+              "concepto": "Transporte",
+              "importe": -5000
+            },
+            {
+              "concepto": "Total al mes",
+              "importe": -112000
+            }
+          ],
+          "nota": "Con 3 meses, su fondo sería de **3.360 €**; con 6 meses, de **6.720 €**."
+        },
+        {
+          "tipo": "idea",
+          "texto": "Tu meta = gastos imprescindibles de un mes × **los meses que quieres cubrir**."
+        }
+      ]
+    },
+    {
+      "titulo": "Dónde guardarlo",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Tu colchón tiene que estar **a mano** y no puede perder valor de golpe."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "✅ En una cuenta de ahorro o remunerada, **separada** de la del día a día.",
+            "✅ Protegido: el Fondo de Garantía de Depósitos cubre hasta **100.000 €** por titular y entidad.",
+            "❌ En bolsa, no: si el imprevisto coincide con una caída, venderías perdiendo dinero."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "TAE y TIN, sin misterio",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Son las dos siglas que verás en cualquier cuenta remunerada."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "📄 _TIN_: el tipo de interés pactado, a secas.",
+            "🎯 _TAE_: lo que rinde de forma efectiva en un año, con comisiones y frecuencia de pago incluidas."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Para comparar dos cuentas, mira siempre la **TAE**."
+        }
+      ]
+    },
+    {
+      "titulo": "Empieza hoy",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Suma tus gastos imprescindibles de un mes.",
+            "2️⃣ Multiplícalos por **3**: esa es tu primera meta.",
+            "3️⃣ Programa una transferencia **automática** el día que cobras."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Págate primero a ti: ahorra el día que cobras, no con lo que sobre a final de mes."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Cuánto te daría tu colchón en una cuenta remunerada? Lo calculas en la práctica."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "para-que-sirve",
+      "tipo": "opcion",
+      "enunciado": "¿Para qué es un fondo de emergencia?",
+      "opciones": [
+        "Para las vacaciones de verano",
+        "Para cubrir imprevistos sin endeudarte",
+        "Para invertir en bolsa cuando baje"
+      ],
+      "correcta": 1,
+      "explicacion": "Es dinero reservado para **lo inesperado**: una avería, una factura médica o un mes sin ingresos. Las vacaciones se planifican, así que tienen su propio ahorro."
+    },
+    {
+      "id": "cuantos-meses",
+      "tipo": "hueco",
+      "enunciado": "La referencia habitual es reunir entre 3 y ___ meses de gastos imprescindibles.",
+      "opciones": [
+        "2",
+        "6",
+        "24"
+      ],
+      "correcta": 1,
+      "explicacion": "Entre **3 y 6 meses** de gastos imprescindibles. Con un trabajo estable basta con acercarse a 3; si tus ingresos varían, mejor a 6."
+    },
+    {
+      "id": "en-bolsa",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Es buena idea tener el fondo de emergencia invertido en bolsa para que rinda más.",
+      "correcta": false,
+      "explicacion": "La bolsa puede caer justo cuando necesitas el dinero, y tendrías que vender con pérdidas. El fondo de emergencia tiene que estar **disponible y estable**."
+    },
+    {
+      "id": "fgd",
+      "tipo": "opcion",
+      "enunciado": "¿Hasta cuánto protege el Fondo de Garantía de Depósitos tu dinero en un banco español?",
+      "opciones": [
+        "20.000 €",
+        "100.000 € por titular y entidad",
+        "Todo, sin límite"
+      ],
+      "correcta": 1,
+      "explicacion": "El Fondo de Garantía de Depósitos cubre hasta **100.000 € por titular y por entidad**. Si tienes más, repartirlo entre entidades distintas mantiene todo protegido."
+    }
+  ]
+}

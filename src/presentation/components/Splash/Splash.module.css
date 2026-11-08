@@ -7,7 +7,7 @@
  *
  * 1. Los tokens `--px-*` de aquí abajo NO son paleta de sistema y por eso no
  *    están en `app/globals.css`: son los colores de UNA ilustración. El héroe
- *    no cambia con el tema; el mundo sí, y es MONOCROMO a propósito (verde
+ *    (`components/Pixel/`) no cambia con el tema; el mundo sí, y es MONOCROMO a propósito (verde
  *    claro, gris y blanco en claro; los mismos tonos apagados en oscuro): así
  *    el único color con fuerza de la escena es el personaje.
  *
@@ -24,37 +24,8 @@
  */
 
 .raiz {
-  /* El héroe */
-  --px-contorno: #2b1a10;
-  --px-pelo: #9a6134;
-  --px-pelo-luz: #c08a4e;
-  --px-pelo-sombra: #68411f;
-  --px-piel: #f7c9a4;
-  --px-piel-sombra: #e3a87f;
-  --px-blanco: #ffffff;
-  --px-iris: #7a4a24;
-  --px-rubor: #f08a72;
-  --px-boca: #63301f;
-  --px-lengua: #e8697a;
-  --px-camisola: #f0b429;
-  --px-camisola-sombra: #c98d10;
-  --px-cuero: #7a4a28;
-  --px-cuero-sombra: #553218;
-  --px-cuero-luz: #9a6640;
-  --px-cuero-tira: #6b3f22;
-  --px-salvia: #c6d8c0;
-  --px-salvia-sombra: #93ab8c;
-  --px-salvia-luz: #eef5ea;
-  --px-metal: #d4dde0;
-  --px-metal-sombra: #7f8d93;
-  --px-pantalon: #2f5d46;
-  --px-pantalon-sombra: #1f4132;
-  --px-bota: #5b3720;
-  --px-billete: #3f9a5f;
-  --px-billete-sombra: #24653d;
-  --px-billete-luz: #8fd3a2;
-  --px-billete-papel: #eaf6e4;
-  --px-destello: #ffd45e;
+  /* La paleta del héroe vive en `components/Pixel/pixel.module.css`, que
+     SplashScreen pone en esta misma raíz. */
 
   /* El mundo, de día: verde claro, gris y blanco */
   --px-cielo-1: #e3ebe2;
@@ -334,23 +305,9 @@
   }
 }
 
-/* Los bucles: respirar, flotar, girar y titilar. Van aparte del guion porque
-   no dependen del ciclo, solo de que haya algo vivo en pantalla. */
-
-/* Solo hacia ABAJO: el torso pisa el cinturón y no se abre hueco con las
-   piernas, que no respiran. */
-.respira {
-  animation: px-respira 0.9s steps(1, end) infinite;
-}
-@keyframes px-respira {
-  0% {
-    translate: 0 0;
-  }
-  50%,
-  100% {
-    translate: 0 1px;
-  }
-}
+/* Los bucles: flotar, girar y titilar (respirar es del propio héroe). Van
+   aparte del guion porque no dependen del ciclo, solo de que haya algo vivo en
+   pantalla. */
 
 .gira {
   animation: px-gira 0.9s steps(1, end) infinite;

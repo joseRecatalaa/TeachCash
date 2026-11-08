@@ -1,0 +1,107 @@
+{
+  "id": "deuda/02-practica-equipo-de-sonido",
+  "tipo": "interactivo",
+  "titulo": "Pepito financia su equipo de sonido",
+  "descripcion": "Pepito necesita 3.000 € para trabajar. Compara ofertas, calcula el coste total y lee el cuadro de amortización sin ahogar su nómina.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "que-financiar",
+      "tipo": "opcion",
+      "enunciado": "A Pepito le ofrecen financiar un viaje de 2.500 € al 14 % TAE y su equipo de sonido de 3.000 € al 10,25 % TAE. Con el equipo ya tiene tres encargos firmados. ¿Qué encaja con un uso sano del crédito?",
+      "opciones": [
+        "Financiar las dos cosas, porque aún no tiene deudas",
+        "Financiar solo el equipo, que es una herramienta que le da ingresos",
+        "Financiar el viaje, porque es más barato que el equipo",
+        "No pedir nunca nada, porque toda deuda es mala"
+      ],
+      "correcta": 1,
+      "explicacion": "El equipo le genera ingresos que cubren lo que cuesta el préstamo. El viaje se acaba en una semana y las cuotas, al 14 %, siguen meses después."
+    },
+    {
+      "id": "coste-total",
+      "tipo": "calcula",
+      "enunciado": "Pepito pide **3.000 €** a 12 meses. Paga una comisión de apertura de 60 € y 12 cuotas de 258,20 €. ¿Cuál es el coste total del préstamo, intereses más comisión, en euros?",
+      "unidad": "euros",
+      "solucion": 15840,
+      "tolerancia": 0,
+      "explicacion": "12 × 258,20 € = 3.098,40 €. Más los 60 € de comisión: 3.158,40 €. Menos los 3.000 € recibidos: **158,40 €** es lo que le cuesta el préstamo."
+    },
+    {
+      "id": "cabe-en-35",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Con una nómina neta de 1.650 € y sin otras deudas, una cuota de 258,20 € cabe en la referencia habitual del 35 % de los ingresos netos.",
+      "correcta": true,
+      "explicacion": "El 35 % de 1.650 € son 577,50 €. La cuota supone menos del 16 % de su nómina, así que le deja margen para vivir y ahorrar."
+    },
+    {
+      "id": "cero-tin",
+      "tipo": "hueco",
+      "enunciado": "En la tienda le ofrecen los 3.000 € en 10 meses al 0 % TIN, pero con una comisión obligatoria de 120 €. Por eso la ___ del préstamo será mayor que 0 %.",
+      "opciones": [
+        "TAE",
+        "nómina",
+        "amortización"
+      ],
+      "correcta": 0,
+      "explicacion": "La TAE recoge las comisiones obligatorias. Con un interés nominal de cero, esos 120 € son igualmente el precio de adelantarte el dinero."
+    },
+    {
+      "id": "pasos-antes",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los pasos de Pepito para saber si puede asumir el préstamo.",
+      "pasos": [
+        "Sumar sus ingresos netos y restar los gastos imprescindibles",
+        "Comprobar que la cuota no pasa de su referencia del 35 %",
+        "Comparar las ofertas por la TAE y el coste total en euros",
+        "Revisar el cuadro de amortización antes de firmar"
+      ],
+      "explicacion": "Primero ve si le cabe en el bolsillo, después elige la oferta más barata y, por último, revisa la letra pequeña de la que ha elegido."
+    },
+    {
+      "id": "interes-mes-1",
+      "tipo": "calcula",
+      "enunciado": "El préstamo de Pepito es de 3.000 € al 6 % TIN anual, con cuotas mensuales. ¿Cuántos euros de intereses paga el primer mes?",
+      "unidad": "euros",
+      "solucion": 1500,
+      "tolerancia": 0,
+      "explicacion": "3.000 € × 6 % ÷ 12 meses = **15 €**. Los intereses del mes salen de multiplicar lo que debes por el tipo de un mes."
+    },
+    {
+      "id": "primera-fila",
+      "tipo": "emparejar",
+      "enunciado": "Pepito mira la primera fila de su cuadro de amortización. Empareja cada columna con lo que significa.",
+      "pares": [
+        {
+          "concepto": "Cuota: 258,20 €",
+          "definicion": "Lo que sale de su cuenta cada mes"
+        },
+        {
+          "concepto": "Intereses: 15 €",
+          "definicion": "El precio de deber 3.000 € durante ese mes"
+        },
+        {
+          "concepto": "Capital amortizado: 243,20 €",
+          "definicion": "La parte de la cuota que de verdad baja la deuda"
+        },
+        {
+          "concepto": "Capital vivo: 2.756,80 €",
+          "definicion": "Lo que aún debe; sobre esto se calculan los intereses del mes 2"
+        }
+      ],
+      "explicacion": "Solo el capital amortizado reduce la deuda. Como el mes 2 se calcula sobre 2.756,80 € y no sobre 3.000 €, sus intereses ya serán algo menores."
+    },
+    {
+      "id": "cuando-adelantar",
+      "tipo": "opcion",
+      "enunciado": "A mitad de año, Pepito cobra un bolo extra y quiere adelantar parte del préstamo. ¿Cuándo ahorra más intereses?",
+      "opciones": [
+        "En los dos últimos meses",
+        "Cuanto antes, porque baja la deuda sobre la que se calculan todos los intereses que quedan",
+        "Da igual: los intereses quedan fijados al firmar"
+      ],
+      "correcta": 1,
+      "explicacion": "Cada euro que adelantas deja de generar intereses todos los meses que quedan. La Ley 16/2011 (art. 30) limita la compensación al banco al **1 %** de lo adelantado, o al 0,5 % si queda un año o menos."
+    }
+  ]
+}

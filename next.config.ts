@@ -41,6 +41,15 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // El contenido del Camino del héroe son JSON que se leen con `fs` en el
+  // servidor (src/infrastructure/heroe/contenido.ts). Nadie los importa, así
+  // que el trazado del build no los ve: sin esto, un despliegue empaquetado
+  // arranca sin ellos. En todas las rutas porque una Server Action se puede
+  // llamar desde cualquier página.
+  outputFileTracingIncludes: {
+    "/**": ["./content/heroe/**/*.json"],
+  },
+
   // cacheComponents queda desactivado a propósito: saldos y movimientos son datos
   // por usuario que cambian con cada mutación. Ver skill nextjs-app-conventions.
 };

@@ -1,0 +1,76 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--sd-font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sd-ink-muted);
+  text-decoration: none;
+}
+
+.volver:hover {
+  color: var(--sd-ink);
+}
+
+.volver:focus-visible {
+  outline: none;
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-focus-ring);
+}
+
+/* El título y su descripción en la misma línea, apoyados en la misma base;
+   en una pantalla estrecha la descripción baja debajo. */
+.lineaTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
+}
+
+/* El texto se para antes de llegar al héroe que está sobre la tarjeta del
+   reproductor: esa tarjeta mide 42rem y va centrada, así que su borde derecho
+   cae en `50% + 21rem`, y el héroe ocupa 5,5rem desde ahí, más medio de aire.
+   Si eso parte la descripción en dos líneas, la línea de más la paga el menor
+   relleno de la página (`py` en `PaginaHeroe`): un nivel no debe alargarse. */
+.lineaTitulo[data-heroe-encima] {
+  max-width: calc(min(100%, 50% + 21rem) - 6rem);
+}
+
+.subtitulo {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--sd-ink-muted);
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--sd-ink-muted);
+}
+
+.cargando {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}

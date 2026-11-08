@@ -1,0 +1,77 @@
+{
+  "id": "salud/04-practica-gastos-hormiga",
+  "tipo": "interactivo",
+  "titulo": "A la caza de gastos hormiga y suscripciones",
+  "descripcion": "Ayuda a Pepito a encontrar los gastos pequeños que se comen su sueldo y a rehacer su reparto con un alquiler caro.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "empareja-bloques",
+      "tipo": "emparejar",
+      "enunciado": "Pepito reparte sus gastos en su nuevo presupuesto. Empareja cada uno con su bloque.",
+      "pares": [
+        { "concepto": "Alquiler del piso", "definicion": "Necesidades" },
+        { "concepto": "Dos plataformas de vídeo", "definicion": "Deseos" },
+        { "concepto": "Transferencia a la cuenta de ahorro el día de cobro", "definicion": "Ahorro" }
+      ],
+      "explicacion": "Separar lo que hay que pagar de lo que se elige deja claro de dónde se puede sacar dinero para proteger el ahorro."
+    },
+    {
+      "id": "calcula-hormiga-anual",
+      "tipo": "calcula",
+      "enunciado": "Pepito se toma un café con algo en el trabajo por 3,50 € durante 20 días al mes. Además paga dos suscripciones olvidadas de 12 € y 18 € al mes. ¿Cuántos euros suma todo en un año de 12 meses iguales?",
+      "unidad": "euros",
+      "solucion": 120000,
+      "tolerancia": 0,
+      "explicacion": "Cafés: 3,50 × 20 = 70 € al mes. Suscripciones: 12 + 18 = 30 €. Juntos, 100 € al mes, y 100 × 12 = **1.200 €** al año."
+    },
+    {
+      "id": "reparto-adaptado",
+      "tipo": "opcion",
+      "enunciado": "Las necesidades de Pepito (alquiler 720 €, comida 300 € y facturas 150 €) suman 1.170 €, el 65 % de sus 1.800 € netos. ¿Qué reparto tiene más sentido?",
+      "opciones": [
+        "Un 65/20/15: 360 € para deseos y 270 € para ahorro",
+        "Pedir un microcrédito para mantener un 30 % de ocio",
+        "Dejar de pagar facturas hasta cuadrar el 50 %"
+      ],
+      "correcta": 0,
+      "explicacion": "Si la vivienda pesa mucho, el ajuste sale de lo que se elige: el ocio. Así el 15 % de ahorro sigue en pie, sin deudas ni impagos."
+    },
+    {
+      "id": "ordena-coste-anual",
+      "tipo": "ordenar",
+      "enunciado": "Ordena estos gastos evitables de Pepito de menor a mayor coste en un año.",
+      "pasos": [
+        "Una tarjeta que no usa, con 36 € de cuota al año",
+        "Una revista digital que no lee, de 8 € al mes",
+        "Un gimnasio al que no va, de 35 € al mes",
+        "Un aperitivo de máquina de 2 € cada día del año"
+      ],
+      "explicacion": "Pasados a un año: 36 € de la tarjeta, 8 × 12 = 96 € de la revista, 35 × 12 = 420 € del gimnasio y 2 × 365 = 730 € del aperitivo. El más pequeño cada día es el más caro al año."
+    },
+    {
+      "id": "dos-euros-al-dia",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Un gasto de 2 € al día apenas se nota al cabo del año.",
+      "correcta": false,
+      "explicacion": "2 € × 365 días son **730 €** al año. Lo pequeño y diario es justo lo que más se escapa, porque nunca parece importante."
+    },
+    {
+      "id": "hueco-hormiga",
+      "tipo": "hueco",
+      "enunciado": "Los gastos hormiga parecen inofensivos uno a uno, pero sumados en un año le quitan mucha capacidad de ___ al presupuesto.",
+      "opciones": ["ahorro", "deuda", "retención"],
+      "correcta": 0,
+      "explicacion": "Cada café o suscripción olvidada sale del margen que quedaba a final de mes, que es justo el dinero que podría ir a un colchón."
+    },
+    {
+      "id": "calcula-ahorro-mensual",
+      "tipo": "calcula",
+      "enunciado": "Pepito cobra 1.800 € netos y sigue un reparto 65/20/15: 1.170 € para necesidades y 360 € para deseos. ¿Cuántos euros ahorra cada mes con el 15 % restante?",
+      "unidad": "euros",
+      "solucion": 27000,
+      "tolerancia": 0,
+      "explicacion": "El 15 % de 1.800 € es 1.800 × 0,15 = **270 €**. Comprobación: 1.170 + 360 + 270 = 1.800 €."
+    }
+  ]
+}

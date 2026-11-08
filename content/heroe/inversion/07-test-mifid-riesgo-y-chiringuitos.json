@@ -1,0 +1,200 @@
+{
+  "id": "inversion/07-test-mifid-riesgo-y-chiringuitos",
+  "tipo": "lectura",
+  "titulo": "Test MiFID, riesgo del 1 al 7 y chiringuitos",
+  "descripcion": "Los test de conveniencia e idoneidad, el indicador de riesgo del 1 al 7, lo que avisan la CNMV y el Banco de España de las criptomonedas, los chiringuitos y los sesgos.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Un escudo para tu dinero",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "escudo",
+          "pie": "Un escudo a píxel: las protecciones que tienes al invertir."
+        },
+        {
+          "tipo": "dato",
+          "texto": "Los chiringuitos financieros **no están adheridos** al Fondo de Garantía de Inversiones ni al de Depósitos: si desaparecen con tu dinero, nadie te lo cubre.",
+          "fuente": "CNMV, Guía sobre chiringuitos financieros"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Invertir con entidades autorizadas te da reglas que te protegen. Fuera de ellas, solo te protege lo que sepas tú."
+        }
+      ]
+    },
+    {
+      "titulo": "Los test que te protegen",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Antes de venderte una inversión, la entidad te hace preguntas. Es la normativa europea conocida como **MiFID II**."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🧠 **Test de conveniencia**: mira tus conocimientos y tu experiencia, para saber si entiendes el producto.",
+            "🎯 **Test de idoneidad**: además, tu situación financiera y tus objetivos. Es obligatorio cuando te asesoran o te gestionan la cartera."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "El semáforo del 1 al 7",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Antes de contratar un fondo te dan su **Documento de Datos Fundamentales**. Lleva un indicador de riesgo del **1 al 7**: el 1 es el más bajo y el 7, el más alto."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "⚠️ Un 1 no significa _sin riesgo_.",
+            "⏳ Supone que mantienes el producto todo el plazo recomendado. Si sales antes, el riesgo real puede cambiar."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Criptomonedas: lo que avisan los supervisores",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "En febrero de 2021 la CNMV y el Banco de España publicaron un comunicado conjunto sobre las criptomonedas como inversión. Avisaban de esto:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🎢 **Volatilidad extrema**: se puede perder incluso toda la inversión.",
+            "🚫 No las cubre el Fondo de Garantía de Depósitos ni el Fondo de Garantía de Inversiones.",
+            "🏦 No tienen el respaldo de un banco central."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito caza un chiringuito en Sevilla",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito tiene 61 años y es administrativo en Sevilla. Le llega un mensaje que promete un **20 % al mes «sin riesgo»** si transfiere hoy. Antes de nada, busca la empresa en la web de la CNMV y llama al **900 535 015**: no está autorizada."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Un mes de Pepito tras comprobarlo",
+          "filas": [
+            {
+              "concepto": "Nómina neta",
+              "importe": 210000
+            },
+            {
+              "concepto": "Vivienda, luz, agua y comunidad",
+              "importe": -65000
+            },
+            {
+              "concepto": "Comida, transporte y gastos corrientes",
+              "importe": -75000
+            },
+            {
+              "concepto": "Inversión en una cartera diversificada, con entidad autorizada",
+              "importe": -50000
+            },
+            {
+              "concepto": "Enviado al chiringuito",
+              "importe": 0
+            },
+            {
+              "concepto": "Le queda para otros gastos",
+              "importe": 20000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "El enemigo en el espejo: los sesgos",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Según la CNMV, el Ibex 35 subió un **49,3 %** en 2025. Tras un año así es cuando más tienta entrar, y nada obliga a que se repita."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🤩 Comprar con euforia: entrar cuando todo ha subido, por miedo a quedarse fuera.",
+            "😱 Vender con pánico: malvender en una caída temporal.",
+            "🔮 Querer adivinar el mercado: intentar acertar el día exacto."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «Si la web parece seria y la anuncian famosos, será legal».",
+            "✅ Realidad: los chiringuitos copian webs y logos reales. La prueba es figurar en los **registros de la CNMV o del Banco de España**."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Comprobar el registro evita estafas; la calma evita **malvender por pánico**."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Ya tienes todas las piezas. ¿Podrás con **El Oráculo de Humo**?"
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "conveniencia-o-idoneidad",
+      "tipo": "opcion",
+      "enunciado": "¿Qué diferencia hay entre el test de conveniencia y el de idoneidad?",
+      "opciones": [
+        "El de conveniencia mira conocimientos y experiencia; el de idoneidad añade situación financiera y objetivos",
+        "El de conveniencia lo hace Hacienda para cobrar impuestos y el de idoneidad es voluntario",
+        "El de idoneidad solo se hace al abrir una cuenta corriente básica",
+        "Son dos nombres del mismo examen, con nota del 0 al 10"
+      ],
+      "correcta": 0,
+      "explicacion": "La conveniencia comprueba si **entiendes** el producto. Cuando la entidad te asesora o gestiona tu cartera, además tiene que comprobar que el riesgo encaja con tus ingresos, tu patrimonio y tus objetivos: eso es la idoneidad."
+    },
+    {
+      "id": "hueco-escala",
+      "tipo": "hueco",
+      "enunciado": "En el Documento de Datos Fundamentales, el indicador de riesgo va del 1 al ___, y el número más alto es el de más riesgo.",
+      "opciones": [
+        "7",
+        "5",
+        "100"
+      ],
+      "correcta": 0,
+      "explicacion": "La escala está estandarizada en la Unión Europea para poder comparar productos antes de contratar: del 1, el riesgo más bajo, al 7, el más alto."
+    },
+    {
+      "id": "cripto-fgd",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si una plataforma de criptomonedas quiebra o sufre un robo, el Fondo de Garantía de Depósitos devuelve hasta 100.000 € por inversor.",
+      "correcta": false,
+      "explicacion": "La CNMV y el Banco de España avisaron de que las criptomonedas **no están cubiertas** ni por el Fondo de Garantía de Depósitos ni por el de Inversiones. Ese fondo protege depósitos en bancos, no criptomonedas."
+    },
+    {
+      "id": "como-comprobar",
+      "tipo": "opcion",
+      "enunciado": "¿Cuál es la forma más segura de saber si una empresa que ofrece invertir es legal o un chiringuito?",
+      "opciones": [
+        "Entrar por tu cuenta en la web de la CNMV, o llamar al 900 535 015, y revisar su registro y sus advertencias",
+        "Mirar si tiene muchos seguidores y comentarios buenos en un grupo de mensajería",
+        "Hacer una transferencia pequeña de prueba y ver si paga el primer mes",
+        "Pulsar el enlace que te manda el supuesto asesor"
+      ],
+      "correcta": 0,
+      "explicacion": "Los seguidores se compran y los chiringuitos pagan a veces al principio para ganarse tu confianza. La prueba es el registro oficial, consultado entrando tú, nunca desde un enlace de un desconocido."
+    }
+  ]
+}

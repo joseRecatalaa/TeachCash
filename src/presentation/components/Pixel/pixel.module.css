@@ -1,0 +1,393 @@
+/*
+ * El héroe a píxel: su paleta y sus poses. Lo usan la pantalla de carga y el
+ * Camino del héroe (`PixelHero.tsx`).
+ *
+ * Los `--px-*` de aquí NO son paleta de sistema y por eso no están en
+ * `app/globals.css`: son los colores de UNA ilustración, y el héroe no cambia
+ * con el tema. El mundo que lo rodea sí cambia, y su paleta vive en el módulo
+ * de cada escena. Lo único del héroe que depende del tema es su sombra en el
+ * suelo, que tiene que leerse sobre el césped claro y sobre el oscuro.
+ *
+ * Como en toda la escena, todo se mueve A SALTOS con `steps()`: un sprite que
+ * se desliza medio píxel deja de ser un sprite.
+ */
+
+/* Para quien pinte sprites del héroe fuera de `PixelHero` (el billete del
+   splash, los destellos): basta con poner esta clase en un antepasado. */
+.paleta {
+  --px-contorno: #2b1a10;
+  --px-pelo: #9a6134;
+  --px-pelo-luz: #c08a4e;
+  --px-pelo-sombra: #68411f;
+  --px-piel: #f7c9a4;
+  --px-piel-sombra: #e3a87f;
+  --px-blanco: #ffffff;
+  --px-iris: #7a4a24;
+  --px-rubor: #f08a72;
+  --px-boca: #63301f;
+  --px-lengua: #e8697a;
+  --px-camisola: #f0b429;
+  --px-camisola-sombra: #c98d10;
+  --px-cuero: #7a4a28;
+  --px-cuero-sombra: #553218;
+  --px-cuero-luz: #9a6640;
+  --px-cuero-tira: #6b3f22;
+  --px-salvia: #c6d8c0;
+  --px-salvia-sombra: #93ab8c;
+  --px-salvia-luz: #eef5ea;
+  --px-metal: #d4dde0;
+  --px-metal-sombra: #7f8d93;
+  --px-pantalon: #2f5d46;
+  --px-pantalon-sombra: #1f4132;
+  --px-bota: #5b3720;
+  --px-billete: #3f9a5f;
+  --px-billete-sombra: #24653d;
+  --px-billete-luz: #8fd3a2;
+  --px-billete-papel: #eaf6e4;
+  --px-destello: #ffd45e;
+  --px-sombra-heroe: rgb(40 60 42 / 22%);
+}
+
+:global(:root[data-mantine-color-scheme='dark']) .paleta {
+  --px-sombra-heroe: rgb(0 0 0 / 35%);
+}
+
+/* La sombra usa la de la escena si la declara (la del splash va con su
+   mundo); si no, la suya. */
+.sombra {
+  fill: var(--px-sombra, var(--px-sombra-heroe));
+}
+
+/* ── Las poses ─────────────────────────────────────────────────────────────
+ *
+ * El estado SIN animar es el que se ve con el movimiento reducido, y tiene que
+ * ser una pose entera: el héroe que camina se queda de pie, no congelado con
+ * un pie en el aire.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paso1,
+.paso2,
+.ojosArriba,
+.lleva {
+  opacity: 0;
+}
+
+/* Quieto y celebrando, respira: el torso baja un píxel y las botas se quedan
+   clavadas. Solo hacia ABAJO, para que no se abra hueco con las piernas. */
+.respira {
+  animation: px-respira 0.9s steps(1, end) infinite;
+}
+@keyframes px-respira {
+  0% {
+    translate: 0 0;
+  }
+  50%,
+  100% {
+    translate: 0 1px;
+  }
+}
+
+/* Agacha: baja el torso dos píxeles, se queda un momento y vuelve a subir, con
+   más rato de pie que abajo. Acompaña a quien está leyendo, y por eso es
+   lenta: si llamara la atención, estorbaría. Las botas no se mueven y el torso
+   tapa lo alto de las piernas, que es lo que hace que parezca que dobla las
+   rodillas. Sin animación se queda de pie. */
+.heroe[data-pose='agacha'] .respira {
+  animation: px-agacha 3.2s steps(1, end) infinite;
+}
+@keyframes px-agacha {
+  0% {
+    translate: 0 0;
+  }
+  35% {
+    translate: 0 1px;
+  }
+  45% {
+    translate: 0 2px;
+  }
+  65% {
+    translate: 0 1px;
+  }
+  75%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+/* Celebra: el billete en alto, que es el "¡objeto conseguido!" de siempre. */
+.heroe[data-pose='celebra'] .lleva {
+  opacity: 1;
+}
+.heroe[data-pose='celebra'] .brazoIzq {
+  opacity: 0;
+}
+
+/* Camina: los dos pasos se alternan cada 0,175 s y los brazos se balancean a
+   contrapié, un píxel. Andando no respira: el balanceo ya lo hace parecer
+   vivo, y los dos a la vez lo hacen temblar.
+   Corre: lo mismo al doble de velocidad, y el cuerpo bota un píxel en cada
+   paso. */
+.heroe[data-pose='camina'] .respira,
+.heroe[data-pose='corre'] .respira {
+  animation: none;
+}
+.heroe[data-pose='camina'] .piernas,
+.heroe[data-pose='corre'] .piernas {
+  animation: px-oculta 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .paso1 {
+  animation: px-paso-a 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .paso2 {
+  animation: px-paso-b 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .brazoIzq {
+  animation: px-brazo-b 0.35s steps(1, end) infinite;
+}
+.heroe[data-pose='camina'] .brazoDer {
+  animation: px-brazo-a 0.35s steps(1, end) infinite;
+}
+
+.heroe[data-pose='corre'] .paso1 {
+  animation: px-paso-a 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] .paso2 {
+  animation: px-paso-b 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] .brazoIzq {
+  animation: px-brazo-b 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] .brazoDer {
+  animation: px-brazo-a 0.18s steps(1, end) infinite;
+}
+.heroe[data-pose='corre'] {
+  animation: px-bota 0.09s steps(1, end) infinite;
+}
+
+@keyframes px-bota {
+  50%,
+  100% {
+    translate: 0 -1px;
+  }
+}
+
+@keyframes px-oculta {
+  0%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes px-paso-a {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes px-paso-b {
+  0% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes px-brazo-a {
+  0% {
+    translate: 0 -1px;
+  }
+  50%,
+  100% {
+    translate: 0 0;
+  }
+}
+@keyframes px-brazo-b {
+  0% {
+    translate: 0 0;
+  }
+  50%,
+  100% {
+    translate: 0 -1px;
+  }
+}
+
+/* ── El Camino del héroe ───────────────────────────────────────────────────
+ *
+ * Los colores de los decorados del mapa y de los nodos del camino. Como los
+ * del héroe, son de UNA ilustración y no cambian con el tema: cada mundo se
+ * reconoce por su dibujo y su nombre, y el color solo lo refuerza. Lo único
+ * que se adapta es la estrella vacía, que tiene que leerse sobre el papel
+ * claro y sobre el oscuro.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paletaCamino {
+  --px-contorno: #2b1a10;
+  --px-blanco: #ffffff;
+  --px-moneda: #f0b429;
+  --px-moneda-sombra: #c98d10;
+  --px-hucha: #f4a3b5;
+  --px-hucha-sombra: #d97a92;
+  --px-hucha-luz: #fbd0da;
+  --px-escudo: #5b8bd6;
+  --px-escudo-sombra: #3c67ab;
+  --px-escudo-luz: #a9c6f0;
+  --px-corazon: #e5484d;
+  --px-corazon-luz: #f7a1a3;
+  --px-roca: #b7bdb5;
+  --px-roca-sombra: #8f978d;
+  --px-cumbre: #ffffff;
+  --px-grafica: #2f9e5b;
+  --px-bandera: #e5484d;
+  --px-tarjeta: #8a6cd1;
+  --px-tarjeta-sombra: #6249a8;
+  --px-tarjeta-luz: #c2b0ee;
+  --px-banda: #2b1a10;
+  --px-metal: #d4dde0;
+  --px-metal-sombra: #7f8d93;
+  --px-monstruo: #9b5de5;
+  --px-monstruo-sombra: #6f3cb3;
+  --px-cuerno: #f3e3c3;
+  --px-mando: #5c6670;
+  --px-boton: #e5484d;
+  --px-linea: #b9b2a3;
+  --px-estrella: #f0b429;
+  --px-estrella-vacia: #e2ddd0;
+  --px-suelo: #a2c99e;
+  --px-suelo-luz: #c3dfbf;
+  --px-suelo-sombra: #86b083;
+}
+
+:global(:root[data-mantine-color-scheme='dark']) .paletaCamino {
+  --px-estrella-vacia: #3a3f47;
+  --px-suelo: #3a5a3e;
+  --px-suelo-luz: #4b6b4f;
+  --px-suelo-sombra: #2f4b33;
+}
+
+/* ── Cada mundo, su color ──────────────────────────────────────────────────
+ *
+ * El planeta del mapa y el monstruo de su jefe toman el color del mundo por
+ * `data-decorado`, que es la misma clave que elige su dibujo. El color nunca
+ * es lo único que distingue un mundo: lo dicen su nombre y su decorado.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paletaCamino[data-decorado='escudo'] {
+  --px-planeta: #7fa8e6;
+  --px-planeta-sombra: #4f78bd;
+  --px-planeta-luz: #c9dbf6;
+  --px-planeta-mancha: #5d8fd8;
+  --px-monstruo: #e5484d;
+  --px-monstruo-sombra: #b0303a;
+}
+
+.paletaCamino[data-decorado='hucha'] {
+  --px-planeta: #f4a3b5;
+  --px-planeta-sombra: #cf7590;
+  --px-planeta-luz: #fbd7df;
+  --px-planeta-mancha: #e88aa2;
+  --px-monstruo: #9b5de5;
+  --px-monstruo-sombra: #6f3cb3;
+}
+
+.paletaCamino[data-decorado='montana'] {
+  --px-planeta: #8fc79a;
+  --px-planeta-sombra: #5c9a6b;
+  --px-planeta-luz: #cfe9d4;
+  --px-planeta-mancha: #6fb27d;
+  --px-monstruo: #e98a2e;
+  --px-monstruo-sombra: #b5631a;
+}
+
+.paletaCamino[data-decorado='tarjeta'] {
+  --px-planeta: #b39ae6;
+  --px-planeta-sombra: #7f63c2;
+  --px-planeta-luz: #e0d5f7;
+  --px-planeta-mancha: #9a7fd9;
+  --px-monstruo: #3fa7a0;
+  --px-monstruo-sombra: #2a7a74;
+}
+
+/* ── El mundo del splash, fuera del splash ─────────────────────────────────
+ *
+ * La nube y el pino, para el bloque `imagen` de las lecturas. Los mismos
+ * tonos que el mundo de la pantalla de carga, que declara los suyos en su
+ * propio módulo.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.paletaMundo {
+  --px-nube: #ffffff;
+  --px-nube-sombra: #dfe7de;
+  --px-hoja: #7aa47c;
+  --px-hoja-sombra: #658f68;
+  --px-tronco: #8a948a;
+}
+
+:global(:root[data-mantine-color-scheme='dark']) .paletaMundo {
+  --px-nube: #c9d3cb;
+  --px-nube-sombra: #9eaaa1;
+  --px-hoja: #4f7a55;
+  --px-hoja-sombra: #3d6243;
+  --px-tronco: #6b756c;
+}
+
+/* ── El equipo del héroe grande ────────────────────────────────────────────
+ *
+ * Un mismo dibujo por tipo de objeto: la calidad reapunta sus cuatro tonos. Como
+ * los del héroe, no cambian con el tema. La calidad nunca se distingue solo por
+ * el color: el nombre del objeto dice de qué es.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.equipo[data-calidad='basica'] {
+  --px-equipo: #9a6640;
+  --px-equipo-sombra: #6b3f22;
+  --px-equipo-luz: #c08a5e;
+  --px-equipo-detalle: #f0b429;
+}
+
+.equipo[data-calidad='media'] {
+  --px-equipo: #aeb9bf;
+  --px-equipo-sombra: #6f7a80;
+  --px-equipo-luz: #e8eef0;
+  --px-equipo-detalle: #5b8bd6;
+}
+
+.equipo[data-calidad='alta'] {
+  --px-equipo: #f0b429;
+  --px-equipo-sombra: #b67d0e;
+  --px-equipo-luz: #ffe28a;
+  --px-equipo-detalle: #e5484d;
+}
+
+/* Las alas básicas son de plumas: el cuero no vuela. */
+.equipo[data-hueco='alas'][data-calidad='basica'] {
+  --px-equipo: #eef0ea;
+  --px-equipo-sombra: #b9bfb4;
+  --px-equipo-luz: #ffffff;
+  --px-equipo-detalle: #c6d8c0;
+}
+
+/* Múltiplos enteros del `viewBox` de 92x70 de `EscenaHeroe`: 3, 4 y 5 píxeles de
+   pantalla por píxel de juego. */
+.escena {
+  display: block;
+  width: 276px;
+  height: 210px;
+  margin-inline: auto;
+}
+
+@media (min-width: 30em) {
+  .escena {
+    width: 368px;
+    height: 280px;
+  }
+}
+
+@media (min-width: 87.5em) {
+  .escena {
+    width: 460px;
+    height: 350px;
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "prueba/02-interactivo",
+  "tipo": "interactivo",
+  "titulo": "Practicar",
+  "descripcion": "Ejercicios.",
+  "minutos": 3,
+  "ejercicios": [
+    {
+      "id": "e1",
+      "tipo": "ordenar",
+      "enunciado": "Ordena",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "pasos": [
+        "uno",
+        "dos",
+        "tres"
+      ]
+    },
+    {
+      "id": "e2",
+      "tipo": "emparejar",
+      "enunciado": "Empareja",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "pares": [
+        {
+          "concepto": "A",
+          "definicion": "a"
+        },
+        {
+          "concepto": "B",
+          "definicion": "b"
+        },
+        {
+          "concepto": "C",
+          "definicion": "c"
+        }
+      ]
+    },
+    {
+      "id": "e3",
+      "tipo": "calcula",
+      "enunciado": "¿Cuánto?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "unidad": "euros",
+      "solucion": 10500,
+      "tolerancia": 100
+    }
+  ]
+}

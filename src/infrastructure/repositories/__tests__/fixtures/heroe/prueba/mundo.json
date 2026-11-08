@@ -1,0 +1,12 @@
+{
+  "id": "prueba",
+  "titulo": "Mundo de prueba",
+  "descripcion": "El mundo de los tests.",
+  "decorado": "hucha",
+  "orden": 1,
+  "niveles": [
+    "01-lectura",
+    "02-interactivo",
+    "03-jefe"
+  ]
+}

@@ -5,15 +5,19 @@
  */
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import { renderConMantine } from '@/test/render'
-import { SideMenu } from '../SideMenu'
+import { moduloActivo, SideMenu } from '../SideMenu'
+
+const ruta = vi.hoisted(() => ({ actual: '/' as string | null }))
+vi.mock('next/navigation', () => ({ usePathname: () => ruta.actual }))
 import { EVENTO_FIN_SPLASH } from '../../Splash/SplashScreen'
 
 const pestana = () => screen.getByRole('button', { name: /menú de módulos/ })
 
 afterEach(() => {
+  ruta.actual = '/'
   vi.useRealTimers()
   window.sessionStorage.clear()
   delete document.documentElement.dataset.splash
@@ -87,21 +91,58 @@ describe('SideMenu', () => {
     expect(pestana()).toHaveAttribute('aria-expanded', 'false')
   })
 
-  test('Gestión de patrimonio es un enlace a Inicio, marcado como actual', () => {
+  test('el Cuadro de mando es un enlace a la portada, marcado como actual', () => {
     renderConMantine(<SideMenu />)
 
-    const enlace = screen.getByRole('link', { name: /Gestión de patrimonio/ })
+    const enlace = screen.getByRole('link', { name: /Cuadro de mando/ })
     expect(enlace).toHaveAttribute('href', '/')
     expect(enlace).toHaveAttribute('aria-current', 'page')
   })
 
-  test('Camino del héroe NO es un enlace: está deshabilitado y lo dice', () => {
+  test('los módulos van en orden: Cuadro de mando, Camino del héroe, Gestión de patrimonio', () => {
     renderConMantine(<SideMenu />)
 
-    expect(screen.queryByRole('link', { name: /Camino del héroe/ })).not.toBeInTheDocument()
-    const modulo = screen.getByText('Camino del héroe').closest('[aria-disabled]')
-    expect(modulo).toHaveAttribute('aria-disabled', 'true')
-    expect(modulo).toHaveTextContent('Próximamente')
+    const nombres = within(screen.getByRole('navigation', { name: 'Módulos' }))
+      .getAllByRole('link')
+      .map((enlace) => enlace.textContent)
+    expect(nombres).toEqual(['Cuadro de mando', 'Camino del héroe', 'Gestión de patrimonio'])
+  })
+
+  test('Gestión de patrimonio lleva a su Inicio, ya fuera de la portada', () => {
+    ruta.actual = '/Movimientos'
+    renderConMantine(<SideMenu />)
+
+    const enlace = screen.getByRole('link', { name: /Gestión de patrimonio/ })
+    expect(enlace).toHaveAttribute('href', '/Patrimonio')
+    expect(enlace).toHaveAttribute('aria-current', 'page')
+  })
+
+  test('Camino del héroe es un enlace a su mapa, y es el actual dentro de él', () => {
+    ruta.actual = '/CaminoHeroe/Mundo'
+    renderConMantine(<SideMenu />)
+
+    const camino = screen.getByRole('link', { name: /Camino del héroe/ })
+    expect(camino).toHaveAttribute('href', '/CaminoHeroe')
+    expect(camino).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: /Gestión de patrimonio/ })).not.toHaveAttribute('aria-current')
+  })
+
+  test.each([
+    ['/', 'Cuadro de mando'],
+    ['/Tienda', 'Cuadro de mando'],
+    ['/Patrimonio', 'Gestión de patrimonio'],
+    ['/Planificacion', 'Gestión de patrimonio'],
+    ['/Categorias/Create', 'Gestión de patrimonio'],
+    ['/Movimientos/Edit', 'Gestión de patrimonio'],
+    ['/CaminoHeroe', 'Camino del héroe'],
+    ['/CaminoHeroe/Nivel', 'Camino del héroe'],
+    // Un prefijo de texto no es una ruta hija.
+    ['/CaminoHeroeFalso', 'Cuadro de mando'],
+    // Las pantallas de la cuenta no son de ningún módulo.
+    ['/Login', 'Cuadro de mando'],
+    [null, 'Cuadro de mando'],
+  ])('en %s el módulo activo es %s', (pathname, modulo) => {
+    expect(moduloActivo(pathname)).toBe(modulo)
   })
 
   test('es un `nav` con su propio nombre, distinto del de la Navbar', () => {

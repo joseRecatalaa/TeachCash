@@ -47,7 +47,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text-summary', 'html', 'json-summary'],
       // Lo que se mide: el código de la app. Fuera, lo que no es lógica
-      // (tipos, la vista declarada en src/config —la vigilan las guardas de
+      // (tipos, la vista declarada en src/presentation/entidades —la vigilan las guardas de
       // src/__tests__/invariantes.test.ts—, estilos y migraciones generadas) y
       // el propio andamiaje de test.
       // Solo código: con `db/**` a secas entraban los .sql y .json y el
@@ -65,7 +65,7 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/*.css',
         'src/types/**',
-        'src/config/**',
+        'src/presentation/entidades/**',
         'db/migrations/**',
         'db/testing.ts',
       ],
@@ -87,13 +87,14 @@ export default defineConfig({
        */
       thresholds: {
         ...Object.fromEntries(
-          ['lib/money.ts', 'lib/dates.ts', 'lib/format.ts', 'lib/rutas.ts', 'lib/csp.ts'].map(
+          ['lib/money.ts', 'lib/dates.ts', 'lib/format.ts', 'lib/rutas.ts', 'lib/csp.ts', 'lib/heroe.ts', 'lib/marcas.ts', 'lib/tienda.ts', 'lib/estadisticas.ts'].map(
             (f) => [f, { lines: 100, branches: 100, functions: 100, statements: 100 }],
           ),
         ),
         ...Object.fromEntries(
           [
             'src/infrastructure/repositories/**',
+            'src/infrastructure/heroe/**',
             'src/application/actions/**',
             'lib/auth.ts',
             'lib/env.ts',

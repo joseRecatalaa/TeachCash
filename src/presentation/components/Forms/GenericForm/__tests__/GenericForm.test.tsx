@@ -1,6 +1,6 @@
 /**
  * El formulario genérico, visto desde fuera: se le da un `SectionDefinition[]`
- * (lo que escribe un `sections.ts`) y se comprueba lo que pinta, lo que envía y
+ * (lo que escribe un `formularios.ts`) y se comprueba lo que pinta, lo que envía y
  * cuándo repinta.
  *
  * Lo único que se sustituye es lo que no es del formulario: el router de Next y

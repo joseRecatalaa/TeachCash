@@ -3,14 +3,14 @@
 /**
  * Cableado del formulario de Categoría.
  *
- * El reparto es el de siempre: `src/config/categorias/sections.ts` DESCRIBE los
+ * El reparto es el de siempre: `src/presentation/entidades/categorias/formularios.ts` DESCRIBE los
  * campos (sin JSX) y este fichero los conecta con los datos y con el submit.
  */
 
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { categoriaSections } from '@/src/config/categorias/sections'
+import { categoriaSections } from '@/src/presentation/entidades/categorias/formularios'
 import { useCategoria, useOcultarCategoria } from '@/src/application/hooks/useCategorias'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import { SketchButton } from '@/src/presentation/components/ui'

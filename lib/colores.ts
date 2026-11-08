@@ -11,8 +11,9 @@
  * La clave (`cat-3`) es lo que se guarda en `categories.color`. Nunca el color:
  * si mañana se ajusta un tono, las categorías ya guardadas lo heredan solas.
  *
- * `lib/` no importa de `src/`: esto lo consumen por igual `src/config` (que no
- * puede llevar JSX), la presentación y los gráficos.
+ * `lib/` no importa de `src/`: esto lo consumen por igual
+ * `src/presentation/entidades` (que no puede llevar JSX), los componentes y los
+ * gráficos.
  */
 
 export const CLAVES_COLOR = [

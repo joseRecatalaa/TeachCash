@@ -1,0 +1,152 @@
+{
+  "id": "deuda/09-jefe-marques-del-minimo",
+  "tipo": "jefe",
+  "titulo": "El Marqués del Mínimo",
+  "descripcion": "«¿Para qué pagar hoy si puedes pagar veinte euritos al mes toda la vida?» Desmonta sus contratos trampa en doce preguntas.",
+  "minutos": 5,
+  "aprobado": 70,
+  "preguntas": [
+    {
+      "id": "aristocratico",
+      "tipo": "opcion",
+      "enunciado": "El Marqués te ofrece 5.000 € a 3 años: su «Préstamo Aristocrático», al 4,5 % TIN con 260 € de comisiones y **TAE del 8,4 %**, o el «Préstamo Llano», al 6 % TIN sin comisiones y TAE del 6,17 %. ¿Cuál cuesta menos?",
+      "opciones": [
+        "El Aristocrático, por su TIN más bajo",
+        "El Llano, porque con el mismo importe y plazo su TAE es más baja",
+        "Los dos igual, porque son 5.000 €",
+        "El Aristocrático, porque las comisiones no cuentan"
+      ],
+      "correcta": 1,
+      "explicacion": "La TAE suma interés, comisiones y plazo. Con el mismo importe y plazo, la TAE más baja es la del préstamo que menos dinero te saca."
+    },
+    {
+      "id": "da-igual-adelantar",
+      "tipo": "verdaderoFalso",
+      "enunciado": "El Marqués dice que en el sistema francés da igual adelantar dinero el primer año o el último, porque todas las cuotas llevan los mismos intereses.",
+      "correcta": false,
+      "explicacion": "Lo fijo es la cuota, no su reparto. Al principio casi todo son intereses; adelantar pronto baja la deuda sobre la que se calculan todos los que quedan."
+    },
+    {
+      "id": "revolving-marques",
+      "tipo": "opcion",
+      "enunciado": "Su tarjeta revolving es al **27,5 % TAE** y el tipo medio de esas tarjetas, el mes de la firma, era del 19,8 %. Con el criterio del Supremo (Sentencia 258/2023), ¿qué pasa?",
+      "opciones": [
+        "Es válida porque no llega al 30 %",
+        "Sería usuraria: supera en 7,7 puntos el tipo medio, y solo devolverías el capital",
+        "Solo puedes reclamar la mitad de las comisiones",
+        "Es válida porque la ley de usura ya no existe"
+      ],
+      "correcta": 1,
+      "explicacion": "27,5 − 19,8 = 7,7 puntos, más de los 6 del criterio. Anulado el contrato, la Ley de 1908 (art. 3) te obliga a devolver solo lo recibido."
+    },
+    {
+      "id": "fecha-directiva",
+      "tipo": "hueco",
+      "enunciado": "La Directiva (UE) 2023/2225 de crédito al consumo se aplica desde el 20 de noviembre de ___.",
+      "opciones": [
+        "2026",
+        "2028",
+        "2030"
+      ],
+      "correcta": 0,
+      "explicacion": "Es su fecha de aplicación, y ese día deroga la directiva de 2008. En España llega con una ley propia, que en noviembre de 2026 seguía en anteproyecto."
+    },
+    {
+      "id": "gastos-marques",
+      "tipo": "calcula",
+      "enunciado": "El Marqués te pasa las facturas de la hipoteca: tasación 420 €, notaría de la escritura 650 €, registro 320 €, gestoría 300 € y una copia que has pedido tú, 30 €. ¿Cuántos euros te tocan?",
+      "unidad": "euros",
+      "solucion": 45000,
+      "tolerancia": 0,
+      "explicacion": "Tú pagas la tasación (420 €) y la copia que pediste (30 €): **450 €**. El resto es del banco por el artículo 14.1.e) de la Ley 5/2019."
+    },
+    {
+      "id": "registros-plazos",
+      "tipo": "emparejar",
+      "enunciado": "El Marqués te lía con registros y plazos. Empareja cada uno con su regla.",
+      "pares": [
+        {
+          "concepto": "CIRBE",
+          "definicion": "Base de datos del Banco de España con préstamos y avales, estés al día o no"
+        },
+        {
+          "concepto": "Fichero de morosos",
+          "definicion": "Registro privado: deudas de al menos 50 € y como mucho 5 años"
+        },
+        {
+          "concepto": "Desistimiento",
+          "definicion": "14 días naturales para dejar sin efecto un préstamo al consumo"
+        },
+        {
+          "concepto": "Reclamación al Banco de España",
+          "definicion": "Después de reclamar al banco, y antes de que pase un año"
+        }
+      ],
+      "explicacion": "Saber estas cuatro reglas te protege de amenazas falsas, de plazos que se escapan y de confundir una base de datos con una lista negra."
+    },
+    {
+      "id": "avalancha-orden",
+      "tipo": "ordenar",
+      "enunciado": "Ordena estas deudas como las pagaría la avalancha, de la primera a la última.",
+      "pasos": [
+        "Tarjeta revolving de 900 € al 24 % TAE",
+        "Préstamo rápido de 600 € al 18 % TAE",
+        "Préstamo del coche de 4.500 € al 7,5 % TAE",
+        "Préstamo de estudios de 2.000 € al 3,5 % TAE"
+      ],
+      "explicacion": "La avalancha mira solo la TAE, de mayor a menor. El tamaño de cada deuda no cuenta para el orden."
+    },
+    {
+      "id": "exoneracion-doble",
+      "tipo": "calcula",
+      "enunciado": "Una persona autónoma, insolvente de buena fe, pide la exoneración por primera vez. Debe **15.000 €** a Hacienda y 15.000 € a la Seguridad Social. ¿Cuántos euros se le cancelan entre las dos?",
+      "unidad": "euros",
+      "solucion": 2000000,
+      "tolerancia": 0,
+      "explicacion": "Con cada una: 5.000 € enteros más la mitad de los 10.000 € restantes, 5.000 €. Son 10.000 €, justo el tope. Entre las dos: **20.000 €**."
+    },
+    {
+      "id": "fichero-reclamada",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Para meter una deuda en un fichero de morosos, la ley exige que el deudor no la haya reclamado ante un juez o la Administración.",
+      "correcta": true,
+      "explicacion": "Es una de las condiciones del artículo 20.1.b) de la Ley Orgánica 3/2018: la deuda tiene que ser cierta, vencida, exigible y no estar reclamada."
+    },
+    {
+      "id": "plazo-bde",
+      "tipo": "hueco",
+      "enunciado": "Si tu banco rechaza tu reclamación, tienes un máximo de ___ desde que reclamaste en el banco para acudir al Banco de España.",
+      "opciones": [
+        "1 año",
+        "15 días",
+        "10 años"
+      ],
+      "correcta": 0,
+      "explicacion": "Pasado un año desde la reclamación a la entidad, el Banco de España no la admite (Ley 7/2017, art. 18.1.e)."
+    },
+    {
+      "id": "descubierto",
+      "tipo": "opcion",
+      "enunciado": "El último truco del Marqués: cobrarte una barbaridad por unos días en números rojos sin haberlo pactado. Con la Ley 16/2011, ¿cuánto puede costar ese descubierto?",
+      "opciones": [
+        "Una TAE de hasta 2,5 veces el interés legal del dinero",
+        "Hasta un 45 % TAE si dura más de tres días",
+        "Lo que decida cada banco"
+      ],
+      "correcta": 0,
+      "explicacion": "El artículo 20.4 de la Ley 16/2011 prohíbe que un descubierto tácito tenga una TAE superior a 2,5 veces el interés legal del dinero."
+    },
+    {
+      "id": "derrotar-marques",
+      "tipo": "ordenar",
+      "enunciado": "Para derrotar al Marqués, ordena lo aprendido: antes, al firmar y después.",
+      "pasos": [
+        "Comprobar que la cuota cabe en tu presupuesto y comparar ofertas por la TAE",
+        "Al firmar, revisar el contrato y el reparto de gastos",
+        "En los 14 días siguientes, desistir si encuentras algo mejor",
+        "Si llegan cobros indebidos o deudas que no caben, reclamar o pedir la exoneración"
+      ],
+      "explicacion": "Primero se elige bien, luego se firma con los ojos abiertos, después hay un margen para arrepentirse y, si algo se tuerce, la ley te da salidas."
+    }
+  ]
+}

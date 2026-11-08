@@ -1,0 +1,615 @@
+PROMPTS DEL CAMINO DEL HÉROE (investigación, conversión y lo que queda)
+======================================================================
+
+Los de investigación van uno por mundo, ya rellenados. Se copia el bloque ENTERO del mundo: desde la
+línea "Sois un equipo de dos" hasta antes de la cabecera del mundo siguiente.
+
+Qué hay en este fichero:
+- Un prompt de INVESTIGACIÓN por mundo (Salud, Inversión, Deuda y Ahorro),
+  para Gemini Deep Research.
+- El prompt de CONVERSIÓN: el informe de Gemini → los JSON de los niveles.
+  Una sesión nueva de Claude por mundo.
+- El prompt para seguir con LO QUE QUEDA de la fase 6 en otra sesión.
+
+Cómo lanzar la investigación:
+1. gemini.google.com → herramientas → Deep Research → pegar el prompt.
+2. Revisar el plan ("Editar plan"): que consulte fuentes oficiales. Si no,
+   añadir "Prioriza BOE, Banco de España, CNMV y Agencia Tributaria".
+3. "Iniciar investigación" (de 5 a 15 minutos; se pueden lanzar varios a la vez).
+4. Exportar a Docs y descargar como .md o .txt, o copiar el informe entero.
+5. Abrir una sesión nueva de Claude con el prompt de CONVERSIÓN (al final del
+   fichero) y pasarle el informe.
+
+Escritos en noviembre de 2026: si se relanzan otro año, cambiar la FECHA.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  SALUD FINANCIERA  (content/heroe/salud/)
+═══════════════════════════════════════════════════════════════════════════
+
+Sois un equipo de dos: una divulgadora de educación financiera para adultos en España y un diseñador de videojuegos educativos. Vais a preparar el contenido de un "mundo" del Camino del héroe, el módulo de una aplicación gratuita de finanzas personales que enseña con forma de videojuego de píxeles. Se juega en el móvil, en ratos de 2 a 4 minutos. El objetivo: que quien juegue aprenda algo VERDADERO y ÚTIL en cada nivel y quiera jugar el siguiente.
+
+MUNDO: Salud financiera (el primer mundo del mapa: por aquí empieza casi todo el mundo)
+
+ENFOQUE: Saber dónde estás. Ingresos y gastos; gastos fijos y variables; presupuesto mensual; la regla 50/30/20 (y sus límites con los alquileres de 2026); gastos hormiga y suscripciones olvidadas; patrimonio neto (lo que tienes menos lo que debes) y por qué importa más que el sueldo; la nómina por dentro: salario bruto y neto, cotizaciones del trabajador a la Seguridad Social (incluido el Mecanismo de Equidad Intergeneracional de 2026), retención del IRPF y pagas extra prorrateadas o no; el salario mínimo interprofesional de 2026; objetivos SMART para el dinero. Termina con cómo revisar tus cuentas una vez al mes.
+
+LO QUE YA CUBREN OTROS MUNDOS (no lo repitas; como mucho, una mención de una frase): Ahorro: fondo de emergencia, págate primero, cuentas remuneradas, TAE y TIN, Fondo de Garantía de Depósitos, inflación, interés compuesto. Inversión: riesgo, fondos, ETF, planes de pensiones. Deuda y crédito: préstamos, tarjetas, hipotecas, morosidad.
+
+FECHA: hoy es noviembre de 2026. Toda cifra legal, fiscal u oficial tiene que ser la vigente en 2026, y hay que decir de qué año es. Si no encuentras la de 2026, da la última que encuentres, di de qué año es y márcala con [VERIFICAR].
+
+═══ QUIÉN JUEGA ═══
+Adultos en España sin formación financiera: alguien con su primera nómina, alguien que lleva años sin mirar sus cuentas, alguien que quiere dejar de sentirse perdido con el dinero. No son niños: tono cercano, con humor ligero, nunca infantil ni condescendiente.
+
+═══ CÓMO ES UN MUNDO ═══
+Un camino de 9 niveles en este orden fijo:
+  1 Lectura · 2 Práctica · 3 Lectura · 4 Práctica · 5 Lectura · 6 Práctica · 7 Lectura · 8 Práctica · 9 Jefe final
+- LECTURA: de 4 a 6 pantallas cortas (60 palabras como mucho cada una) y un minitest de 4 preguntas.
+- PRÁCTICA: de 6 a 8 ejercicios sobre la lectura anterior (y las previas), con situaciones de la vida real.
+- JEFE: un villano que encarna al enemigo del mundo (en el mundo de Ahorro es "El Tragaperras", el monstruo que se come el dinero que no tiene un sitio). 12 preguntas que repasan TODO el mundo.
+De lo más básico a lo más avanzado. Una práctica solo pregunta lo que ya se ha visto.
+
+═══ TIPOS DE PREGUNTA (solo estos seis) ═══
+- opcion: 3 o 4 opciones y UNA correcta.
+- verdaderoFalso.
+- ordenar: de 3 a 6 pasos con un orden único e indiscutible.
+- emparejar: de 3 a 5 conceptos, cada uno con su definición.
+- hueco: una frase con UN hueco (___) y 3 opciones para rellenarlo.
+- calcula: el jugador escribe un número en euros, en porcentaje o un entero (meses, años, veces).
+
+Reglas para TODAS las preguntas:
+- Una sola respuesta defendible. Si alguien que sabe del tema pudiera discutirla, reescríbela.
+- Los distractores son errores que comete la gente de verdad, no disparates.
+- Nada de "todas las anteriores", dobles negaciones ni trampas de redacción.
+- Cada pregunta lleva una EXPLICACIÓN de 1 o 2 frases que dice POR QUÉ. Se enseña al fallar y es lo que de verdad enseña: no repitas la respuesta, explica el razonamiento.
+- En "calcula": cifras redondas, un resultado exacto al céntimo y la cuenta escrita paso a paso. Solo cuentas que se puedan hacer con la calculadora del móvil (nada de logaritmos ni fórmulas financieras complejas). Si el cálculo necesita un supuesto (por ejemplo, "sin sacar nada en todo el año"), escríbelo en el enunciado.
+
+═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
+1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
+3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
+4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
+5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
+En las prácticas, los ejercicios cuentan una pequeña historia: el mismo personaje enfrentándose a decisiones de verdad, una detrás de otra.
+
+═══ FORMATO DE ENTREGA (exacto: otra IA lo convertirá después a JSON) ═══
+
+## Resumen del mundo
+- Título y descripción del mundo en una frase (200 caracteres como mucho).
+- Villano del jefe: nombre, qué representa y su frase de presentación.
+
+## Nivel N · Lectura | Práctica | Jefe · Título (60 caracteres como mucho)
+- Descripción para la ficha del camino (200 caracteres como mucho).
+- Objetivo, en una frase.
+
+Solo en las LECTURAS:
+- Pantallas: para cada una, un título (50 caracteres como mucho) y su contenido en frases de 20 palabras como mucho. Una pantalla puede llevar: párrafos cortos, una lista de 2 a 6 puntos, un ejemplo en tabla concepto | importe (los gastos en negativo y los ingresos en positivo) y la idea clave.
+- Mito y realidad.
+- Gancho final.
+- Minitest: 4 preguntas.
+
+En las PRÁCTICAS: de 6 a 8 ejercicios, mezclando al menos cuatro de los seis tipos y con al menos un "calcula".
+En el JEFE: 12 preguntas, con los seis tipos y al menos dos "calcula".
+
+Cada pregunta, así:
+  Tipo: …
+  Enunciado: …
+  Opciones / Pasos / Pares: … (los pasos, en el orden BUENO; los pares, cada concepto con SU definición)
+  Correcta: …
+  Explicación: …
+  Fuente: … (si depende de una cifra o de una norma)
+
+## Glosario
+Cada concepto o sigla que aparezca, con su definición en una frase.
+
+## Tabla de cifras y normas
+Una fila por CADA cifra legal, fiscal u oficial que aparezca en cualquier parte del contenido:
+| Dato | Valor | Año de vigencia | Norma (con artículo) u organismo | URL oficial | ¿Hecho o regla práctica? |
+
+## Fuentes
+La lista de URLs consultadas.
+
+═══ REGLAS DE FIABILIDAD ═══
+- Fuentes válidas para una cifra o una norma: BOE, Banco de España (incluido el Portal del Cliente Bancario), CNMV, Agencia Tributaria, Seguridad Social, INE, Fondo de Garantía de Depósitos, ministerios y finanzasparatodos.es. Los blogs, los bancos y los comparadores NO valen como fuente de una cifra.
+- No inventes ninguna cifra legal ni ningún dato estadístico. Si dudas, márcalo con [VERIFICAR].
+- Distingue los HECHOS (la ley, una definición) de las REGLAS PRÁCTICAS (el 50/30/20, los 3-6 meses de colchón), y dilo en el propio texto: "una referencia habitual es…", nunca "tienes que…".
+- Los ejemplos con personajes son ilustrativos: cifras realistas, pero sin necesidad de fuente.
+- NO nombres ni insinúes ningún banco, fondo, bróker, aseguradora, app, plataforma ni producto comercial concreto. Habla de tipos de producto.
+- Nada de consejo personalizado: es contenido educativo, no asesoramiento financiero.
+
+═══ ESTILO ═══
+- Español de España, de tú y llano. Frases cortas. Sin anglicismos innecesarios; si la palabra inglesa es la habitual (por ejemplo, "ETF"), explícala la primera vez.
+- No uses adjetivos con género para dirigirte al lector ("preparado", "seguro"); busca giros neutros.
+- Humor ligero cuando ayude, nunca a costa de quien tiene deudas o problemas de dinero.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  INVERSIÓN  (content/heroe/inversion/)
+═══════════════════════════════════════════════════════════════════════════
+
+Sois un equipo de dos: una divulgadora de educación financiera para adultos en España y un diseñador de videojuegos educativos. Vais a preparar el contenido de un "mundo" del Camino del héroe, el módulo de una aplicación gratuita de finanzas personales que enseña con forma de videojuego de píxeles. Se juega en el móvil, en ratos de 2 a 4 minutos. El objetivo: que quien juegue aprenda algo VERDADERO y ÚTIL en cada nivel y quiera jugar el siguiente.
+
+MUNDO: Inversión
+
+ENFOQUE: Hacer que el dinero que no vas a necesitar en años trabaje. Por qué invertir (la inflación se come lo que está quieto); riesgo y rentabilidad van juntos; horizonte temporal; diversificación; renta fija y renta variable; fondos de inversión, fondos indexados y ETF; las comisiones y su efecto a 20-30 años; aportaciones periódicas; cómo tributan las ganancias en 2026 (base del ahorro y sus tramos, compensación de pérdidas); por qué los fondos de inversión se pueden traspasar sin tributar y los ETF, en general, no; planes de pensiones (límites de aportación de 2026, cuándo se puede rescatar, cómo tributa el rescate); perfil de riesgo y test de idoneidad y conveniencia (MiFID II); el indicador de riesgo del 1 al 7 y el documento de datos fundamentales; las criptomonedas solo como ejemplo de alto riesgo y lo que advierten la CNMV y el Banco de España; cómo detectar un chiringuito financiero (registros y advertencias de la CNMV); los sesgos que hacen perder dinero (comprar con euforia, vender con pánico, querer adivinar el mercado). Ninguna rentabilidad prometida: si das una histórica, con su fuente y con el aviso de que las rentabilidades pasadas no garantizan las futuras.
+
+LO QUE YA CUBREN OTROS MUNDOS (no lo repitas; como mucho, una mención de una frase): Salud financiera: presupuesto, 50/30/20, nómina, patrimonio neto. Ahorro: fondo de emergencia, TAE y TIN, Fondo de Garantía de Depósitos, interés compuesto básico, retención del 19 % sobre intereses (aquí solo se amplía a los tramos de la base del ahorro). Deuda y crédito: préstamos, tarjetas, hipotecas.
+
+FECHA: hoy es noviembre de 2026. Toda cifra legal, fiscal u oficial tiene que ser la vigente en 2026, y hay que decir de qué año es. Si no encuentras la de 2026, da la última que encuentres, di de qué año es y márcala con [VERIFICAR].
+
+═══ QUIÉN JUEGA ═══
+Adultos en España sin formación financiera: alguien con su primera nómina, alguien que lleva años sin mirar sus cuentas, alguien que quiere dejar de sentirse perdido con el dinero. No son niños: tono cercano, con humor ligero, nunca infantil ni condescendiente.
+
+═══ CÓMO ES UN MUNDO ═══
+Un camino de 9 niveles en este orden fijo:
+  1 Lectura · 2 Práctica · 3 Lectura · 4 Práctica · 5 Lectura · 6 Práctica · 7 Lectura · 8 Práctica · 9 Jefe final
+- LECTURA: de 4 a 6 pantallas cortas (60 palabras como mucho cada una) y un minitest de 4 preguntas.
+- PRÁCTICA: de 6 a 8 ejercicios sobre la lectura anterior (y las previas), con situaciones de la vida real.
+- JEFE: un villano que encarna al enemigo del mundo (en el mundo de Ahorro es "El Tragaperras", el monstruo que se come el dinero que no tiene un sitio). 12 preguntas que repasan TODO el mundo.
+De lo más básico a lo más avanzado. Una práctica solo pregunta lo que ya se ha visto.
+
+═══ TIPOS DE PREGUNTA (solo estos seis) ═══
+- opcion: 3 o 4 opciones y UNA correcta.
+- verdaderoFalso.
+- ordenar: de 3 a 6 pasos con un orden único e indiscutible.
+- emparejar: de 3 a 5 conceptos, cada uno con su definición.
+- hueco: una frase con UN hueco (___) y 3 opciones para rellenarlo.
+- calcula: el jugador escribe un número en euros, en porcentaje o un entero (meses, años, veces).
+
+Reglas para TODAS las preguntas:
+- Una sola respuesta defendible. Si alguien que sabe del tema pudiera discutirla, reescríbela.
+- Los distractores son errores que comete la gente de verdad, no disparates.
+- Nada de "todas las anteriores", dobles negaciones ni trampas de redacción.
+- Cada pregunta lleva una EXPLICACIÓN de 1 o 2 frases que dice POR QUÉ. Se enseña al fallar y es lo que de verdad enseña: no repitas la respuesta, explica el razonamiento.
+- En "calcula": cifras redondas, un resultado exacto al céntimo y la cuenta escrita paso a paso. Solo cuentas que se puedan hacer con la calculadora del móvil (nada de logaritmos ni fórmulas financieras complejas). Si el cálculo necesita un supuesto (por ejemplo, "sin sacar nada en todo el año"), escríbelo en el enunciado.
+
+═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
+1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
+3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
+4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
+5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
+En las prácticas, los ejercicios cuentan una pequeña historia: el mismo personaje enfrentándose a decisiones de verdad, una detrás de otra.
+
+═══ FORMATO DE ENTREGA (exacto: otra IA lo convertirá después a JSON) ═══
+
+## Resumen del mundo
+- Título y descripción del mundo en una frase (200 caracteres como mucho).
+- Villano del jefe: nombre, qué representa y su frase de presentación.
+
+## Nivel N · Lectura | Práctica | Jefe · Título (60 caracteres como mucho)
+- Descripción para la ficha del camino (200 caracteres como mucho).
+- Objetivo, en una frase.
+
+Solo en las LECTURAS:
+- Pantallas: para cada una, un título (50 caracteres como mucho) y su contenido en frases de 20 palabras como mucho. Una pantalla puede llevar: párrafos cortos, una lista de 2 a 6 puntos, un ejemplo en tabla concepto | importe (los gastos en negativo y los ingresos en positivo) y la idea clave.
+- Mito y realidad.
+- Gancho final.
+- Minitest: 4 preguntas.
+
+En las PRÁCTICAS: de 6 a 8 ejercicios, mezclando al menos cuatro de los seis tipos y con al menos un "calcula".
+En el JEFE: 12 preguntas, con los seis tipos y al menos dos "calcula".
+
+Cada pregunta, así:
+  Tipo: …
+  Enunciado: …
+  Opciones / Pasos / Pares: … (los pasos, en el orden BUENO; los pares, cada concepto con SU definición)
+  Correcta: …
+  Explicación: …
+  Fuente: … (si depende de una cifra o de una norma)
+
+## Glosario
+Cada concepto o sigla que aparezca, con su definición en una frase.
+
+## Tabla de cifras y normas
+Una fila por CADA cifra legal, fiscal u oficial que aparezca en cualquier parte del contenido:
+| Dato | Valor | Año de vigencia | Norma (con artículo) u organismo | URL oficial | ¿Hecho o regla práctica? |
+
+## Fuentes
+La lista de URLs consultadas.
+
+═══ REGLAS DE FIABILIDAD ═══
+- Fuentes válidas para una cifra o una norma: BOE, Banco de España (incluido el Portal del Cliente Bancario), CNMV, Agencia Tributaria, Seguridad Social, INE, Fondo de Garantía de Depósitos, ministerios y finanzasparatodos.es. Los blogs, los bancos y los comparadores NO valen como fuente de una cifra.
+- No inventes ninguna cifra legal ni ningún dato estadístico. Si dudas, márcalo con [VERIFICAR].
+- Distingue los HECHOS (la ley, una definición) de las REGLAS PRÁCTICAS (el 50/30/20, los 3-6 meses de colchón), y dilo en el propio texto: "una referencia habitual es…", nunca "tienes que…".
+- Los ejemplos con personajes son ilustrativos: cifras realistas, pero sin necesidad de fuente.
+- NO nombres ni insinúes ningún banco, fondo, bróker, aseguradora, app, plataforma ni producto comercial concreto. Habla de tipos de producto.
+- Nada de consejo personalizado: es contenido educativo, no asesoramiento financiero.
+
+═══ ESTILO ═══
+- Español de España, de tú y llano. Frases cortas. Sin anglicismos innecesarios; si la palabra inglesa es la habitual (por ejemplo, "ETF"), explícala la primera vez.
+- No uses adjetivos con género para dirigirte al lector ("preparado", "seguro"); busca giros neutros.
+- Humor ligero cuando ayude, nunca a costa de quien tiene deudas o problemas de dinero.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  DEUDA Y CRÉDITO  (content/heroe/deuda/)
+═══════════════════════════════════════════════════════════════════════════
+
+Sois un equipo de dos: una divulgadora de educación financiera para adultos en España y un diseñador de videojuegos educativos. Vais a preparar el contenido de un "mundo" del Camino del héroe, el módulo de una aplicación gratuita de finanzas personales que enseña con forma de videojuego de píxeles. Se juega en el móvil, en ratos de 2 a 4 minutos. El objetivo: que quien juegue aprenda algo VERDADERO y ÚTIL en cada nivel y quiera jugar el siguiente.
+
+MUNDO: Deuda y crédito
+
+ENFOQUE: Pedir prestado sin que te atrape. Deuda que te ayuda y deuda que te hunde; TIN, TAE y coste total de un préstamo (cuánto pagas de verdad); la cuota fija del sistema francés y por qué al principio pagas sobre todo intereses; tarjetas de débito, de crédito a fin de mes y revolving (y lo que han dicho los tribunales sobre la usura); "compra ahora y paga después" y minicréditos rápidos; préstamos personales y el derecho de desistimiento; hipotecas: tipo fijo, variable y mixto, Euríbor y diferencial, qué gastos paga el banco y cuáles tú (Ley 5/2019); la CIRBE (qué es y desde qué importe se declara) y los ficheros de morosos (requisitos según la ley de protección de datos); métodos bola de nieve y avalancha para salir de deudas; la reunificación de deudas (pros y riesgos); la Ley de Segunda Oportunidad tras la reforma de 2022; dónde reclamar (servicio de atención al cliente de la entidad y Banco de España). Ojo: la Directiva (UE) 2023/2225 de crédito al consumo tiene fecha de aplicación en noviembre de 2026; comprueba si España ya la ha transpuesto y qué cambia, y marca con [VERIFICAR] lo que no esté claramente en vigor.
+
+LO QUE YA CUBREN OTROS MUNDOS (no lo repitas; como mucho, una mención de una frase): Salud financiera: presupuesto, 50/30/20, nómina, patrimonio neto. Ahorro: fondo de emergencia, cuentas remuneradas, TAE y TIN en el ahorro (aquí se ven en los préstamos), Fondo de Garantía de Depósitos. Inversión: fondos, ETF, planes de pensiones.
+
+FECHA: hoy es noviembre de 2026. Toda cifra legal, fiscal u oficial tiene que ser la vigente en 2026, y hay que decir de qué año es. Si no encuentras la de 2026, da la última que encuentres, di de qué año es y márcala con [VERIFICAR].
+
+═══ QUIÉN JUEGA ═══
+Adultos en España sin formación financiera: alguien con su primera nómina, alguien que lleva años sin mirar sus cuentas, alguien que quiere dejar de sentirse perdido con el dinero. No son niños: tono cercano, con humor ligero, nunca infantil ni condescendiente.
+
+═══ CÓMO ES UN MUNDO ═══
+Un camino de 9 niveles en este orden fijo:
+  1 Lectura · 2 Práctica · 3 Lectura · 4 Práctica · 5 Lectura · 6 Práctica · 7 Lectura · 8 Práctica · 9 Jefe final
+- LECTURA: de 4 a 6 pantallas cortas (60 palabras como mucho cada una) y un minitest de 4 preguntas.
+- PRÁCTICA: de 6 a 8 ejercicios sobre la lectura anterior (y las previas), con situaciones de la vida real.
+- JEFE: un villano que encarna al enemigo del mundo (en el mundo de Ahorro es "El Tragaperras", el monstruo que se come el dinero que no tiene un sitio). 12 preguntas que repasan TODO el mundo.
+De lo más básico a lo más avanzado. Una práctica solo pregunta lo que ya se ha visto.
+
+═══ TIPOS DE PREGUNTA (solo estos seis) ═══
+- opcion: 3 o 4 opciones y UNA correcta.
+- verdaderoFalso.
+- ordenar: de 3 a 6 pasos con un orden único e indiscutible.
+- emparejar: de 3 a 5 conceptos, cada uno con su definición.
+- hueco: una frase con UN hueco (___) y 3 opciones para rellenarlo.
+- calcula: el jugador escribe un número en euros, en porcentaje o un entero (meses, años, veces).
+
+Reglas para TODAS las preguntas:
+- Una sola respuesta defendible. Si alguien que sabe del tema pudiera discutirla, reescríbela.
+- Los distractores son errores que comete la gente de verdad, no disparates.
+- Nada de "todas las anteriores", dobles negaciones ni trampas de redacción.
+- Cada pregunta lleva una EXPLICACIÓN de 1 o 2 frases que dice POR QUÉ. Se enseña al fallar y es lo que de verdad enseña: no repitas la respuesta, explica el razonamiento.
+- En "calcula": cifras redondas, un resultado exacto al céntimo y la cuenta escrita paso a paso. Solo cuentas que se puedan hacer con la calculadora del móvil (nada de logaritmos ni fórmulas financieras complejas). Si el cálculo necesita un supuesto (por ejemplo, "sin sacar nada en todo el año"), escríbelo en el enunciado.
+
+═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
+1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
+3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
+4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
+5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
+En las prácticas, los ejercicios cuentan una pequeña historia: el mismo personaje enfrentándose a decisiones de verdad, una detrás de otra.
+
+═══ FORMATO DE ENTREGA (exacto: otra IA lo convertirá después a JSON) ═══
+
+## Resumen del mundo
+- Título y descripción del mundo en una frase (200 caracteres como mucho).
+- Villano del jefe: nombre, qué representa y su frase de presentación.
+
+## Nivel N · Lectura | Práctica | Jefe · Título (60 caracteres como mucho)
+- Descripción para la ficha del camino (200 caracteres como mucho).
+- Objetivo, en una frase.
+
+Solo en las LECTURAS:
+- Pantallas: para cada una, un título (50 caracteres como mucho) y su contenido en frases de 20 palabras como mucho. Una pantalla puede llevar: párrafos cortos, una lista de 2 a 6 puntos, un ejemplo en tabla concepto | importe (los gastos en negativo y los ingresos en positivo) y la idea clave.
+- Mito y realidad.
+- Gancho final.
+- Minitest: 4 preguntas.
+
+En las PRÁCTICAS: de 6 a 8 ejercicios, mezclando al menos cuatro de los seis tipos y con al menos un "calcula".
+En el JEFE: 12 preguntas, con los seis tipos y al menos dos "calcula".
+
+Cada pregunta, así:
+  Tipo: …
+  Enunciado: …
+  Opciones / Pasos / Pares: … (los pasos, en el orden BUENO; los pares, cada concepto con SU definición)
+  Correcta: …
+  Explicación: …
+  Fuente: … (si depende de una cifra o de una norma)
+
+## Glosario
+Cada concepto o sigla que aparezca, con su definición en una frase.
+
+## Tabla de cifras y normas
+Una fila por CADA cifra legal, fiscal u oficial que aparezca en cualquier parte del contenido:
+| Dato | Valor | Año de vigencia | Norma (con artículo) u organismo | URL oficial | ¿Hecho o regla práctica? |
+
+## Fuentes
+La lista de URLs consultadas.
+
+═══ REGLAS DE FIABILIDAD ═══
+- Fuentes válidas para una cifra o una norma: BOE, Banco de España (incluido el Portal del Cliente Bancario), CNMV, Agencia Tributaria, Seguridad Social, INE, Fondo de Garantía de Depósitos, ministerios y finanzasparatodos.es. Los blogs, los bancos y los comparadores NO valen como fuente de una cifra.
+- No inventes ninguna cifra legal ni ningún dato estadístico. Si dudas, márcalo con [VERIFICAR].
+- Distingue los HECHOS (la ley, una definición) de las REGLAS PRÁCTICAS (el 50/30/20, los 3-6 meses de colchón), y dilo en el propio texto: "una referencia habitual es…", nunca "tienes que…".
+- Los ejemplos con personajes son ilustrativos: cifras realistas, pero sin necesidad de fuente.
+- NO nombres ni insinúes ningún banco, fondo, bróker, aseguradora, app, plataforma ni producto comercial concreto. Habla de tipos de producto.
+- Nada de consejo personalizado: es contenido educativo, no asesoramiento financiero.
+
+═══ ESTILO ═══
+- Español de España, de tú y llano. Frases cortas. Sin anglicismos innecesarios; si la palabra inglesa es la habitual (por ejemplo, "ETF"), explícala la primera vez.
+- No uses adjetivos con género para dirigirte al lector ("preparado", "seguro"); busca giros neutros.
+- Humor ligero cuando ayude, nunca a costa de quien tiene deudas o problemas de dinero.
+
+═══════════════════════════════════════════════════════════════════════════
+  AHORRO  (content/heroe/ahorro/)  · ya tiene 3 niveles que se quedan
+═══════════════════════════════════════════════════════════════════════════
+
+Sois un equipo de dos: una divulgadora de educación financiera para adultos en España y un diseñador de videojuegos educativos. Vais a preparar el contenido de un "mundo" del Camino del héroe, el módulo de una aplicación gratuita de finanzas personales que enseña con forma de videojuego de píxeles. Se juega en el móvil, en ratos de 2 a 4 minutos. El objetivo: que quien juegue aprenda algo VERDADERO y ÚTIL en cada nivel y quiera jugar el siguiente.
+
+MUNDO: Ahorro
+
+ENFOQUE: Apartar dinero sin que duela y hacer que no pierda valor. Págate primero y automatizar el ahorro; cuentas remuneradas y depósitos a plazo (qué pasa si cancelas antes); TAE frente a TIN con un ejemplo de cada; el Fondo de Garantía de Depósitos (qué cubre y qué no, cuentas con varios titulares); las Letras del Tesoro como forma de ahorro a corto plazo (cómo se compran directamente en el Tesoro Público y cómo tributan); la inflación y el poder adquisitivo (qué es el IPC y dónde lo publica el INE); interés simple frente a compuesto; ahorrar para metas con fecha (cuánto al mes para llegar); cómo tributan los intereses (retención del 19 % y, solo como mención, que la base del ahorro tiene tramos). IMPORTANTE: el mundo ya tiene tres niveles publicados que se quedan: el nivel 1 es la lectura "El fondo de emergencia" (qué es, de 3 a 6 meses de gastos imprescindibles, dónde guardarlo, el FGD, TAE y TIN en una línea, págate primero), el nivel 2 es su práctica y el nivel 9 es el jefe "El Tragaperras", el monstruo que se come el dinero que no tiene un sitio. Diseña los niveles 3 a 8 sin repetir lo del nivel 1 (puedes profundizar en lo que allí solo se menciona) y el jefe con preguntas de TODO el mundo.
+
+LO QUE YA CUBREN OTROS MUNDOS (no lo repitas; como mucho, una mención de una frase): Salud financiera: presupuesto, 50/30/20, gastos hormiga, nómina, patrimonio neto. Inversión: renta fija y variable, fondos, ETF, planes de pensiones, los tramos de la base del ahorro en detalle. Deuda y crédito: préstamos, tarjetas, hipotecas, morosidad.
+
+FECHA: hoy es noviembre de 2026. Toda cifra legal, fiscal u oficial tiene que ser la vigente en 2026, y hay que decir de qué año es. Si no encuentras la de 2026, da la última que encuentres, di de qué año es y márcala con [VERIFICAR].
+
+═══ QUIÉN JUEGA ═══
+Adultos en España sin formación financiera: alguien con su primera nómina, alguien que lleva años sin mirar sus cuentas, alguien que quiere dejar de sentirse perdido con el dinero. No son niños: tono cercano, con humor ligero, nunca infantil ni condescendiente.
+
+═══ CÓMO ES UN MUNDO ═══
+Un camino de 9 niveles en este orden fijo:
+  1 Lectura · 2 Práctica · 3 Lectura · 4 Práctica · 5 Lectura · 6 Práctica · 7 Lectura · 8 Práctica · 9 Jefe final
+- LECTURA: de 4 a 6 pantallas cortas (60 palabras como mucho cada una) y un minitest de 4 preguntas.
+- PRÁCTICA: de 6 a 8 ejercicios sobre la lectura anterior (y las previas), con situaciones de la vida real.
+- JEFE: un villano que encarna al enemigo del mundo (en el mundo de Ahorro es "El Tragaperras", el monstruo que se come el dinero que no tiene un sitio). 12 preguntas que repasan TODO el mundo.
+De lo más básico a lo más avanzado. Una práctica solo pregunta lo que ya se ha visto.
+
+═══ TIPOS DE PREGUNTA (solo estos seis) ═══
+- opcion: 3 o 4 opciones y UNA correcta.
+- verdaderoFalso.
+- ordenar: de 3 a 6 pasos con un orden único e indiscutible.
+- emparejar: de 3 a 5 conceptos, cada uno con su definición.
+- hueco: una frase con UN hueco (___) y 3 opciones para rellenarlo.
+- calcula: el jugador escribe un número en euros, en porcentaje o un entero (meses, años, veces).
+
+Reglas para TODAS las preguntas:
+- Una sola respuesta defendible. Si alguien que sabe del tema pudiera discutirla, reescríbela.
+- Los distractores son errores que comete la gente de verdad, no disparates.
+- Nada de "todas las anteriores", dobles negaciones ni trampas de redacción.
+- Cada pregunta lleva una EXPLICACIÓN de 1 o 2 frases que dice POR QUÉ. Se enseña al fallar y es lo que de verdad enseña: no repitas la respuesta, explica el razonamiento.
+- En "calcula": cifras redondas, un resultado exacto al céntimo y la cuenta escrita paso a paso. Solo cuentas que se puedan hacer con la calculadora del móvil (nada de logaritmos ni fórmulas financieras complejas). Si el cálculo necesita un supuesto (por ejemplo, "sin sacar nada en todo el año"), escríbelo en el enunciado.
+
+═══ LO QUE HACE QUE ENGANCHE (obligatorio en cada lectura) ═══
+1. GANCHO: la primera pantalla empieza con una situación cotidiana o un dato sorprendente y verificable (con su fuente).
+2. PERSONAJE: Pepito, siempre Pepito (es el personaje de la casa; no uses otros nombres), en una situación concreta, con cifras realistas de la España de 2026 (alquiler, nómina, la compra, la factura de la luz…). Lo que cambia de un nivel a otro es su edad, su ciudad y su vida: Pepito estudiante, autónomo, con pareja e hijos, jubilado, compartiendo piso… Si hay una segunda persona, no lleva nombre: "su pareja", "su hermana".
+3. MITO frente a REALIDAD: una creencia muy extendida y por qué es falsa.
+4. IDEA CLAVE: la frase que hay que llevarse, en menos de 20 palabras.
+5. GANCHO FINAL: una pregunta que se responde en el siguiente nivel, para que apetezca seguir.
+En las prácticas, los ejercicios cuentan una pequeña historia: el mismo personaje enfrentándose a decisiones de verdad, una detrás de otra.
+
+═══ FORMATO DE ENTREGA (exacto: otra IA lo convertirá después a JSON) ═══
+
+## Resumen del mundo
+- Título y descripción del mundo en una frase (200 caracteres como mucho).
+- Villano del jefe: nombre, qué representa y su frase de presentación.
+
+## Nivel N · Lectura | Práctica | Jefe · Título (60 caracteres como mucho)
+- Descripción para la ficha del camino (200 caracteres como mucho).
+- Objetivo, en una frase.
+
+Solo en las LECTURAS:
+- Pantallas: para cada una, un título (50 caracteres como mucho) y su contenido en frases de 20 palabras como mucho. Una pantalla puede llevar: párrafos cortos, una lista de 2 a 6 puntos, un ejemplo en tabla concepto | importe (los gastos en negativo y los ingresos en positivo) y la idea clave.
+- Mito y realidad.
+- Gancho final.
+- Minitest: 4 preguntas.
+
+En las PRÁCTICAS: de 6 a 8 ejercicios, mezclando al menos cuatro de los seis tipos y con al menos un "calcula".
+En el JEFE: 12 preguntas, con los seis tipos y al menos dos "calcula".
+
+Cada pregunta, así:
+  Tipo: …
+  Enunciado: …
+  Opciones / Pasos / Pares: … (los pasos, en el orden BUENO; los pares, cada concepto con SU definición)
+  Correcta: …
+  Explicación: …
+  Fuente: … (si depende de una cifra o de una norma)
+
+## Glosario
+Cada concepto o sigla que aparezca, con su definición en una frase.
+
+## Tabla de cifras y normas
+Una fila por CADA cifra legal, fiscal u oficial que aparezca en cualquier parte del contenido:
+| Dato | Valor | Año de vigencia | Norma (con artículo) u organismo | URL oficial | ¿Hecho o regla práctica? |
+
+## Fuentes
+La lista de URLs consultadas.
+
+═══ REGLAS DE FIABILIDAD ═══
+- Fuentes válidas para una cifra o una norma: BOE, Banco de España (incluido el Portal del Cliente Bancario), CNMV, Agencia Tributaria, Seguridad Social, INE, Fondo de Garantía de Depósitos, ministerios y finanzasparatodos.es. Los blogs, los bancos y los comparadores NO valen como fuente de una cifra.
+- No inventes ninguna cifra legal ni ningún dato estadístico. Si dudas, márcalo con [VERIFICAR].
+- Distingue los HECHOS (la ley, una definición) de las REGLAS PRÁCTICAS (el 50/30/20, los 3-6 meses de colchón), y dilo en el propio texto: "una referencia habitual es…", nunca "tienes que…".
+- Los ejemplos con personajes son ilustrativos: cifras realistas, pero sin necesidad de fuente.
+- NO nombres ni insinúes ningún banco, fondo, bróker, aseguradora, app, plataforma ni producto comercial concreto. Habla de tipos de producto.
+- Nada de consejo personalizado: es contenido educativo, no asesoramiento financiero.
+
+═══ ESTILO ═══
+- Español de España, de tú y llano. Frases cortas. Sin anglicismos innecesarios; si la palabra inglesa es la habitual (por ejemplo, "ETF"), explícala la primera vez.
+- No uses adjetivos con género para dirigirte al lector ("preparado", "seguro"); busca giros neutros.
+- Humor ligero cuando ayude, nunca a costa de quien tiene deudas o problemas de dinero.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  CONVERSIÓN DEL INFORME A NIVELES  ·  una sesión NUEVA de Claude por mundo
+═══════════════════════════════════════════════════════════════════════════
+
+Se pega en una sesión nueva de Claude Code, se cambia la línea MUNDO y se
+pega el informe de Gemini al final (o se da la ruta del fichero).
+
+Trabajo en TeachCash (gestor de finanzas personales en Next.js 16 + Supabase).
+Vamos a convertir en niveles del "Camino del héroe" un informe de
+investigación hecho con Gemini Deep Research. Responde siempre en español.
+
+MUNDO: salud        ← CAMBIA ESTO: salud | inversion | deuda | ahorro
+INFORME: va pegado al final de este mensaje (o está en: <ruta del fichero>)
+
+━━ LEE ANTES DE ESCRIBIR NADA ━━
+1. AGENTS.md
+2. docs/CONTENIDO_HEROE.md: el formato, los tipos de nivel y de pregunta, y
+   la lista de revisión.
+3. src/types/heroe.types.ts: los esquemas Zod son la referencia EXACTA. Si
+   el documento y el esquema no coinciden, manda el esquema.
+4. content/heroe/ahorro/*.json: el mundo piloto. Es el ejemplo de tono, de
+   página y de cada tipo de pregunta.
+5. content/heroe/<MUNDO>/mundo.json y los JSON de los OTROS mundos que ya
+   existan, para no repetir temas.
+
+━━ LÍMITES ━━
+- Solo escribes en content/heroe/<MUNDO>/. Nada de src/, app/, docs/, e2e/
+  ni tests: otras sesiones están cambiando el código. Si el formato necesita
+  un cambio de código, dímelo y no lo hagas.
+- Ni git add ni commits.
+- En mundo.json solo rellenas "niveles". NO cambias id, titulo, descripcion,
+  decorado ni orden.
+- Si el MUNDO es ahorro: los ids ahorro/01-fondo-de-emergencia,
+  ahorro/02-practica-el-colchon y ahorro/03-jefe-del-ahorro YA están
+  publicados (el progreso de la gente se guarda con ellos) y no se renombran
+  ni se borran. Antes de escribir, proponme cómo encajar los nuevos y espera
+  mi OK.
+
+━━ QUÉ HAY QUE ESCRIBIR ━━
+9 niveles, en este orden: Lectura, Interactivo, Lectura, Interactivo,
+Lectura, Interactivo, Lectura, Interactivo y Jefe.
+- Ficheros 01-<slug>.json … 09-jefe-<slug>.json. El id de cada nivel es
+  "<MUNDO>/<fichero sin .json>". Slugs en minúsculas, cifras y guiones, sin
+  tildes ni ñ.
+- LECTURA: de 4 a 7 páginas de 60 palabras como mucho y un minitest de 4
+  preguntas. Cada lectura lleva:
+    · un gancho en la primera página: un bloque "dato" (¿Sabías que…?) con
+      su fuente oficial. Si el informe no da una fuente oficial para el dato,
+      no hay bloque "dato";
+    · un personaje con su bloque "ejemplo" en tabla (gastos en negativo);
+    · un mito frente a la realidad;
+    · una "idea" por página como mucho;
+    · el gancho final del informe como último párrafo.
+- INTERACTIVO: de 5 a 7 ejercicios, mezclando al menos cuatro de los seis
+  tipos y con al menos un "calcula". Que cuenten la historia del personaje.
+- JEFE: las 12 preguntas del informe, "aprobado": 70, con los seis tipos y al menos dos
+  "calcula". Su titulo es el nombre del villano del informe y la descripcion
+  lo presenta.
+- "minutos" realistas: lectura de 2 a 4, interactivo de 3 a 4, jefe de 4 a 5.
+
+━━ QUE ENTRE POR LOS OJOS (sin pasarse) ━━
+- Emoji como viñeta en las listas (como en
+  content/heroe/ahorro/01-fondo-de-emergencia.json) y, si ayuda, en el texto.
+  NUNCA en un título (de nivel, de página ni de ejemplo): el validador los
+  rechaza.
+- **negrita** para la palabra o la cifra clave de cada página y _cursiva_
+  para términos y matices. Dos o tres marcas por página como mucho: si todo
+  va en negrita, nada destaca.
+- Un bloque "imagen" en la primera página de cada lectura, y donde ayude,
+  con un sprite de los que permite SPRITES_IMAGEN en heroe.types.ts y un
+  "pie" que diga lo que se ve.
+- Párrafos de 2 o 3 frases. Si hay mucha letra, pártelo en una lista o en
+  otra página.
+- Usa SOLO lo que el esquema acepte hoy. Si un bloque o una marca no está en
+  heroe.types.ts, no la uses.
+
+━━ REGLAS DEL CONTENIDO ━━
+- Importes en céntimos y con signo: 650 € de gasto es -65000. En "calcula":
+  euros en céntimos (2.850 € es 285000); porcentaje en centésimas de punto
+  (5,25 % es 525); numero, un entero. Con cifras redondas, tolerancia 0.
+- Rehaz A MANO cada "calcula" y cada cifra de los ejemplos (totales de las
+  tablas, notas) antes de escribirlos. Si el informe se equivoca, corrígelo y
+  dímelo.
+- Nada que no esté en el informe y respaldado por una fuente. Lo que el
+  informe marque con [VERIFICAR] se queda fuera, o entra y va destacado en la
+  lista de revisión.
+- Hechos frente a reglas prácticas: "una referencia habitual es…", nunca
+  "tienes que…".
+- Ningún banco, fondo, bróker, aseguradora, app, plataforma ni producto
+  concreto.
+- Una sola respuesta defendible por pregunta. Distractores que sean errores
+  reales, sin trampas de redacción. La "explicacion" dice POR QUÉ en una o
+  dos frases.
+- "ordenar": los pasos en el orden BUENO. "emparejar": cada concepto con SU
+  definición. "hueco": un solo ___.
+- Español de España, de tú y llano, con frases cortas y sin adjetivos con
+  género para el lector.
+
+━━ AL TERMINAR ━━
+1. Pasa `pnpm heroe:validar` y arregla lo que falle hasta que pase.
+2. Dame:
+   a) una tabla de los 9 niveles: tipo, título, minutos y número de
+      preguntas;
+   b) cada "calcula" con la cuenta hecha a mano;
+   c) la LISTA DE REVISIÓN: cada cifra legal, fiscal u oficial, dónde aparece
+      (fichero e id de la pregunta o página), su norma y la URL oficial para
+      comprobarla;
+   d) las preguntas que alguien podría discutir;
+   e) lo que hayas descartado del informe, y por qué.
+El mundo no está terminado hasta que una persona lo revise.
+
+
+═══════════════════════════════════════════════════════════════════════════
+  LO QUE QUEDA DE LA FASE 6  ·  sesión NUEVA de Claude para el resto
+═══════════════════════════════════════════════════════════════════════════
+
+Trabajo en TeachCash (gestor de finanzas personales en Next.js 16 + Supabase).
+Rama feat/CaminoDelHeroe. Seguimos con la FASE 6 (contenido) del módulo
+"Camino del héroe". Responde siempre en español.
+
+Lee primero: AGENTS.md, docs/CAMINO_HEROE.md, docs/CONTENIDO_HEROE.md,
+src/types/heroe.types.ts y docs/prompt-cursos.txt.
+
+━━ DÓNDE ESTAMOS (noviembre de 2026) ━━
+- Las fases 1 a 5 están hechas: héroe, progreso, formato del contenido, mapa,
+  camino y reproductor de niveles.
+- El lector ya admite **negrita**, _cursiva_ y los bloques "imagen" (sprites
+  de píxel) y "dato" (¿Sabías que…?, con fuente). Compruébalo en
+  heroe.types.ts; si no está, para y dímelo.
+- AHORRO tiene 3 niveles de piloto, ya revisados:
+    · cálculos rehechos a mano;
+    · cifras con su fuente: FGD de 100.000 € por titular y entidad
+      (RD 2606/1996), TAE y TIN (Orden EHA/2899/2011 y Circular 5/2012 del
+      Banco de España) y retención del 19 % sobre intereses (art. 90 del
+      Reglamento del IRPF).
+  La lectura 01 ya está reescrita con emojis y páginas cortas, pero todavía
+  sin negritas ni bloques nuevos.
+- SALUD, INVERSIÓN y DEUDA: los convierten otras sesiones, una por mundo,
+  con el prompt de conversión de docs/prompt-cursos.txt. NO toques sus
+  carpetas salvo para leerlas.
+- e2e/heroe.spec.ts ya no depende del número de páginas de ahorro/01, pero
+  sí de estos textos:
+    · el encabezado "Lo inesperado siempre llega";
+    · las respuestas del minitest de 01: "Para cubrir imprevistos sin
+      endeudarte", "6", "Falso" y "100.000 € por titular y entidad";
+    · los títulos "El fondo de emergencia" y "Practica: monta tu colchón";
+    · el texto "Ahorro, 0 de 3 niveles".
+  Si cambias algo de eso, avísame para cambiar el E2E.
+
+━━ LO QUE QUEDA, POR FASES ━━
+(Al acabar cada fase, resúmela y espera mi OK antes de seguir.)
+
+1. AHORRO, MÁS LLAMATIVO. Pasa ahorro/01, 02 y 03 al estilo nuevo:
+   - **negrita** en la cifra o la palabra clave de cada página (dos o tres
+     marcas por página como mucho) y _cursiva_ para los términos;
+   - un bloque "imagen" en la primera página de la lectura (hucha o cerdito)
+     y donde ayude;
+   - un "dato" de gancho con fuente oficial (por ejemplo, la cobertura del
+     FGD, con fgd.es como fuente).
+   No cambies ids, respuestas buenas ni cifras ya revisadas.
+   Pasa `pnpm heroe:validar`.
+
+2. AHORRO, COMPLETO HASTA 9 NIVELES. Hoy tiene 3.
+   - Guíame para lanzar en Gemini el prompt de investigación de AHORRO
+     (está en docs/prompt-cursos.txt).
+   - Cuando te pase el informe, conviértelo con el prompt de conversión de
+     ese mismo fichero.
+   - Los ids ya publicados no cambian: ahorro/01-fondo-de-emergencia,
+     ahorro/02-practica-el-colchon y ahorro/03-jefe-del-ahorro. El
+     progreso de la gente se guarda con ellos.
+   - Propónme cómo encajar los nuevos ANTES de escribir. Por ejemplo: 01 y
+     02 siguen siendo los niveles 1 y 2; 03-jefe-del-ahorro pasa al final de
+     "niveles" en mundo.json, con 10 preguntas de todo el mundo; los nuevos,
+     con otros nombres de fichero, ocupan los puestos 3 a 8.
+   - El E2E espera "0 de 3 niveles": avísame cuando lo cambies.
+
+3. REVISIÓN FINAL DE LOS CUATRO MUNDOS, con la lista de "La revisión" de
+   docs/CONTENIDO_HEROE.md:
+   - coherencia entre mundos: sin temas repetidos, los mismos términos y el
+     mismo tono;
+   - una sola respuesta buena por pregunta;
+   - ninguna marca comercial;
+   - ortografía y tildes.
+   Dame la lista consolidada de cifras que tengo que verificar, por mundo,
+   con su URL oficial.
+
+4. DOCUMENTACIÓN. Propónme qué actualizar en docs/CONTENIDO_HEROE.md (por
+   ejemplo, que los prompts viven ahora en docs/prompt-cursos.txt y que
+   existen los bloques nuevos) y cámbialo solo si te doy el OK.
+
+━━ LÍMITES ━━
+- Escribes solo en content/heroe/ahorro/. En la fase 4, también en docs/,
+  y solo con mi OK.
+- Ni git add ni commits: los hago yo o la otra sesión.
+- Nada de Playwright salvo que te lo pida.

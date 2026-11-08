@@ -1,0 +1,123 @@
+.grid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.grid > * {
+  grid-column: span 12;
+}
+
+@media (min-width: 62em) {
+  .colPatrimonio {
+    grid-column: span 7;
+  }
+
+  .colEstrellas {
+    grid-column: span 5;
+  }
+
+  .colMitad {
+    grid-column: span 6;
+  }
+}
+
+.cifra {
+  font-family: var(--sd-font-mono);
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ganancia {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--sd-ink-muted);
+}
+
+.ganancia[data-signo='1'] span {
+  color: var(--income);
+  font-weight: 700;
+}
+
+.ganancia[data-signo='-1'] span {
+  color: var(--expense);
+  font-weight: 700;
+}
+
+.estrellas {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+.nota {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--sd-ink-muted);
+}
+
+/* ── El equipo puesto ───────────────────────────────────────────────────── */
+
+.huecos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.35rem 1rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hueco {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.hueco[data-vacio='true'] {
+  color: var(--sd-ink-muted);
+}
+
+.huecoNombre {
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+/* ── Las estadísticas ───────────────────────────────────────────────────── */
+
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.6rem 1.25rem;
+  margin: 0.5rem 0 0;
+}
+
+.estadistica {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.5rem;
+}
+
+.estadistica dt {
+  font-size: 0.875rem;
+}
+
+.estadistica dd {
+  margin: 0;
+}
+
+.clave {
+  font-family: var(--sd-font-display);
+  font-weight: 700;
+}
+
+.valor {
+  font-family: var(--sd-font-mono);
+  font-weight: 700;
+}
+
+.fuente {
+  grid-column: 1 / -1;
+  color: var(--sd-ink-muted);
+  font-size: 0.8125rem;
+}
