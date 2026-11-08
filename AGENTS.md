@@ -656,12 +656,20 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   cambias, vuelve a pasar el validador; no los ajustes a ojo. El color nunca es
   la única señal: los importes llevan siempre su signo.
 
-- **Patrimonio inicial en `profiles`**, no como movimiento. Una fila por
-  usuario (`user_id` es la clave primaria, con RLS y cascada) con
-  `initial_net_worth` en céntimos y con signo (se puede empezar debiendo). Que
-  no haya fila es "aún no lo ha elegido", y entonces la tarjeta de Patrimonio
-  de Inicio pregunta "¿Con cuánto empiezas?" (`ElegirPatrimonio`), con
-  "Empezar en 0 €" como salida; después se cambia con el lápiz. Sustituye a la
+- **Patrimonio en `profiles`**, no como movimiento. Una fila por usuario
+  (`user_id` es la clave primaria, con RLS y cascada) con dos cifras en
+  céntimos y con signo (se puede deber dinero): `net_worth_without_movements`, la BASE
+  (patrimonio = base + movimientos), y `first_net_worth`, el PRIMER patrimonio
+  que eligió, que no cambia y es contra lo que el Cuadro mide el "desde que
+  empezaste". Lo que la persona escribe, la primera vez y con el lápiz, es
+  siempre el TOTAL de hoy: el lápiz sale relleno con la cifra de la tarjeta y
+  el servidor guarda base = total - movimientos (`guardarPatrimonio`). Así
+  quien no anota movimientos lleva su patrimonio solo editándolo, y editarlo
+  cuenta como ganancia o pérdida igual que un movimiento. Antes se editaba la
+  base, y el lápiz enseñaba una cifra que no era la de la tarjeta. Que no haya
+  fila es "aún no lo ha elegido", y entonces la tarjeta de Patrimonio de
+  Inicio pregunta "¿Con cuánto empiezas?" (`ElegirPatrimonio`), con "Empezar
+  en 0 €" como salida. Sustituye a la
   antigua decisión de anotarlo como ingreso "Saldo inicial", que inflaba los
   ingresos del mes y el gráfico de ingresos frente a gastos y obligaba a darle
   categoría. El patrimonio sigue siendo derivado (regla dura 7): inicial + suma

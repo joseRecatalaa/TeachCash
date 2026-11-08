@@ -76,7 +76,7 @@ desconocido" en la primera consulta.
 
 **Lo que no encaja en el CRUD no pasa por aquí.** Restaurar un borrado, el saldo,
 el Camino del héroe (`heroe.actions.ts`, `useHeroe.ts`, raíz de queries
-`['heroe']`), el patrimonio inicial (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
+`['heroe']`), el patrimonio (`perfil.actions.ts`, `usePerfil.ts`) y las agregaciones
 de la portada tienen su propia Server Action y su propio hook escrito a mano.
 
 **Todo lo derivado se invalida a mano.** El saldo y los gráficos son sumas de

@@ -17,6 +17,7 @@ import { categories, heroProgress, profiles, transactions } from '@/db/schema'
 import { today } from '@/lib/dates'
 import { usarBaseDeTest } from '@/test/harness'
 import { getCuadro } from '../cuadro.repository'
+import { guardarPatrimonio } from '../perfiles.repository'
 import { comprar } from '../tienda.repository'
 import { USER_A, USER_B } from './helpers'
 
@@ -46,13 +47,24 @@ describe('getCuadro', () => {
   })
 
   test('la ganancia no cuenta el patrimonio inicial', async () => {
-    await base().db.insert(profiles).values({ userId: USER_A, initialNetWorth: 1_000_000 })
+    await base().db.insert(profiles).values({ userId: USER_A, netWorthWithoutMovements: 1_000_000, firstNetWorth: 1_000_000 })
     await anotar(USER_A, 100_000)
     const cuadro = await getCuadro(USER_A)
     expect(cuadro.patrimonio).toBe(1_100_000)
     expect(cuadro.ganancia).toBe(100_000)
     expect(cuadro.inicialElegido).toBe(true)
     expect(valor(cuadro, 'RIQ')).toBe(40)
+  })
+
+  test('la ganancia es contra el PRIMER patrimonio, también tras editarlo', async () => {
+    await guardarPatrimonio(USER_A, { patrimonio: 1_020_000 })
+    await anotar(USER_A, 100_000)
+    // Editar el total con el lápiz (sin anotar nada) también es ganar.
+    await guardarPatrimonio(USER_A, { patrimonio: 1_500_000 })
+
+    const cuadro = await getCuadro(USER_A)
+    expect(cuadro.patrimonio).toBe(1_500_000)
+    expect(cuadro.ganancia).toBe(480_000)
   })
 
   test('perder dinero deja la ganancia en negativo y Riqueza en cero', async () => {

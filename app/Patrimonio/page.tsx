@@ -110,6 +110,9 @@ function Inicio() {
             aria-label="Patrimonio"
             actions={
               typeof inicial.data === 'number' &&
+              // Sin el total cargado, el formulario saldría vacío y con la
+              // pregunta de la primera vez.
+              typeof saldo.data === 'number' &&
               !cambiandoInicial && (
                 <Tooltip label="Cambiar el patrimonio">
                   <ActionIcon
@@ -128,7 +131,9 @@ function Inicio() {
               // Sin elegir todavía (invitado nuevo, cuenta que no lo tenía) o
               // cambiándolo: la pregunta ocupa el sitio de la cifra.
               <ElegirPatrimonio
-                inicial={inicial.data ?? null}
+                // Al cambiarlo, el TOTAL de hoy (lo que se ve en la tarjeta), no
+                // el primero ni la base: lo que se escribe es el patrimonio.
+                actual={cambiandoInicial ? (saldo.data ?? null) : null}
                 onCancelar={cambiandoInicial ? () => setCambiandoInicial(false) : undefined}
                 onGuardado={() => setCambiandoInicial(false)}
               />

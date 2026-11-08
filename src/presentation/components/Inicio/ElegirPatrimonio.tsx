@@ -8,30 +8,31 @@
  * cambiarlo. No es un `GenericForm`: es un único campo dentro de una tarjeta de
  * portada, no un formulario de entidad.
  *
- * Lo que se escribe aquí es lo que se tiene HOY. El patrimonio que enseña la
- * tarjeta es esta cifra más todo lo anotado, así que la portada sigue siendo
- * derivada (regla dura 7).
+ * Lo que se escribe aquí es el patrimonio TOTAL de HOY, movimientos incluidos:
+ * al cambiarlo sale relleno con la cifra que enseña la tarjeta, no con la base.
+ * El servidor guarda la base (total - movimientos), así que la portada sigue
+ * siendo derivada (regla dura 7) y lo que se anote después se suma a esta cifra.
  */
 
 import { useState, type FormEvent } from 'react'
-import { useGuardarPatrimonioInicial } from '@/src/application/hooks/usePerfil'
+import { useGuardarPatrimonio } from '@/src/application/hooks/usePerfil'
 import { MoneyInput } from '@/src/presentation/components/Forms/GenericForm/MoneyInput'
 import { SketchButton } from '@/src/presentation/components/ui'
 import { DIVISA_APP } from '@/lib/money'
 import styles from './ElegirPatrimonio.module.css'
 
 export interface ElegirPatrimonioProps {
-  /** El inicial que ya hay, al cambiarlo. `null` la primera vez. */
-  inicial: number | null
+  /** El patrimonio total de hoy, al cambiarlo. `null` la primera vez. */
+  actual: number | null
   /** Solo al cambiarlo: la primera vez no hay a dónde volver. */
   onCancelar?: () => void
   onGuardado?: () => void
 }
 
-export function ElegirPatrimonio({ inicial, onCancelar, onGuardado }: ElegirPatrimonioProps) {
-  const [valor, setValor] = useState<number | null>(inicial)
+export function ElegirPatrimonio({ actual, onCancelar, onGuardado }: ElegirPatrimonioProps) {
+  const [valor, setValor] = useState<number | null>(actual)
   const [error, setError] = useState<string | null>(null)
-  const guardar = useGuardarPatrimonioInicial()
+  const guardar = useGuardarPatrimonio()
 
   const enviar = (importe: number) => {
     setError(null)
@@ -55,11 +56,11 @@ export function ElegirPatrimonio({ inicial, onCancelar, onGuardado }: ElegirPatr
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
       <p className={styles.pregunta}>
-        {inicial === null ? '¿Con cuánto empiezas?' : 'Cambiar el patrimonio'}
+        {actual === null ? '¿Con cuánto empiezas?' : 'Cambiar el patrimonio'}
       </p>
       <p className={styles.ayuda}>
-        Lo que tienes hoy entre cuentas y efectivo. Lo que anotes se sumará o
-        restará a esta cifra.
+        Lo que tienes hoy entre cuentas y efectivo. Lo que anotes después se
+        sumará o restará a esta cifra.
       </p>
 
       <MoneyInput

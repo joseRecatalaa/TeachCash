@@ -26,7 +26,7 @@ import {
   getSerieSaldo,
   getTotalesDelMes,
 } from '../informes.repository'
-import { guardarPatrimonioInicial } from '../perfiles.repository'
+import { guardarPatrimonio } from '../perfiles.repository'
 import { seedCategoria, seedMovimiento, USER_A, USER_B } from './helpers'
 
 const base = usarBaseDeTest()
@@ -205,7 +205,7 @@ describe('patrimonio inicial', () => {
   })
 
   test('el patrimonio es el inicial más lo anotado', async () => {
-    await guardarPatrimonioInicial(USER_A, { patrimonioInicial: 100_000 })
+    await guardarPatrimonio(USER_A, { patrimonio: 100_000 })
     await seedMovimiento(base().db, 'a', USER_A, { amount: -1000 })
     await seedMovimiento(base().db, 'b', USER_A, { amount: 5000 })
 
@@ -213,18 +213,18 @@ describe('patrimonio inicial', () => {
   })
 
   test('sin movimientos, el patrimonio es el inicial', async () => {
-    await guardarPatrimonioInicial(USER_A, { patrimonioInicial: 100_000 })
+    await guardarPatrimonio(USER_A, { patrimonio: 100_000 })
     expect(await getSaldoActual(USER_A)).toBe(100_000)
   })
 
   test('el inicial de otro usuario no cuenta', async () => {
-    await guardarPatrimonioInicial(USER_B, { patrimonioInicial: 999_999 })
+    await guardarPatrimonio(USER_B, { patrimonio: 999_999 })
     await seedMovimiento(base().db, 'a', USER_A, { amount: -1000 })
     expect(await getSaldoActual(USER_A)).toBe(-1000)
   })
 
   test('la serie arranca en el inicial y termina en el patrimonio', async () => {
-    await guardarPatrimonioInicial(USER_A, { patrimonioInicial: 100_000 })
+    await guardarPatrimonio(USER_A, { patrimonio: 100_000 })
     await seedMovimiento(base().db, 'a', USER_A, { date: '2026-03-02', amount: -500 })
 
     const serie = await getSerieSaldo(USER_A, { desde: '2026-03-01', hasta: '2026-03-03' })
@@ -269,7 +269,7 @@ describe('el saldo es derivado (propiedad)', () => {
           await base().db.delete(transactions)
           await base().db.delete(profiles)
           if (inicial !== null) {
-            await guardarPatrimonioInicial(USER_A, { patrimonioInicial: inicial })
+            await guardarPatrimonio(USER_A, { patrimonio: inicial })
           }
           await base().db.insert(transactions).values(
             lista.map((m, i) => ({

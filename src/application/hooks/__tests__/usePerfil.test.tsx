@@ -9,11 +9,11 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { nuevoQueryClient } from '@/test/render'
-import { useGuardarPatrimonioInicial, usePatrimonioInicial } from '../usePerfil'
+import { useGuardarPatrimonio, usePatrimonioInicial } from '../usePerfil'
 
 const perfil = vi.hoisted(() => ({
   fetchPatrimonioInicial: vi.fn(),
-  guardarPatrimonioInicial: vi.fn(),
+  guardarPatrimonio: vi.fn(),
 }))
 vi.mock('@/src/application/actions/perfil.actions', () => perfil)
 // `usePerfil` tira de `useInvalidarDerivados`, y su módulo importa las otras
@@ -48,25 +48,25 @@ describe('usePatrimonioInicial', () => {
   })
 })
 
-describe('useGuardarPatrimonioInicial', () => {
+describe('useGuardarPatrimonio', () => {
   test('manda el importe con su nombre e invalida lo derivado', async () => {
-    perfil.guardarPatrimonioInicial.mockResolvedValue({ ok: true, data: 5000 })
-    const { result, queryClient } = montar(() => useGuardarPatrimonioInicial())
+    perfil.guardarPatrimonio.mockResolvedValue({ ok: true, data: 5000 })
+    const { result, queryClient } = montar(() => useGuardarPatrimonio())
     const invalidar = vi.spyOn(queryClient, 'invalidateQueries')
 
     await act(() => result.current.mutateAsync(5000))
 
-    expect(perfil.guardarPatrimonioInicial).toHaveBeenCalledWith({ patrimonioInicial: 5000 })
+    expect(perfil.guardarPatrimonio).toHaveBeenCalledWith({ patrimonio: 5000 })
     expect(invalidar).toHaveBeenCalledWith({ queryKey: ['informes'] })
   })
 
   test('el error del campo gana al general, que solo dice que algo falló', async () => {
-    perfil.guardarPatrimonioInicial.mockResolvedValue({
+    perfil.guardarPatrimonio.mockResolvedValue({
       ok: false,
       error: 'Revisa el importe',
-      fieldErrors: { patrimonioInicial: 'Importe demasiado grande' },
+      fieldErrors: { patrimonio: 'Importe demasiado grande' },
     })
-    const { result } = montar(() => useGuardarPatrimonioInicial())
+    const { result } = montar(() => useGuardarPatrimonio())
 
     await expect(act(() => result.current.mutateAsync(1))).rejects.toThrow(
       'Importe demasiado grande',
@@ -74,8 +74,8 @@ describe('useGuardarPatrimonioInicial', () => {
   })
 
   test('sin error de campo, llega el general', async () => {
-    perfil.guardarPatrimonioInicial.mockResolvedValue({ ok: false, error: 'No autorizado' })
-    const { result } = montar(() => useGuardarPatrimonioInicial())
+    perfil.guardarPatrimonio.mockResolvedValue({ ok: false, error: 'No autorizado' })
+    const { result } = montar(() => useGuardarPatrimonio())
 
     await expect(act(() => result.current.mutateAsync(1))).rejects.toThrow('No autorizado')
   })

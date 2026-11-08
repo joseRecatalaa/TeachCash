@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Hooks del perfil: el patrimonio inicial.
+ * Hooks del perfil: el patrimonio.
  *
  * Escritos a mano, como los de informes: no es un CRUD de Refine. Su query
  * cuelga de `['informes']` a propósito —el patrimonio que enseña la portada lo
@@ -12,11 +12,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   fetchPatrimonioInicial,
-  guardarPatrimonioInicial,
+  guardarPatrimonio,
 } from '@/src/application/actions/perfil.actions'
 import { useInvalidarDerivados } from './useInformes'
 
-/** `data === null`: aún no lo ha elegido. `undefined`: todavía no se sabe. */
+/**
+ * El PRIMER patrimonio que eligió. `data === null`: aún no lo ha elegido.
+ * `undefined`: todavía no se sabe.
+ */
 export function usePatrimonioInicial() {
   return useQuery({
     queryKey: ['informes', 'patrimonioInicial'],
@@ -29,16 +32,17 @@ export function usePatrimonioInicial() {
 }
 
 /**
- * Guarda el patrimonio inicial e invalida todo lo derivado: cambia el saldo y
- * la serie entera, y sin invalidar la portada seguiría enseñando la cifra vieja.
+ * Fija el patrimonio TOTAL de hoy e invalida todo lo derivado: cambia el saldo,
+ * la serie entera y el Cuadro, y sin invalidar la portada seguiría enseñando la
+ * cifra vieja.
  */
-export function useGuardarPatrimonioInicial() {
+export function useGuardarPatrimonio() {
   const invalidarDerivados = useInvalidarDerivados()
   return useMutation({
-    mutationFn: async (patrimonioInicial: number) => {
-      const r = await guardarPatrimonioInicial({ patrimonioInicial })
+    mutationFn: async (patrimonio: number) => {
+      const r = await guardarPatrimonio({ patrimonio })
       // El error del campo dice qué corregir; el general solo que algo falló.
-      if (!r.ok) throw new Error(r.fieldErrors?.patrimonioInicial ?? r.error)
+      if (!r.ok) throw new Error(r.fieldErrors?.patrimonio ?? r.error)
       return r.data
     },
     onSuccess: () => invalidarDerivados(),

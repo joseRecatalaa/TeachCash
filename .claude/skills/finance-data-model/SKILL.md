@@ -152,10 +152,13 @@ const [row] = await db
   .where(eq(transactions.userId, userId))
 ```
 
-A esa suma se le añade el **patrimonio inicial** (`profiles.initial_net_worth`,
-`getPatrimonioInicial`), que es lo que la persona dice tener al empezar. No es
-un saldo guardado: es un dato que escribe ella, y el patrimonio sigue siendo
-inicial + movimientos, calculado cada vez. Sin fila en `profiles` cuenta como
+A esa suma se le añade la **base del patrimonio**
+(`profiles.net_worth_without_movements`, `getBasePatrimonio`). La persona no la
+escribe: escribe el TOTAL de hoy y el servidor guarda total - movimientos
+(`guardarPatrimonio`). No es un saldo guardado, y el patrimonio sigue siendo
+base + movimientos, calculado cada vez. El primer total que eligió va aparte
+(`first_net_worth`, `getPatrimonioInicial`) y no cambia: es la referencia del
+"desde que empezaste". Sin fila en `profiles` cuenta como
 cero (y la portada lo pregunta). Toda consulta de saldo nueva tiene que sumarlo,
 o diverge de `getSaldoActual`. Se descartó anotarlo como un ingreso "Saldo
 inicial": inflaba los ingresos del mes en que se anotaba.
