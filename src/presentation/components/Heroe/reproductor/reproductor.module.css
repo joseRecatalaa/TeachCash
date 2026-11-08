@@ -57,13 +57,17 @@
    suma su grosor: sin eso, las botas se meterían en el trazo.
    4rem de ancho son 2 px de pantalla por píxel de juego: un múltiplo entero,
    para que ninguna fila salga más gorda que otra. Si cambias `right` o `width`,
-   cambia la reserva de `.lineaTitulo` en `PaginaHeroe.module.css`. */
+   cambia la reserva de `.lineaTitulo` en `PaginaHeroe.module.css`.
+   `overflow: visible` deja ver el equipo que sale de la caja del héroe: las
+   alas, 22 px a cada lado; el escudo, 10 a la izquierda; el arma, a la derecha;
+   y el casco, 2 por arriba. Nada de eso añade alto: va en absoluto. */
 .heroeGuia {
   position: absolute;
   right: 1.5rem;
   bottom: calc(100% + var(--sd-stroke));
   width: 4rem;
   height: 5.5rem;
+  overflow: visible;
   pointer-events: none;
 }
 

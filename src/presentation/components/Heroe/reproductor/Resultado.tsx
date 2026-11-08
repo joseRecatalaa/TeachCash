@@ -11,12 +11,12 @@
 import { IconArrowRight, IconMap2, IconRefresh } from '@tabler/icons-react'
 import type { Route } from 'next'
 import type { Pregunta, ResultadoNivelDto } from '@/src/types/heroe.types'
-import { PixelHero } from '../../Pixel/PixelHero'
 import { PixelSprite } from '../../Pixel/PixelSprite'
 import pixel from '../../Pixel/pixel.module.css'
 import { ESTRELLA, PALETA_CAMINO, PALETA_ESTRELLA_VACIA } from '../../Pixel/sprites'
 import { SketchButton, StatusBadge } from '../../ui'
 import { rutaNivel } from '../FichaNivel'
+import { HeroeCamino } from '../HeroeCamino'
 import { solucion } from './respuestas'
 import { Marcado } from './Marcado'
 import styles from './reproductor.module.css'
@@ -24,17 +24,19 @@ import styles from './reproductor.module.css'
 function Escena({ estrellas, celebra }: { estrellas: number; celebra: boolean }) {
   return (
     <svg className={styles.escenaResultado} viewBox="0 0 92 62" shapeRendering="crispEdges" aria-hidden="true">
+      {/* Diez píxeles más abajo: el billete en alto de `celebra` asoma por
+          encima de la caja del héroe y se cortaría. Y a 11 del borde: el escudo
+          y las alas salen de su caja por la izquierda. Va antes que las
+          estrellas para que un ala quede detrás de ellas, no encima. */}
+      <g transform="translate(11 14)">
+        <HeroeCamino pose={celebra ? 'celebra' : 'quieto'} />
+      </g>
       <g className={pixel.paletaCamino}>
         {[0, 1, 2].map((k) => (
           <g key={k} transform={`translate(${42 + k * 16} ${k === 1 ? 22 : 28}) scale(2)`}>
             <PixelSprite sprite={ESTRELLA} paleta={k < estrellas ? PALETA_CAMINO : PALETA_ESTRELLA_VACIA} />
           </g>
         ))}
-      </g>
-      {/* Diez píxeles más abajo: el billete en alto de `celebra` asoma por
-          encima de la caja del héroe y se cortaría. */}
-      <g transform="translate(4 14)">
-        <PixelHero pose={celebra ? 'celebra' : 'quieto'} />
       </g>
     </svg>
   )

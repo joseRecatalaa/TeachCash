@@ -342,8 +342,15 @@ lleve hasta ella.
 - **`.escena` va en múltiplos enteros del `viewBox` de `EscenaHeroe`** (92x70: 276,
   368 y 460 de ancho). A cualquier otra escala los píxeles salen de anchos
   distintos y el héroe deja de verse nítido, sin que falle nada.
-- **Una pieza de equipo se pinta en el orden de `HeroeGrande`.** Si se cambia, una
-  acaba tapando a otra. Los sprites se apoyan en las coordenadas del héroe de 48x66.
+- **Una pieza de equipo se pinta en el orden de `HeroeGrande`** (o de `PixelHero`,
+  en el pequeño). Si se cambia, una acaba tapando a otra. Los sprites se apoyan en
+  las coordenadas de su héroe: 48x66 el grande, 32x44 el pequeño.
+- **En el héroe pequeño, cada pieza lleva la CLASE de la parte del cuerpo que la
+  mueve** (`piernas`/`paso1`/`paso2` las botas; `brazoIzq` el guante izquierdo y el
+  escudo; `brazoDer` el arma y el otro guante). Es lo que hace que acompañe a las
+  poses sin una regla propia. Una pieza nueva sin su clase se queda quieta mientras
+  el brazo se balancea, o se ve al celebrar con el brazo en alto. Lo vigila
+  `PixelHero.test.tsx`.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
@@ -687,10 +694,29 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     decide también los enlaces de la Navbar. Lo que no es de ninguno, como Login,
     se queda en el Cuadro. Quien aún no ha elegido patrimonio inicial lo ve como un
     enlace en la tarjeta; la pregunta sigue en `/Patrimonio`.
-  - **Dos héroes**: el pequeño (32x44) en el splash y en los caminos, sin equipo, y
-    el grande (48x66) en el Cuadro y la Tienda. Se probó uno de 64x88 con más
-    detalle y se descartó: dejaba de ser el personaje. El grande es el pequeño
-    calcado; si retocas uno, compáralo con el otro.
+  - **Dos héroes**: el pequeño (32x44) en el splash y en el Camino, y el grande
+    (48x66) en el Cuadro y la Tienda. Se probó uno de 64x88 con más detalle y se
+    descartó: dejaba de ser el personaje. El grande es el pequeño calcado; si
+    retocas uno, compáralo con el otro.
+  - **El héroe del Camino lleva su equipo; el del splash, no** (sale antes de que
+    haya sesión). Cada pieza tiene un segundo dibujo a 32x44 (`spritesEquipo.ts`),
+    redibujado y no reducido, con la misma paleta por calidad. El héroe pequeño no
+    cambia: el equipo son capas encima o debajo. En las poses: las botas tienen
+    los tres fotogramas de las piernas; el arma va en la mano derecha y se
+    balancea con ella; el escudo, en la izquierda, y al celebrar (ese brazo sube
+    con el billete) pasa a la espalda, detrás del cuerpo; el guante izquierdo
+    sube con el puño. El arma va DETRÁS del brazo, para que la mano se cierre
+    sobre el puño de la espada.
+  - **El equipo del Camino se pide una vez, en su layout** (`EquipoDelCamino`, con
+    `useTienda`: ninguna consulta nueva) y llega a cada héroe por contexto
+    (`HeroeCamino`). Sin proveedor, o si la tienda falla, el héroe sale sin
+    equipo: es decorado. El reparto vive aparte del héroe para que los
+    componentes del Camino no arrastren las Server Actions de la tienda.
+  - **Lo que sale de la caja del héroe no añade alto.** En `ProgresoNivel` el
+    `<svg>` es `overflow: visible` y va en absoluto; el título reserva 7,5rem por
+    las alas. En Resultado y en la presentación del jefe el héroe se corre a la
+    derecha en vez de ensanchar el `viewBox`, que dejaría la escena a una escala
+    que no es entera.
   - **Estrellas derivadas** (regla dura 7): las ganadas salen de `hero_progress`, las
     gastadas de `hero_items.price_paid`, y no se guarda ningún saldo. Comprar no le
     quita nada a un nivel. Solo se ganan con los cursos: inventarse movimientos no

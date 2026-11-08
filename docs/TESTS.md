@@ -226,8 +226,9 @@ silencio:
 | `categoria/__tests__/SelectorColor.test.tsx` | 5 | Se elige color por su nombre accesible |
 | `hooks/__tests__/*.test.tsx` | 60 | `createEntityHooks`, `useEntityFormSubmit` (invalida `['informes']`), `usePaginacion`, `useCatalogos`, `useCategorias`, `useInformes`, `usePerfil`, `useHeroe` (todo cuelga de `['heroe']` y enviar lo invalida) |
 | `SideMenu/__tests__/SideMenu.test.tsx` | 19 | Ratón, toque y teclado; el módulo activo sale de la ruta (`moduloActivo`) |
-| `Pixel/__tests__/sprites.test.ts` | 58 | Cada sprite: todas sus filas del mismo ancho y solo claves de su paleta |
-| `Pixel/__tests__/PixelHero.test.tsx` | 7 | La pose llega al `data-pose`, todas las capas existen en todas las poses, voltear |
+| `Pixel/__tests__/sprites.test.ts` | 130 | Cada sprite: todas sus filas del mismo ancho y solo claves de su paleta. El equipo pequeño: cada tipo del catálogo con su versión, nada baja de las botas y las botas de cada paso sobre el mismo suelo |
+| `Pixel/__tests__/PixelHero.test.tsx` | 17 | La pose llega al `data-pose`, todas las capas existen en todas las poses, voltear. El equipo: cada pieza con su calidad, el orden de capas y la clase de la parte del cuerpo que la mueve |
+| `Heroe/__tests__/HeroeCamino.test.tsx` | 5 | El héroe del Camino lleva el equipo de la tienda con una sola consulta; sin ella, ninguno; el splash, nunca |
 | `Heroe/__tests__/CaminoMundo.test.tsx` | 14 | El camino (nodos accesibles, ficha del nivel, bloqueado sin enlace) y el mapa (elegir, entrar, "Pronto", las flechas que mueven al héroe) |
 | `Tienda/__tests__/Tienda.test.tsx` | 8 | Qué botón sale en cada estado, que comprar solo manda el id, el filtro y el probador con ratón y con teclado |
 | `Cuadro/__tests__/CuadroMando.test.tsx` | 8 | El signo de la ganancia, lo que se enseña a quien empieza y la lista legible de las estadísticas |

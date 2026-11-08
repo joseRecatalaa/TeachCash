@@ -78,7 +78,7 @@ Todo el dibujo es SVG generado desde sprites en código: sin ficheros de imagen.
 |---|---|
 | `PixelSprite` | Pinta un `Sprite` (filas de letras) con una `Paleta` (letra → variable `--px-*`). La base de todo lo demás |
 | `sprites.ts` | Sprites y paletas del héroe pequeño, del decorado (nube, pino), de los mundos (hucha, escudo, montaña, tarjeta), de los iconos (estrella, candado, moneda…) y del monstruo |
-| `PixelHero` | El héroe pequeño (32x44), sin equipo: splash y caminos. `pose`: `quieto` · `agacha` · `camina` · `corre` · `celebra`; `mirando` |
+| `PixelHero` | El héroe pequeño (32x44): splash (sin equipo) y Camino (con él). `pose`: `quieto` · `agacha` · `camina` · `corre` · `celebra`; `mirando`; `equipo` (ids del catálogo). Su equipo, en `spritesEquipo.ts` |
 | `HeroeGrande`, `EscenaHeroe` | El héroe grande (48x66) con su `equipo`, y su escena enmarcada: Cuadro de mando y Tienda. Sprites en `spritesGrande.ts` |
 | `ObjetoPixel`, `EstrellaPixel` | Un objeto de la tienda en su caja y la estrella suelta |
 | `geometria.ts` | Círculos y trazos a píxel, en funciones puras (los planetas) |
@@ -88,6 +88,7 @@ Todo el dibujo es SVG generado desde sprites en código: sin ficheros de imagen.
 
 | Pieza | Para qué |
 |---|---|
+| `HeroeCamino`, `EquipoDelCamino` | El héroe de todo el módulo con lo que lleva equipado. `EquipoDelCamino` (en `app/CaminoHeroe/layout.tsx`) pide la tienda una vez y lo reparte por contexto; sin él, el héroe sale sin equipo. Usa `HeroeCamino`, nunca `PixelHero` a secas, en una escena nueva del Camino |
 | `PaginaHeroe` | El marco de toda pantalla del módulo: título, volver, el aviso "no es asesoramiento" y `heroeEncima`. Con `Cargando` y `ErrorHeroe` |
 | `MapaMundos`, `CaminoMundo`, `FichaNivel` | El mapa de planetas, el camino de un mundo y la ficha de un nivel. La geometría, en `planeta.ts` y `camino.ts`; el paseo del héroe, en `useCaminata` |
 | `reproductor/` | El reproductor de un nivel: `Reproductor`, `Lectura`, `Secuencia` (una tanda de preguntas con feedback `inmediato` o `final`), `ProgresoNivel` y `Resultado` |

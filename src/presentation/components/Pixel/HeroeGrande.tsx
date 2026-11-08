@@ -1,6 +1,7 @@
 /*
  * El héroe grande, con su equipo. Lo pintan el Cuadro de mando y la Tienda; el
- * pequeño (`PixelHero`) sigue en la pantalla de carga y en los caminos, sin equipo.
+ * pequeño (`PixelHero`) lleva el mismo equipo por el Camino del héroe, dibujado
+ * a su escala.
  *
  * Mide 48x66 píxeles de juego con el origen arriba a la izquierda. Las botas
  * apoyan en la fila 65 y la sombra cae en las filas 66 y 67. Alas, arma y escudo
@@ -14,7 +15,7 @@
  * se quedan clavadas en el suelo.
  */
 
-import { objetoPorId, type Hueco, type Objeto, type TipoObjeto } from '@/lib/tienda'
+import { equipoPorHueco, objetoPorId, type Hueco, type Objeto, type TipoObjeto } from '@/lib/tienda'
 import { PixelSprite } from './PixelSprite'
 import styles from './pixel.module.css'
 import { ESTRELLA, PALETA_CAMINO, type Sprite } from './sprites'
@@ -61,11 +62,7 @@ function Pieza({ objeto }: { objeto: Objeto | undefined }) {
 }
 
 export function HeroeGrande({ equipo = [] }: { equipo?: readonly string[] }) {
-  const puesto = new Map<Hueco, Objeto>()
-  for (const id of equipo) {
-    const objeto = objetoPorId(id)
-    if (objeto) puesto.set(objeto.hueco, objeto)
-  }
+  const puesto = equipoPorHueco(equipo)
   const pieza = (hueco: Hueco) => <Pieza objeto={puesto.get(hueco)} />
 
   return (

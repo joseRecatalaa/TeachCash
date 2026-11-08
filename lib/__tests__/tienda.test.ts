@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   CATALOGO,
   conObjetoPuesto,
+  equipoPorHueco,
   HUECOS,
   idsDelHueco,
   MAXIMO_EQUIPABLE,
@@ -64,5 +65,22 @@ describe('probarse un objeto', () => {
 
   test('un id desconocido deja el equipo como estaba', () => {
     expect(conObjetoPuesto(['casco-basica'], 'nada')).toEqual(['casco-basica'])
+  })
+})
+
+describe('el equipo por hueco', () => {
+  test('cada objeto, en su hueco', () => {
+    const puesto = equipoPorHueco(['casco-alta', 'martillo-basica'])
+    expect(puesto.get('casco')?.id).toBe('casco-alta')
+    expect(puesto.get('arma')?.tipo).toBe('martillo')
+    expect(puesto.size).toBe(2)
+  })
+
+  test('lo que ya no está en el catálogo no se pinta', () => {
+    expect(equipoPorHueco(['retirado']).size).toBe(0)
+  })
+
+  test('dos del mismo hueco: gana el último', () => {
+    expect(equipoPorHueco(['espada-alta', 'martillo-media']).get('arma')?.id).toBe('martillo-media')
   })
 })

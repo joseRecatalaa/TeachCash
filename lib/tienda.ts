@@ -103,3 +103,17 @@ export function conObjetoPuesto(equipo: readonly string[], id: string): string[]
   const delHueco = new Set(idsDelHueco(objeto.hueco))
   return [...equipo.filter((e) => !delHueco.has(e)), id]
 }
+
+/**
+ * Lo que se lleva en cada hueco, ya con su objeto del catálogo: es lo que pintan
+ * los dos héroes. Un id que ya no esté en el catálogo no se pinta, y si llegan
+ * dos del mismo hueco gana el último, igual que al ponérselo.
+ */
+export function equipoPorHueco(ids: readonly string[]): ReadonlyMap<Hueco, Objeto> {
+  const puesto = new Map<Hueco, Objeto>()
+  for (const id of ids) {
+    const objeto = objetoPorId(id)
+    if (objeto) puesto.set(objeto.hueco, objeto)
+  }
+  return puesto
+}

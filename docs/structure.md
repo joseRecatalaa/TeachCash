@@ -26,7 +26,7 @@ Cada cambio tiene un sitio y solo uno:
 | Añadir o cambiar un curso del Camino del héroe | Un JSON en `content/heroe/<mundo>/` (guía en `docs/CONTENIDO_HEROE.md`) y `pnpm heroe:validar` |
 | Cambiar el formato de ese contenido | Los esquemas Zod de `src/types/heroe.types.ts` |
 | Poner el título de una pantalla | `SketchTitle` de `src/presentation/components/ui` |
-| Añadir o cambiar un objeto de la tienda | `CATALOGO` en `lib/tienda.ts`; si es un tipo nuevo, su sprite en `Pixel/spritesGrande.ts` y `SPRITE_OBJETO` |
+| Añadir o cambiar un objeto de la tienda | `CATALOGO` en `lib/tienda.ts`; si es un tipo nuevo, sus DOS dibujos: el grande en `Pixel/spritesGrande.ts` y `SPRITE_OBJETO`, y el pequeño en `Pixel/spritesEquipo.ts`, `PIEZAS_PEQUENAS` y su capa en `PixelHero` |
 | Cambiar cómo se calcula una estadística del héroe | `lib/estadisticas.ts` |
 
 ## El árbol de ficheros
@@ -141,6 +141,7 @@ Cada cambio tiene un sitio y solo uno:
         Splash/                       # la pantalla de carga a píxel
         Pixel/                        # el héroe (PixelHero), los sprites y su paleta: los comparten el splash y el héroe
           HeroeGrande.tsx spritesGrande.ts  # el héroe de 48x66 con su equipo: Cuadro de mando y Tienda
+          spritesEquipo.ts            # el mismo equipo, redibujado para el héroe pequeño del Camino
         Cuadro/                       # las tarjetas del Cuadro de mando
         Tienda/                       # el probador y la rejilla de objetos
         Heroe/                        # el Camino del héroe: mapa, camino, ficha del nivel

@@ -68,7 +68,8 @@
 .paso1,
 .paso2,
 .ojosArriba,
-.lleva {
+.lleva,
+.escudoEspalda {
   opacity: 0;
 }
 
@@ -114,8 +115,11 @@
   }
 }
 
-/* Celebra: el billete en alto, que es el "¡objeto conseguido!" de siempre. */
-.heroe[data-pose='celebra'] .lleva {
+/* Celebra: el billete en alto, que es el "¡objeto conseguido!" de siempre.
+   El brazo izquierdo sube, y con él se va lo que llevaba en esa mano (su guante
+   y el escudo, que tienen su misma clase): el escudo pasa a la espalda. */
+.heroe[data-pose='celebra'] .lleva,
+.heroe[data-pose='celebra'] .escudoEspalda {
   opacity: 1;
 }
 .heroe[data-pose='celebra'] .brazoIzq {
@@ -333,9 +337,10 @@
   --px-tronco: #6b756c;
 }
 
-/* ── El equipo del héroe grande ────────────────────────────────────────────
+/* ── El equipo de los dos héroes ───────────────────────────────────────────
  *
- * Un mismo dibujo por tipo de objeto: la calidad reapunta sus cuatro tonos. Como
+ * Un mismo dibujo por tipo de objeto: la calidad reapunta sus cuatro tonos. Lo
+ * comparten el héroe grande y el pequeño, que tienen cada uno su dibujo. Como
  * los del héroe, no cambian con el tema. La calidad nunca se distingue solo por
  * el color: el nombre del objeto dice de qué es.
  * ──────────────────────────────────────────────────────────────────────── */
