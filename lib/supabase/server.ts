@@ -1,7 +1,7 @@
 /**
  * Cliente de Supabase para el servidor: Server Actions, Server Components y
  * route handlers. Solo se usa para AUTH. Los datos no pasan por aquí: van por
- * Drizzle, en los repositorios (ver AGENTS.md, "Cómo viajan los datos").
+ * Drizzle, en los repositorios (ver docs/architecture.md, "Cómo viajan los datos").
  *
  * La sesión vive en cookies httpOnly que gestiona `@supabase/ssr`. El navegador
  * nunca ve el token desde JavaScript, así que un XSS no puede robarlo.

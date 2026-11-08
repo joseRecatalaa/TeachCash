@@ -1,17 +1,95 @@
 # TeachCash
 
-Gestor de finanzas personales. Aplicación web para llevar tus gastos e
-ingresos: movimientos, categorías y una portada que resume el mes.
+**Educación financiera para cualquiera, jugando.** TeachCash enseña a manejar el
+dinero con forma de videojuego a píxel: mundos que recorrer, niveles cortos que
+se juegan en el móvil en dos o tres minutos, jefes que derrotar y un héroe que
+se equipa con lo que ganas aprendiendo. Y, al lado, un gestor de finanzas
+personales para poner en práctica lo aprendido con tu propio dinero.
 
-Los datos viven en **Postgres en Supabase** y el login es **Supabase Auth**.
-Se puede usar sin registrarse: al entrar recibes una sesión de **invitado**
-(protegida con un CAPTCHA invisible de Cloudflare Turnstile) que dura 4 días.
-Si creas una cuenta, tus datos se quedan.
+Se usa **sin registrarse y gratis**: al entrar recibes una sesión de invitado y
+puedes empezar a jugar en ese momento.
+
+## Por qué
+
+La educación financiera suele llegar tarde, en forma de folleto o de curso
+aburrido, y casi nunca a quien más la necesita. TeachCash parte de tres
+compromisos:
+
+- **Interactiva.** No se lee: se practica. Cada lectura acaba con un minitest,
+  las prácticas son ejercicios al estilo de las apps de idiomas y cada error
+  viene con su explicación, que es lo que de verdad enseña.
+- **Veraz.** Las cifras y las normas son las de España y salen de fuentes
+  oficiales —BOE, Banco de España, CNMV, Agencia Tributaria, INE—. Cada mundo
+  lleva su `FUENTES.md` y ningún dato se publica sin una revisión humana. Es
+  contenido educativo, no asesoramiento financiero, y la aplicación lo dice en
+  todo el módulo.
+- **Lúdica.** Pixel art propio, estrellas por nivel, jefes de cuerpo entero, una
+  tienda donde las estrellas compran el equipo del héroe y un radar con sus
+  estadísticas. Aprender tiene que apetecer tanto como jugar al siguiente nivel.
+
+## El Camino del héroe
+
+El corazón de TeachCash. Cuatro mundos, cada uno un planeta a píxel con su
+camino de niveles:
+
+| Mundo | De qué va |
+|---|---|
+| **Salud financiera** | Saber dónde estás: ingresos, gastos, presupuesto, la nómina por dentro y el patrimonio neto |
+| **Ahorro** | El fondo de emergencia, dónde guardar el dinero (cuentas, depósitos, Letras del Tesoro) y cómo crece |
+| **Inversión** | Riesgo y diversificación, fondos indexados, comisiones, impuestos y cómo cazar un chiringuito |
+| **Deuda y crédito** | El precio real de un préstamo, las tarjetas revolving, la hipoteca y cómo salir de una deuda |
+
+Cada mundo tiene nueve niveles de tres tipos:
+
+- **Lectura**: un curso de unos dos minutos que acaba con un minitest.
+- **Práctica**: ejercicios con un caso concreto (el de Pepito, el personaje de
+  todos los ejemplos). Seis tipos de pregunta: elegir una opción, verdadero o
+  falso, ordenar pasos, emparejar conceptos, rellenar el hueco y calcular una
+  cifra.
+- **Jefe**: el examen final del mundo, contra un monstruo.
+
+Los mundos están abiertos desde el principio; dentro de cada uno, los niveles
+van en orden. Cada nivel da de una a tres estrellas y se puede repetir para
+mejorar la marca. **Corrige el servidor**, así que las estrellas valen lo que
+dicen.
+
+### Cuadro de mando y Tienda
+
+La portada (`/`) reúne las dos mitades: el héroe con su equipo, las estrellas,
+el patrimonio y un radar con **siete estadísticas** —una por mundo, más
+Riqueza, Constancia y Poder—. Las estrellas de los cursos se gastan en la
+**Tienda**, en piezas de equipo de tres calidades. Solo se ganan aprendiendo:
+inventarse movimientos no da estrellas.
+
+## Gestión de patrimonio
+
+El segundo módulo, para llevar tus finanzas reales:
+
+- **Inicio** — el patrimonio, cómo va el mes frente al anterior, la evolución
+  del saldo, en qué se va el dinero y los últimos movimientos. Las flechas junto
+  al mes recorren los meses desde enero de 2026.
+- **Movimientos** — anotar un gasto o un ingreso, con categoría y fecha.
+  Filtrables por periodo, categoría y texto, y exportables a Excel.
+- **Categorías** — de gasto o de ingreso, con emoji y color propio, que las
+  identifica en la tabla y en los gráficos. Las de gasto llevan un presupuesto
+  mensual.
+- **Planificación** — cada categoría de gasto con lo gastado este mes frente a
+  su presupuesto.
+
+Hay **una sola cuenta y una sola moneda**: el patrimonio es la cifra con la que
+empiezas más la suma de los movimientos.
+
+## Cuentas y privacidad
+
+Al entrar recibes una sesión de **invitado** (protegida con un CAPTCHA invisible
+de Cloudflare Turnstile) que dura 4 días. Si creas una cuenta con email y
+contraseña, tu progreso y tus datos se quedan. Cada persona ve solo lo suyo y
+puede borrar su cuenta, con todo lo que contiene, desde la propia aplicación.
 
 ## Arrancar
 
 Necesitas un proyecto de Supabase (vale el plan gratuito) y un widget de
-Turnstile. Qué configurar en cada panel está en `docs/PLAN-SUPABASE.md`.
+Turnstile. Qué configurar en cada panel está en `docs/plans/PLAN-SUPABASE.md`.
 
 ```bash
 pnpm install                 # instala también el hook de commit (Husky)
@@ -21,39 +99,18 @@ pnpm dev                     # http://localhost:3000
 ```
 
 No hay paso de semillas: cada usuario recibe las categorías por defecto al
-nacer.
+nacer, y los cursos se leen de `content/heroe/`.
 
 Una vez, en el SQL Editor de Supabase y con la extensión `pg_cron` activada,
 ejecuta `db/sql/limpieza-invitados.sql`: es el job que borra cada hora los
 invitados caducados.
-
-## Qué hace
-
-Las pantallas principales (además de las de cuenta: entrar, registrarse y
-recuperar la contraseña):
-
-- **Inicio** — el saldo, cómo va el mes frente al anterior, la evolución del
-  saldo, en qué se va el dinero y los últimos movimientos.
-- **Movimientos** — anotar un gasto o un ingreso, con categoría y fecha.
-  Filtrables por periodo, categoría y texto, y exportables a Excel. El borrado
-  es permanente: no hay papelera.
-- **Categorías** — de gasto o de ingreso, con emoji y color propio. El color es
-  el que las identifica luego en la tabla y en los gráficos. Las de gasto llevan
-  un presupuesto mensual.
-- **Planificación** — cada categoría de gasto con lo gastado este mes frente a
-  su presupuesto. Desde aquí se anota un gasto sin cambiar de pantalla.
-
-Hay **una sola cuenta y una sola moneda**, y no se guardan en ninguna parte: el
-saldo es la suma de los movimientos más el **patrimonio inicial**, la cifra con
-la que empiezas: la portada te la pregunta la primera vez y se puede cambiar
-desde el lápiz de la tarjeta. En Inicio, las flechas junto al mes recorren los
-meses desde enero de 2026.
 
 ## Comandos
 
 | Comando | Qué hace |
 |---|---|
 | `pnpm dev` | Servidor de desarrollo, solo en `localhost` |
+| `pnpm heroe:validar` | Valida el contenido del Camino del héroe |
 | `pnpm test` | Suite de Vitest (sobre PGlite: no toca Supabase) |
 | `pnpm test:tz` | La misma suite con otro huso horario |
 | `pnpm test:coverage` | La suite con los umbrales de cobertura por fichero |
@@ -67,59 +124,31 @@ meses desde enero de 2026.
 | `pnpm db:studio` | Explorador de la base de datos |
 | `pnpm generate:crud` | Scaffolding completo de una entidad nueva |
 
+## Escribir un curso
+
+Un curso es un fichero JSON en `content/heroe/<mundo>/`, no código: se revisa en
+una PR y, si está mal escrito, `pnpm heroe:validar` y la CI lo rechazan. Cómo se
+escribe —tipos de nivel, bloques de lectura, preguntas y el tono—, en
+`docs/CONTENIDO_HEROE.md`.
+
 ## Tests y calidad
 
-Todo está en **`docs/TESTS.md`**: cómo se ejecuta cada suite, qué cubre cada
-test y por qué. En resumen:
+Todo está en **`docs/TESTS.md`**. En resumen:
 
-- **750 tests de Vitest** sobre Postgres real en proceso (PGlite), sin tocar
-  Supabase, más tests de componentes con Testing Library.
-- **5 flujos end-to-end con Playwright**, solo en local, contra un segundo
+- **Más de 800 tests de Vitest** sobre Postgres real en proceso (PGlite), sin
+  tocar Supabase, más tests de componentes con Testing Library.
+- **Flujos end-to-end con Playwright**, solo en local, contra un segundo
   proyecto de Supabase de pruebas. Cómo montarlo, en `.env.e2e.example`.
 - **En cada commit** (Husky): ESLint sobre los ficheros que entran y el chequeo
-  de tipos. Si falla, el commit no se crea.
+  de tipos.
 - **En cada PR a `develop`** (GitHub Actions): tipos, lint, tests con cobertura,
-  la suite en otro huso horario, build y `pnpm audit`. Los tres checks son
-  obligatorios para mergear.
+  la suite en otro huso horario, build y `pnpm audit`.
 
 ## Para trabajar en el código
 
-Lee **`AGENTS.md`** antes de tocar nada: lleva las reglas duras, el mapa de las
-cuatro capas y cómo se declara una vista. Para los tests, `docs/TESTS.md`. `docs/PLAN-V1.md` tiene el plan de la v1
-y el porqué de cada decisión técnica; `docs/PLAN-SUPABASE.md`, el de la
-migración a Supabase y lo que queda pendiente.
+Lee **`AGENTS.md`** antes de tocar nada: lleva las reglas duras y remite al
+resto de la documentación de `docs/`.
 
-La regla que más importa: **el dinero es un entero en céntimos**, nunca un
-decimal. Se convierte a decimal solo al formatearlo para pantalla.
-
-### La arquitectura, en un párrafo
-
-Clean Architecture en cuatro capas —`types` / `infrastructure` / `application` /
-`presentation`— con **Refine.dev** como framework de datos y
-**Mantine** para la interfaz. Tres DTOs por entidad, hooks generados por una
-factory, y la vista *declarada* en ficheros `.ts` sin JSX (`formularios.ts` y
-`tabla.ts` en `src/presentation/entidades/<entidad>/`) que pintan dos componentes genéricos,
-`GenericForm` y `AppTable`.
-
-No hay API HTTP: el DataProvider de Refine llama a **Server Actions** que
-consultan Postgres con Drizzle. Cada consulta filtra por el usuario de la sesión,
-y RLS hace de red en la base.
-
-```
-Página → useList / useOne / useCreate…   (Refine, en el navegador)
-       → refine-data-provider.ts
-       → entity.actions.ts        'use server'
-       → <entidad>.repository.ts  Drizzle
-       → Supabase Postgres
-```
-
-### Añadir una entidad
-
-```bash
-pnpm generate:crud
-```
-
-Crea los nueve ficheros de la entidad y la registra en los dos sitios que hacen
-falta. Deja cuatro `// TODO`: los campos de los DTOs, la tabla del repositorio,
-los campos del formulario y las columnas del listado. El detalle, en la sección
-"Añadir una entidad" de `AGENTS.md`.
+Next.js 16 (App Router) con **Refine.dev** y **Mantine**, Postgres en
+**Supabase** con Drizzle, y Server Actions en lugar de una API HTTP. La regla
+que más importa: **el dinero es un entero en céntimos**, nunca un decimal.
