@@ -12,7 +12,7 @@
 
 import { useState } from 'react'
 import { Modal } from '@mantine/core'
-import { movimientoRapidoSections } from '@/src/config/movimientos/sections'
+import { movimientoRapidoSections } from '@/src/presentation/entidades/movimientos/formularios'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import { today } from '@/lib/dates'
 import { uuid } from '@/lib/ids'

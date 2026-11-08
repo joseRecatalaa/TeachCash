@@ -51,7 +51,8 @@ tributarios, partida doble contable, inversiones con fiscalidad de plusvalías.
 3. Si vas a añadir una entidad, usa `pnpm generate:crud` y lee **Añadir una
    entidad**.
 4. Si vas a tocar un formulario o una tabla, lee **Cómo se declara una vista**.
-   La regla que sorprende: los ficheros de `src/config/` no pueden llevar JSX.
+   La regla que sorprende: los ficheros de `src/presentation/entidades/` no pueden
+   llevar JSX.
 5. Antes de terminar, mira las **trampas**. Todas fallan en silencio.
 6. Si vas a escribir o arreglar un test, lee **`docs/TESTS.md`**: cómo está
    montado, qué cubre cada fichero y qué no merece test.
@@ -62,8 +63,8 @@ Cada cambio tiene un sitio y solo uno:
 
 | Si vas a… | Toca |
 |---|---|
-| Cambiar qué campos tiene un formulario | `src/config/<entidad>/sections.ts` |
-| Cambiar qué columnas tiene una tabla | `src/config/<entidad>/columns.ts` |
+| Cambiar qué campos tiene un formulario | `src/presentation/entidades/<entidad>/formularios.ts` |
+| Cambiar qué columnas tiene una tabla | `src/presentation/entidades/<entidad>/tabla.ts` |
 | Cambiar una regla de negocio o una validación | `src/infrastructure/repositories/<entidad>.repository.ts` |
 | Cambiar el aspecto de TODOS los formularios | `src/presentation/components/Forms/GenericForm/` |
 | Cambiar el aspecto de TODAS las tablas | `src/presentation/components/AppTable/` |
@@ -312,7 +313,7 @@ coinciden.
 
 ## Arquitectura
 
-Clean Architecture en cinco capas. La dirección de las dependencias es de abajo
+Clean Architecture en cuatro capas. La dirección de las dependencias es de abajo
 arriba y no se cruza:
 
 | Capa | Dónde | Qué es |
@@ -320,13 +321,12 @@ arriba y no se cruza:
 | **Types** | `src/types/` | Los DTOs. Tres por entidad. No importa de nadie |
 | **Infrastructure** | `src/infrastructure/` | Los repositorios sobre Drizzle. **Solo servidor** |
 | **Application** | `src/application/` | Server Actions, DataProvider, providers y hooks |
-| **Config** | `src/config/` | La vista DECLARADA. **Solo `.ts`, sin JSX** |
-| **Presentation** | `src/presentation/` | Los componentes que pintan |
+| **Presentation** | `src/presentation/` | Los componentes que pintan y, en `entidades/`, los formularios y tablas DECLARADOS (**solo `.ts`, sin JSX**) |
 
 Reglas de dependencia:
 
-- `src/config` y `src/presentation` **no importan de `src/infrastructure`**. Lo
-  que compartan sube a `src/types`.
+- `src/presentation` **no importa de `src/infrastructure`**. Lo que compartan
+  sube a `src/types`.
 - `lib/` y `db/` no importan de `src/`.
 - Los repositorios son lo **único** que importa `@/db`, y por eso son lo único
   que no puede aparecer en un componente cliente.
@@ -488,12 +488,12 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
         providers.tsx                 # Mantine + Refine + REFINE_RESOURCES
         refine-data-provider.ts       # Refine → Server Actions
         CuentaProvider.tsx            # sesión en el cliente; crea el invitado
-    config/                           # SOLO .ts, SIN JSX
-      _shared/types.ts
-      <entidad-en-kebab>/
-        sections.ts                   # el formulario
-        columns.ts                    # el listado
     presentation/
+      entidades/                      # SOLO .ts, SIN JSX: formularios y tablas declarados
+        _shared/types.ts              # alias de los tipos de GenericForm y AppTable
+        <entidad-en-kebab>/
+          formularios.ts              # el formulario (o los formularios) de la entidad
+          tabla.ts                    # el listado
       styles/
         mantine-sketch.module.css     # el puente con el tema de Mantine
       components/
@@ -509,7 +509,7 @@ Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
             GenericForm.module.css
             FieldRenderer.tsx         # FieldType → componente de Mantine
             MoneyInput.tsx            # el input de dinero (regla dura 1)
-            types.ts                  # el contrato con src/config
+            types.ts                  # el contrato con presentation/entidades
           EntityForms/
             <entidad>/                # camelCase SINGULAR
               <Entidad>FormRefine.tsx
@@ -578,17 +578,21 @@ Es lo más distintivo del proyecto y lo que más sorprende al llegar: **un
 formulario y una tabla no se escriben, se declaran**.
 
 ```
-src/config/movimientos/sections.ts ──►  <GenericForm sections={…} />
-src/config/movimientos/columns.ts  ──►  <AppTable columns={…} />
+src/presentation/entidades/movimientos/formularios.ts ──►  <GenericForm sections={…} />
+src/presentation/entidades/movimientos/tabla.ts       ──►  <AppTable columns={…} />
 ```
 
-`src/config` **describe** la vista; `src/presentation` la **pinta**.
+`entidades/` **describe** el formulario y la tabla; `GenericForm` y `AppTable`
+los **pintan**. Vive dentro de `presentation` porque depende de ella (los tipos
+de `GenericForm` y `AppTable`, los helpers de columna, los componentes propios
+que referencia con `component:`): en `application` invertiría las capas.
 
-### La invariante: `src/config` no lleva JSX
+### La invariante: `entidades/` no lleva JSX
 
-Los ficheros de `src/config/` son `.ts`, nunca `.tsx`. Es una invariante que
-impone el compilador: si aparece JSX, deja de compilar. Eso es lo que mantiene la
-configuración declarativa y evita que se acabe colando lógica de pintado en el
+Los ficheros de `src/presentation/entidades/` son `.ts`, nunca `.tsx`. Es una
+invariante que impone el compilador: si aparece JSX, deja de compilar, y la
+vigila además `src/__tests__/invariantes.test.ts` por carpeta. Eso es lo que
+mantiene la definición declarativa y evita que se acabe colando lógica de pintado en el
 sitio donde solo debería haber descripción.
 
 Cuando un campo o una columna necesita marcado propio:
@@ -687,9 +691,9 @@ producto, no de andamiaje.
 2. **Repositorio** → `src/infrastructure/repositories/<entidad-plural>.repository.ts`,
    y darlo de alta en `REPOSITORIES` (`index.ts`)
 3. **Hooks** → `src/application/hooks/use<Entidades>.ts` (factory + reexports)
-4. **Sections** → `src/config/<entidad-en-kebab>/sections.ts`. `.ts` sin JSX,
-   `export function <entidad>Sections()`
-5. **Columns** → `src/config/<entidad-en-kebab>/columns.ts`. `.ts` sin JSX, sin
+4. **Formularios** → `src/presentation/entidades/<entidad-en-kebab>/formularios.ts`.
+   `.ts` sin JSX, `export function <entidad>Sections()`
+5. **Tabla** → `src/presentation/entidades/<entidad-en-kebab>/tabla.ts`. `.ts` sin JSX, sin
    argumentos salvo que necesite opciones de un catálogo para los filtros
 6. **Form** → `EntityForms/<entidad>/<Entidad>FormRefine.tsx`. Los componentes
    propios de la entidad van también aquí, en `.tsx`
@@ -705,7 +709,7 @@ Se derivan de la ruta de `app/`, no unas de otras. Se cumple sin excepciones:
 | Carpeta | Caso | Ejemplo (`app/Movimientos`) | Qué contiene |
 |---|---|---|---|
 | `app/` | PascalCase **plural** | `app/Movimientos/` | Las tres pages: listado, Create y Edit |
-| `src/config/` | kebab-case (la ruta en kebab) | `src/config/movimientos/` | `sections.ts` y `columns.ts` |
+| `entidades/` | kebab-case (la ruta en kebab) | `src/presentation/entidades/movimientos/` | `formularios.ts` y `tabla.ts` |
 | `EntityForms/` | camelCase **singular** | `EntityForms/movimiento/` | El `FormRefine` y los componentes propios |
 | `repositories/` | kebab-case plural + `.repository.ts` | `movimientos.repository.ts` | Las consultas y las reglas |
 
@@ -717,7 +721,7 @@ recurso son cuatro nombres que tienen que coincidir".
 Todas tienen algo en común: **fallan en silencio**. Ninguna da un error que te
 lleve hasta ella.
 
-- **`src/config/*.ts` no puede llevar JSX.** Es deliberado. Si necesitas marcado,
+- **`src/presentation/entidades/` no puede llevar JSX.** Es deliberado. Si necesitas marcado,
   crea el componente en `EntityForms/<entidad>/` y referéncialo con `component:`.
 - **Un importe nunca es `type: 'number'`.** Ni en un formulario ni en una tabla.
   Es `'money'`, siempre. Ver la regla dura 1.
@@ -906,10 +910,17 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 
 ## Decisiones tomadas
 
-- **Arquitectura**: Clean Architecture en cinco capas con Refine.dev + Mantine.
+- **Arquitectura**: Clean Architecture en cuatro capas con Refine.dev + Mantine.
   El DataProvider de Refine va sobre Server Actions y no sobre HTTP. Se descartó
   levantar route handlers REST: habrían añadido un salto de red contra la propia
   base y duplicado la comprobación de sesión en cada handler.
+- **Formularios y tablas declarados en `src/presentation/entidades/`**, por
+  entidad (`formularios.ts` y `tabla.ts`). Antes eran una capa aparte,
+  `src/config/` con `sections.ts` y `columns.ts`, pero importaban de
+  `presentation` (tipos, helpers de columna, componentes propios): eran
+  presentación declarada. No se movieron a `application` porque esa capa no
+  puede depender de `presentation`. Siguen siendo una carpeta propia para que
+  la regla de "sin JSX" se vigile por ruta.
 - **Persistencia**: **Postgres en Supabase** (plan gratuito, región eu-west-3) +
   Drizzle ORM con **postgres-js**. Sustituyó a SQLite local al pasar a
   multiusuario. Se empezó de cero, sin migrar los datos de SQLite.
@@ -975,7 +986,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   fechas, formato, rutas, CSP, la corrección del héroe y las marcas del
   contenido), CORE 90 % (repositorios, acciones, sesión,
   entorno, log), IMPORTANT 80 % (`GenericForm`, `AppTable`, hooks) e INFRA
-  excluido (tipos, `src/config`, migraciones, estilos). Un umbral no se baja: se
+  excluido (tipos, `src/presentation/entidades`, migraciones, estilos). Un umbral no se baja: se
   escribe el test o la rama inalcanzable se marca con su porqué.
 - **Quality gates gratis**: Husky + lint-staged en cada commit (ESLint sobre lo
   que entra y `typecheck`) y GitHub Actions en cada PR a `develop`
@@ -1018,8 +1029,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   y agrupado.
 - **El repo es LF** (`.gitattributes`): un CRLF hace que los `modify` de Plop no
   casen y se salten en silencio.
-- **Las capas, impuestas por ESLint** (`no-restricted-imports`): `src/config` y
-  `src/presentation` no importan de `src/infrastructure`, solo los repositorios
+- **Las capas, impuestas por ESLint** (`no-restricted-imports`): `src/presentation`
+  no importa de `src/infrastructure`, solo los repositorios
   importan `@/db`, y `lib/`/`db/` no importan de `src/`. También sonarjs
   (complejidad 15), `no-console` y las reglas de Vitest (sin `.only`, todo test
   con aserción).

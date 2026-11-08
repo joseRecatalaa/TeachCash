@@ -4,7 +4,7 @@
 
 import { IconTag } from '@tabler/icons-react'
 import { SelectorColor } from '@/src/presentation/components/Forms/EntityForms/categoria/SelectorColor'
-import type { SectionDefinition } from '@/src/config/_shared/types'
+import type { SectionDefinition } from '@/src/presentation/entidades/_shared/types'
 
 export function categoriaSections(): SectionDefinition[] {
   return [

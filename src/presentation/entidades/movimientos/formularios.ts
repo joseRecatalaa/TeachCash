@@ -8,7 +8,7 @@
  */
 
 import { IconCash, IconNotes } from '@tabler/icons-react'
-import type { Option, SectionDefinition } from '@/src/config/_shared/types'
+import type { Option, SectionDefinition } from '@/src/presentation/entidades/_shared/types'
 
 export function movimientoSections({
   categoriasPorTipo,

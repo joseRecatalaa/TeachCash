@@ -7,7 +7,7 @@
  * los nombres de ocho colores no enseña los colores, que es lo único que
  * importa al elegir uno.
  *
- * Vive aquí y no en `src/config/categorias/sections.ts` porque esos ficheros no
+ * Vive aquí y no en `src/presentation/entidades/categorias/formularios.ts` porque esos ficheros no
  * pueden llevar JSX: la sección lo REFERENCIA con `component:` y el
  * `GenericForm` lo monta con los `FieldRenderArgs`. Ver "Cómo se declara una
  * vista" en AGENTS.md.

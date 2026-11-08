@@ -13,7 +13,7 @@ import {
   moneyColumn,
   textColumn,
 } from '@/src/presentation/components/ActionsColumn'
-import type { AppTableColumn, Option } from '@/src/config/_shared/types'
+import type { AppTableColumn, Option } from '@/src/presentation/entidades/_shared/types'
 import type { MovimientoListDto } from '@/src/types/movimiento.types'
 
 export function movimientoColumns({

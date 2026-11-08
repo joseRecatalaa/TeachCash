@@ -3,8 +3,8 @@
 /**
  * Helpers de columna.
  *
- * Un `columns.ts` es un `.ts` sin JSX, así que no puede escribir un `render` con
- * botones dentro. Estos helpers son la salida: la config DECLARA qué acciones
+ * Un `tabla.ts` es un `.ts` sin JSX, así que no puede escribir un `render` con
+ * botones dentro. Estos helpers son la salida: la tabla DECLARA qué acciones
  * quiere y el JSX vive aquí.
  *
  * Al declarar columnas, usa estos en vez de escribir un `render` a mano: es lo

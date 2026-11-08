@@ -4,7 +4,7 @@
  * Tabla genérica: buscador, filtros por columna, ordenación, paginación y
  * exportación a Excel.
  *
- * Recibe un `AppTableColumn<T>[]` declarado en un `columns.ts` sin JSX. El tipo
+ * Recibe un `AppTableColumn<T>[]` declarado en un `tabla.ts` sin JSX. El tipo
  * de columna que hay que tener presente es **`money`**: ver `ColumnType`.
  *
  * Trabaja en dos modos:

@@ -3,7 +3,7 @@
  *
  * `.ts` sin JSX y sin argumentos: los permisos y el borrado se DECLARAN, no se
  * reciben. Solo lleva parámetro si necesita opciones de un catálogo del usuario
- * para los filtros (ver `movimientos/columns.ts`).
+ * para los filtros (ver `movimientos/tabla.ts`).
  *
  * TODO: declarar las columnas reales.
  *
@@ -14,7 +14,7 @@
  */
 
 import { actionsColumn, textColumn } from '@/src/presentation/components/ActionsColumn'
-import type { AppTableColumn } from '@/src/config/_shared/types'
+import type { AppTableColumn } from '@/src/presentation/entidades/_shared/types'
 import type { {{pascalCase name}}ListDto } from '@/src/types/{{camelCase name}}.types'
 
 export function {{camelCase name}}Columns(): AppTableColumn<{{pascalCase name}}ListDto>[] {
