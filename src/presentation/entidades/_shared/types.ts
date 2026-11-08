@@ -1,10 +1,11 @@
 /**
- * Alias comunes de la capa de configuración.
+ * Alias comunes de las definiciones de entidad.
  *
- * `src/config/` describe las vistas; `src/presentation/` las pinta. Estos alias
- * evitan que cada `sections.ts` y cada `columns.ts` importe la ruta larga de
- * presentation, que es lo que hace que se acabe colando un import de un
- * componente y con él el JSX que estos ficheros no pueden tener.
+ * `entidades/` describe los formularios y las tablas; `GenericForm` y
+ * `AppTable` los pintan. Estos alias evitan que cada `formularios.ts` y cada
+ * `tabla.ts` importe la ruta larga de los componentes, que es lo que hace que
+ * se acabe colando un import de un componente y con él el JSX que estos
+ * ficheros no pueden tener.
  */
 
 export type {

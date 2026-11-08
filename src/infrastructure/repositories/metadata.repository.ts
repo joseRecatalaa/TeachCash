@@ -3,7 +3,7 @@
  *
  * SOLO SERVIDOR.
  *
- * **Las opciones no se declaran en la vista.** Un `select` de `sections.ts` se
+ * **Las opciones no se declaran en la vista.** Un `select` de `formularios.ts` se
  * escribe SIN `options` y el `FieldRenderer` las resuelve desde aquí usando el
  * `name` del campo como clave. Así, el día que se añade un valor a una
  * enumeración se toca un sitio y no cinco.

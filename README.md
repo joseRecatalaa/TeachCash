@@ -85,7 +85,7 @@ test y por qué. En resumen:
 ## Para trabajar en el código
 
 Lee **`AGENTS.md`** antes de tocar nada: lleva las reglas duras, el mapa de las
-cinco capas y cómo se declara una vista. Para los tests, `docs/TESTS.md`. `docs/PLAN-V1.md` tiene el plan de la v1
+cuatro capas y cómo se declara una vista. Para los tests, `docs/TESTS.md`. `docs/PLAN-V1.md` tiene el plan de la v1
 y el porqué de cada decisión técnica; `docs/PLAN-SUPABASE.md`, el de la
 migración a Supabase y lo que queda pendiente.
 
@@ -94,11 +94,11 @@ decimal. Se convierte a decimal solo al formatearlo para pantalla.
 
 ### La arquitectura, en un párrafo
 
-Clean Architecture en cinco capas —`types` / `infrastructure` / `application` /
-`config` / `presentation`— con **Refine.dev** como framework de datos y
+Clean Architecture en cuatro capas —`types` / `infrastructure` / `application` /
+`presentation`— con **Refine.dev** como framework de datos y
 **Mantine** para la interfaz. Tres DTOs por entidad, hooks generados por una
-factory, y la vista *declarada* en ficheros `.ts` sin JSX (`sections.ts` para el
-formulario, `columns.ts` para el listado) que pintan dos componentes genéricos,
+factory, y la vista *declarada* en ficheros `.ts` sin JSX (`formularios.ts` y
+`tabla.ts` en `src/presentation/entidades/<entidad>/`) que pintan dos componentes genéricos,
 `GenericForm` y `AppTable`.
 
 No hay API HTTP: el DataProvider de Refine llama a **Server Actions** que

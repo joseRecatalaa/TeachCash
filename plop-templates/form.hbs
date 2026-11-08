@@ -7,11 +7,11 @@
  *   - **Sí**: traer los datos, montar el submit, dar los valores iniciales y la
  *     validación de cliente.
  *   - **No**: declarar los campos. Eso vive en
- *     `src/config/{{dashCase pluralName}}/sections.ts`.
+ *     `src/presentation/entidades/{{dashCase pluralName}}/formularios.ts`.
  */
 
 import { useMemo } from 'react'
-import { {{camelCase name}}Sections } from '@/src/config/{{dashCase pluralName}}/sections'
+import { {{camelCase name}}Sections } from '@/src/presentation/entidades/{{dashCase pluralName}}/formularios'
 import { use{{pascalCase name}} } from '@/src/application/hooks/use{{pascalCase pluralName}}'
 import { useEntityFormSubmit } from '@/src/application/hooks/useEntityFormSubmit'
 import type { {{pascalCase name}}SaveDto } from '@/src/types/{{camelCase name}}.types'

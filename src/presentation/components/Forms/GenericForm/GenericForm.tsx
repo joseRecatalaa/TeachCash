@@ -5,9 +5,9 @@
  *
  * No sabe nada de movimientos ni de categorías: recibe un
  * `SectionDefinition[]` y lo pinta. Todo lo específico de una entidad vive en
- * `src/config/<entidad>/sections.ts`, que es un `.ts` sin JSX.
+ * `src/presentation/entidades/<entidad>/formularios.ts`, que es un `.ts` sin JSX.
  *
- * Ver `types.ts` para el contrato con la capa de config, y `FieldRenderer.tsx`
+ * Ver `types.ts` para el contrato con `src/presentation/entidades/`, y `FieldRenderer.tsx`
  * para el mapeo tipo de campo → componente.
  */
 

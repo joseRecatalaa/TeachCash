@@ -236,7 +236,7 @@ function FieldRendererBase({
  * función `optionsFrom`, `labelFrom` o `disabledWhen`— y NO declara
  * `dependsOn` no se puede memoizar: no hay forma de saber qué lee, así que se
  * repinta siempre. Es lo seguro por defecto; con `dependsOn` (ver
- * `categoriaId` en `movimientos/sections.ts`) se repinta solo cuando cambia lo
+ * `categoriaId` en `movimientos/formularios.ts`) se repinta solo cuando cambia lo
  * declarado. Antes `optionsFrom`/`disabledWhen` se memoizaban sin él y el
  * campo se quedaba con lo del primer pintado sin que nada avisara.
  */

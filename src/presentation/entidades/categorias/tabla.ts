@@ -7,7 +7,7 @@ import {
   enumColumn,
   moneyColumn,
 } from '@/src/presentation/components/ActionsColumn'
-import { COLOR_POR_SENTIDO, type AppTableColumn } from '@/src/config/_shared/types'
+import { COLOR_POR_SENTIDO, type AppTableColumn } from '@/src/presentation/entidades/_shared/types'
 import type { CategoriaListDto } from '@/src/types/categoria.types'
 
 export function categoriaColumns(): AppTableColumn<CategoriaListDto>[] {

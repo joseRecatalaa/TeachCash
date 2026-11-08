@@ -206,7 +206,7 @@ Leen el código fuente y fallan si se rompe una convención que, si no, fallarí
 silencio:
 
 - Las claves de `REFINE_RESOURCES` son exactamente las de `REPOSITORIES`.
-- `src/config/` no lleva JSX y ningún campo ni columna es `type: 'number'` (RD 1).
+- `src/presentation/entidades/` no lleva JSX y ningún campo ni columna es `type: 'number'` (RD 1).
 - Todo `component:` o `render:` lleva `dependsOn`.
 - `VIDA_INVITADO_DIAS` coincide con el `interval` de `limpieza-invitados.sql`.
 - El cliente de base desactiva las sentencias preparadas (`prepare: false`).
@@ -259,7 +259,7 @@ uno no llega.
 | CORE | **100 %** | `lib/money.ts`, `lib/dates.ts`, `lib/format.ts`, `lib/rutas.ts`, `lib/csp.ts` | Dinero, fechas y seguridad de rutas: un fallo es una cifra mal o un agujero |
 | CORE | **90 %** | `src/infrastructure/repositories/**`, `src/application/actions/**`, `lib/auth.ts`, `lib/env.ts`, `lib/log.ts` | Lo que falta son ramas de carreras entre peticiones, marcadas con su porqué |
 | IMPORTANT | **80 %** | `GenericForm/**`, `AppTable/**`, `src/application/hooks/**` | Los cubren los tests de componente |
-| INFRA | 0 % (excluido) | `src/types/**`, `src/config/**`, `db/migrations/**`, estilos | No es lógica. `src/config` lo vigilan las guardas estructurales |
+| INFRA | 0 % (excluido) | `src/types/**`, `src/presentation/entidades/**`, `db/migrations/**`, estilos | No es lógica. `entidades/` lo vigilan las guardas estructurales |
 
 **Un umbral no se baja para que pase.** O se escribe el test, o la rama
 inalcanzable se marca con `/* v8 ignore next */` y un comentario con su porqué.
