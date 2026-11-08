@@ -538,8 +538,8 @@ Trabajo en TeachCash (gestor de finanzas personales en Next.js 16 + Supabase).
 Rama feat/CaminoDelHeroe. Seguimos con la FASE 6 (contenido) del módulo
 "Camino del héroe". Responde siempre en español.
 
-Lee primero: AGENTS.md, docs/CAMINO_HEROE.md, docs/CONTENIDO_HEROE.md,
-src/types/heroe.types.ts y docs/prompt-cursos.txt.
+Lee primero: AGENTS.md, docs/plans/CAMINO_HEROE.md, docs/CONTENIDO_HEROE.md,
+src/types/heroe.types.ts y docs/plans/prompt-cursos.txt.
 
 ━━ DÓNDE ESTAMOS (noviembre de 2026) ━━
 - Las fases 1 a 5 están hechas: héroe, progreso, formato del contenido, mapa,
@@ -556,7 +556,7 @@ src/types/heroe.types.ts y docs/prompt-cursos.txt.
   La lectura 01 ya está reescrita con emojis y páginas cortas, pero todavía
   sin negritas ni bloques nuevos.
 - SALUD, INVERSIÓN y DEUDA: los convierten otras sesiones, una por mundo,
-  con el prompt de conversión de docs/prompt-cursos.txt. NO toques sus
+  con el prompt de conversión de docs/plans/prompt-cursos.txt. NO toques sus
   carpetas salvo para leerlas.
 - e2e/heroe.spec.ts ya no depende del número de páginas de ahorro/01, pero
   sí de estos textos:
@@ -582,7 +582,7 @@ src/types/heroe.types.ts y docs/prompt-cursos.txt.
 
 2. AHORRO, COMPLETO HASTA 9 NIVELES. Hoy tiene 3.
    - Guíame para lanzar en Gemini el prompt de investigación de AHORRO
-     (está en docs/prompt-cursos.txt).
+     (está en docs/plans/prompt-cursos.txt).
    - Cuando te pase el informe, conviértelo con el prompt de conversión de
      ese mismo fichero.
    - Los ids ya publicados no cambian: ahorro/01-fondo-de-emergencia,
@@ -605,7 +605,7 @@ src/types/heroe.types.ts y docs/prompt-cursos.txt.
    con su URL oficial.
 
 4. DOCUMENTACIÓN. Propónme qué actualizar en docs/CONTENIDO_HEROE.md (por
-   ejemplo, que los prompts viven ahora en docs/prompt-cursos.txt y que
+   ejemplo, que los prompts viven ahora en docs/plans/prompt-cursos.txt y que
    existen los bloques nuevos) y cámbialo solo si te doy el OK.
 
 ━━ LÍMITES ━━

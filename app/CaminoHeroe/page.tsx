@@ -3,7 +3,7 @@
 /**
  * Camino del héroe: el mapa de mundos.
  *
- * Segundo módulo de la aplicación (el plan, en docs/CAMINO_HEROE.md). Como el
+ * Segundo módulo de la aplicación (el plan, en docs/plans/CAMINO_HEROE.md). Como el
  * resto, es una página de cliente: el progreso lo trae `useMapaHeroe` por una
  * Server Action, y el contenido de los niveles no viaja hasta que se abre uno.
  */
