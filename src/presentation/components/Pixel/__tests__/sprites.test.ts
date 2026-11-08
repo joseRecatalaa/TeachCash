@@ -17,7 +17,7 @@ import { TIPOS_OBJETO } from '@/lib/tienda'
 const esSprite = (v: unknown): v is Sprite =>
   typeof v === 'object' && v !== null && 'filas' in v && Array.isArray((v as Sprite).filas)
 
-const DEL_MUNDO = new Set(['NUBE', 'PINO'])
+const DEL_MUNDO = new Set(['NUBE', 'PINO', 'ISLA'])
 const DEL_CAMINO = new Set(['HUCHA', 'ESCUDO', 'MONTANA', 'TARJETA', 'LIBRO', 'MANDO', 'MONSTRUO', 'CANDADO', 'ESTRELLA', 'CERDITO', 'MONEDA', 'CORAZON', 'BARRAS', 'TARJETITA'])
 
 const paletaDe = (nombre: string): Paleta => {

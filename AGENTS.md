@@ -342,6 +342,15 @@ lleve hasta ella.
 - **`.escena` va en múltiplos enteros del `viewBox` de `EscenaHeroe`** (92x70: 276,
   368 y 460 de ancho). A cualquier otra escala los píxeles salen de anchos
   distintos y el héroe deja de verse nítido, sin que falle nada.
+- **El bocadillo del héroe del Cuadro sale de un punto escrito en CSS**
+  (`HeroeEquipo.module.css`, por `data-hueco`), en porcentaje del `viewBox` de
+  `EscenarioHeroe` (96x90). Si cambia ese `viewBox`, una pieza o su zona
+  (`ZONAS` en `HeroeEquipo.tsx`), el bocadillo apunta a otro sitio sin que falle
+  nada. El escenario no se dimensiona por CSS sino con `width`/`height` a una
+  escala entera: un `width` en CSS lo pisaría y lo dejaría borroso.
+- **La ficha del radar va en un portal** (`document.body`) porque es `fixed`: la
+  entrada de `sd-enter` pone `translate` en sus antepasados, y un antepasado
+  transformado encierra a un `fixed` en su caja en vez de en la ventana.
 - **Una pieza de equipo se pinta en el orden de `HeroeGrande`** (o de `PixelHero`,
   en el pequeño). Si se cambia, una acaba tapando a otra. Los sprites se apoyan en
   las coordenadas de su héroe: 48x66 el grande, 32x44 el pequeño.
@@ -754,7 +763,25 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses
     en positivo de los últimos 12) y Poder (precio de lo EQUIPADO sobre lo máximo
     equipable: quitarse algo lo baja). El radar lleva el dominio fijo de 0 a 100, y
-    la lista de debajo es su alternativa accesible.
+    la ficha que sale al pasar por encima es su alternativa accesible.
+  - **El Cuadro de mando no lleva tarjetas**: es una pantalla de juego, con el
+    héroe en el centro sobre su isla (`EscenarioHeroe`), el patrimonio arriba a
+    la izquierda, el radar arriba a la derecha y las estrellas debajo. Sin leyenda
+    del equipo: al PASAR el ratón por una parte del cuerpo (sin clic), la pieza
+    se resalta en su sitio con un anillo bajo ella y sale un bocadillo con su
+    nombre o "Sin …". El resto del héroe no cambia: se probó desteñirlo y no
+    gustó. Con el dedo se toca y se cierra tocando fuera. El héroe se pinta a la
+    mayor escala entera que cabe sin scroll (`useEscalaEscenario`).
+    El radar es un SVG propio y no Recharts, con la clave y la cifra en cada
+    punta; el 0 cae en un anillo pequeño y no en el centro, para que siete
+    ceros no se tapen. Su ficha es un modal que abre un icono de información y
+    que solo se cierra con la cruz (y con Escape): se probó abrirla al pasar el
+    ratón y saltaba sin querer. El lector de pantalla tiene la lista entera sin
+    abrir nada; el polígono va en los dos verdes del sol del héroe, sin trazo
+    ni sombra, como parte del escenario. Las estrellas, una estrella dibujada
+    como la interfaz (no a píxel) con la cifra encima en su esquina, dorada y
+    con borde de tinta, y un enlace gris a la tienda: lo ganado y lo gastado se
+    ve allí.
 
 ## Decisiones abiertas
 

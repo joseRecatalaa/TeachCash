@@ -1,123 +1,248 @@
-.grid {
+/*
+ * Sin tarjetas: el Cuadro es una pantalla de juego, con el héroe en el centro y
+ * los marcadores en las esquinas, como un HUD. En el móvil, todo en columna: el
+ * patrimonio, el héroe, las estadísticas y las estrellas.
+ */
+
+.cuadro {
   display: grid;
-  gap: 1.1rem;
-  grid-template-columns: repeat(12, 1fr);
+  gap: 2.5rem;
+  grid-template-areas:
+    'patrimonio'
+    'centro'
+    'derecha';
 }
 
-.grid > * {
-  grid-column: span 12;
+.centro {
+  grid-area: centro;
+  justify-self: center;
+}
+
+.derecha {
+  grid-area: derecha;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
 }
 
 @media (min-width: 62em) {
-  .colPatrimonio {
-    grid-column: span 7;
+  .cuadro {
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: 'patrimonio centro derecha';
+    align-items: start;
   }
 
-  .colEstrellas {
-    grid-column: span 5;
-  }
-
-  .colMitad {
-    grid-column: span 6;
+  .derecha {
+    align-items: flex-end;
+    justify-content: space-between;
+    align-self: stretch;
   }
 }
 
-.cifra {
-  font-family: var(--sd-font-mono);
-  font-size: clamp(2rem, 5vw, 2.75rem);
-  font-weight: 700;
-  line-height: 1.1;
+/* ── El patrimonio ─────────────────────────────────────────────────────── */
+
+.patrimonio {
+  grid-area: patrimonio;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
-.ganancia {
-  margin: 0.25rem 0 0.75rem;
-  color: var(--sd-ink-muted);
-}
-
-.ganancia[data-signo='1'] span {
-  color: var(--income);
-  font-weight: 700;
-}
-
-.ganancia[data-signo='-1'] span {
-  color: var(--expense);
-  font-weight: 700;
-}
-
-.estrellas {
+.etiqueta {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   margin: 0;
-}
-
-.nota {
-  margin: 0.25rem 0 0.75rem;
-  color: var(--sd-ink-muted);
-}
-
-/* ── El equipo puesto ───────────────────────────────────────────────────── */
-
-.huecos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: 0.35rem 1rem;
-  margin: 0.75rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.hueco {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.hueco[data-vacio='true'] {
-  color: var(--sd-ink-muted);
-}
-
-.huecoNombre {
   font-family: var(--sd-font-display);
-  font-weight: 600;
-}
-
-/* ── Las estadísticas ───────────────────────────────────────────────────── */
-
-.estadisticas {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-  gap: 0.6rem 1.25rem;
-  margin: 0.5rem 0 0;
-}
-
-.estadistica {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  column-gap: 0.5rem;
-}
-
-.estadistica dt {
-  font-size: 0.875rem;
-}
-
-.estadistica dd {
-  margin: 0;
-}
-
-.clave {
-  font-family: var(--sd-font-display);
+  font-size: 0.82rem;
   font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sd-ink-soft);
 }
 
-.valor {
+.etiqueta::before {
+  content: '';
+  width: 1.75rem;
+  height: var(--sd-stroke-bold);
+  background: var(--sd-accent);
+}
+
+/* El trazo de rotulador de los títulos, bajo la cifra. Su alto sale de
+   `--sd-underline-alto` por lo mismo que en `SketchTitle`. */
+.cifra {
+  --sd-underline-alto: 0.34em;
+  padding: 0 0.12em;
   font-family: var(--sd-font-mono);
-  font-weight: 700;
+  font-size: clamp(2.5rem, 4.4vw, 4.25rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  background-image: linear-gradient(var(--sd-accent-wash), var(--sd-accent-wash));
+  background-repeat: no-repeat;
+  background-size: 100% var(--sd-underline-alto);
+  background-position: 0 90%;
+  animation: sd-underline 700ms var(--sd-ease-out) 300ms backwards;
 }
 
-.fuente {
-  grid-column: 1 / -1;
+.ganancia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.05rem;
+  color: var(--sd-ink-soft);
+}
+
+/* La ganancia como un sello pegado algo torcido, con la frase entera dentro:
+   es lo que más se celebra. El color va en la cifra; la frase, en tinta. */
+.sello {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.85rem 0.3rem 0.6rem;
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-sm);
+  rotate: -2.5deg;
+}
+
+.importe {
+  font-family: var(--sd-font-mono);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.ganancia[data-signo='1'] .sello {
+  background: color-mix(in srgb, var(--income) 14%, var(--sd-surface));
+}
+
+.ganancia[data-signo='1'] .sello > svg,
+.ganancia[data-signo='1'] .importe {
+  color: var(--income);
+}
+
+.ganancia[data-signo='-1'] .sello {
+  background: color-mix(in srgb, var(--expense) 14%, var(--sd-surface));
+}
+
+.ganancia[data-signo='-1'] .sello > svg,
+.ganancia[data-signo='-1'] .importe {
+  color: var(--expense);
+}
+
+/* ── Las estrellas ─────────────────────────────────────────────────────────
+ *
+ * Una estrella con el trazo y la sombra dura de la interfaz y la cifra encima,
+ * dorada con borde de tinta. Va abajo, en el lado de la columna que da al héroe.
+ * Debajo, un enlace gris como el "volver" del Camino: está, pero no compite.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.estrellas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+@media (min-width: 62em) {
+  .estrellas {
+    align-self: flex-start;
+    margin-left: 1.5rem;
+  }
+}
+
+/* El recuadro de la estrella, primo del sello de la ganancia (algo torcido,
+   sombra dura) pero en el verde de la marca en vez de en tinta. */
+.recuadroEstrella {
+  margin: 0;
+  padding: 0.7rem 1.1rem 0.9rem 0.8rem;
+  line-height: 0;
+  background: var(--sd-surface);
+  border: var(--sd-stroke) solid var(--sd-accent);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-accent);
+  rotate: -2.5deg;
+}
+
+.insignia {
+  display: block;
+  width: 8rem;
+  height: 7.4rem;
+  overflow: visible;
+  animation: sd-pop var(--sd-dur-slow) var(--sd-ease-pop) 300ms both;
+}
+
+/* La sombra de la estrella, en verde: la de la cifra se queda en tinta. */
+.estrellaSombra {
+  fill: var(--sd-accent);
+  stroke: var(--sd-accent);
+  stroke-width: 4.5;
+  stroke-linejoin: round;
+}
+
+.estrellaCuerpo {
+  fill: var(--sd-cat-4);
+  stroke: var(--sd-stroke-color);
+  stroke-width: 4.5;
+  stroke-linejoin: round;
+}
+
+.estrellaBrillo {
+  fill: none;
+  stroke: var(--sd-on-fill);
+  stroke-opacity: 0.75;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* El borde va POR FUERA de la letra (`paint-order`): sin eso, el trazo se come
+   la mitad del grosor del número. */
+.cifraEstrellas,
+.cifraSombra {
+  font-family: var(--sd-font-display);
+  font-size: 46px;
+  font-weight: 700;
+  text-anchor: middle;
+  stroke-width: 9;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.cifraEstrellas {
+  fill: var(--sd-cat-4);
+  stroke: var(--sd-stroke-color);
+}
+
+.cifraSombra {
+  fill: var(--sd-shadow-color);
+  stroke: var(--sd-shadow-color);
+}
+
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--sd-font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--sd-ink-muted);
-  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: color var(--sd-dur) ease;
+}
+
+.enlace:hover {
+  color: var(--sd-ink);
+}
+
+.enlace:focus-visible {
+  outline: none;
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-focus-ring);
 }

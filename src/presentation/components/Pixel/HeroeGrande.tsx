@@ -18,7 +18,7 @@
 import { equipoPorHueco, objetoPorId, type Hueco, type Objeto, type TipoObjeto } from '@/lib/tienda'
 import { PixelSprite } from './PixelSprite'
 import styles from './pixel.module.css'
-import { DESTELLO, ESTRELLA, PALETA_CAMINO, type Sprite } from './sprites'
+import { DESTELLO, ESTRELLA, PALETA_CAMINO, type Paleta, type Sprite } from './sprites'
 import {
   GRANDE_BRAZO_DER,
   GRANDE_BRAZO_IZQ,
@@ -50,6 +50,17 @@ export const SPRITE_OBJETO: Record<TipoObjeto, Sprite> = {
   martillo: OBJETO_MARTILLO,
   escudo: OBJETO_ESCUDO,
   alas: OBJETO_ALAS,
+}
+
+/** Lo que se dibuja en un hueco vacío al señalarlo: el arma que falta es una espada. */
+export const TIPO_DEL_HUECO: Record<Hueco, TipoObjeto> = {
+  casco: 'casco',
+  armadura: 'armadura',
+  guantes: 'guantes',
+  botas: 'botas',
+  arma: 'espada',
+  escudo: 'escudo',
+  alas: 'alas',
 }
 
 /** La caja del `viewBox` de `EscenaHeroe`: los destellos no se salen de ella. */
@@ -100,9 +111,40 @@ function Destellos({ sprite }: { sprite: Sprite }) {
   )
 }
 
+/** Una paleta que pinta todas las letras del sprite de un mismo color: su silueta. */
+function silueta(sprite: Sprite, color: string): Paleta {
+  return Object.fromEntries([...new Set(sprite.filas.join('').replaceAll('.', ''))].map((c) => [c, color]))
+}
+
+const ANILLO_DENTRO = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => [dx, dy] as const))
+const ANILLO_FUERA = [-2, -1, 0, 1, 2].flatMap((dx) => [-2, -1, 0, 1, 2].map((dy) => [dx, dy] as const))
+
+/**
+ * El anillo de la pieza señalada: su silueta corrida un píxel en las ocho
+ * direcciones (oro) sobre la misma corrida dos (tinta). Se pinta justo antes de
+ * la pieza, que tapa el centro y deja ver solo el borde.
+ */
+function Anillo({ sprite }: { sprite: Sprite }) {
+  const capa = (desplazamientos: readonly (readonly [number, number])[], color: string) => {
+    const paleta = silueta(sprite, color)
+    return desplazamientos.map(([dx, dy]) => (
+      <g key={`${color}${dx},${dy}`} transform={`translate(${dx} ${dy})`}>
+        <PixelSprite sprite={sprite} paleta={paleta} />
+      </g>
+    ))
+  }
+  return (
+    <g className={styles.anillo} data-anillo="">
+      {capa(ANILLO_FUERA, 'resalte-borde')}
+      {capa(ANILLO_DENTRO, 'resalte')}
+    </g>
+  )
+}
+
 export function HeroeGrande({
   equipo = [],
   estreno = null,
+  senalado = null,
 }: {
   equipo?: readonly string[]
   /**
@@ -110,27 +152,45 @@ export function HeroeGrande({
    * lo pasa la tienda tras una compra; equipar algo que ya era tuyo, no.
    */
   estreno?: string | null
+  /**
+   * El hueco que se está señalando (Cuadro de mando): su pieza se rodea de un
+   * anillo, y si está vacío se pinta la silueta de la que falta.
+   */
+  senalado?: Hueco | null
 }) {
   const puesto = equipoPorHueco(equipo)
   const pieza = (hueco: Hueco) => {
     const objeto = puesto.get(hueco)
-    return <Pieza objeto={objeto} estreno={objeto !== undefined && objeto.id === estreno} />
+    const aqui = senalado === hueco
+    const sprite = SPRITE_OBJETO[objeto?.tipo ?? TIPO_DEL_HUECO[hueco]]
+    return (
+      <>
+        {aqui && <Anillo sprite={sprite} />}
+        {aqui && !objeto && (
+          <g data-fantasma={hueco}>
+            <PixelSprite sprite={sprite} paleta={silueta(sprite, 'fantasma')} />
+          </g>
+        )}
+        <Pieza objeto={objeto} estreno={objeto !== undefined && objeto.id === estreno} />
+      </>
+    )
   }
   const nuevo = [...puesto.values()].find((o) => o.id === estreno)
+  const cuerpo = (sprite: Sprite) => <PixelSprite sprite={sprite} paleta={PALETA} />
 
   return (
     <g className={styles.paleta}>
       <path d="M12 66h24v1h-24zM9 67h30v1h-30z" className={styles.sombra} />
-      <PixelSprite sprite={GRANDE_PIERNAS} paleta={PALETA} />
+      {cuerpo(GRANDE_PIERNAS)}
       {pieza('botas')}
       <g className={styles.respira}>
         {pieza('alas')}
-        <PixelSprite sprite={GRANDE_TORSO} paleta={PALETA} />
+        {cuerpo(GRANDE_TORSO)}
         {pieza('armadura')}
-        <PixelSprite sprite={GRANDE_BRAZO_IZQ} paleta={PALETA} />
-        <PixelSprite sprite={GRANDE_BRAZO_DER} paleta={PALETA} />
+        {cuerpo(GRANDE_BRAZO_IZQ)}
+        {cuerpo(GRANDE_BRAZO_DER)}
         {pieza('guantes')}
-        <PixelSprite sprite={GRANDE_CABEZA} paleta={PALETA} />
+        {cuerpo(GRANDE_CABEZA)}
         {pieza('casco')}
         {pieza('escudo')}
         {pieza('arma')}

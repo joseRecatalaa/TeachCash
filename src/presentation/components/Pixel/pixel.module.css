@@ -46,6 +46,12 @@
   --px-billete-papel: #eaf6e4;
   --px-destello: #ffd45e;
   --px-sombra-heroe: rgb(40 60 42 / 22%);
+  /* El anillo de la pieza señalada en el Cuadro: oro por dentro y tinta por
+     fuera, para que se lea también alrededor de una pieza de oro. */
+  --px-resalte: #ffd45e;
+  --px-resalte-borde: #2b1a10;
+  /* Lo que se ve de un hueco vacío: la silueta de la pieza que falta. */
+  --px-fantasma: rgb(255 255 255 / 62%);
 }
 
 :global(:root[data-mantine-color-scheme='dark']) .paleta {
@@ -327,6 +333,14 @@
   --px-hoja: #7aa47c;
   --px-hoja-sombra: #658f68;
   --px-tronco: #8a948a;
+  /* La isla del Cuadro de mando. */
+  --px-contorno: #2b1a10;
+  --px-cesped-luz: #b5dc8f;
+  --px-cesped: #8cc46a;
+  --px-cesped-sombra: #5f9a4a;
+  --px-tierra: #a8754a;
+  --px-tierra-sombra: #7a5132;
+  --px-roca: #c9c3b6;
 }
 
 :global(:root[data-mantine-color-scheme='dark']) .paletaMundo {
@@ -335,6 +349,12 @@
   --px-hoja: #4f7a55;
   --px-hoja-sombra: #3d6243;
   --px-tronco: #6b756c;
+  --px-cesped-luz: #7fae69;
+  --px-cesped: #5f8f52;
+  --px-cesped-sombra: #456f3c;
+  --px-tierra: #7b5638;
+  --px-tierra-sombra: #5a3d27;
+  --px-roca: #8f8a80;
 }
 
 /* ── El equipo de los dos héroes ───────────────────────────────────────────
@@ -476,4 +496,95 @@
     width: 460px;
     height: 350px;
   }
+}
+
+/* ── La pieza señalada ─────────────────────────────────────────────────────
+ *
+ * En el Cuadro de mando, al pasar por una parte del héroe su pieza se resalta EN
+ * SU SITIO: un anillo de dos píxeles (oro y tinta) se pinta justo debajo de
+ * ella, así que lo que la tapa la sigue tapando. El resto del héroe no cambia.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.anillo {
+  animation: px-parpadeo 1s steps(1, end) infinite;
+}
+
+@keyframes px-parpadeo {
+  50%,
+  100% {
+    opacity: 0.55;
+  }
+}
+
+/* ── El escenario del Cuadro de mando ──────────────────────────────────────
+ *
+ * Monedas que flotan y destellos que titilan alrededor de la isla. Decorado: sin
+ * animación (movimiento reducido) las monedas se quedan quietas y los destellos
+ * encendidos, que es una escena entera.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.flota {
+  animation: px-flota 1.6s steps(1, end) infinite;
+}
+.flota:nth-of-type(2n) {
+  animation-delay: -0.8s;
+}
+
+@keyframes px-flota {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25%,
+  75% {
+    translate: 0 -1px;
+  }
+  50% {
+    translate: 0 -2px;
+  }
+}
+
+.titila {
+  animation: px-titila 2.4s steps(1, end) infinite;
+}
+.titila:nth-of-type(2) {
+  animation-delay: -0.6s;
+}
+.titila:nth-of-type(3) {
+  animation-delay: -1.2s;
+}
+.titila:nth-of-type(4) {
+  animation-delay: -1.8s;
+}
+
+@keyframes px-titila {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* El escenario se dimensiona con sus atributos `width`/`height`, a la mayor
+   escala ENTERA que cabe en la pantalla (`useEscalaEscenario`): a cualquier
+   otra, los píxeles salen de anchos distintos. */
+.escenario {
+  display: block;
+}
+
+/* El sol de detrás del héroe: tokens y no `--px-*`, porque es fondo de la
+   interfaz y tiene que cambiar con el tema. */
+.haloFuera {
+  fill: var(--sd-accent-wash-faint);
+}
+
+.haloDentro {
+  fill: var(--sd-accent-wash);
+}
+
+.titila:nth-of-type(5) {
+  animation-delay: -2.1s;
 }

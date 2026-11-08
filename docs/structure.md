@@ -34,7 +34,7 @@ Cada cambio tiene un sitio y solo uno:
 ```
 .
   app/                                # rutas, en PascalCase
-    page.tsx                          # Cuadro de mando: patrimonio, estrellas, héroe y radar
+    page.tsx                          # Cuadro de mando: patrimonio, héroe, radar y estrellas
     page.module.css                   # su aspecto: cada vista lleva el suyo
     Patrimonio/                       # Inicio: saldo, mes, gráficos y últimos
     Tienda/page.tsx                   # lo que se compra con las estrellas
@@ -142,7 +142,7 @@ Cada cambio tiene un sitio y solo uno:
         Pixel/                        # el héroe (PixelHero), los sprites y su paleta: los comparten el splash y el héroe
           HeroeGrande.tsx spritesGrande.ts  # el héroe de 48x66 con su equipo: Cuadro de mando y Tienda
           spritesEquipo.ts            # el mismo equipo, redibujado para el héroe pequeño del Camino
-        Cuadro/                       # las tarjetas del Cuadro de mando
+        Cuadro/                       # el Cuadro de mando: la pantalla, el héroe que se toca y el radar
         Tienda/                       # el probador y la rejilla de objetos
         Heroe/                        # el Camino del héroe: mapa, camino, ficha del nivel
           planeta.ts camino.ts        # la geometría a píxel, en funciones puras

@@ -66,8 +66,8 @@ Las pantallas de auth (`Auth/`) no usan `GenericForm` a propósito: no son CRUD.
 
 ### Gráficos (`Charts/FinanceCharts.tsx`)
 
-`IngresosVsGastosChart`, `GastoPorCategoriaChart`, `SerieSaldoChart` y
-`RadarEstadisticas`, sobre Recharts. Reciben datos ya agregados por el servidor.
+`IngresosVsGastosChart`, `GastoPorCategoriaChart` y `SerieSaldoChart`, sobre
+Recharts. Reciben datos ya agregados por el servidor.
 Un gráfico nuevo va aquí y pasa antes por las skills `finance-charts` y
 `dataviz`.
 
@@ -80,7 +80,8 @@ Todo el dibujo es SVG generado desde sprites en código: sin ficheros de imagen.
 | `PixelSprite` | Pinta un `Sprite` (filas de letras) con una `Paleta` (letra → variable `--px-*`). La base de todo lo demás |
 | `sprites.ts` | Sprites y paletas del héroe pequeño, del decorado (nube, pino), de los mundos (hucha, escudo, montaña, tarjeta), de los iconos (estrella, candado, moneda…) y del monstruo |
 | `PixelHero` | El héroe pequeño (32x44): splash (sin equipo) y Camino (con él). `pose`: `quieto` · `agacha` · `camina` · `corre` · `celebra`; `mirando`; `equipo` (ids del catálogo). Su equipo, en `spritesEquipo.ts` |
-| `HeroeGrande`, `EscenaHeroe` | El héroe grande (48x66) con su `equipo`, y su escena enmarcada: Cuadro de mando y Tienda. Sprites en `spritesGrande.ts`. `estreno` (un id) hace aparecer esa pieza con un gesto y destellos: solo lo pasa la tienda tras una compra |
+| `HeroeGrande`, `EscenaHeroe` | El héroe grande (48x66) con su `equipo`, y su escena enmarcada (la Tienda). Sprites en `spritesGrande.ts`. `estreno` (un id) hace aparecer esa pieza con un gesto y destellos: solo lo pasa la tienda tras una compra. `senalado` (un hueco) rodea su pieza de un anillo, o pinta la silueta de la que falta |
+| `EscenarioHeroe` | El héroe grande sobre su isla flotante, con sol, monedas y destellos: el del Cuadro de mando. `escala` entera; exporta su `viewBox` para poner encima lo que se señala |
 | `ObjetoPixel`, `EstrellaPixel` | Un objeto de la tienda en su caja y la estrella suelta |
 | `geometria.ts` | Círculos y trazos a píxel, en funciones puras (los planetas) |
 | `useMovimientoReducido` | `prefers-reduced-motion` para lo que se anima desde JavaScript |
@@ -102,7 +103,10 @@ No son genéricas, pero conviene saber que existen antes de rehacerlas:
 
 - `Navbar`, `SideMenu/` (menú de módulos), `Splash/` (pantalla de carga y
   `EVENTO_FIN_SPLASH`), `Cuenta/` (`CuentaMenu`, `AvisoInvitado`).
-- `Cuadro/CuadroMando` y `Tienda/Tienda`.
+- `Cuadro/`: `CuadroMando` (la pantalla, sin tarjetas), `HeroeEquipo` (el héroe
+  que se señala con el ratón, con su bocadillo, y `useEscalaEscenario`) y
+  `RadarHeroe` (el polígono dibujado a mano y la ficha en un modal, que abre su
+  icono de información). Y `Tienda/Tienda`.
 - `Inicio/`: `ElegirPatrimonio`, `SelectorMes` y `useMesDeInicio` (el `?mes=`).
 - `Auth/`: los formularios de login, registro, contraseña y borrar cuenta.
 
