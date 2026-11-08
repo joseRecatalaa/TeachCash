@@ -40,6 +40,7 @@ ruta completa. Existen solo porque hacen algo que Mantine no hace.
 | `StatusBadge` | Un estado con su tono resuelto en un solo sitio (`ESTADOS`) | `status` o `tone`; `dot`; `raised`; `size` |
 | `EmptyState` | El hueco vacío, dibujado | `titulo` (lo que pasa, no una disculpa); `descripcion`; `accion` (normalmente un `SketchButton`); `dibujo`: `libreta` · `etiquetas` · `grafico`; `compacto` |
 | `AnimatedMoney` | Un importe que cuenta hasta su valor sin dejar de ser exacto. Respeta el movimiento reducido | `valor` en céntimos; `signed` para netos y flujos; `divisa`; `placeholder` |
+| `AnimatedCount` | Un entero que no es dinero (las estrellas de la tienda) y cuenta hasta su valor. Comparte la cuenta con `AnimatedMoney` (`useCuenta`) | `valor`; `className` |
 
 ### Formularios (`Forms/`)
 
@@ -79,7 +80,7 @@ Todo el dibujo es SVG generado desde sprites en código: sin ficheros de imagen.
 | `PixelSprite` | Pinta un `Sprite` (filas de letras) con una `Paleta` (letra → variable `--px-*`). La base de todo lo demás |
 | `sprites.ts` | Sprites y paletas del héroe pequeño, del decorado (nube, pino), de los mundos (hucha, escudo, montaña, tarjeta), de los iconos (estrella, candado, moneda…) y del monstruo |
 | `PixelHero` | El héroe pequeño (32x44): splash (sin equipo) y Camino (con él). `pose`: `quieto` · `agacha` · `camina` · `corre` · `celebra`; `mirando`; `equipo` (ids del catálogo). Su equipo, en `spritesEquipo.ts` |
-| `HeroeGrande`, `EscenaHeroe` | El héroe grande (48x66) con su `equipo`, y su escena enmarcada: Cuadro de mando y Tienda. Sprites en `spritesGrande.ts` |
+| `HeroeGrande`, `EscenaHeroe` | El héroe grande (48x66) con su `equipo`, y su escena enmarcada: Cuadro de mando y Tienda. Sprites en `spritesGrande.ts`. `estreno` (un id) hace aparecer esa pieza con un gesto y destellos: solo lo pasa la tienda tras una compra |
 | `ObjetoPixel`, `EstrellaPixel` | Un objeto de la tienda en su caja y la estrella suelta |
 | `geometria.ts` | Círculos y trazos a píxel, en funciones puras (los planetas) |
 | `useMovimientoReducido` | `prefers-reduced-motion` para lo que se anima desde JavaScript |
@@ -115,7 +116,7 @@ cálculo. Vive en tres sitios y solo tres:
 |---|---|---|
 | **Tokens** | `app/globals.css` | Las Custom Properties `--sd-*`: color, trazo, sombra, radio, movimiento, tipografía. La única fuente de verdad |
 | **Puente con Mantine** | `src/presentation/styles/mantine-sketch.module.css` | Se engancha en el tema con `Componente.extend({ classNames })`. Hace que TODO `<Button>`, `<Paper>` o `<TextInput>` ya existente herede el aspecto sin tocarlo |
-| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `SketchTitle`, `StatusBadge`, `EmptyState`, `AnimatedMoney`. Solo para lo que Mantine no da |
+| **Primitivos** | `src/presentation/components/ui/` | `SketchButton`, `SketchCard`, `SketchTitle`, `StatusBadge`, `EmptyState`, `AnimatedMoney`, `AnimatedCount`. Solo para lo que Mantine no da |
 
 Las tres reglas de estilo del proyecto:
 

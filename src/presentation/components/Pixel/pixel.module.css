@@ -374,6 +374,87 @@
   --px-equipo-detalle: #c6d8c0;
 }
 
+/* ── El estreno: lo que se acaba de comprar ─────────────────────────────────
+ *
+ * Al comprar, la pieza baja hasta su sitio y parpadea, que es el "¡objeto
+ * conseguido!" de los juegos de 16 bits, y alrededor titilan cuatro destellos.
+ * A saltos (`steps`), como todo el pixel art: un sprite que se desliza o escala
+ * en continuo deja de ser un sprite, y por eso no sirve `sd-pop`. El estado sin
+ * animar es la pieza en su sitio y los destellos apagados: con el movimiento
+ * reducido (el bloque del final de `globals.css`) no queda nada a medias. La
+ * tienda, además, ni lo pide entonces: lo mira con `matchMedia`.
+ *
+ * Si cambias las duraciones, cambia `DURACION_ESTRENO` en `Tienda.tsx`, que es
+ * cuánto dura la marca de estreno.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.estreno {
+  animation: px-estreno 0.8s steps(1, end) both;
+}
+
+@keyframes px-estreno {
+  0% {
+    opacity: 0;
+    translate: 0 -3px;
+  }
+  15% {
+    opacity: 1;
+    translate: 0 -2px;
+  }
+  30% {
+    opacity: 0;
+    translate: 0 -1px;
+  }
+  45% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  60% {
+    opacity: 0;
+  }
+  75%,
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.destello {
+  opacity: 0;
+  animation: px-destello 0.6s steps(1, end) both;
+}
+
+/* Uno detrás de otro, por posición y no con un retraso en el JSX: la regla de
+   "ni un `style` suelto" no tiene excepciones. */
+.destellos > :nth-child(2) .destello {
+  animation-delay: 0.15s;
+}
+.destellos > :nth-child(3) .destello {
+  animation-delay: 0.3s;
+}
+.destellos > :nth-child(4) .destello {
+  animation-delay: 0.45s;
+}
+
+@keyframes px-destello {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  85%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Múltiplos enteros del `viewBox` de 92x70 de `EscenaHeroe`: 3, 4 y 5 píxeles de
    pantalla por píxel de juego. */
 .escena {

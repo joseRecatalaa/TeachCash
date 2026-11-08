@@ -1,15 +1,18 @@
 /**
  * La tienda en pantalla: qué botón sale en cada estado, que comprar manda solo el
- * id y que el probador viste al héroe sin comprar nada.
+ * id y que el probador viste al héroe sin comprar nada. Y que comprar se nota:
+ * la pieza se estrena con destellos y las estrellas bajan contando, pero solo al
+ * comprar, y nunca con el movimiento reducido.
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MantineProvider } from '@mantine/core'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { CATALOGO } from '@/lib/tienda'
 import { nuevoQueryClient } from '@/test/render'
+import { CLAVE_TIENDA, useTienda } from '@/src/application/hooks/useCuadro'
 import type { TiendaDto } from '@/src/types/tienda.types'
 import { Tienda } from '../Tienda'
 
@@ -110,5 +113,147 @@ describe('el probador', () => {
   test('sin estrellas ganadas, dice dónde se ganan', () => {
     pintar(tienda(0))
     expect(screen.getByRole('link', { name: /Camino del héroe/ })).toHaveAttribute('href', '/CaminoHeroe')
+  })
+})
+
+/* ── Comprar se nota ───────────────────────────────────────────────────────── */
+
+/*
+ * Como en la página: la tienda sale de `useTienda`, y lo que devuelve una compra
+ * entra por la caché (`setQueryData` en el hook). Con un prop fijo, la Tienda no
+ * vería nunca el resultado. La caché arranca llena y no caduca: así no se pide
+ * nada al montar y lo único que la cambia es la mutación.
+ */
+function TiendaDeLaPagina() {
+  const { data } = useTienda()
+  return data ? <Tienda tienda={data} /> : null
+}
+
+const pintarComoLaPagina = (t: TiendaDto) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } },
+  })
+  queryClient.setQueryData(CLAVE_TIENDA, t)
+  return render(
+    <MantineProvider>
+      <QueryClientProvider client={queryClient}>
+        <TiendaDeLaPagina />
+      </QueryClientProvider>
+    </MantineProvider>,
+  )
+}
+
+const estreno = () => heroe().querySelector('[data-estreno]')
+const destellos = () => heroe().querySelectorAll('[data-destellos] > g')
+const comprarCasco = () =>
+  userEvent.click(within(ficha('Casco de cuero')).getByRole('button', { name: /Comprar por 3/ }))
+
+/** Como un navegador con "reducir movimiento" activado. */
+function conMovimientoReducido() {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      }) as MediaQueryList,
+  )
+}
+
+afterEach(() => vi.restoreAllMocks())
+
+describe('comprar se nota', () => {
+  test('la pieza se estrena en el héroe, con sus destellos, y lo cuenta', async () => {
+    acciones.comprarObjeto.mockResolvedValue({ ok: true, data: tienda(7, ['casco-basica'], ['casco-basica']) })
+    pintarComoLaPagina(tienda(10))
+
+    await comprarCasco()
+
+    await waitFor(() => expect(estreno()).not.toBeNull())
+    expect(estreno()).toHaveAttribute('data-hueco', 'casco')
+    expect(destellos()).toHaveLength(4)
+    expect(screen.getByRole('status')).toHaveTextContent('Casco de cuero, comprado y puesto')
+  })
+
+  test('no retrasa la compra: la ficha ya dice "Equipado" mientras se estrena', async () => {
+    acciones.comprarObjeto.mockResolvedValue({ ok: true, data: tienda(7, ['casco-basica'], ['casco-basica']) })
+    pintarComoLaPagina(tienda(10))
+
+    await comprarCasco()
+
+    await waitFor(() => expect(estreno()).not.toBeNull())
+    expect(within(ficha('Casco de cuero')).getByText('Equipado')).toBeInTheDocument()
+  })
+
+  test('las estrellas bajan hasta lo que queda, y el lector de pantalla oye solo la cifra final', async () => {
+    acciones.comprarObjeto.mockResolvedValue({ ok: true, data: tienda(7, ['casco-basica'], ['casco-basica']) })
+    pintarComoLaPagina(tienda(10))
+    expect(screen.getByLabelText('10')).toHaveTextContent('10')
+
+    await comprarCasco()
+
+    const cifra = await screen.findByLabelText('7')
+    await waitFor(() => expect(cifra).toHaveTextContent('7'))
+  })
+
+  test('el estreno se va solo: volver a pasar por la pieza no la hace parpadear', async () => {
+    acciones.comprarObjeto.mockResolvedValue({ ok: true, data: tienda(7, ['casco-basica'], ['casco-basica']) })
+    pintarComoLaPagina(tienda(10))
+
+    await comprarCasco()
+    await waitFor(() => expect(estreno()).not.toBeNull())
+
+    await waitFor(() => expect(estreno()).toBeNull(), { timeout: 2000 })
+    expect(destellos()).toHaveLength(0)
+  })
+
+  test('al cargar la página no se estrena nada, aunque lleve equipo', () => {
+    pintarComoLaPagina(tienda(5, ['casco-basica'], ['casco-basica']))
+    expect(heroe()).toHaveAttribute('aria-label', 'El héroe, con: Casco de cuero')
+    expect(estreno()).toBeNull()
+    expect(destellos()).toHaveLength(0)
+  })
+
+  test('equipar algo que ya era tuyo no se estrena', async () => {
+    acciones.equiparObjeto.mockResolvedValue({ ok: true, data: tienda(0, ['casco-basica'], ['casco-basica']) })
+    pintarComoLaPagina(tienda(0, ['casco-basica']))
+
+    await userEvent.click(within(ficha('Casco de cuero')).getByRole('button', { name: 'Equipar' }))
+
+    await within(ficha('Casco de cuero')).findByText('Equipado')
+    await userEvent.unhover(ficha('Casco de cuero'))
+    expect(heroe()).toHaveAttribute('aria-label', 'El héroe, con: Casco de cuero')
+    expect(estreno()).toBeNull()
+    expect(destellos()).toHaveLength(0)
+  })
+
+  test('si la compra falla, no se estrena nada', async () => {
+    acciones.comprarObjeto.mockResolvedValue({ ok: false, error: 'No tienes estrellas suficientes' })
+    pintarComoLaPagina(tienda(10))
+
+    await comprarCasco()
+
+    await waitFor(() => expect(acciones.comprarObjeto).toHaveBeenCalled())
+    expect(estreno()).toBeNull()
+    expect(screen.getByRole('status')).toHaveTextContent('')
+  })
+
+  test('con el movimiento reducido no hay gesto ni cuenta, pero sí la noticia', async () => {
+    conMovimientoReducido()
+    acciones.comprarObjeto.mockResolvedValue({ ok: true, data: tienda(7, ['casco-basica'], ['casco-basica']) })
+    pintarComoLaPagina(tienda(10))
+
+    await comprarCasco()
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Casco de cuero, comprado y puesto'))
+    expect(estreno()).toBeNull()
+    expect(destellos()).toHaveLength(0)
+    // Sin contar: la cifra ya es la final en el primer render tras la compra.
+    expect(screen.getByLabelText('7')).toHaveTextContent('7')
   })
 })

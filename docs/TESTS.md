@@ -230,7 +230,7 @@ silencio:
 | `Pixel/__tests__/PixelHero.test.tsx` | 17 | La pose llega al `data-pose`, todas las capas existen en todas las poses, voltear. El equipo: cada pieza con su calidad, el orden de capas y la clase de la parte del cuerpo que la mueve |
 | `Heroe/__tests__/HeroeCamino.test.tsx` | 5 | El héroe del Camino lleva el equipo de la tienda con una sola consulta; sin ella, ninguno; el splash, nunca |
 | `Heroe/__tests__/CaminoMundo.test.tsx` | 14 | El camino (nodos accesibles, ficha del nivel, bloqueado sin enlace) y el mapa (elegir, entrar, "Pronto", las flechas que mueven al héroe) |
-| `Tienda/__tests__/Tienda.test.tsx` | 8 | Qué botón sale en cada estado, que comprar solo manda el id, el filtro y el probador con ratón y con teclado |
+| `Tienda/__tests__/Tienda.test.tsx` | 16 | Qué botón sale en cada estado, que comprar solo manda el id, el filtro y el probador con ratón y con teclado. Comprar se nota (estreno, destellos, las estrellas bajan contando), sin retrasar la compra; no al cargar, ni al equipar, ni si falla, ni con el movimiento reducido |
 | `Cuadro/__tests__/CuadroMando.test.tsx` | 8 | El signo de la ganancia, lo que se enseña a quien empieza y la lista legible de las estadísticas |
 | `Heroe/__tests__/Reproductor.test.tsx` | 10 | Jugar como una persona: feedback al momento, minitest y jefe con repaso, reintentar; negrita, cursiva, emoticonos, `imagen` y `dato` |
 | `Heroe/__tests__/ejercicios.test.tsx` | 2 | Ordenar con botones y emparejar sin repetir definición |

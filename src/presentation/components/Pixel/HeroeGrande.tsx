@@ -18,7 +18,7 @@
 import { equipoPorHueco, objetoPorId, type Hueco, type Objeto, type TipoObjeto } from '@/lib/tienda'
 import { PixelSprite } from './PixelSprite'
 import styles from './pixel.module.css'
-import { ESTRELLA, PALETA_CAMINO, type Sprite } from './sprites'
+import { DESTELLO, ESTRELLA, PALETA_CAMINO, type Sprite } from './sprites'
 import {
   GRANDE_BRAZO_DER,
   GRANDE_BRAZO_IZQ,
@@ -52,18 +52,71 @@ export const SPRITE_OBJETO: Record<TipoObjeto, Sprite> = {
   alas: OBJETO_ALAS,
 }
 
-function Pieza({ objeto }: { objeto: Objeto | undefined }) {
+/** La caja del `viewBox` de `EscenaHeroe`: los destellos no se salen de ella. */
+const ESCENA = { x: -22, y: -2, ancho: 92, alto: 70 } as const
+
+function Pieza({ objeto, estreno = false }: { objeto: Objeto | undefined; estreno?: boolean }) {
   if (!objeto) return null
   return (
-    <g className={styles.equipo} data-calidad={objeto.calidad} data-hueco={objeto.hueco}>
+    <g
+      className={estreno ? `${styles.equipo} ${styles.estreno}` : styles.equipo}
+      data-calidad={objeto.calidad}
+      data-hueco={objeto.hueco}
+      data-estreno={estreno || undefined}
+    >
       <PixelSprite sprite={SPRITE_OBJETO[objeto.tipo]} paleta={PALETA} />
     </g>
   )
 }
 
-export function HeroeGrande({ equipo = [] }: { equipo?: readonly string[] }) {
+/**
+ * Los destellos de una pieza recién comprada: cuatro, en sus esquinas y un poco
+ * por fuera, sin salirse de la escena. Titilan una vez, uno detrás de otro
+ * (`.destello` en `pixel.module.css`), y se quedan transparentes: sin animación,
+ * no se ven.
+ */
+function Destellos({ sprite }: { sprite: Sprite }) {
+  const ancho = sprite.filas[0].length
+  const alto = sprite.filas.length
+  const lado = DESTELLO.filas.length
+  const dentro = (x: number, y: number) => [
+    Math.min(Math.max(x, ESCENA.x), ESCENA.x + ESCENA.ancho - lado),
+    Math.min(Math.max(y, ESCENA.y), ESCENA.y + ESCENA.alto - lado),
+  ]
+  const puntos = [
+    dentro(sprite.x - 3, sprite.y - 2),
+    dentro(sprite.x + ancho - 2, sprite.y - 3),
+    dentro(sprite.x + ancho - 1, sprite.y + alto - 4),
+    dentro(sprite.x - 4, sprite.y + alto - 3),
+  ]
+  return (
+    <g className={styles.destellos} data-destellos="">
+      {puntos.map(([x, y]) => (
+        <g key={`${x},${y}`} transform={`translate(${x} ${y})`}>
+          <PixelSprite sprite={DESTELLO} paleta={PALETA} className={styles.destello} />
+        </g>
+      ))}
+    </g>
+  )
+}
+
+export function HeroeGrande({
+  equipo = [],
+  estreno = null,
+}: {
+  equipo?: readonly string[]
+  /**
+   * El id de lo que se acaba de comprar: aparece con un gesto y destellos. Solo
+   * lo pasa la tienda tras una compra; equipar algo que ya era tuyo, no.
+   */
+  estreno?: string | null
+}) {
   const puesto = equipoPorHueco(equipo)
-  const pieza = (hueco: Hueco) => <Pieza objeto={puesto.get(hueco)} />
+  const pieza = (hueco: Hueco) => {
+    const objeto = puesto.get(hueco)
+    return <Pieza objeto={objeto} estreno={objeto !== undefined && objeto.id === estreno} />
+  }
+  const nuevo = [...puesto.values()].find((o) => o.id === estreno)
 
   return (
     <g className={styles.paleta}>
@@ -82,6 +135,8 @@ export function HeroeGrande({ equipo = [] }: { equipo?: readonly string[] }) {
         {pieza('escudo')}
         {pieza('arma')}
       </g>
+      {/* Con su `key`, una compra nueva vuelve a montarlos y a lanzar su animación. */}
+      {nuevo && <Destellos key={nuevo.id} sprite={SPRITE_OBJETO[nuevo.tipo]} />}
     </g>
   )
 }
@@ -91,17 +146,23 @@ export function HeroeGrande({ equipo = [] }: { equipo?: readonly string[] }) {
  * El tamaño va en `.escena`, en múltiplos enteros de este `viewBox`: a cualquier
  * otra escala los píxeles salen de anchos distintos y deja de verse nítido.
  */
-export function EscenaHeroe({ equipo = [] }: { equipo?: readonly string[] }) {
+export function EscenaHeroe({
+  equipo = [],
+  estreno = null,
+}: {
+  equipo?: readonly string[]
+  estreno?: string | null
+}) {
   const nombres = equipo.flatMap((id) => objetoPorId(id)?.nombre ?? [])
   return (
     <svg
       className={styles.escena}
-      viewBox="-22 -2 92 70"
+      viewBox={`${ESCENA.x} ${ESCENA.y} ${ESCENA.ancho} ${ESCENA.alto}`}
       shapeRendering="crispEdges"
       role="img"
       aria-label={nombres.length > 0 ? `El héroe, con: ${nombres.join(', ')}` : 'El héroe, sin equipo'}
     >
-      <HeroeGrande equipo={equipo} />
+      <HeroeGrande equipo={equipo} estreno={estreno} />
     </svg>
   )
 }

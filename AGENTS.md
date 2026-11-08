@@ -325,8 +325,8 @@ lleve hasta ella.
   como un bug.** El bloque está al final de `globals.css` y hace
   `animation: none`, no una duración de 0,01 ms: una entrada que arranca en
   `opacity: 0` y se acelera hasta lo instantáneo sigue dando un parpadeo. Y el
-  CSS no llega al JavaScript: `AnimatedMoney` lo comprueba aparte con
-  `matchMedia`.
+  CSS no llega al JavaScript: `useCuenta` (lo de debajo de `AnimatedMoney` y
+  `AnimatedCount`) y la tienda lo comprueban aparte con `matchMedia`.
 - **El aviso de invitado cerrado se decide en DOS sitios**: `AvisoInvitado.tsx`
   y el script inline del `<head>` de `app/layout.tsx` (misma clave de
   `localStorage`, mismo día de margen). Si divergen, la franja aparece y
@@ -625,6 +625,18 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   porque la regla de "ni un `style` suelto" no admite excepciones "solo para un
   delay". Todo queda anulado por el bloque `prefers-reduced-motion`; en
   `AnimatedMoney`, que es JavaScript, se comprueba además con `matchMedia`.
+- **Comprar en la tienda se nota, y es pixel art, no interfaz.** La pieza baja y
+  parpadea en el probador (`px-estreno`) y cuatro destellos titilan alrededor
+  (`px-destello`, con el sprite `DESTELLO`), en `pixel.module.css` y a saltos con
+  `steps()`. No se usó `sd-pop`: escala en continuo, y un sprite a medio píxel se
+  emborrona; los tres gestos siguen siendo los de la interfaz. Las estrellas bajan
+  contando con `AnimatedCount`, que comparte la cuenta con `AnimatedMoney`
+  (`useCuenta`) porque las estrellas no son dinero. Solo se anima lo que se acaba
+  de comprar: la tienda marca el id al pulsar y el estreno se DERIVA de que ya
+  conste como comprado, así que llega en el mismo render que los datos y no
+  retrasa la compra; al cargar o al equipar no hay marca. Con el movimiento
+  reducido no se pide (`matchMedia`) y el CSS lo deja en la pieza quieta y los
+  destellos apagados. El gesto solo se ve, así que un `role="status"` lo cuenta.
 - **Tipografía**: Fredoka para titulares, botones y etiquetas; Nunito para el
   texto corrido; **Geist Mono para el dinero**, y esta última no es estética: los
   importes en columna necesitan cifras de ancho fijo para poder compararse, y
