@@ -25,7 +25,9 @@ export async function getCuadro(userId: string): Promise<CuadroDto> {
     getEquipo(userId),
   ])
 
-  // Sin elegir patrimonio inicial cuenta como cero, igual que en `getSaldoActual`.
+  // Contra el PRIMER patrimonio que eligió, no contra la base: editar el total
+  // con el lápiz es ganar o perder desde que empezó, igual que un movimiento.
+  // Sin elegirlo cuenta como cero, igual que en `getSaldoActual`.
   const ganancia = patrimonio - (inicial ?? 0)
 
   return {

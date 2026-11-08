@@ -15,14 +15,14 @@ vi.mock('@/lib/auth', async () => (await import('@/test/mocks/auth')).authMock()
 import { harness, usarBaseDeTest } from '@/test/harness'
 import { getPatrimonioInicial } from '@/src/infrastructure/repositories/perfiles.repository'
 import { USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
-import { fetchPatrimonioInicial, guardarPatrimonioInicial } from '../perfil.actions'
+import { fetchPatrimonioInicial, guardarPatrimonio } from '../perfil.actions'
 
 usarBaseDeTest()
 
 describe('sesión', () => {
   test.each([
     ['fetchPatrimonioInicial', () => fetchPatrimonioInicial()],
-    ['guardarPatrimonioInicial', () => guardarPatrimonioInicial({ patrimonioInicial: 1000 })],
+    ['guardarPatrimonio', () => guardarPatrimonio({ patrimonio: 1000 })],
   ])('%s sin sesión no hace nada', async (_nombre, llamar) => {
     harness.userId = null
     expect(await llamar()).toEqual({ ok: false, error: 'No autorizado' })
@@ -33,7 +33,7 @@ describe('sesión', () => {
 describe('el perfil es el de la sesión', () => {
   test('guarda en el usuario de la sesión y lo lee de vuelta', async () => {
     harness.userId = USER_B
-    expect(await guardarPatrimonioInicial({ patrimonioInicial: 5000 })).toEqual({
+    expect(await guardarPatrimonio({ patrimonio: 5000 })).toEqual({
       ok: true,
       data: 5000,
     })
@@ -46,11 +46,11 @@ describe('el perfil es el de la sesión', () => {
 
 describe('errores', () => {
   test('un importe mal formado vuelve como error del campo', async () => {
-    const r = await guardarPatrimonioInicial({ patrimonioInicial: 'mucho' })
+    const r = await guardarPatrimonio({ patrimonio: 'mucho' })
     expect(r).toEqual({
       ok: false,
       error: 'Revisa el importe',
-      fieldErrors: { patrimonioInicial: expect.any(String) },
+      fieldErrors: { patrimonio: expect.any(String) },
     })
   })
 })

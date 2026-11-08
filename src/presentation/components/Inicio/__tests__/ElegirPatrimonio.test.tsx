@@ -11,7 +11,7 @@ import { ElegirPatrimonio, type ElegirPatrimonioProps } from '../ElegirPatrimoni
 
 const perfil = vi.hoisted(() => ({
   fetchPatrimonioInicial: vi.fn(),
-  guardarPatrimonioInicial: vi.fn(),
+  guardarPatrimonio: vi.fn(),
 }))
 vi.mock('@/src/application/actions/perfil.actions', () => perfil)
 // `usePerfil` tira de `useInvalidarDerivados`, y su módulo importa las otras
@@ -23,51 +23,51 @@ const pintar = (props: ElegirPatrimonioProps) =>
   renderConMantine(<ElegirPatrimonio {...props} />, { queryClient: nuevoQueryClient() })
 
 beforeEach(() => {
-  perfil.guardarPatrimonioInicial.mockReset()
-  perfil.guardarPatrimonioInicial.mockResolvedValue({ ok: true, data: 0 })
+  perfil.guardarPatrimonio.mockReset()
+  perfil.guardarPatrimonio.mockResolvedValue({ ok: true, data: 0 })
 })
 
 describe('la primera vez', () => {
   test('pregunta y guarda en céntimos', async () => {
     const onGuardado = vi.fn()
-    const { usuario } = pintar({ inicial: null, onGuardado })
+    const { usuario } = pintar({ actual: null, onGuardado })
 
     expect(screen.getByText('¿Con cuánto empiezas?')).toBeInTheDocument()
     await usuario.type(screen.getByLabelText('Patrimonio'), '1.250,50')
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }))
 
     await waitFor(() => expect(onGuardado).toHaveBeenCalled())
-    expect(perfil.guardarPatrimonioInicial).toHaveBeenCalledWith({ patrimonioInicial: 125_050 })
+    expect(perfil.guardarPatrimonio).toHaveBeenCalledWith({ patrimonio: 125_050 })
   })
 
   test('«Empezar en 0 €» guarda un cero, que también es una respuesta', async () => {
-    const { usuario } = pintar({ inicial: null })
+    const { usuario } = pintar({ actual: null })
 
     await usuario.click(screen.getByRole('button', { name: 'Empezar en 0 €' }))
 
     await waitFor(() =>
-      expect(perfil.guardarPatrimonioInicial).toHaveBeenCalledWith({ patrimonioInicial: 0 }),
+      expect(perfil.guardarPatrimonio).toHaveBeenCalledWith({ patrimonio: 0 }),
     )
     expect(screen.queryByRole('button', { name: 'Cancelar' })).not.toBeInTheDocument()
   })
 
   test('lo que no es un importe no se manda', async () => {
-    const { usuario } = pintar({ inicial: null })
+    const { usuario } = pintar({ actual: null })
 
     await usuario.type(screen.getByLabelText('Patrimonio'), '12,3x')
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }))
 
     expect(await screen.findByText(/Escribe un importe/)).toBeInTheDocument()
-    expect(perfil.guardarPatrimonioInicial).not.toHaveBeenCalled()
+    expect(perfil.guardarPatrimonio).not.toHaveBeenCalled()
   })
 
   test('el error del servidor se enseña en el campo', async () => {
-    perfil.guardarPatrimonioInicial.mockResolvedValue({
+    perfil.guardarPatrimonio.mockResolvedValue({
       ok: false,
       error: 'Revisa el importe',
-      fieldErrors: { patrimonioInicial: 'Importe demasiado grande' },
+      fieldErrors: { patrimonio: 'Importe demasiado grande' },
     })
-    const { usuario } = pintar({ inicial: null })
+    const { usuario } = pintar({ actual: null })
 
     await usuario.type(screen.getByLabelText('Patrimonio'), '1')
     await usuario.click(screen.getByRole('button', { name: 'Guardar' }))
@@ -79,13 +79,13 @@ describe('la primera vez', () => {
 describe('al cambiarlo', () => {
   test('parte del que había y se puede cancelar', async () => {
     const onCancelar = vi.fn()
-    const { usuario } = pintar({ inicial: 100_000, onCancelar })
+    const { usuario } = pintar({ actual: 100_000, onCancelar })
 
     expect(screen.getByText('Cambiar el patrimonio')).toBeInTheDocument()
     expect(screen.getByLabelText('Patrimonio')).toHaveValue('1000,00')
     await usuario.click(screen.getByRole('button', { name: 'Cancelar' }))
 
     expect(onCancelar).toHaveBeenCalled()
-    expect(perfil.guardarPatrimonioInicial).not.toHaveBeenCalled()
+    expect(perfil.guardarPatrimonio).not.toHaveBeenCalled()
   })
 })

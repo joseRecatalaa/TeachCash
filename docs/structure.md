@@ -68,7 +68,7 @@ Cada cambio tiene un sitio y solo uno:
         <entidad-plural>.repository.ts
         metadata.repository.ts        # las opciones de los select
         informes.repository.ts        # las agregaciones (no es un CRUD)
-        perfiles.repository.ts        # el patrimonio inicial: una fila por usuario
+        perfiles.repository.ts        # el patrimonio (base y primero): una fila por usuario
         cuenta.repository.ts          # auth.users: fecha de alta (caducidad) y borrar la cuenta
         heroe.repository.ts           # progreso del héroe: desbloqueo en orden y corrección
         tienda.repository.ts          # estrellas, compras y equipo
@@ -80,7 +80,7 @@ Cada cambio tiene un sitio y solo uno:
         frontera.ts                   # los esquemas Zod de lo que llega del cliente
         resultado.ts                  # run(): errores esperados como valor
         informes.actions.ts
-        perfil.actions.ts             # leer y guardar el patrimonio inicial
+        perfil.actions.ts             # leer el primero y fijar el total de hoy
         heroe.actions.ts              # mapa, mundo, nivel y enviar una partida
         tienda.actions.ts             # leer la tienda, comprar, equipar y quitar
         cuadro.actions.ts             # leer el Cuadro de mando
@@ -92,7 +92,7 @@ Cada cambio tiene un sitio y solo uno:
         useCatalogos.ts               # las categorías del usuario
         usePaginacion.ts              # estado de la tabla
         useInformes.ts
-        usePerfil.ts                  # patrimonio inicial (cuelga de ['informes'])
+        usePerfil.ts                  # patrimonio (cuelga de ['informes'])
         useHeroe.ts                   # el Camino del héroe (cuelga de ['heroe'])
         useCuadro.ts                  # el cuadro (['informes', 'cuadro']) y la tienda (['heroe', 'tienda'])
         use<Entidades>.ts             # uno por entidad

@@ -180,8 +180,18 @@ export const profiles = pgTable(
     userId: uuid('user_id')
       .primaryKey()
       .references(() => authUsers.id, { onDelete: 'cascade' }),
-    /** Céntimos CON SIGNO: se puede empezar debiendo dinero. */
-    initialNetWorth: integer('initial_net_worth').notNull(),
+    /**
+     * La BASE del patrimonio, en céntimos CON SIGNO: patrimonio = base + suma
+     * de movimientos. No es lo que la persona escribe: al editar el patrimonio
+     * se escribe el TOTAL de hoy y la base se recalcula (total - movimientos),
+     * para que quien no anota nada pueda llevarlo solo con el lápiz.
+     */
+    netWorthWithoutMovements: integer('net_worth_without_movements').notNull(),
+    /**
+     * El PRIMER patrimonio que eligió, en céntimos con signo. No cambia al
+     * editar: es la referencia del "+X desde que empezaste" del Cuadro.
+     */
+    firstNetWorth: integer('first_net_worth').notNull(),
     createdAt: createdAtColumn(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
