@@ -16,7 +16,6 @@ import { Modal } from '@mantine/core'
 import type { Route } from 'next'
 import { IconCheck, IconClock, IconLock, IconPlayerPlayFilled } from '@tabler/icons-react'
 import type { Decorado, NivelEnCaminoDto, TipoNivel } from '@/src/types/heroe.types'
-import { PixelHero } from '../Pixel/PixelHero'
 import { PixelSprite } from '../Pixel/PixelSprite'
 import pixel from '../Pixel/pixel.module.css'
 import {
@@ -30,6 +29,7 @@ import {
   type Sprite,
 } from '../Pixel/sprites'
 import { SketchButton, StatusBadge } from '../ui'
+import { HeroeCamino } from './HeroeCamino'
 import styles from './FichaNivel.module.css'
 
 const QUE_ES: Record<TipoNivel, string> = {
@@ -73,7 +73,7 @@ function Escena({ nivel, decorado }: { nivel: NivelEnCaminoDto; decorado: Decora
     <svg className={styles.escena} viewBox={`0 0 ${ANCHO} ${ALTO}`} shapeRendering="crispEdges" aria-hidden="true">
       <rect y={SUELO} width={ANCHO} height="2" className={styles.suelo} />
       <g transform={`translate(${HEROE_X} ${SUELO - 44})`}>
-        <PixelHero pose={nivel.estado === 'hecho' ? 'celebra' : 'quieto'} />
+        <HeroeCamino pose={nivel.estado === 'hecho' ? 'celebra' : 'quieto'} />
       </g>
       <g className={pixel.paletaCamino} data-decorado={decorado}>
         <g className={bloqueado ? styles.apagado : styles.reto} transform={`translate(${x} ${y}) scale(${escala})`}>

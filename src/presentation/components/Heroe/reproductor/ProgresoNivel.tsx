@@ -9,11 +9,14 @@
  *
  * El dibujo va oculto para el lector de pantalla: no cuenta nada. El `viewBox`
  * deja fuera las filas de la sombra (44 y 45) porque el suelo de esta escena
- * es el propio borde, y las botas se apoyan en él.
+ * es el propio borde, y las botas se apoyan en él. El equipo (alas, escudo,
+ * arma) sale de esa caja y se ve igual: el `<svg>` deja ver lo que desborda, y
+ * como va en absoluto tampoco eso suma alto.
  */
 
 import { Progress } from '@mantine/core'
-import { ALTO_HEROE, ANCHO_HEROE, PixelHero } from '../../Pixel/PixelHero'
+import { ALTO_HEROE, ANCHO_HEROE } from '../../Pixel/PixelHero'
+import { HeroeCamino } from '../HeroeCamino'
 import styles from './reproductor.module.css'
 
 export function ProgresoNivel({ texto, valor }: { texto: string; valor: number }) {
@@ -26,7 +29,7 @@ export function ProgresoNivel({ texto, valor }: { texto: string; valor: number }
         shapeRendering="crispEdges"
         aria-hidden="true"
       >
-        <PixelHero pose="agacha" />
+        <HeroeCamino pose="agacha" />
       </svg>
       <Progress value={valor} aria-hidden className={styles.barra} />
     </div>

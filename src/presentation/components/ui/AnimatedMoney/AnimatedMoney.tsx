@@ -20,9 +20,9 @@
  * cifras falsas.
  */
 
-import { useEffect, useRef, useState } from 'react'
 import { formatMoney, formatMoneySigned } from '@/lib/format'
 import { DIVISA_APP, money, type Currency } from '@/lib/money'
+import { useCuenta } from './useCuenta'
 
 export interface AnimatedMoneyProps {
   /** Céntimos, entero con signo. */
@@ -35,11 +35,6 @@ export interface AnimatedMoneyProps {
   className?: string
 }
 
-/** Frena al final en vez de cortar en seco: es lo que lo hace parecer un conteo. */
-const easeOut = (t: number) => 1 - (1 - t) ** 3
-
-const DURACION = 650
-
 export function AnimatedMoney({
   valor,
   divisa = DIVISA_APP,
@@ -47,41 +42,9 @@ export function AnimatedMoney({
   placeholder = '—',
   className,
 }: AnimatedMoneyProps) {
-  const [mostrado, setMostrado] = useState(valor ?? 0)
-  // Desde dónde arranca la próxima cuenta. En una ref y no en estado: cambiarlo
-  // no tiene que provocar un render, solo alimentar al siguiente frame.
-  const desde = useRef(valor ?? 0)
-
-  useEffect(() => {
-    if (valor === undefined) return
-
-    const destino = valor
-    const reducido =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    if (reducido || desde.current === destino) {
-      desde.current = destino
-      setMostrado(destino)
-      return
-    }
-
-    const origen = desde.current
-    const t0 = performance.now()
-    let frame = 0
-
-    const paso = (ahora: number) => {
-      const t = Math.min(1, (ahora - t0) / DURACION)
-      // Redondeo a entero SIEMPRE: un fotograma con decimales haría que
-      // `money()` lanzara, que es justo la red que queremos conservar.
-      setMostrado(Math.round(origen + (destino - origen) * easeOut(t)))
-      if (t < 1) frame = requestAnimationFrame(paso)
-      else desde.current = destino
-    }
-
-    frame = requestAnimationFrame(paso)
-    return () => cancelAnimationFrame(frame)
-  }, [valor])
+  // La cuenta (y el movimiento reducido) la lleva `useCuenta`: aquí solo se
+  // formatea, y cada fotograma ya llega redondeado a entero.
+  const mostrado = useCuenta(valor)
 
   if (valor === undefined) return <span className={className}>{placeholder}</span>
 

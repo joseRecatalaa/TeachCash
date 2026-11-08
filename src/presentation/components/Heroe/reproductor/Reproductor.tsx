@@ -19,11 +19,11 @@ import { IconSword } from '@tabler/icons-react'
 import { useEnviarNivel } from '@/src/application/hooks/useHeroe'
 import { APROBADO_POR_DEFECTO } from '@/lib/heroe'
 import type { Nivel, Pregunta, ResultadoNivelDto } from '@/src/types/heroe.types'
-import { PixelHero } from '../../Pixel/PixelHero'
 import { PixelSprite } from '../../Pixel/PixelSprite'
 import pixel from '../../Pixel/pixel.module.css'
 import { MONSTRUO, PALETA_CAMINO } from '../../Pixel/sprites'
 import { SketchButton } from '../../ui'
+import { HeroeCamino } from '../HeroeCamino'
 import { Cargando } from '../PaginaHeroe'
 import { Lectura } from './Lectura'
 import { Resultado } from './Resultado'
@@ -50,8 +50,11 @@ function PresentacionJefe({ nivel, alEmpezar }: { nivel: Extract<Nivel, { tipo: 
   return (
     <section className={styles.presentacion} aria-labelledby="titulo-jefe">
       <svg className={styles.escenaJefe} viewBox="0 0 96 48" shapeRendering="crispEdges" aria-hidden="true">
-        <g transform="translate(4 2)">
-          <PixelHero pose="quieto" />
+        {/* A 11 del borde y no a 4: el escudo y las alas salen de la caja del
+            héroe por la izquierda, y el `viewBox` no se puede ensanchar sin
+            dejar la escena a una escala que no es entera. */}
+        <g transform="translate(11 2)">
+          <HeroeCamino pose="quieto" />
         </g>
         <g className={pixel.paletaCamino} transform="translate(50 8) scale(2)">
           <PixelSprite sprite={MONSTRUO} paleta={PALETA_CAMINO} />

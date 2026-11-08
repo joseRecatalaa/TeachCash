@@ -10,10 +10,16 @@
  *
  * Si un objeto se puede pagar es cortesía para no enseñar un botón inútil; quien
  * lo decide de verdad es el repositorio (regla dura 6).
+ *
+ * Comprar se nota: la pieza aparece en el probador con un gesto y unos destellos
+ * (el ESTRENO, que pinta `HeroeGrande`) y las estrellas bajan contando. Solo lo
+ * que se acaba de comprar: ni al cargar la página ni al equipar algo que ya era
+ * tuyo. Y va por encima de la compra, sin retrasarla: la mutación termina igual y
+ * el estreno se deriva de lo que devuelve.
  */
 
-import { useState } from 'react'
-import { Button, Group } from '@mantine/core'
+import { useEffect, useState } from 'react'
+import { Button, Group, VisuallyHidden } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { IconCheck } from '@tabler/icons-react'
 import {
@@ -24,7 +30,8 @@ import {
 import { conObjetoPuesto, HUECOS, type Hueco } from '@/lib/tienda'
 import type { ObjetoTiendaDto, TiendaDto } from '@/src/types/tienda.types'
 import { EscenaHeroe, EstrellaPixel, ObjetoPixel } from '../Pixel/HeroeGrande'
-import { SketchButton, SketchCard, StatusBadge } from '../ui'
+import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
+import { AnimatedCount, SketchButton, SketchCard, StatusBadge } from '../ui'
 import styles from './Tienda.module.css'
 
 type Filtro = Hueco | 'todo'
@@ -34,10 +41,27 @@ const FILTROS: { valor: Filtro; texto: string }[] = [
   ...HUECOS.map((valor) => ({ valor, texto: valor.charAt(0).toUpperCase() + valor.slice(1) })),
 ]
 
+/**
+ * Cuánto dura la marca de estreno: lo más largo de su animación en
+ * `pixel.module.css` (el último destello sale a los 0,45 s y dura 0,6 s), con
+ * margen. Pasado esto se quita, para que pasar el ratón por otra pieza del mismo
+ * hueco y volver no la haga parpadear otra vez.
+ */
+const DURACION_ESTRENO = 1100
+
 const avisarDeError = (error: Error) =>
   notifications.show({ title: 'No se ha podido', message: error.message, color: 'red' })
 
-function AccionObjeto({ objeto, disponibles }: { objeto: ObjetoTiendaDto; disponibles: number }) {
+function AccionObjeto({
+  objeto,
+  disponibles,
+  alComprar,
+}: {
+  objeto: ObjetoTiendaDto
+  disponibles: number
+  /** Marca (o desmarca, con `null`) lo que se está comprando. */
+  alComprar: (id: string | null) => void
+}) {
   const comprar = useComprarObjeto()
   const equipar = useEquiparObjeto()
   const quitar = useQuitarObjeto()
@@ -83,7 +107,15 @@ function AccionObjeto({ objeto, disponibles }: { objeto: ObjetoTiendaDto; dispon
         disabled={faltan > 0}
         loading={comprar.isPending}
         leftSection={<EstrellaPixel tamano={14} />}
-        onClick={() => comprar.mutate(objeto.id, opciones)}
+        onClick={() => {
+          alComprar(objeto.id)
+          comprar.mutate(objeto.id, {
+            onError: (error) => {
+              alComprar(null)
+              avisarDeError(error)
+            },
+          })
+        }}
       >
         Comprar por {objeto.precio}
       </SketchButton>
@@ -99,7 +131,25 @@ function AccionObjeto({ objeto, disponibles }: { objeto: ObjetoTiendaDto; dispon
 export function Tienda({ tienda }: { tienda: TiendaDto }) {
   const [filtro, setFiltro] = useState<Filtro>('todo')
   const [probando, setProbando] = useState<string | null>(null)
+  // Lo que se está comprando: se marca al pulsar, antes de que responda el
+  // servidor. El estreno se DERIVA de que ya conste como comprado, y así llega
+  // en el mismo render que los datos nuevos: si se marcase al terminar la
+  // mutación, la pieza se vería un fotograma quieta antes de empezar el gesto.
+  const [comprando, setComprando] = useState<string | null>(null)
+  const reducido = useMovimientoReducido()
   const { disponibles, ganadas } = tienda.estrellas
+
+  const recienComprado = tienda.objetos.find((o) => o.id === comprando && o.comprado)
+  const estreno = recienComprado && !reducido ? recienComprado.id : null
+
+  // Por el id y no por el objeto: si la tienda se vuelve a pedir, el objeto es
+  // otro aunque sea el mismo, y el temporizador volvería a empezar.
+  const idComprado = recienComprado?.id
+  useEffect(() => {
+    if (!idComprado) return
+    const temporizador = setTimeout(() => setComprando(null), DURACION_ESTRENO)
+    return () => clearTimeout(temporizador)
+  }, [idComprado])
 
   const visibles = tienda.objetos.filter((o) => filtro === 'todo' || o.hueco === filtro)
   const equipo = probando ? conObjetoPuesto(tienda.equipo, probando) : tienda.equipo
@@ -108,11 +158,14 @@ export function Tienda({ tienda }: { tienda: TiendaDto }) {
     <div className={styles.tienda}>
       <aside className={styles.probador}>
         <SketchCard eyebrow="Probador" role="region" aria-label="Probador">
-          <EscenaHeroe equipo={equipo} />
+          <EscenaHeroe equipo={equipo} estreno={estreno} />
           <p className={styles.saldo}>
             <EstrellaPixel tamano={24} />
-            <span className={styles.saldoCifra}>{disponibles}</span> para gastar
+            <AnimatedCount valor={disponibles} className={styles.saldoCifra} /> para gastar
           </p>
+          {/* El gesto solo se ve: esto lo cuenta. No depende del movimiento
+              reducido, que apaga la animación pero no la noticia. */}
+          <VisuallyHidden role="status">{recienComprado ? `${recienComprado.nombre}, comprado y puesto` : ''}</VisuallyHidden>
           {ganadas === 0 && (
             <SketchButton href="/CaminoHeroe" variant="ghost" size="sm" fullWidth>
               Gana estrellas en el Camino del héroe
@@ -152,7 +205,7 @@ export function Tienda({ tienda }: { tienda: TiendaDto }) {
               </span>
               <span className={styles.nombre}>{objeto.nombre}</span>
               <span className={styles.accion}>
-                <AccionObjeto objeto={objeto} disponibles={disponibles} />
+                <AccionObjeto objeto={objeto} disponibles={disponibles} alComprar={setComprando} />
               </span>
             </li>
           ))}

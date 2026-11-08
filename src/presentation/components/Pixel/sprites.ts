@@ -70,6 +70,48 @@ export const PALETA_MUNDO: Paleta = {
   a: 'hoja',
   A: 'hoja-sombra',
   t: 'tronco',
+  o: 'contorno',
+  l: 'cesped-luz',
+  g: 'cesped',
+  G: 'cesped-sombra',
+  T: 'tierra',
+  D: 'tierra-sombra',
+  r: 'roca',
+}
+
+/**
+ * La isla flotante sobre la que posa el héroe grande en el Cuadro de mando.
+ * Está en las coordenadas del héroe (48x66): la cara de arriba es una elipse
+ * centrada en su eje (x = 24) y sus botas, que apoyan en la fila 65, quedan en
+ * mitad del césped. Debajo cuelga la tierra, con la luz desde la izquierda
+ * como todo el héroe. Los escalones del borde van de dos en dos con contorno
+ * doble: con uno solo, el píxel de la esquina se quedaba sin borde por debajo.
+ */
+export const ISLA: Sprite = {
+  x: -8,
+  y: 60,
+  filas: [
+    '..........................oooooooooooo..........................',
+    '..............oooooooooooolllllllllllloooooooooooo..............',
+    '.........ooooollllllllllllllllllllllllllllllllllllooooo.........',
+    '......ooogggllllllllllllllllllllllllllllllllllllllllgggooo......',
+    '.....oggggggggggggggggggggggggggggggggggggggggggggggggggggo.....',
+    '....oggggggggggggggggggggggggggggggggggggggggggggggggggggggo....',
+    '....oggggggggggggggggggggggggggggggggggggggggggggggggggggggo....',
+    '.....ogggggggggggggggggggggggggggggggggggggggggggggggggggGo.....',
+    '......oooGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGooo......',
+    '.........ooGGTTTGGTTTTTTTGTTTTTTTTTGGGDDDDDDGDDDDDGGDoo.........',
+    '...........ooTGTTGTTTTTTTTTTTTTTTTTGDDDDDDDGDDDDDDDoo...........',
+    '.............ooTTTTTTTTTrrTTTTTTTTTDDDDrDDDDDDDDDoo.............',
+    '...............ooTTTTTTTTTTrrTTTTTTDDDDDDDDDDDDoo...............',
+    '.................ooTTTTTTTTTTTTTTTTDDDDDDDDDDoo.................',
+    '...................ooTTTTTTrTTTTTTDDDDDDDDDoo...................',
+    '.....................ooTTTTTTTTTTTDDDDDDDoo.....................',
+    '.......................ooTTTTTTTTDDDDDDoo.......................',
+    '.........................ooTTTTTTDDDDoo.........................',
+    '...........................ooTTTTDDoo...........................',
+    '.............................oooooo.............................',
+  ],
 }
 
 /* ── El héroe ──────────────────────────────────────────────────────────── */

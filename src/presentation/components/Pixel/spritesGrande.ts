@@ -5,27 +5,23 @@
  * Es el del Cuadro de mando y la Tienda, y existe porque a 32x44 un guante son
  * tres píxeles: el equipo no se distinguiría. Se probó uno de 64x88 con más
  * detalle y se descartó: dejaba de ser el personaje. Si lo retocas, compáralo
- * con el pequeño. Este sigue en la pantalla de carga y en los caminos, sin equipo.
+ * con el pequeño, que lleva el mismo equipo redibujado a su escala (`spritesEquipo.ts`).
  *
  * Se lee igual que `sprites.ts`: cada carácter es un píxel, el punto es
  * transparente y la letra es una clave de la paleta. Cada capa lleva su propio
  * contorno, y es lo que permite poner equipo encima y debajo sin que se funda.
  */
 
-import { PALETA_HEROE, type Paleta, type Sprite } from './sprites'
+import type { Paleta, Sprite } from './sprites'
+import { PALETA_EQUIPO } from './spritesEquipo'
 
 /**
- * La del héroe más la del equipo. El color del equipo depende de su calidad, y
- * por eso son cuatro variables que `pixel.module.css` reapunta con `data-calidad`:
- * un mismo dibujo vale para el cuero, el hierro y el oro.
+ * La del héroe más la del equipo: la misma que la del pequeño. El color del
+ * equipo depende de su calidad, y por eso son cuatro variables que
+ * `pixel.module.css` reapunta con `data-calidad`: un mismo dibujo vale para el
+ * cuero, el hierro y el oro.
  */
-export const PALETA_HEROE_GRANDE: Paleta = {
-  ...PALETA_HEROE,
-  k: 'equipo',
-  K: 'equipo-sombra',
-  j: 'equipo-luz',
-  J: 'equipo-detalle',
-}
+export const PALETA_HEROE_GRANDE: Paleta = PALETA_EQUIPO
 
 /** Piernas y botas. No respiran: el torso sube y baja y las botas se quedan clavadas. */
 export const GRANDE_PIERNAS: Sprite = {

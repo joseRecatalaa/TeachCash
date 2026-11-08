@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { MundoDto, NivelEnCaminoDto, TipoNivel } from '@/src/types/heroe.types'
 import { circulo } from '../Pixel/geometria'
-import { PixelHero, type PoseHeroe } from '../Pixel/PixelHero'
+import type { PoseHeroe } from '../Pixel/PixelHero'
 import { PixelSprite } from '../Pixel/PixelSprite'
 import pixel from '../Pixel/pixel.module.css'
 import {
@@ -43,6 +43,7 @@ import {
   type Punto,
 } from './camino'
 import { FichaNivel } from './FichaNivel'
+import { HeroeCamino } from './HeroeCamino'
 import { useCaminata } from './useCaminata'
 import styles from './CaminoMundo.module.css'
 
@@ -165,7 +166,7 @@ function Heroe({ desde, hasta, celebra }: { desde: Punto; hasta: Punto; celebra:
   if (andando) pose = 'camina'
   return (
     <g transform={`translate(${pos.x} ${pos.y})`} className={styles.heroe}>
-      <PixelHero pose={pose} mirando={mirando} />
+      <HeroeCamino pose={pose} mirando={mirando} />
     </g>
   )
 }

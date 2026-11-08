@@ -25,7 +25,7 @@ import type { Route } from 'next'
 import { ActionIcon } from '@mantine/core'
 import { IconChevronLeft, IconChevronRight, IconLock, IconRocket } from '@tabler/icons-react'
 import type { Decorado, MapaDto, MundoResumenDto } from '@/src/types/heroe.types'
-import { ALTO_HEROE, ANCHO_HEROE, PixelHero } from '../Pixel/PixelHero'
+import { ALTO_HEROE, ANCHO_HEROE } from '../Pixel/PixelHero'
 import { PixelSprite } from '../Pixel/PixelSprite'
 import pixel from '../Pixel/pixel.module.css'
 import {
@@ -47,6 +47,7 @@ import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
 import { SketchButton } from '../ui'
 import type { Punto } from './camino'
 import { PLANETAS, RADIO_PLANETA } from './planeta'
+import { HeroeCamino } from './HeroeCamino'
 import { useCaminata } from './useCaminata'
 import styles from './MapaMundos.module.css'
 
@@ -303,7 +304,7 @@ function Heroe({
   return (
     <g transform={`translate(${pos.x} ${pos.y}) scale(${ESCALA_HEROE})`} className={styles.heroe}>
       <g className={entrando ? styles.entrando : undefined}>
-        <PixelHero pose={andando ? 'corre' : 'quieto'} mirando={mirando} />
+        <HeroeCamino pose={andando ? 'corre' : 'quieto'} mirando={mirando} />
       </g>
     </g>
   )

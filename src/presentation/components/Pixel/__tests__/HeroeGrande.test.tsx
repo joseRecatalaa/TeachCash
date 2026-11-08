@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { CATALOGO, TIPOS_OBJETO } from '@/lib/tienda'
+import { CATALOGO, TIPOS_OBJETO, type Hueco } from '@/lib/tienda'
 import { EscenaHeroe, HeroeGrande, ObjetoPixel, SPRITE_OBJETO } from '../HeroeGrande'
 
 const piezas = (equipo: string[]) =>
@@ -57,5 +57,23 @@ describe('ObjetoPixel', () => {
     const escala = Number(svg.getAttribute('width')) / sprite.filas[0].length
     expect(Number.isInteger(escala)).toBe(true)
     expect(Number(svg.getAttribute('height'))).toBe(sprite.filas.length * escala)
+  })
+})
+
+describe('la pieza señalada', () => {
+  const pintar = (equipo: string[], senalado: Hueco) =>
+    render(<svg><HeroeGrande equipo={equipo} senalado={senalado} /></svg>).container
+
+  test('una pieza puesta lleva su anillo y no se pinta dos veces', () => {
+    const c = pintar(['casco-alta'], 'casco')
+    expect(c.querySelectorAll('[data-anillo]')).toHaveLength(1)
+    expect(c.querySelectorAll('[data-hueco="casco"]')).toHaveLength(1)
+    expect(c.querySelector('[data-fantasma]')).toBeNull()
+  })
+
+  test('un hueco vacío enseña la silueta de lo que falta', () => {
+    const c = pintar([], 'armadura')
+    expect(c.querySelector('[data-fantasma="armadura"]')).not.toBeNull()
+    expect(c.querySelector('[data-anillo]')).not.toBeNull()
   })
 })

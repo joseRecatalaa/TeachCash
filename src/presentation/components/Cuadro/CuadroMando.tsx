@@ -1,56 +1,49 @@
 'use client'
 
 /**
- * Las cuatro tarjetas del Cuadro de mando. Las tarjetas cuelgan directamente de
- * la rejilla porque `SketchCard` alterna el radio con `:nth-of-type(even)`.
+ * El Cuadro de mando, sin tarjetas: una pantalla de juego. El héroe en el
+ * centro, el patrimonio arriba a la izquierda, las estadísticas arriba a la
+ * derecha y las estrellas debajo de ellas.
  *
  * Lo que se enseña lo ha calculado el servidor: aquí no se suma nada.
  */
 
-import { IconArrowRight, IconBuildingStore, IconChartRadar, IconSword, IconWallet } from '@tabler/icons-react'
+import Link from 'next/link'
+import { VisuallyHidden } from '@mantine/core'
+import { IconArrowRight, IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
 import { formatMoneySigned } from '@/lib/format'
 import { DIVISA_APP, money } from '@/lib/money'
-import { HUECOS, objetoPorId, type Hueco } from '@/lib/tienda'
 import type { CuadroDto } from '@/src/types/cuadro.types'
-import { RadarEstadisticas } from '../Charts/FinanceCharts'
-import { EscenaHeroe, EstrellaPixel } from '../Pixel/HeroeGrande'
-import { AnimatedMoney, SketchButton, SketchCard } from '../ui'
+import { AnimatedMoney, SketchButton } from '../ui'
 import styles from './CuadroMando.module.css'
+import { HeroeEquipo } from './HeroeEquipo'
+import { RadarHeroe } from './RadarHeroe'
 
-const NOMBRE_HUECO: Record<Hueco, string> = {
-  casco: 'Casco',
-  armadura: 'Armadura',
-  guantes: 'Guantes',
-  botas: 'Botas',
-  arma: 'Arma',
-  escudo: 'Escudo',
-  alas: 'Alas',
-}
-
-function TarjetaPatrimonio({
+function Patrimonio({
   patrimonio,
   ganancia,
   inicialElegido,
 }: Pick<CuadroDto, 'patrimonio' | 'ganancia' | 'inicialElegido'>) {
+  const signo = Math.sign(ganancia)
   return (
-    <SketchCard
-      className={styles.colPatrimonio}
-      variant="highlight"
-      tone="accent"
-      ribbon
-      eyebrow="Patrimonio total"
-      icon={<IconWallet size={18} stroke={2.2} />}
-      role="region"
-      aria-label="Patrimonio total"
-    >
+    <section className={styles.patrimonio} aria-label="Patrimonio total">
+      <p className={styles.etiqueta}>Tu patrimonio</p>
       <AnimatedMoney valor={patrimonio} className={`${styles.cifra} tabular`} />
-      <p className={styles.ganancia} data-signo={Math.sign(ganancia)}>
+      <p className={styles.ganancia} data-signo={signo}>
         {ganancia === 0 ? (
           'Sin cambios desde que empezaste'
         ) : (
-          // El signo va en la cifra: el color solo lo refuerza.
+          // El signo va en la cifra: el color y la flecha solo lo refuerzan.
           <>
-            <span className="tabular">{formatMoneySigned(money(ganancia, DIVISA_APP))}</span> desde que empezaste
+            <span className={styles.sello}>
+              {signo > 0 ? (
+                <IconTrendingUp size={18} stroke={2.6} aria-hidden="true" />
+              ) : (
+                <IconTrendingDown size={18} stroke={2.6} aria-hidden="true" />
+              )}
+              <span className={`${styles.importe} tabular`}>{formatMoneySigned(money(ganancia, DIVISA_APP))}</span>{' '}
+              desde que empezaste
+            </span>
           </>
         )}
       </p>
@@ -58,107 +51,71 @@ function TarjetaPatrimonio({
       <SketchButton href="/Patrimonio" variant="ghost" size="sm" rightSection={<IconArrowRight size={15} />}>
         {inicialElegido ? 'Ver mi patrimonio' : '¿Con cuánto empiezas? Dímelo aquí'}
       </SketchButton>
-    </SketchCard>
+    </section>
   )
 }
 
-function TarjetaEstrellas({ estrellas }: Pick<CuadroDto, 'estrellas'>) {
+/** Las cinco puntas de la estrella, en un `viewBox` de 130x120 con el centro en (56, 56). */
+const PUNTAS_ESTRELLA = Array.from({ length: 10 }, (_, i) => {
+  const radio = i % 2 === 0 ? 50 : 22
+  const angulo = -Math.PI / 2 + (i * Math.PI) / 5
+  return `${(56 + radio * Math.cos(angulo)).toFixed(1)},${(56 + radio * Math.sin(angulo)).toFixed(1)}`
+}).join(' ')
+
+/**
+ * Las estrellas para gastar: una estrella dibujada como el resto de la interfaz
+ * (trazo de tinta grueso y sombra dura, nada de píxel) con la cifra encima, en su
+ * esquina de abajo a la derecha, como el contador de una insignia. Debajo, un
+ * enlace discreto. Lo ganado y lo gastado se ve en la tienda.
+ *
+ * La cifra es un `<text>` de SVG y no HTML: el borde grueso por fuera de la letra
+ * es `paint-order: stroke`, que en SVG funciona en todos los navegadores.
+ */
+function Estrellas({ estrellas }: Pick<CuadroDto, 'estrellas'>) {
+  const { disponibles, ganadas } = estrellas
   return (
-    <SketchCard
-      className={styles.colEstrellas}
-      eyebrow="Estrellas"
-      icon={<IconBuildingStore size={18} stroke={2.2} />}
-      role="region"
-      aria-label="Estrellas"
-    >
-      <p className={styles.estrellas}>
-        <EstrellaPixel tamano={32} />
-        <span className={styles.cifra}>{estrellas.disponibles}</span>
-        <span>para gastar</span>
+    <section className={styles.estrellas} aria-label="Estrellas">
+      <p className={styles.recuadroEstrella}>
+        <svg className={styles.insignia} viewBox="0 0 130 120" aria-hidden="true">
+          <polygon points={PUNTAS_ESTRELLA} className={styles.estrellaSombra} transform="translate(5 5)" />
+          <polygon points={PUNTAS_ESTRELLA} className={styles.estrellaCuerpo} />
+          <path d="M51 22 L46 36" className={styles.estrellaBrillo} />
+          <text x={100} y={104} className={styles.cifraSombra} transform="translate(4 4)">
+            {disponibles}
+          </text>
+          <text x={100} y={104} className={styles.cifraEstrellas}>
+            {disponibles}
+          </text>
+        </svg>
+        <VisuallyHidden>
+          {disponibles} {disponibles === 1 ? 'estrella para gastar' : 'estrellas para gastar'}
+        </VisuallyHidden>
       </p>
-      {estrellas.ganadas === 0 ? (
-        <>
-          <p className={styles.nota}>Supera tu primer curso para ganar estrellas.</p>
-          <SketchButton href="/CaminoHeroe" variant="ghost" size="sm" rightSection={<IconArrowRight size={15} />}>
-            Ir al Camino del héroe
-          </SketchButton>
-        </>
+      {/* Sin ninguna ganada, la tienda no sirve de nada: el enlace lleva a ganarlas. */}
+      {ganadas === 0 ? (
+        <Link href="/CaminoHeroe" className={styles.enlace}>
+          Gánalas en el Camino del héroe <IconArrowRight size={15} aria-hidden="true" />
+        </Link>
       ) : (
-        <>
-          <p className={styles.nota}>
-            {estrellas.ganadas} ganadas · {estrellas.gastadas} gastadas
-          </p>
-          <SketchButton href="/Tienda" variant="ghost" size="sm" rightSection={<IconArrowRight size={15} />}>
-            Ir a la tienda
-          </SketchButton>
-        </>
+        <Link href="/Tienda" className={styles.enlace}>
+          Ir a la tienda <IconArrowRight size={15} aria-hidden="true" />
+        </Link>
       )}
-    </SketchCard>
-  )
-}
-
-function TarjetaHeroe({ equipo }: Pick<CuadroDto, 'equipo'>) {
-  const puesto = new Map(equipo.flatMap((id) => {
-    const objeto = objetoPorId(id)
-    return objeto ? [[objeto.hueco, objeto.nombre] as const] : []
-  }))
-  return (
-    <SketchCard
-      className={styles.colMitad}
-      eyebrow="Tu héroe"
-      icon={<IconSword size={18} stroke={2.2} />}
-      role="region"
-      aria-label="Tu héroe"
-    >
-      <EscenaHeroe equipo={equipo} />
-      <ul className={styles.huecos}>
-        {HUECOS.map((hueco) => (
-          <li key={hueco} className={styles.hueco} data-vacio={!puesto.has(hueco)}>
-            <span className={styles.huecoNombre}>{NOMBRE_HUECO[hueco]}</span>
-            <span>{puesto.get(hueco) ?? 'Sin equipar'}</span>
-          </li>
-        ))}
-      </ul>
-    </SketchCard>
-  )
-}
-
-function TarjetaEstadisticas({ estadisticas }: Pick<CuadroDto, 'estadisticas'>) {
-  return (
-    <SketchCard
-      className={styles.colMitad}
-      eyebrow="Estadísticas"
-      icon={<IconChartRadar size={18} stroke={2.2} />}
-      role="region"
-      aria-label="Estadísticas"
-    >
-      <RadarEstadisticas datos={estadisticas} />
-      <dl className={styles.estadisticas}>
-        {estadisticas.map((e) => (
-          <div key={e.clave} className={styles.estadistica}>
-            <dt>
-              <span className={styles.clave}>{e.clave}</span> {e.nombre}
-            </dt>
-            <dd className={styles.valor}>{e.valor}</dd>
-            <dd className={styles.fuente}>{e.fuente}</dd>
-          </div>
-        ))}
-      </dl>
-    </SketchCard>
+    </section>
   )
 }
 
 export function CuadroMando({ cuadro }: { cuadro: CuadroDto }) {
   return (
-    <div className={`${styles.grid} sd-enter`}>
-      <TarjetaPatrimonio
-        patrimonio={cuadro.patrimonio}
-        ganancia={cuadro.ganancia}
-        inicialElegido={cuadro.inicialElegido}
-      />
-      <TarjetaEstrellas estrellas={cuadro.estrellas} />
-      <TarjetaHeroe equipo={cuadro.equipo} />
-      <TarjetaEstadisticas estadisticas={cuadro.estadisticas} />
+    <div className={`${styles.cuadro} sd-enter`}>
+      <Patrimonio patrimonio={cuadro.patrimonio} ganancia={cuadro.ganancia} inicialElegido={cuadro.inicialElegido} />
+      <div className={styles.centro}>
+        <HeroeEquipo equipo={cuadro.equipo} />
+      </div>
+      <div className={styles.derecha}>
+        <RadarHeroe estadisticas={cuadro.estadisticas} />
+        <Estrellas estrellas={cuadro.estrellas} />
+      </div>
     </div>
   )
 }

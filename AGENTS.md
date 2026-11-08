@@ -325,8 +325,8 @@ lleve hasta ella.
   como un bug.** El bloque está al final de `globals.css` y hace
   `animation: none`, no una duración de 0,01 ms: una entrada que arranca en
   `opacity: 0` y se acelera hasta lo instantáneo sigue dando un parpadeo. Y el
-  CSS no llega al JavaScript: `AnimatedMoney` lo comprueba aparte con
-  `matchMedia`.
+  CSS no llega al JavaScript: `useCuenta` (lo de debajo de `AnimatedMoney` y
+  `AnimatedCount`) y la tienda lo comprueban aparte con `matchMedia`.
 - **El aviso de invitado cerrado se decide en DOS sitios**: `AvisoInvitado.tsx`
   y el script inline del `<head>` de `app/layout.tsx` (misma clave de
   `localStorage`, mismo día de margen). Si divergen, la franja aparece y
@@ -342,8 +342,24 @@ lleve hasta ella.
 - **`.escena` va en múltiplos enteros del `viewBox` de `EscenaHeroe`** (92x70: 276,
   368 y 460 de ancho). A cualquier otra escala los píxeles salen de anchos
   distintos y el héroe deja de verse nítido, sin que falle nada.
-- **Una pieza de equipo se pinta en el orden de `HeroeGrande`.** Si se cambia, una
-  acaba tapando a otra. Los sprites se apoyan en las coordenadas del héroe de 48x66.
+- **El bocadillo del héroe del Cuadro sale de un punto escrito en CSS**
+  (`HeroeEquipo.module.css`, por `data-hueco`), en porcentaje del `viewBox` de
+  `EscenarioHeroe` (96x90). Si cambia ese `viewBox`, una pieza o su zona
+  (`ZONAS` en `HeroeEquipo.tsx`), el bocadillo apunta a otro sitio sin que falle
+  nada. El escenario no se dimensiona por CSS sino con `width`/`height` a una
+  escala entera: un `width` en CSS lo pisaría y lo dejaría borroso.
+- **La ficha del radar va en un portal** (`document.body`) porque es `fixed`: la
+  entrada de `sd-enter` pone `translate` en sus antepasados, y un antepasado
+  transformado encierra a un `fixed` en su caja en vez de en la ventana.
+- **Una pieza de equipo se pinta en el orden de `HeroeGrande`** (o de `PixelHero`,
+  en el pequeño). Si se cambia, una acaba tapando a otra. Los sprites se apoyan en
+  las coordenadas de su héroe: 48x66 el grande, 32x44 el pequeño.
+- **En el héroe pequeño, cada pieza lleva la CLASE de la parte del cuerpo que la
+  mueve** (`piernas`/`paso1`/`paso2` las botas; `brazoIzq` el guante izquierdo y el
+  escudo; `brazoDer` el arma y el otro guante). Es lo que hace que acompañe a las
+  poses sin una regla propia. Una pieza nueva sin su clase se queda quieta mientras
+  el brazo se balancea, o se ve al celebrar con el brazo en alto. Lo vigila
+  `PixelHero.test.tsx`.
 - **Los selectores de `mantine-sketch.module.css` van DOBLADOS** (`.button.button`).
   Es lo que les da especificidad para ganarle a la hoja de Mantine. Si alguien
   los "limpia" a una sola clase, el tema deja de aplicarse en producción, donde
@@ -618,6 +634,18 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   porque la regla de "ni un `style` suelto" no admite excepciones "solo para un
   delay". Todo queda anulado por el bloque `prefers-reduced-motion`; en
   `AnimatedMoney`, que es JavaScript, se comprueba además con `matchMedia`.
+- **Comprar en la tienda se nota, y es pixel art, no interfaz.** La pieza baja y
+  parpadea en el probador (`px-estreno`) y cuatro destellos titilan alrededor
+  (`px-destello`, con el sprite `DESTELLO`), en `pixel.module.css` y a saltos con
+  `steps()`. No se usó `sd-pop`: escala en continuo, y un sprite a medio píxel se
+  emborrona; los tres gestos siguen siendo los de la interfaz. Las estrellas bajan
+  contando con `AnimatedCount`, que comparte la cuenta con `AnimatedMoney`
+  (`useCuenta`) porque las estrellas no son dinero. Solo se anima lo que se acaba
+  de comprar: la tienda marca el id al pulsar y el estreno se DERIVA de que ya
+  conste como comprado, así que llega en el mismo render que los datos y no
+  retrasa la compra; al cargar o al equipar no hay marca. Con el movimiento
+  reducido no se pide (`matchMedia`) y el CSS lo deja en la pieza quieta y los
+  destellos apagados. El gesto solo se ve, así que un `role="status"` lo cuenta.
 - **Tipografía**: Fredoka para titulares, botones y etiquetas; Nunito para el
   texto corrido; **Geist Mono para el dinero**, y esta última no es estética: los
   importes en columna necesitan cifras de ancho fijo para poder compararse, y
@@ -687,10 +715,29 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     decide también los enlaces de la Navbar. Lo que no es de ninguno, como Login,
     se queda en el Cuadro. Quien aún no ha elegido patrimonio inicial lo ve como un
     enlace en la tarjeta; la pregunta sigue en `/Patrimonio`.
-  - **Dos héroes**: el pequeño (32x44) en el splash y en los caminos, sin equipo, y
-    el grande (48x66) en el Cuadro y la Tienda. Se probó uno de 64x88 con más
-    detalle y se descartó: dejaba de ser el personaje. El grande es el pequeño
-    calcado; si retocas uno, compáralo con el otro.
+  - **Dos héroes**: el pequeño (32x44) en el splash y en el Camino, y el grande
+    (48x66) en el Cuadro y la Tienda. Se probó uno de 64x88 con más detalle y se
+    descartó: dejaba de ser el personaje. El grande es el pequeño calcado; si
+    retocas uno, compáralo con el otro.
+  - **El héroe del Camino lleva su equipo; el del splash, no** (sale antes de que
+    haya sesión). Cada pieza tiene un segundo dibujo a 32x44 (`spritesEquipo.ts`),
+    redibujado y no reducido, con la misma paleta por calidad. El héroe pequeño no
+    cambia: el equipo son capas encima o debajo. En las poses: las botas tienen
+    los tres fotogramas de las piernas; el arma va en la mano derecha y se
+    balancea con ella; el escudo, en la izquierda, y al celebrar (ese brazo sube
+    con el billete) pasa a la espalda, detrás del cuerpo; el guante izquierdo
+    sube con el puño. El arma va DETRÁS del brazo, para que la mano se cierre
+    sobre el puño de la espada.
+  - **El equipo del Camino se pide una vez, en su layout** (`EquipoDelCamino`, con
+    `useTienda`: ninguna consulta nueva) y llega a cada héroe por contexto
+    (`HeroeCamino`). Sin proveedor, o si la tienda falla, el héroe sale sin
+    equipo: es decorado. El reparto vive aparte del héroe para que los
+    componentes del Camino no arrastren las Server Actions de la tienda.
+  - **Lo que sale de la caja del héroe no añade alto.** En `ProgresoNivel` el
+    `<svg>` es `overflow: visible` y va en absoluto; el título reserva 7,5rem por
+    las alas. En Resultado y en la presentación del jefe el héroe se corre a la
+    derecha en vez de ensanchar el `viewBox`, que dejaría la escena a una escala
+    que no es entera.
   - **Estrellas derivadas** (regla dura 7): las ganadas salen de `hero_progress`, las
     gastadas de `hero_items.price_paid`, y no se guarda ningún saldo. Comprar no le
     quita nada a un nivel. Solo se ganan con los cursos: inventarse movimientos no
@@ -716,7 +763,25 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses
     en positivo de los últimos 12) y Poder (precio de lo EQUIPADO sobre lo máximo
     equipable: quitarse algo lo baja). El radar lleva el dominio fijo de 0 a 100, y
-    la lista de debajo es su alternativa accesible.
+    la ficha que sale al pasar por encima es su alternativa accesible.
+  - **El Cuadro de mando no lleva tarjetas**: es una pantalla de juego, con el
+    héroe en el centro sobre su isla (`EscenarioHeroe`), el patrimonio arriba a
+    la izquierda, el radar arriba a la derecha y las estrellas debajo. Sin leyenda
+    del equipo: al PASAR el ratón por una parte del cuerpo (sin clic), la pieza
+    se resalta en su sitio con un anillo bajo ella y sale un bocadillo con su
+    nombre o "Sin …". El resto del héroe no cambia: se probó desteñirlo y no
+    gustó. Con el dedo se toca y se cierra tocando fuera. El héroe se pinta a la
+    mayor escala entera que cabe sin scroll (`useEscalaEscenario`).
+    El radar es un SVG propio y no Recharts, con la clave y la cifra en cada
+    punta; el 0 cae en un anillo pequeño y no en el centro, para que siete
+    ceros no se tapen. Su ficha es un modal que abre un icono de información y
+    que solo se cierra con la cruz (y con Escape): se probó abrirla al pasar el
+    ratón y saltaba sin querer. El lector de pantalla tiene la lista entera sin
+    abrir nada; el polígono va en los dos verdes del sol del héroe, sin trazo
+    ni sombra, como parte del escenario. Las estrellas, una estrella dibujada
+    como la interfaz (no a píxel) con la cifra encima en su esquina, dorada y
+    con borde de tinta, y un enlace gris a la tienda: lo ganado y lo gastado se
+    ve allí.
 
 ## Decisiones abiertas
 

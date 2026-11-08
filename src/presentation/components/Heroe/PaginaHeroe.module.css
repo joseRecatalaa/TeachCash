@@ -45,11 +45,12 @@
 
 /* El texto se para antes de llegar al héroe que está sobre la tarjeta del
    reproductor: esa tarjeta mide 42rem y va centrada, así que su borde derecho
-   cae en `50% + 21rem`, y el héroe ocupa 5,5rem desde ahí, más medio de aire.
+   cae en `50% + 21rem`, y el héroe ocupa 5,5rem desde ahí. Con alas o escudo
+   asoma 1,4rem más a su izquierda (`.heroeGuia`), y por eso se reservan 7,5rem.
    Si eso parte la descripción en dos líneas, la línea de más la paga el menor
    relleno de la página (`py` en `PaginaHeroe`): un nivel no debe alargarse. */
 .lineaTitulo[data-heroe-encima] {
-  max-width: calc(min(100%, 50% + 21rem) - 6rem);
+  max-width: calc(min(100%, 50% + 21rem) - 7.5rem);
 }
 
 .subtitulo {
