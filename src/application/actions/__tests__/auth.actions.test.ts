@@ -32,6 +32,7 @@ vi.mock('next/headers', () => ({
 }))
 
 import { crearUsuario, USER_A, USER_B } from '@/db/testing'
+import { LIMITE_AUTH_IP, LIMITE_INVITADO_IP, LIMITE_LOGIN_EMAIL, reiniciarLimites } from '@/lib/limite'
 import { usarBaseDeTest } from '@/test/harness'
 import { categories, transactions } from '@/db/schema'
 import { seedMovimiento } from '@/src/infrastructure/repositories/__tests__/helpers'
@@ -54,6 +55,8 @@ const error = (code: string): ErrorAuth => ({ code, message: code })
 const base = usarBaseDeTest()
 
 beforeEach(async () => {
+  reiniciarLimites()
+  vi.unstubAllEnvs()
   h.session = null
   h.cabeceras = new Map([
     ['user-agent', NAVEGADOR],
@@ -608,5 +611,169 @@ describe('caminos de error que la persona tiene que entender', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+})
+
+// ─── Endurecimiento de la auditoría OWASP (docs/SECURITY.md) ────────────────
+
+/** Los eventos de seguridad que han salido por `console.warn`, ya parseados. */
+const eventos = (espia: { mock: { calls: unknown[][] } }) =>
+  espia.mock.calls.map((c) => JSON.parse(String(c[0])) as Record<string, unknown>)
+
+describe('límites de intentos (OWASP A07 / API2 / API4)', () => {
+  const login = { email: 'ana@example.com', password: 'lo-que-sea', captchaToken: 't' }
+
+  test('pasados los intentos contra UNA cuenta, deja de preguntar a Supabase aunque cambie la IP', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('invalid_credentials') })
+
+    for (let i = 0; i < LIMITE_LOGIN_EMAIL.maximo; i++) {
+      h.cabeceras.set('x-real-ip', `198.51.100.${i}`)
+      await iniciarSesion(login)
+    }
+    h.cabeceras.set('x-real-ip', '203.0.113.1')
+    const r = await iniciarSesion({ ...login, email: 'ANA@example.com' })
+
+    expect(r).toEqual({ ok: false, error: 'Demasiados intentos. Espera unos minutos y vuelve a probar.' })
+    expect(h.auth.signInWithPassword).toHaveBeenCalledTimes(LIMITE_LOGIN_EMAIL.maximo)
+  })
+
+  test('pasados los intentos desde UNA IP, la frena aunque cambie de cuenta', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.cabeceras.set('x-forwarded-for', '203.0.113.9, 10.0.0.1')
+    for (let i = 0; i < LIMITE_AUTH_IP.maximo; i++) {
+      await iniciarSesion({ ...login, email: `ana${i}@example.com` })
+    }
+    const r = await iniciarSesion({ ...login, email: 'otra@example.com' })
+    expect(r.ok).toBe(false)
+    expect(h.auth.signInWithPassword).toHaveBeenCalledTimes(LIMITE_AUTH_IP.maximo)
+  })
+
+  test('crear invitados tiene su propio tope por IP', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.auth.signInAnonymously.mockResolvedValue({ data: { user: null }, error: null })
+    for (let i = 0; i < LIMITE_INVITADO_IP.maximo; i++) await iniciarInvitado('t')
+    const r = await iniciarInvitado('t')
+    expect(r.ok).toBe(false)
+    expect(h.auth.signInAnonymously).toHaveBeenCalledTimes(LIMITE_INVITADO_IP.maximo)
+  })
+
+  test.each([
+    ['registrarse', () => registrarse({ email: 'ana@example.com', captchaToken: 't' })],
+    ['recuperar', () => solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })],
+  ])('%s también cuenta contra la IP', async (_nombre, accion) => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    for (let i = 0; i < LIMITE_AUTH_IP.maximo; i++) await accion()
+    expect((await accion()).ok).toBe(false)
+  })
+
+  test('cambiar la contraseña y borrar la cuenta cuentan contra la cuenta', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false, entroConPassword: true } }
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('invalid_credentials') })
+    const datos = { password: 'Segura#2026x', repetir: 'Segura#2026x', passwordActual: 'x', captchaToken: 't' }
+
+    for (let i = 0; i < LIMITE_LOGIN_EMAIL.maximo; i++) {
+      h.cabeceras.set('x-real-ip', `198.51.100.${i}`)
+      await (i % 2 ? cambiarPassword(datos) : borrarCuenta({ password: 'x', captchaToken: 't' }))
+    }
+    h.cabeceras.set('x-real-ip', '203.0.113.1')
+    expect((await borrarCuenta({ password: 'x', captchaToken: 't' })).ok).toBe(false)
+    expect((await cambiarPassword(datos)).ok).toBe(false)
+    expect(h.auth.signInWithPassword).toHaveBeenCalledTimes(LIMITE_LOGIN_EMAIL.maximo)
+  })
+})
+
+describe('sesiones tras cambiar la contraseña (OWASP A07)', () => {
+  test('cierra las DEMÁS sesiones: una cookie robada deja de valer', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+
+    const r = await cambiarPassword({ password: 'Segura#2026x', repetir: 'Segura#2026x' })
+
+    expect(r.ok).toBe(true)
+    expect(h.auth.signOut).toHaveBeenCalledWith({ scope: 'others' })
+  })
+
+  test('si revocar las demás falla, la contraseña ya está cambiada y se registra', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const registro = vi.spyOn(console, 'error').mockImplementation(() => {})
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+    h.auth.signOut.mockResolvedValue({ error: error('unexpected_failure') })
+
+    const r = await cambiarPassword({ password: 'Segura#2026x', repetir: 'Segura#2026x' })
+
+    expect(r.ok).toBe(true)
+    expect(JSON.stringify(registro.mock.calls)).toContain('cambiarPassword/revocar')
+  })
+})
+
+describe('origen de los enlaces de email (password reset poisoning)', () => {
+  test('con APP_URL, el enlace sale de ahí aunque las cabeceras digan otra cosa', async () => {
+    vi.stubEnv('APP_URL', 'https://teachcash.example.com')
+    h.cabeceras.set('origin', 'https://atacante.example')
+    h.cabeceras.set('x-forwarded-host', 'atacante.example')
+
+    await solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })
+
+    expect(h.auth.resetPasswordForEmail).toHaveBeenCalledWith('ana@example.com', {
+      redirectTo: 'https://teachcash.example.com/auth/confirm?next=/CambiarPassword',
+      captchaToken: 't',
+    })
+  })
+
+  test.each([
+    ['un Origin que no es http(s)', { origin: 'javascript://x' }],
+    ['un Host con ruta inyectada', { host: 'evil.example/@x' }],
+    ['sin Origin ni Host', {}],
+  ])('sin APP_URL, %s no llega a Supabase', async (_caso, cabeceras: Record<string, string>) => {
+    h.cabeceras.delete('origin')
+    for (const [k, v] of Object.entries(cabeceras)) h.cabeceras.set(k, v)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const r = await solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })
+
+    expect(r.ok).toBe(false)
+    expect(h.auth.resetPasswordForEmail).not.toHaveBeenCalled()
+  })
+})
+
+describe('eventos de seguridad (OWASP A09)', () => {
+  test('un login fallido deja rastro con la IP recortada y sin el email', async () => {
+    const aviso = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.cabeceras.set('x-real-ip', '203.0.113.77')
+    h.auth.signInWithPassword.mockResolvedValue({ data: {}, error: error('invalid_credentials') })
+
+    await iniciarSesion({ email: 'ana@example.com', password: 'mal', captchaToken: 't' })
+
+    const [ev] = eventos(aviso)
+    expect(ev).toMatchObject({ evento: 'login', resultado: 'fallo', ip: '203.0.113.0', motivo: 'invalid_credentials' })
+    expect(JSON.stringify(aviso.mock.calls)).not.toContain('ana@example.com')
+  })
+
+  test('un login correcto, una contraseña cambiada y una cuenta borrada llevan el usuario', async () => {
+    const aviso = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.auth.signInWithPassword.mockResolvedValue({
+      data: { user: { id: USER_A, email: 'ana@example.com' } },
+      error: null,
+    })
+    await iniciarSesion({ email: 'ana@example.com', password: 'bien', captchaToken: 't' })
+
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+    await cambiarPassword({ password: 'Segura#2026x', repetir: 'Segura#2026x' })
+    await borrarCuenta({ password: 'bien', captchaToken: 't' })
+
+    expect(eventos(aviso).map((e) => [e.evento, e.resultado, e.userId])).toEqual([
+      ['login', 'ok', USER_A],
+      ['cambiar_password', 'ok', USER_A],
+      ['borrar_cuenta', 'ok', USER_A],
+    ])
+  })
+
+  test('un bloqueo por límite queda registrado', async () => {
+    const aviso = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    h.auth.signInAnonymously.mockResolvedValue({ data: { user: null }, error: null })
+    for (let i = 0; i <= LIMITE_INVITADO_IP.maximo; i++) await iniciarInvitado('t')
+    expect(eventos(aviso).at(-1)).toMatchObject({ evento: 'limite', resultado: 'bloqueo', contexto: 'invitado' })
   })
 })

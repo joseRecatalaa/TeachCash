@@ -59,3 +59,71 @@ export function describirError(err: unknown, nivel = 0): ErrorDescrito {
 export function registrarError(contexto: string, err: unknown): void {
   console.error(`[${contexto}]`, JSON.stringify(describirError(err)))
 }
+
+// ─── Eventos de seguridad ────────────────────────────────────────────────────
+
+/**
+ * Lo que pasó y con qué resultado. `fallo` es un intento rechazado (contraseña
+ * mala, CAPTCHA, sin sesión); `bloqueo` lo para un límite de peticiones.
+ */
+export type ResultadoEvento = 'ok' | 'fallo' | 'bloqueo'
+
+export type DatosEvento = {
+  /** El `sub` del JWT verificado: un UUID, no identifica a nadie por sí solo. */
+  userId?: string
+  /** Se guarda recortada (`anonimizarIp`). */
+  ip?: string
+  /** Por qué falló, con un código propio. Nunca el texto que escribió nadie. */
+  motivo?: string
+  /** Desde qué acción, para las que comparten evento (`limite`). */
+  contexto?: string
+}
+
+/**
+ * La IP sin su parte final: el /24 en IPv4 y el /48 en IPv6. Basta para ver
+ * que mil intentos vienen de la misma red y no basta para señalar a una
+ * persona, que es lo que pide el RGPD a un log que se guarda meses. Lo que no
+ * parece una IP no se copia: la cabecera de la que sale la puede escribir
+ * quien hace la petición, y un log no es sitio para texto libre ajeno.
+ */
+export function anonimizarIp(ip: string): string {
+  const v4 = /^(?:::ffff:)?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/i.exec(ip)
+  if (v4) return `${v4[1]}.${v4[2]}.${v4[3]}.0`
+  if (/^[\da-f:]+$/i.test(ip) && ip.includes(':')) {
+    // Los tres primeros grupos, saltando el hueco de una forma comprimida
+    // (`2001:db8::1`). Una que empieza por `::` (`::1`) no tiene red que guardar.
+    const red = ip.split(':').slice(0, 3).filter(Boolean)
+    return ip.startsWith('::') ? '::' : `${red.join(':')}::`
+  }
+  return 'desconocida'
+}
+
+/**
+ * Registra un evento de seguridad: entrar, crear cuenta, cambiar o recuperar
+ * la contraseña, borrar la cuenta, crear un invitado o chocar con un límite.
+ *
+ * Una línea JSON con `tipo: "seguridad"` para que un agregador de logs la
+ * filtre y alerte (picos de `login`/`fallo`, cualquier `bloqueo`) sin tener que
+ * entender texto libre. Mismo criterio que `registrarError`: QUÉ y QUIÉN, nunca
+ * el email, la contraseña ni lo que la persona escribió.
+ *
+ * Va por `console.warn` y no por `console.error`: no es un fallo del servidor,
+ * y mezclarlos haría saltar las alertas de errores con cada contraseña mal
+ * escrita.
+ */
+export function registrarEvento(
+  evento: string,
+  resultado: ResultadoEvento,
+  datos: DatosEvento = {},
+): void {
+  const { ip, ...resto } = datos
+  const linea = {
+    tipo: 'seguridad',
+    evento,
+    resultado,
+    momento: new Date().toISOString(),
+    ...resto,
+    ...(ip === undefined ? {} : { ip: anonimizarIp(ip) }),
+  }
+  console.warn(JSON.stringify(linea))
+}

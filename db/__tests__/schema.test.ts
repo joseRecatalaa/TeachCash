@@ -266,11 +266,18 @@ describe('RLS', () => {
       expect(borradas.affectedRows).toBe(0)
     })
 
-    test('no puede regalarle una fila suya a otro', async () => {
-      // El WITH CHECK: sin él, A podría mover sus datos al espacio de B.
+    test('tampoco escribe en lo SUYO: la API REST es de solo lectura', async () => {
+      // Por REST no pasan las cuotas ni los topes de los repositorios: si se
+      // pudiera escribir, un invitado llenaría la base gratuita (o se regalaría
+      // sus filas a otro). Las escribe solo la app, con su rol (migraciones
+      // 0007 y 0008, docs/SECURITY.md).
       await comoUsuario('authenticated', USER_A)
+      const editadas = await ctx.pg.query(`update ${tabla} set user_id = $1 where id = $2`, [USER_B, deA])
+      const borradas = await ctx.pg.query(`delete from ${tabla} where id = $1`, [deA])
+      expect(editadas.affectedRows).toBe(0)
+      expect(borradas.affectedRows).toBe(0)
       await esperarSqlstate(
-        ctx.pg.query(`update ${tabla} set user_id = $1 where id = $2`, [USER_B, deA]),
+        ctx.pg.query(`insert into ${tabla} select * from ${tabla} where id = $1`, [deA]),
         SQL.RLS,
       )
     })

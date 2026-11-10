@@ -104,6 +104,10 @@ Cómo se verifica de verdad el JWT lo prueba `lib/__tests__/auth.test.ts` contra
   invalidación puede no casar con nada sin avisar.
 - `test/setup/dom.ts`: lo que jsdom no trae y Mantine necesita (`matchMedia`,
   `ResizeObserver`, `scrollIntoView`).
+- `test/setup/limites.ts`: pone a cero los límites de peticiones
+  (`lib/limite.ts`) antes de cada test. Viven en memoria del proceso, y sin
+  esto un test fallaría con "Demasiadas peticiones" según cuántos hubieran
+  corrido antes en su fichero.
 
 ### 2.5 E2E con Playwright (`e2e/`)
 
@@ -163,7 +167,8 @@ AGENTS.md.
 | `lib/__tests__/auth.test.ts` | 21 | `getSession`: el `userId` sale solo del `sub` de `getClaims()` verificado | 3 |
 | `lib/__tests__/env.test.ts` | 18 | Entorno validado al arrancar; URL de Supabase con ruta rechazada | — |
 | `lib/__tests__/csp.test.ts` | 7 | La CSP con nonce y sus directivas | — |
-| `lib/__tests__/log.test.ts` | 4 | Los errores se registran sin `params` de Drizzle (ni importes ni descripciones) | — |
+| `lib/__tests__/log.test.ts` | 14 | Los errores se registran sin `params` de Drizzle (ni importes ni descripciones); los eventos de seguridad, en JSON y con la IP recortada | — |
+| `lib/__tests__/limite.test.ts` | 10 | Límite de peticiones: deniega pasado el máximo, la ventana se reabre, claves y reglas independientes, tope de memoria | — |
 | `lib/__tests__/colores.test.ts`, `ids.test.ts` | 4 + 3 | Claves de la paleta; bits de versión y variante del UUID | — |
 | `lib/__tests__/heroe.test.ts` | 23 | Camino del héroe: qué respuesta es buena (`calcula` con su tolerancia, propiedad) y las estrellas (más aciertos nunca dan menos) | 1, 6 |
 | `lib/__tests__/marcas.test.ts` | 15 | `**negrita**` y `_cursiva_` del contenido: anidadas, sin cerrar, y lo que NO es marca (`3 * 4`, `mi_cuenta`, el `___` del hueco). Propiedad: no se pierde texto | — |
@@ -172,7 +177,8 @@ AGENTS.md.
 
 | Fichero | Casos | Qué cubre | RD |
 |---|---|---|---|
-| `db/__tests__/schema.test.ts` | 29 | RLS en `categories`, `transactions` y `hero_progress` (SELECT, UPDATE, DELETE, WITH CHECK); `hero_progress` y `hero_items` de solo lectura para la API (nada de INSERT, UPDATE ni DELETE, ni de lo propio); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
+| `db/__tests__/schema.test.ts` | 29 | RLS en `categories`, `transactions` y `hero_progress` (SELECT; ni UPDATE, ni DELETE, ni INSERT, ni siquiera de lo propio); `hero_progress` y `hero_items` de solo lectura para la API (nada de INSERT, UPDATE ni DELETE, ni de lo propio); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
+| `db/__tests__/rls.test.ts` | 4 | Sobre el catálogo de Postgres: toda tabla de `public` con RLS, con su política de lectura, **ninguna política de escritura** y ninguna para `anon` | — |
 | `repositories/__tests__/movimientos.repository.test.ts` | 48 | CRUD, `update` (gasto ↔ ingreso, categoría ajena), fechas futuras prohibidas, filtros, orden, paginación, idempotencia entre usuarios, aislamiento | 1, 4, 5 |
 | `repositories/__tests__/categorias.repository.test.ts` | 47 | CRUD, nombre único, ocultar/activar, borrado en cascada de sus movimientos, catálogo inicial | 4 |
 | `repositories/__tests__/informes.repository.test.ts` | 27 | Agregaciones; **el saldo actual = el último punto de la serie** (propiedad) | 7 |
@@ -193,12 +199,13 @@ AGENTS.md.
 |---|---|---|---|
 | `actions/__tests__/entity.actions.test.ts` | 37 | El dispatcher: mapa cerrado de recursos (`__proto__`, `constructor`…), sesión, propiedad, errores devueltos y no lanzados | 3, 4 |
 | `actions/__tests__/frontera.actions.test.ts` | 43 | Zod en la frontera: `ListParams`, ids, rango de la serie (≤ 731 días), periodo, meses, topes | 3, 6 |
-| `actions/__tests__/auth.actions.test.ts` | 65 | Invitado, login, registro (el invitado conserva su id), contraseña actual según `amr`, borrar cuenta, mensajes que no revelan si un email existe | 3 |
+| `actions/__tests__/auth.actions.test.ts` | 80 | Invitado, login, registro (el invitado conserva su id), contraseña actual según `amr`, borrar cuenta, mensajes que no revelan si un email existe; límites por IP y por cuenta, revocar las otras sesiones, origen de los enlaces (`APP_URL`) y eventos de seguridad | 3 |
 | `actions/__tests__/informes.actions.test.ts` | 8 | Informes sin sesión y con error genérico | 3 |
 | `actions/__tests__/heroe.actions.test.ts` | 16 | Camino del héroe: sin sesión no hace nada, ids mal formados son "No encontrado", el progreso es el de la sesión | 3, 4 |
 | `providers/__tests__/refine-data-provider.test.ts` | 11 | La traducción Refine → Server Actions y de vuelta (errores a excepción en el cliente) | — |
 | `app/auth/confirm/__tests__/route.test.ts` | 10 | `code` frente a `token_hash`, `type` fuera de lista, enlace inválido, `next` externo filtrado | — |
-| `src/__tests__/cabeceras.test.ts` | 7 | Cabeceras de seguridad de `next.config.ts` | — |
+| `actions/__tests__/resultado.test.ts` | 3 | `ejecutar`: sin sesión no ejecuta; pasado el límite por usuario, tampoco, y lo registra | — |
+| `src/__tests__/cabeceras.test.ts` | 21 | Cabeceras de seguridad de `next.config.ts`, tope del cuerpo de las Server Actions y qué rutas cubre la CSP del proxy | — |
 
 ### Guardas estructurales (`src/__tests__/invariantes.test.ts`, 44 casos)
 

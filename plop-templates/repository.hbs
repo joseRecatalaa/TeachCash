@@ -9,7 +9,7 @@
  *
  * Apunta a una tabla `{{camelCase pluralName}}` que probablemente no existe
  * todavía. Créala en `db/schema.ts` con las piezas de las demás —`idColumn()`,
- * `userIdColumn()`, `createdAtColumn()`, la política `soloSuyo(...)` y
+ * `userIdColumn()`, `createdAtColumn()`, la política `soloLeerLoSuyo(...)` y
  * `.enableRLS()`—, pasa `pnpm db:generate` y `pnpm db:migrate`,
  * y luego sustituye aquí la tabla y los campos de ejemplo. El resto de ficheros
  * generados sí compilan.

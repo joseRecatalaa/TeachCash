@@ -1,0 +1,3 @@
+CREATE POLICY "categories_solo_leer_lo_suyo" ON "categories" AS PERMISSIVE FOR SELECT TO "authenticated" USING ((select auth.uid()) = user_id);--> statement-breakpoint
+CREATE POLICY "profiles_solo_leer_lo_suyo" ON "profiles" AS PERMISSIVE FOR SELECT TO "authenticated" USING ((select auth.uid()) = user_id);--> statement-breakpoint
+CREATE POLICY "transactions_solo_leer_lo_suyo" ON "transactions" AS PERMISSIVE FOR SELECT TO "authenticated" USING ((select auth.uid()) = user_id);

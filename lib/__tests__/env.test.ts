@@ -7,7 +7,7 @@
  */
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { entornoMigraciones, entornoPublico, entornoServidor, validarEntorno } from '../env'
+import { entornoMigraciones, entornoPublico, entornoServidor, urlDeLaApp, validarEntorno } from '../env'
 
 const PUBLICO = {
   NEXT_PUBLIC_SUPABASE_URL: 'https://abcd.supabase.co',
@@ -115,4 +115,27 @@ describe('entorno de migraciones', () => {
     poner({ ...PUBLICO, ...SERVIDOR, DATABASE_URL_MIGRATIONS: undefined })
     expect(() => validarEntorno()).not.toThrow()
   })
+})
+
+describe('APP_URL (el origen de los enlaces de email)', () => {
+  test('sin ella, no hay origen fijo', () => {
+    poner({ APP_URL: undefined })
+    expect(urlDeLaApp()).toBeUndefined()
+    poner({ APP_URL: '' })
+    expect(urlDeLaApp()).toBeUndefined()
+  })
+
+  test('con ella, devuelve el origen sin barra final', () => {
+    poner({ APP_URL: 'https://teachcash.example.com/' })
+    expect(urlDeLaApp()).toBe('https://teachcash.example.com')
+  })
+
+  test.each(['https://teachcash.example.com/auth', 'javascript:alert(1)', 'no-es-url'])(
+    'una mal puesta (%s) no arranca',
+    (valor) => {
+      poner({ ...PUBLICO, ...SERVIDOR, APP_URL: valor })
+      expect(() => urlDeLaApp()).toThrow(/APP_URL/)
+      expect(() => validarEntorno()).toThrow(/APP_URL/)
+    },
+  )
 })

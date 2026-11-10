@@ -167,7 +167,7 @@ Cada cambio tiene un sitio y solo uno:
     estadisticas.ts                   # las siete estadísticas del héroe (puras)
     turnstile.ts
   db/
-    schema.ts                         # pg-core; piezas idColumn, soloSuyo…
+    schema.ts                         # pg-core; piezas idColumn, soloLeerLoSuyo…
     client.ts                         # postgres-js, prepare: false
     index.ts                          # la `db` compartida (server-only)
     migrate.mts                       # migra por el Session pooler

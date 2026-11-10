@@ -41,6 +41,13 @@ export const TAMANO_PAGINA_POR_DEFECTO = 20
 export const TAMANO_PAGINA_MAXIMO = 100
 
 /**
+ * Página más alta que se acepta. Con la cuota de movimientos de una cuenta y
+ * páginas de una fila, ninguna página más allá puede tener datos: pedirla solo
+ * sirve para hacer a Postgres saltarse un `OFFSET` enorme (OWASP API4).
+ */
+export const PAGINA_MAXIMA = MAX_MOVIMIENTOS_CUENTA
+
+/**
  * Filas como mucho en un listado SIN paginar (`paginate: false`).
  *
  * Lo usan las tablas en modo cliente (Categorías, Planificación), que traen el

@@ -69,6 +69,8 @@ nómina, IRPF o la fiscalidad de un fondo.
 | Buscar dónde está algo o dónde va un fichero nuevo | **`docs/structure.md`**: la hoja de ruta ("Dónde va cada cosa") y el árbol de ficheros |
 | Escribir o arreglar un test | **`docs/TESTS.md`**: cómo está montado, qué cubre cada fichero y qué no merece test |
 | Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO_HEROE.md`**, y las cifras en `docs/investigación-heroe/revision-cifras.md` |
+| Tocar auth, sesión, cabeceras, CSP, límites, logs, RLS, dependencias o el CI | **`docs/SECURITY.md`**: las medidas por cada punto de OWASP Top 10 y API Top 10, lo que depende de configuración fuera del repo y los riesgos aceptados |
+| Desplegar en producción (Vercel + Supabase) o tocar su configuración | **`docs/plans/PLAN-DESPLIEGUE.md`**: los pasos en orden, las variables de entorno, el panel de Supabase y Turnstile y cómo comprobarlo |
 | Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO_HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
 
 La regla que más se olvida: **antes de escribir un componente, búscalo en
@@ -475,11 +477,15 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
 - **Datos por Drizzle directo, no por supabase-js.** La app se conecta a
   Postgres con un rol que se salta RLS y filtra por `userId` en cada `where`
   (regla dura 4). supabase-js se usa solo para Auth.
-- **RLS como red, no como mecanismo.** Toda tabla lleva RLS "solo lo suyo"
-  (`soloSuyo`) para que la API REST de Supabase, que cualquiera puede llamar con
-  la clave pública, no sirva para leer nada ajeno. La app no depende de ella. Lo
-  que calcula el servidor (el progreso y las compras del héroe) va con
-  `soloLeerLoSuyo`: se lee lo suyo y no se escribe nada.
+- **RLS como red, no como mecanismo, y de SOLO LECTURA en todas las tablas**
+  (`soloLeerLoSuyo`): la API REST de Supabase, que cualquiera puede llamar con
+  la clave pública y su propia sesión, no sirve para leer nada ajeno ni para
+  escribir nada. La app no depende de ella: escribe con su rol, que se salta
+  RLS, y es donde viven las cuotas, los topes y los cálculos. Hasta la auditoría
+  de seguridad las tablas de dinero tenían `soloSuyo` (`for all`), y por REST un
+  invitado podía saltarse cuotas y topes de longitud y llenar la base gratuita
+  (migraciones 0007 y 0008). Lo vigila `db/__tests__/rls.test.ts`: una tabla
+  nueva sin RLS o con política de escritura lo rompe.
 - **Ids `text` con UUID que pone la base, no `uuid`.** Un id mal formado que
   llegue del cliente no casa con nada y da "No encontrado", en vez de que
   Postgres reviente con un error de sintaxis que acabaría como error genérico.
@@ -570,13 +576,32 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   mensaje que dice cuál, en vez de un error genérico en la primera petición.
 - **Errores al log sin datos** (`lib/log.ts`): nombre, código y mensaje, sin los
   `params` de Drizzle, que llevan importes y descripciones.
+- **Auditoría de seguridad (noviembre de 2026)** contra OWASP Top 10 2025, OWASP
+  API Top 10 2023 y la skill `cloudflare/security-audit-skill`. Todo lo hecho y
+  por qué, en `docs/SECURITY.md`. Lo que cambia cómo se escribe código:
+  - **Límite de peticiones** en memoria (`lib/limite.ts`): 300 acciones/min por
+    usuario en `ejecutar`, y en auth 20 cada 10 min por IP y 10 intentos de
+    contraseña cada 15 min por CUENTA (Supabase limita por IP, pero solo ve la
+    del servidor). Sin almacén compartido a propósito: ver Decisiones abiertas.
+  - **Eventos de seguridad** con `registrarEvento` (`lib/log.ts`): JSON con
+    `tipo: "seguridad"`, el `userId` y la IP recortada, nunca el email. Una
+    acción de cuenta nueva deja el suyo.
+  - **`APP_URL`** (opcional, en producción sí) es el origen de los enlaces de
+    email; sin ella, el origen de las cabeceras se valida.
+  - **Cambiar la contraseña cierra las demás sesiones**, y `/auth/confirm`
+    acepta solo `?code=` (PKCE): `?token_hash=` permitía un login CSRF.
+  - Server Actions con cuerpo ≤ 256 KB, `page` ≤ 50.000, cabeceras CORP y
+    compañía, y la CSP también en las rutas con extensión de imagen.
 - **Dependencias sin un solo aviso de `pnpm audit`** (producción y desarrollo):
-  `xlsx` 0.20.3 desde el CDN oficial de SheetJS (npm se quedó en una versión con
-  CVEs), overrides documentados en `pnpm-workspace.yaml` y un parche de
+  `xlsx` 0.20.3 del CDN oficial de SheetJS (npm se quedó en una versión con
+  CVEs), VENDORIZADO en `vendor/` para que el lockfile lleve su hash (desde el
+  CDN no lo llevaba), overrides documentados en `pnpm-workspace.yaml` y un parche de
   `findup-sync` para quitar `braces` (sin versión parcheada). Dependabot mensual
   y agrupado.
 - **El repo es LF** (`.gitattributes`): un CRLF hace que los `modify` de Plop no
   casen y se salten en silencio.
+- **Acciones del CI fijadas por SHA** con la versión en un comentario: un tag
+  se puede mover y ejecutaría código sin revisar.
 - **Las capas, impuestas por ESLint** (`no-restricted-imports`): `src/presentation`
   no importa de `src/infrastructure`, solo los repositorios
   importan `@/db`, y `lib/`/`db/` no importan de `src/`. También sonarjs
@@ -827,7 +852,12 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **SMTP propio**: pendiente hasta abrir la app a otros. Con él se pueden poner
   las plantillas de email en español y con enlaces `token_hash`, que funcionan
   desde cualquier dispositivo (hoy, con `code`, solo en el mismo navegador).
-  `/auth/confirm` ya acepta los dos.
+  `/auth/confirm` ya NO acepta `token_hash` (se quitó por login CSRF): volver a
+  aceptarlo exige una página intermedia que diga con qué cuenta se va a entrar
+  y lo confirme con un botón, en vez de cambiar la sesión al abrir el enlace.
+- **Límite de peticiones compartido**: hoy es en memoria por proceso
+  (`lib/limite.ts`). Con varias instancias cada una cuenta lo suyo. Si se
+  despliega en más de una, Redis (Upstash) o una tabla con su coste.
 - **Fusionar los datos del invitado al iniciar sesión** en una cuenta que ya
   existe: hoy se avisa y no se fusionan.
 - **Endurecimiento opcional**: MFA TOTP.

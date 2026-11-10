@@ -20,3 +20,6 @@
 *.ttf binary
 *.xlsx binary
 *.pdf binary
+# Un tarball vendorizado (vendor/): un solo byte cambiado rompe su hash de
+# integridad en pnpm-lock.yaml, y la instalación falla (que es lo que se busca).
+*.tgz binary

@@ -22,6 +22,7 @@ import {
   IMPORTE_MAXIMO,
   INFORME_MESES_MAX,
   SERIE_SALDO_MAX_DIAS,
+  PAGINA_MAXIMA,
   TAMANO_PAGINA_MAXIMO,
 } from '@/src/types/limites.types'
 import { addDays } from '@/lib/dates'
@@ -57,6 +58,7 @@ describe('listEntity valida ListParams', () => {
     ['página cero', { page: 0 }],
     ['página negativa', { page: -3 }],
     ['página con decimales', { page: 1.5 }],
+    ['página más allá de cualquier dato', { page: PAGINA_MAXIMA + 1 }],
     ['página que no es número', { page: '2' }],
     ['sortDir fuera de lista', { sortDir: 'asc; drop table categories' }],
     ['búsqueda larguísima', { search: 'x'.repeat(BUSQUEDA_MAX + 1) }],
