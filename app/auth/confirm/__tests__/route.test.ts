@@ -44,11 +44,16 @@ describe('enlace válido', () => {
     expect(r.headers.get('location')).toBe('https://teachcash.example.com/CambiarPassword')
   })
 
-  test('con `token_hash` y un tipo permitido, verifica el OTP', async () => {
+  test('un `token_hash` NO abre sesión, aunque el tipo sea válido (login CSRF)', async () => {
+    // Un `token_hash` no está ligado al navegador que pidió el enlace: un
+    // atacante podría mandar el SUYO y dejar a la víctima dentro de la cuenta
+    // del atacante, anotando allí sus finanzas. Hasta que haya SMTP propio y una
+    // página que confirme antes de cambiar de sesión, no se acepta.
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
     const r = await pedir('token_hash=h1&type=recovery&next=/CambiarPassword')
 
-    expect(auth.verifyOtp).toHaveBeenCalledWith({ token_hash: 'h1', type: 'recovery' })
-    expect(r.headers.get('location')).toBe('https://teachcash.example.com/CambiarPassword')
+    expect(auth.verifyOtp).not.toHaveBeenCalled()
+    expect(r.headers.get('location')).toBe('https://teachcash.example.com/Login?enlace=invalido')
   })
 
   test('una cuenta recién confirmada recibe su catálogo de categorías', async () => {
@@ -91,5 +96,30 @@ describe('entrada hostil', () => {
     const destino = r.headers.get('location') ?? ''
     expect(destino).toBe('https://teachcash.example.com/Login?enlace=invalido')
     expect(destino).not.toMatch(/expired/i)
+  })
+})
+
+describe('endurecimiento (docs/SECURITY.md)', () => {
+  test.each([
+    ['válido', 'code=abc'],
+    ['caducado', 'code=caducado'],
+  ])('la redirección de un enlace %s no se queda en ninguna caché (lleva la cookie de sesión)', async (_caso, query) => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    if (query.includes('caducado')) auth.exchangeCodeForSession.mockResolvedValue(fallo)
+    const r = await pedir(query)
+    expect(r.headers.get('cache-control')).toBe('no-store')
+  })
+
+  test('canjear un enlace deja un evento de seguridad, bueno o malo', async () => {
+    const aviso = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await pedir('code=abc')
+    auth.exchangeCodeForSession.mockResolvedValue(fallo)
+    await pedir('code=caducado')
+
+    const eventos = aviso.mock.calls.map((c) => JSON.parse(String(c[0])))
+    expect(eventos.map((e) => [e.evento, e.resultado, e.userId])).toEqual([
+      ['enlace_email', 'ok', USER_A],
+      ['enlace_email', 'fallo', undefined],
+    ])
   })
 })

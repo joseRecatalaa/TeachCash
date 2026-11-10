@@ -10,7 +10,7 @@
 
 import { describe, expect, test, vi } from 'vitest'
 import { DrizzleQueryError } from 'drizzle-orm'
-import { describirError, registrarError } from '../log'
+import { anonimizarIp, describirError, registrarError, registrarEvento } from '../log'
 
 const IMPORTE = -987654
 const DESCRIPCION = 'Farmacia de la calle Mayor'
@@ -61,5 +61,53 @@ describe('registrarError', () => {
   test('un error que no es Error se registra sin romperse', () => {
     expect(describirError('texto suelto')).toEqual({ nombre: 'string', mensaje: 'texto suelto' })
     expect(describirError(null)).toEqual({ nombre: 'null', mensaje: 'null' })
+  })
+})
+
+describe('registrarEvento', () => {
+  const capturarAviso = (accion: () => void) => {
+    const espia = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    accion()
+    return espia.mock.calls.map((c) => JSON.parse(String(c[0])))
+  }
+
+  test('una línea JSON por evento, con tipo, nombre, momento y resultado', () => {
+    const [linea] = capturarAviso(() =>
+      registrarEvento('login', 'fallo', { userId: 'u-1', motivo: 'credenciales' }),
+    )
+    expect(linea).toMatchObject({
+      tipo: 'seguridad',
+      evento: 'login',
+      resultado: 'fallo',
+      userId: 'u-1',
+      motivo: 'credenciales',
+    })
+    expect(Number.isNaN(Date.parse(linea.momento))).toBe(false)
+  })
+
+  test('la IP se guarda recortada, nunca entera', () => {
+    const [linea] = capturarAviso(() => registrarEvento('invitado', 'ok', { ip: '203.0.113.77' }))
+    expect(linea.ip).toBe('203.0.113.0')
+  })
+
+  test('sin datos extra también se registra', () => {
+    const [linea] = capturarAviso(() => registrarEvento('logout', 'ok'))
+    expect(linea).toMatchObject({ evento: 'logout', resultado: 'ok' })
+    expect(linea).not.toHaveProperty('ip')
+  })
+})
+
+describe('anonimizarIp', () => {
+  test.each([
+    ['203.0.113.77', '203.0.113.0'],
+    ['2001:db8:85a3:8d3:1319:8a2e:370:7348', '2001:db8:85a3::'],
+    ['2001:db8::1', '2001:db8::'],
+    ['::1', '::'],
+    // eslint-disable-next-line sonarjs/no-hardcoded-ip -- IP de documentación (RFC 5737)
+    ['::ffff:198.51.100.9', '198.51.100.0'],
+    ['desconocida', 'desconocida'],
+    ['no es una ip; drop table', 'desconocida'],
+  ])('%s → %s', (ip, esperado) => {
+    expect(anonimizarIp(ip)).toBe(esperado)
   })
 })

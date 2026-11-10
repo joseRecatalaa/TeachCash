@@ -6,9 +6,11 @@
 #
 # Sale contra `develop`, que es la rama de integración del repo.
 #
-# `xlsx` no lo puede actualizar: se instala desde el CDN de SheetJS
-# (https://cdn.sheetjs.com), no desde npm, porque npm se quedó en una versión
-# con CVEs. Hay que mirar a mano https://cdn.sheetjs.com/ de vez en cuando.
+# `xlsx` no lo puede actualizar: npm se quedó en una versión con CVEs, y el
+# tarball del CDN de SheetJS (https://cdn.sheetjs.com) va VENDORIZADO en
+# `vendor/`, con su hash en el lockfile (ver docs/SECURITY.md). Hay que mirar a
+# mano https://cdn.sheetjs.com/ de vez en cuando, y al subirlo, sustituir el
+# .tgz y `pnpm install`.
 
 version: 2
 updates:

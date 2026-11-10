@@ -50,6 +50,20 @@
       "when": 1794171685188,
       "tag": "0006_perfil_primer_patrimonio",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794340222978,
+      "tag": "0007_datos_quitar_escritura",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794340226036,
+      "tag": "0008_datos_solo_lectura",
+      "breakpoints": true
     }
   ]
 }

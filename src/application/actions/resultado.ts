@@ -15,7 +15,8 @@
  */
 
 import { getSession } from '@/lib/auth'
-import { registrarError } from '@/lib/log'
+import { consumir, LIMITE_ACCIONES } from '@/lib/limite'
+import { registrarError, registrarEvento } from '@/lib/log'
 import { RepositoryError } from '@/src/infrastructure/repositories/types'
 
 export type ActionOk<T> = { ok: true; data: T }
@@ -29,12 +30,14 @@ export type ActionResult<T> = ActionOk<T> | ActionFail
 
 export const NO_AUTORIZADO = 'No autorizado'
 export const ERROR_INESPERADO = 'Se ha producido un error inesperado'
+export const DEMASIADAS_PETICIONES = 'Demasiadas peticiones seguidas. Espera un momento y vuelve a probar.'
 
 /**
  * Resuelve la sesión, ejecuta y traduce el fallo.
  *
  * - Sin sesión no se ejecuta nada (regla dura 3). El `userId` que recibe la
  *   operación sale de la sesión verificada, nunca de los argumentos.
+ * - Pasado `LIMITE_ACCIONES`, tampoco: se devuelve que espere.
  * - Un `RepositoryError` es un error de negocio y su mensaje SE LE ENSEÑA a la
  *   persona.
  * - Cualquier otra cosa es un fallo inesperado: se registra en el servidor (sin
@@ -49,6 +52,14 @@ export async function ejecutar<T>(
 ): Promise<ActionResult<T>> {
   const session = await getSession()
   if (!session) return { ok: false, error: NO_AUTORIZADO }
+
+  // Por usuario y antes de tocar la base (OWASP API4): un script con una
+  // cookie válida no puede convertir cada iteración de un bucle en una
+  // consulta. Ver `lib/limite.ts` para el alcance real de este límite.
+  if (!consumir(LIMITE_ACCIONES, session.user.id).permitido) {
+    registrarEvento('limite', 'bloqueo', { userId: session.user.id, contexto })
+    return { ok: false, error: DEMASIADAS_PETICIONES }
+  }
 
   try {
     return { ok: true, data: await operacion(session.user.id) }

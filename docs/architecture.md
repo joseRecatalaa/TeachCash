@@ -129,7 +129,7 @@ Crea los nueve ficheros y registra el recurso en los dos sitios que hacen falta
 **El repositorio generado no compila tal cual**, y es a propósito: apunta a una
 tabla que casi nunca existe todavía. Si la entidad necesita tabla, créala en
 `db/schema.ts` con las mismas piezas que las demás —`idColumn()`,
-`userIdColumn()`, `createdAtColumn()`, la política `soloSuyo('<tabla>')` y
+`userIdColumn()`, `createdAtColumn()`, la política `soloLeerLoSuyo('<tabla>')` y
 `.enableRLS()`— y pasa `pnpm db:generate` y `pnpm db:migrate` antes de tocarlo.
 Una tabla sin `.enableRLS()` queda abierta a la API REST de Supabase para
 cualquiera con la clave pública; el Security Advisor del panel lo marca.

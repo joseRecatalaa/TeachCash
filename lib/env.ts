@@ -59,6 +59,29 @@ const EsquemaServidor = z.object({ DATABASE_URL: urlPostgres })
 
 const EsquemaMigraciones = z.object({ DATABASE_URL_MIGRATIONS: urlPostgres })
 
+/**
+ * `APP_URL`: la URL pública de la aplicación, sin ruta. Opcional, pero en
+ * producción debería estar.
+ *
+ * Es el origen de los enlaces de los emails (confirmar, recuperar). Sin ella
+ * sale de las cabeceras `Origin`/`Host` de la petición, y esas las escribe quien
+ * llama: con `curl`, "recuperar la contraseña de pepito@…" con un `Host` propio
+ * pediría a Supabase un enlace que acaba en el dominio del atacante (password
+ * reset poisoning). Hoy lo frena la lista de Redirect URLs de Supabase; con
+ * `APP_URL` no depende de que esa lista esté bien.
+ */
+const EsquemaApp = z.object({
+  APP_URL: z
+    .url({ protocol: /^https?$/, error: 'Tiene que ser una URL http(s)://…, la de la app' })
+    .refine((url) => !URL.canParse(url) || new URL(url).pathname === '/', {
+      error: 'Tiene que ser la URL de la app sin ruta, https://dominio',
+    })
+    .optional(),
+})
+
+// Vacía cuenta como no puesta: `.env.example` la trae así.
+const valoresApp = () => ({ APP_URL: process.env.APP_URL || undefined })
+
 export type EntornoPublico = z.infer<typeof EsquemaPublico>
 export type EntornoServidor = z.infer<typeof EsquemaServidor>
 
@@ -91,6 +114,12 @@ export const entornoPublico = (): EntornoPublico => leer(EsquemaPublico, valores
 
 export const entornoServidor = (): EntornoServidor => leer(EsquemaServidor, valoresServidor())
 
+/** El origen fijo de la app (`https://dominio`), o `undefined` si no hay. */
+export function urlDeLaApp(): string | undefined {
+  const { APP_URL } = leer(EsquemaApp, valoresApp())
+  return APP_URL === undefined ? undefined : new URL(APP_URL).origin
+}
+
 export const entornoMigraciones = (): z.infer<typeof EsquemaMigraciones> =>
   leer(EsquemaMigraciones, { DATABASE_URL_MIGRATIONS: process.env.DATABASE_URL_MIGRATIONS })
 
@@ -103,6 +132,7 @@ export function validarEntorno(): void {
   const todos = [
     ...problemas(EsquemaPublico, valoresPublicos()),
     ...problemas(EsquemaServidor, valoresServidor()),
+    ...problemas(EsquemaApp, valoresApp()),
   ]
   if (todos.length > 0) fallar(todos)
 }

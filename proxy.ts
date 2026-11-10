@@ -35,8 +35,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Todas las rutas menos los estáticos: sin esto, cada imagen y cada chunk de JS
-    // pagaría una vuelta a Supabase.
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    // Todas las rutas menos los estáticos: sin esto, cada chunk de JS pagaría
+    // una vuelta a Supabase. Los estáticos se nombran UNO A UNO y no por
+    // extensión: antes se excluía cualquier `*.png`/`*.svg`, y `/lo-que-sea.png`
+    // no es un fichero sino el 404 de la app, HTML con sus scripts, que salía
+    // SIN Content Security Policy. La app no sirve imágenes (todo es pixel art
+    // en SVG inline); si un día las hay en `public/`, van con su nombre aquí.
+    '/((?!_next/static|_next/image|favicon\\.ico$|icon\\.svg$|robots\\.txt$).*)',
   ],
 }

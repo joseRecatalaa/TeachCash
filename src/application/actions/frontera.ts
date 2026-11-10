@@ -20,6 +20,7 @@ import {
   BUSQUEDA_MAX,
   ID_MAX,
   INFORME_MESES_MAX,
+  PAGINA_MAXIMA,
   SERIE_SALDO_MAX_DIAS,
   TAMANO_PAGINA_MAXIMO,
 } from '@/src/types/limites.types'
@@ -44,7 +45,7 @@ const ListParamsSchema = z.object({
     .optional(),
   search: texto(BUSQUEDA_MAX).optional(),
   paginate: z.boolean().optional(),
-  page: z.number().int().min(1).optional(),
+  page: z.number().int().min(1).max(PAGINA_MAXIMA).optional(),
   pageSize: z.number().int().min(1).max(TAMANO_PAGINA_MAXIMO).optional(),
   sortBy: texto(ID_MAX).optional(),
   sortDir: z.enum(['asc', 'desc']).optional(),

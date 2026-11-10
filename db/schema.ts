@@ -63,25 +63,21 @@ export const createdAtColumn = () =>
   timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 
 /**
- * Cada usuario ve y toca solo lo suyo. `(select auth.uid())` y no `auth.uid()`
- * a secas: así Postgres lo evalúa una vez por consulta y no una vez por fila.
- * Los invitados (usuarios anónimos de Supabase) también tienen el rol
- * `authenticated`, así que esta misma política los cubre.
- */
-export const soloSuyo = (tabla: string) =>
-  pgPolicy(`${tabla}_solo_suyo`, {
-    for: 'all',
-    to: authenticatedRole,
-    using: sql`${authUid} = user_id`,
-    withCheck: sql`${authUid} = user_id`,
-  })
-
-/**
- * Como `soloSuyo`, pero sin escribir: cada usuario LEE lo suyo y nada más. Para
- * lo que solo debe escribir el servidor, porque lo calcula él: el progreso del
- * héroe (corrige las partidas) y sus compras (cobra las estrellas). Con
- * `soloSuyo`, cualquiera podría regalarse estrellas u objetos llamando a la API
- * REST de Supabase con su propia sesión. La app no se entera: su rol se salta RLS.
+ * Cada usuario LEE lo suyo y nada más; nadie escribe por la API REST.
+ * `(select auth.uid())` y no `auth.uid()` a secas: así Postgres lo evalúa una
+ * vez por consulta y no una vez por fila. Los invitados (usuarios anónimos de
+ * Supabase) también tienen el rol `authenticated`, así que esta misma política
+ * los cubre.
+ *
+ * Sin política de escritura, A PROPÓSITO, en TODAS las tablas. La app escribe
+ * con su propio rol, que se salta RLS, y es donde viven las garantías: las
+ * cuotas por usuario, los topes de longitud, el cobro de estrellas, la
+ * corrección de las partidas. La API REST de Supabase la puede llamar
+ * cualquiera con la clave pública y su propia sesión (también un invitado), y
+ * por ahí todo eso no existe: con una política de escritura, un script podía
+ * llenar la base gratuita de movimientos de un millón de caracteres o regalarse
+ * estrellas. Antes las tablas de dinero tenían `soloSuyo` (`for all`); ver las
+ * migraciones 0007 y 0008 y docs/SECURITY.md.
  */
 export const soloLeerLoSuyo = (tabla: string) =>
   pgPolicy(`${tabla}_solo_leer_lo_suyo`, {
@@ -122,7 +118,7 @@ export const categories = pgTable(
     unique('categories_user_name').on(t.userId, t.name),
     index('categories_user_idx').on(t.userId),
     check('categories_kind', sql`${t.kind} in ('income', 'expense')`),
-    soloSuyo('categories'),
+    soloLeerLoSuyo('categories'),
   ],
 ).enableRLS()
 
@@ -157,7 +153,7 @@ export const transactions = pgTable(
     index('tx_category_idx').on(t.categoryId),
     unique('tx_import_hash').on(t.userId, t.importHash),
     unique('tx_idempotency_key').on(t.userId, t.idempotencyKey),
-    soloSuyo('transactions'),
+    soloLeerLoSuyo('transactions'),
   ],
 ).enableRLS()
 
@@ -195,7 +191,7 @@ export const profiles = pgTable(
     createdAt: createdAtColumn(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  () => [soloSuyo('profiles')],
+  () => [soloLeerLoSuyo('profiles')],
 ).enableRLS()
 
 /**

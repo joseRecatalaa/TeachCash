@@ -17,13 +17,28 @@
  *   - **Los errores se devuelven, no se lanzan**, como en `entity.actions.ts`.
  *   - **El CAPTCHA lo comprueba Supabase**, no este fichero: aquí solo se le
  *     pasa el token. Así no hay ninguna clave secreta en la aplicación.
+ *   - **Cada intento cuenta** (`lib/limite.ts`): por IP, y los de contraseña
+ *     también por cuenta. Supabase limita por IP, pero la IP que ve es la de
+ *     este servidor, la misma para todo el mundo.
+ *   - **Todo deja rastro** (`registrarEvento`): entrar, fallar, cambiar o
+ *     recuperar la contraseña, borrar la cuenta y chocar con un límite. Sin el
+ *     email ni la contraseña, y con la IP recortada.
  */
 
 import { headers } from 'next/headers'
 import type { AuthError } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { getSession, type Session } from '@/lib/auth'
-import { registrarError } from '@/lib/log'
+import { urlDeLaApp } from '@/lib/env'
+import {
+  claveSegura,
+  consumir,
+  LIMITE_AUTH_IP,
+  LIMITE_INVITADO_IP,
+  LIMITE_LOGIN_EMAIL,
+  type Regla,
+} from '@/lib/limite'
+import { registrarError, registrarEvento, type DatosEvento } from '@/lib/log'
 import { crearClienteSupabase } from '@/lib/supabase/server'
 import { asegurarCatalogoInicial } from '@/src/infrastructure/repositories/categorias.repository'
 import {
@@ -152,16 +167,60 @@ function erroresDeCampo(error: z.ZodError): ActionResult<never> {
 
 /**
  * Desde dónde se está usando la aplicación, para construir los enlaces de los
- * emails. Supabase solo acepta destinos de su lista de "Redirect URLs", así que
- * una cabecera manipulada no consigue mandar el enlace a otro dominio.
+ * emails.
+ *
+ * Con `APP_URL` (`lib/env.ts`) es SIEMPRE esa: las cabeceras de la petición las
+ * escribe quien llama, y con ellas un atacante pediría la recuperación de otra
+ * persona con un enlace que acaba en su dominio (password reset poisoning).
+ * Sin `APP_URL` (desarrollo, E2E) se deducen de las cabeceras, y entonces lo
+ * frena la lista de "Redirect URLs" de Supabase; aun así, lo que no es un
+ * origen http(s) limpio —un esquema raro, un `Host` con ruta o nada— no se
+ * manda a ningún sitio.
  */
 async function origen(): Promise<string> {
+  const fija = urlDeLaApp()
+  if (fija) return fija
+
   const h = await headers()
-  const declarado = h.get('origin')
-  if (declarado) return declarado
   const host = h.get('x-forwarded-host') ?? h.get('host')
-  const protocolo = h.get('x-forwarded-proto') ?? 'https'
-  return `${protocolo}://${host}`
+  const candidato =
+    h.get('origin') ?? (host ? `${h.get('x-forwarded-proto') ?? 'https'}://${host}` : '')
+  const url = URL.canParse(candidato) ? new URL(candidato) : null
+  const limpio =
+    url !== null &&
+    (url.protocol === 'https:' || url.protocol === 'http:') &&
+    url.origin === candidato.replace(/\/$/, '')
+  if (!limpio) throw new Error('Origen de la petición no válido')
+  return url.origin
+}
+
+/**
+ * La IP de quien llama, para los límites y el registro. `x-real-ip` primero
+ * porque es la que ponen los proxies de despliegue (Vercel, nginx) sobre la que
+ * traía la petición; si no, la primera de `x-forwarded-for`. Las dos las puede
+ * escribir el cliente si no hay un proxy delante que las pise, y por eso los
+ * intentos de contraseña cuentan ADEMÁS por cuenta, que no se puede falsear.
+ */
+async function ipCliente(): Promise<string> {
+  const h = await headers()
+  const real = h.get('x-real-ip')?.trim()
+  if (real) return real
+  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconocida'
+}
+
+/**
+ * Cuenta el intento contra cada límite y dice si alguno lo para. El bloqueo
+ * queda registrado; las claves se guardan como hash (`claveSegura`), así que la
+ * memoria del proceso no acumula emails ni IP.
+ */
+function bloqueado(contexto: string, limites: [Regla, string][], datos: DatosEvento): boolean {
+  for (const [regla, clave] of limites) {
+    if (!consumir(regla, claveSegura(clave)).permitido) {
+      registrarEvento('limite', 'bloqueo', { ...datos, contexto, motivo: regla.nombre })
+      return true
+    }
+  }
+  return false
 }
 
 /**
@@ -229,12 +288,16 @@ export async function iniciarInvitado(token: unknown): Promise<ActionResult<Cuen
     const parsed = captchaToken.safeParse(token)
     if (!parsed.success) return fallo(MENSAJES.captcha)
 
+    const ip = await ipCliente()
+    if (bloqueado('invitado', [[LIMITE_INVITADO_IP, ip]], { ip })) return fallo(MENSAJES.limite)
+
     const supabase = await crearClienteSupabase()
     const { data, error } = await supabase.auth.signInAnonymously({
       options: { captchaToken: parsed.data },
     })
     if (error || !data.user) return fallo(error ? traducir(error, 'invitado') : MENSAJES.inesperado)
 
+    registrarEvento('invitado', 'ok', { userId: data.user.id, ip })
     await asegurarCatalogoInicial(data.user.id)
     return {
       ok: true,
@@ -258,6 +321,13 @@ export async function iniciarSesion(values: unknown): Promise<ActionResult<Cuent
     if (!parsed.success) return erroresDeCampo(parsed.error)
     const { email, password, captchaToken } = parsed.data
 
+    const ip = await ipCliente()
+    const limites: [Regla, string][] = [
+      [LIMITE_AUTH_IP, ip],
+      [LIMITE_LOGIN_EMAIL, email],
+    ]
+    if (bloqueado('login', limites, { ip })) return fallo(MENSAJES.limite)
+
     const supabase = await crearClienteSupabase()
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -265,6 +335,7 @@ export async function iniciarSesion(values: unknown): Promise<ActionResult<Cuent
       options: { captchaToken },
     })
     if (error) {
+      registrarEvento('login', 'fallo', { ip, motivo: error.code })
       if (error.code === 'invalid_credentials') return fallo(MENSAJES.credenciales)
       // Solo puede salir con la contraseña correcta, así que no revela nada que
       // quien escribe no sepa ya.
@@ -272,6 +343,7 @@ export async function iniciarSesion(values: unknown): Promise<ActionResult<Cuent
       return fallo(traducir(error, 'iniciarSesion'))
     }
 
+    registrarEvento('login', 'ok', { userId: data.user.id, ip })
     return { ok: true, data: { tipo: 'usuario', email: data.user.email ?? email } }
   })
 }
@@ -294,6 +366,10 @@ export async function registrarse(values: unknown): Promise<ActionResult<{ mensa
     const session = await getSession()
     if (session && !session.user.esInvitado) return fallo(MENSAJES.yaTienesCuenta)
 
+    const ip = await ipCliente()
+    const datos = { userId: session?.user.id, ip }
+    if (bloqueado('registro', [[LIMITE_AUTH_IP, ip]], datos)) return fallo(MENSAJES.limite)
+
     const supabase = await crearClienteSupabase()
     const destino = `${await origen()}/auth/confirm?next=/CambiarPassword`
 
@@ -310,8 +386,10 @@ export async function registrarse(values: unknown): Promise<ActionResult<{ mensa
     // Que el email ya esté registrado se trata como un éxito: decirlo
     // revelaría quién tiene cuenta.
     if (error && error.code !== 'email_exists' && error.code !== 'user_already_exists') {
+      registrarEvento('registro', 'fallo', { ...datos, motivo: error.code })
       return fallo(traducir(error, 'registrarse'))
     }
+    registrarEvento('registro', 'ok', datos)
     return { ok: true, data: { mensaje: MENSAJES.enlaceEnviado } }
   })
 }
@@ -324,6 +402,9 @@ export async function solicitarRecuperacion(
     const parsed = SolicitarRecuperacion.safeParse(values)
     if (!parsed.success) return erroresDeCampo(parsed.error)
 
+    const ip = await ipCliente()
+    if (bloqueado('recuperar', [[LIMITE_AUTH_IP, ip]], { ip })) return fallo(MENSAJES.limite)
+
     const supabase = await crearClienteSupabase()
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
       redirectTo: `${await origen()}/auth/confirm?next=/CambiarPassword`,
@@ -333,6 +414,7 @@ export async function solicitarRecuperacion(
       return fallo(traducir(error, 'solicitarRecuperacion'))
     }
     if (error) registrarError('auth.actions/solicitarRecuperacion', error)
+    registrarEvento('recuperar', 'ok', { ip })
     return { ok: true, data: { mensaje: MENSAJES.enlaceEnviado } }
   })
 }
@@ -347,6 +429,50 @@ export async function requisitosCambioPassword(): Promise<ActionResult<{ pideAct
     if (!session || session.user.esInvitado) return fallo(MENSAJES.noAutorizado)
     return { ok: true, data: { pideActual: session.user.entroConPassword } }
   })
+}
+
+/**
+ * Para cambiar la contraseña con una sesión abierta CON contraseña: vuelve a
+ * pedirla, con el email de la sesión y el CAPTCHA. Es un intento de contraseña
+ * contra esta cuenta, así que cuenta con los del login. Devuelve el fallo, o
+ * `null` si puede seguir.
+ */
+async function reautenticar(
+  supabase: Awaited<ReturnType<typeof crearClienteSupabase>>,
+  session: Session,
+  passwordActual: string | undefined,
+  captchaToken: string | undefined,
+  ip: string,
+): Promise<ActionResult<never> | null> {
+  const email = session.user.email
+  if (!email) return fallo(MENSAJES.noAutorizado)
+  if (!passwordActual) {
+    return fallo('Escribe tu contraseña actual', {
+      passwordActual: 'Escribe tu contraseña actual',
+    })
+  }
+  if (!captchaToken) return fallo(MENSAJES.captcha)
+
+  const datos = { userId: session.user.id, ip }
+  const limites: [Regla, string][] = [
+    [LIMITE_AUTH_IP, ip],
+    [LIMITE_LOGIN_EMAIL, email],
+  ]
+  if (bloqueado('cambiar_password', limites, datos)) return fallo(MENSAJES.limite)
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: passwordActual,
+    options: { captchaToken },
+  })
+  if (!error) return null
+  registrarEvento('cambiar_password', 'fallo', { ...datos, motivo: error.code })
+  if (error.code === 'invalid_credentials') {
+    return fallo('Contraseña actual incorrecta', {
+      passwordActual: 'Contraseña actual incorrecta',
+    })
+  }
+  return fallo(traducir(error, 'cambiarPassword/reautenticar'))
 }
 
 /**
@@ -377,33 +503,27 @@ export async function cambiarPassword(values: unknown): Promise<ActionResult<Cue
     const { password, passwordActual, captchaToken } = parsed.data
 
     const supabase = await crearClienteSupabase()
+    const ip = await ipCliente()
+    const datos = { userId: session.user.id, ip }
 
+    let previo: ActionResult<never> | null = null
     if (session.user.entroConPassword) {
-      if (!session.user.email) return fallo(MENSAJES.noAutorizado)
-      if (!passwordActual) {
-        return fallo('Escribe tu contraseña actual', {
-          passwordActual: 'Escribe tu contraseña actual',
-        })
-      }
-      if (!captchaToken) return fallo(MENSAJES.captcha)
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: session.user.email,
-        password: passwordActual,
-        options: { captchaToken },
-      })
-      if (error) {
-        if (error.code === 'invalid_credentials') {
-          return fallo('Contraseña actual incorrecta', {
-            passwordActual: 'Contraseña actual incorrecta',
-          })
-        }
-        return fallo(traducir(error, 'cambiarPassword/reautenticar'))
-      }
+      previo = await reautenticar(supabase, session, passwordActual, captchaToken, ip)
+    } else if (bloqueado('cambiar_password', [[LIMITE_AUTH_IP, ip]], datos)) {
+      previo = fallo(MENSAJES.limite)
     }
+    if (previo) return previo
 
     const { error } = await supabase.auth.updateUser({ password })
     if (error) return fallo(traducir(error, 'cambiarPassword'))
+    registrarEvento('cambiar_password', 'ok', datos)
+
+    // Las DEMÁS sesiones de la cuenta se cierran: si alguien tenía una cookie
+    // robada, cambiar la contraseña tiene que echarlo (OWASP A07). Es justo el
+    // caso de quien llega por "he olvidado mi contraseña" porque sospecha. Si
+    // falla, la contraseña ya está cambiada: se registra y no se deshace nada.
+    const otras = await supabase.auth.signOut({ scope: 'others' })
+    if (otras.error) registrarError('auth.actions/cambiarPassword/revocar', otras.error)
 
     return { ok: true, data: await cuentaDe(session) }
   })
@@ -419,6 +539,7 @@ export async function cerrarSesion(): Promise<ActionResult<null>> {
     const supabase = await crearClienteSupabase()
     const { error } = await supabase.auth.signOut({ scope: 'local' })
     if (error) return fallo(traducir(error, 'cerrarSesion'))
+    registrarEvento('logout', 'ok')
     return { ok: true, data: null }
   })
 }
@@ -445,6 +566,14 @@ export async function borrarCuenta(values: unknown): Promise<ActionResult<null>>
     const parsed = BorrarCuenta.safeParse(values)
     if (!parsed.success) return erroresDeCampo(parsed.error)
 
+    const ip = await ipCliente()
+    const datos = { userId: session.user.id, ip }
+    const limites: [Regla, string][] = [
+      [LIMITE_AUTH_IP, ip],
+      [LIMITE_LOGIN_EMAIL, session.user.email],
+    ]
+    if (bloqueado('borrar_cuenta', limites, datos)) return fallo(MENSAJES.limite)
+
     const supabase = await crearClienteSupabase()
     const { error } = await supabase.auth.signInWithPassword({
       email: session.user.email,
@@ -452,6 +581,7 @@ export async function borrarCuenta(values: unknown): Promise<ActionResult<null>>
       options: { captchaToken: parsed.data.captchaToken },
     })
     if (error) {
+      registrarEvento('borrar_cuenta', 'fallo', { ...datos, motivo: error.code })
       if (error.code === 'invalid_credentials') {
         return fallo('Contraseña incorrecta', { password: 'Contraseña incorrecta' })
       }
@@ -459,6 +589,7 @@ export async function borrarCuenta(values: unknown): Promise<ActionResult<null>>
     }
 
     await borrarUsuario(session.user.id)
+    registrarEvento('borrar_cuenta', 'ok', datos)
 
     // El usuario ya no existe, así que Supabase puede responder con error al
     // revocar la sesión; las cookies se borran igual, y eso es lo que importa.
