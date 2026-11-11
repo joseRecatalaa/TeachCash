@@ -586,8 +586,13 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   - **Eventos de seguridad** con `registrarEvento` (`lib/log.ts`): JSON con
     `tipo: "seguridad"`, el `userId` y la IP recortada, nunca el email. Una
     acción de cuenta nueva deja el suyo.
-  - **`APP_URL`** (opcional, en producción sí) es el origen de los enlaces de
-    email; sin ella, el origen de las cabeceras se valida.
+  - **`APP_URL`** es el origen de los enlaces de email y es **obligatoria en
+    producción**: `validarEntorno` no arranca sin ella y `origen()` no recurre
+    a las cabeceras. Fuera de producción, el origen de las cabeceras se valida.
+    Los E2E la toman de `playwright.config.ts` y el CI lleva un relleno.
+  - **La API REST no tiene permisos de escritura** (migración 0009, `REVOKE`):
+    segunda red bajo las políticas de solo lectura. Una tabla nueva tampoco
+    nace con ellos (`alter default privileges`).
   - **Cambiar la contraseña cierra las demás sesiones**, y `/auth/confirm`
     acepta solo `?code=` (PKCE): `?token_hash=` permitía un login CSRF.
   - Server Actions con cuerpo ≤ 256 KB, `page` ≤ 50.000, cabeceras CORP y

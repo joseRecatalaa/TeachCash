@@ -29,7 +29,7 @@ import { headers } from 'next/headers'
 import type { AuthError } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { getSession, type Session } from '@/lib/auth'
-import { urlDeLaApp } from '@/lib/env'
+import { exigeUrlDeLaApp, urlDeLaApp } from '@/lib/env'
 import {
   claveSegura,
   consumir,
@@ -172,14 +172,18 @@ function erroresDeCampo(error: z.ZodError): ActionResult<never> {
  * Con `APP_URL` (`lib/env.ts`) es SIEMPRE esa: las cabeceras de la petición las
  * escribe quien llama, y con ellas un atacante pediría la recuperación de otra
  * persona con un enlace que acaba en su dominio (password reset poisoning).
- * Sin `APP_URL` (desarrollo, E2E) se deducen de las cabeceras, y entonces lo
- * frena la lista de "Redirect URLs" de Supabase; aun así, lo que no es un
- * origen http(s) limpio —un esquema raro, un `Host` con ruta o nada— no se
- * manda a ningún sitio.
+ * Sin `APP_URL` (solo fuera de producción: desarrollo y tests unitarios) se
+ * deducen de las cabeceras, y entonces lo frena la lista de "Redirect URLs" de
+ * Supabase; aun así, lo que no es un origen http(s) limpio —un esquema raro,
+ * un `Host` con ruta o nada— no se manda a ningún sitio.
  */
 async function origen(): Promise<string> {
   const fija = urlDeLaApp()
   if (fija) return fija
+  // En producción no hay plan B: un Origin bien formado pero ajeno pasaría el
+  // filtro de abajo. `validarEntorno` ya no deja arrancar así; esto cubre el
+  // caso de que se llegue aquí igualmente.
+  if (exigeUrlDeLaApp()) throw new Error('APP_URL no configurada en producción')
 
   const h = await headers()
   const host = h.get('x-forwarded-host') ?? h.get('host')

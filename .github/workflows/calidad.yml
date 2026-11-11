@@ -91,6 +91,8 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: https://relleno.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_relleno
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000BB
+      # Sin APP_URL a propósito: solo se exige al ARRANCAR el servidor, no al
+      # compilar, y los tests de auth.actions esperan no tenerla.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

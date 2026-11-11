@@ -131,7 +131,7 @@ mismo cambio, como el resto de `docs/`.
 | Cambiar la contraseña con la sesión abierta pide la actual, comprobada contra el email de la **sesión**, y lo mismo al borrar la cuenta | `cambiarPassword`, `borrarCuenta` |
 | **Límite de intentos**: 20 operaciones de auth cada 10 min por IP y 10 intentos de contraseña cada 15 min **por cuenta**, vengan de la IP que vengan. Hacía falta porque Supabase limita por IP y solo ve la del servidor, la misma para todo el mundo | `lib/limite.ts`, `auth.actions.ts` |
 | **Al cambiar la contraseña se cierran las demás sesiones** (`signOut({ scope: 'others' })`). Antes, una cookie robada seguía valiendo después de la recuperación | `cambiarPassword` |
-| **Los enlaces de email salen de `APP_URL`**, no de las cabeceras. Con `curl` y un `Host` falso, "recuperar la contraseña de otra persona" podía pedir un enlace hacia el dominio del atacante (*password reset poisoning*). Sin `APP_URL`, todo lo que no sea un origen http(s) limpio se rechaza | `origen()` en `auth.actions.ts`, `lib/env.ts` |
+| **Los enlaces de email salen de `APP_URL`**, no de las cabeceras. Con `curl` y un `Host` falso, "recuperar la contraseña de otra persona" podía pedir un enlace hacia el dominio del atacante (*password reset poisoning*). En producción `APP_URL` es obligatoria: sin ella el servidor no arranca (auditoría run-2: antes era opcional y el arreglo quedaba en nada). Fuera de producción, todo lo que no sea un origen http(s) limpio se rechaza | `origen()` en `auth.actions.ts`, `lib/env.ts` |
 | **`/auth/confirm` acepta solo `?code=`** (PKCE, ligado al navegador que pidió el enlace). Se quitó la rama `?token_hash=`: permitía un *login CSRF*, es decir, meter a la víctima en la cuenta del atacante | `app/auth/confirm/route.ts` |
 | Salir revoca el refresh token de esa sesión | `cerrarSesion` |
 | El access token dura 1 hora y el refresh token rota | Supabase |
@@ -235,7 +235,7 @@ El paso a paso para producción (Vercel + Supabase) está en
 
 **Despliegue**
 
-- [ ] `APP_URL` con la URL pública, sin ruta. Sin ella, los enlaces de email vuelven a depender de las cabeceras y de la lista de Supabase.
+- [ ] `APP_URL` con la URL pública, sin ruta. Sin ella, el servidor de producción no arranca.
 - [ ] El proxy de delante (Vercel, nginx…) **sobrescribe** `x-real-ip`/`x-forwarded-for` con la IP real. Si deja pasar la del cliente, el límite por IP se esquiva (el límite por cuenta sigue funcionando).
 - [ ] Con varias instancias: `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` compartida entre todas, y saber que cada una lleva sus propios límites (ver riesgos).
 - [ ] Alertas en el agregador de logs sobre los eventos `tipo: "seguridad"` (A09).

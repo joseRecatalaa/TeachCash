@@ -99,14 +99,31 @@ const SORTABLE = {
   importe: transactions.amount,
 } as const
 
+/**
+ * Una fecha de filtro, o `undefined` si no viene. Lo que no es `YYYY-MM-DD`
+ * válido se rechaza AQUÍ: si llegara a SQL, Postgres lo rechazaría al
+ * convertirlo, y eso sería un error genérico para el usuario y ruido en los
+ * logs con el valor dentro.
+ */
+const fechaDeFiltro = (valor: unknown, campo: 'desde' | 'hasta'): string | undefined => {
+  if (valor === undefined || valor === null || valor === '') return undefined
+  const texto = String(valor)
+  if (!isCivilDate(texto)) {
+    throw new RepositoryError(`La fecha "${campo}" del filtro no es válida (AAAA-MM-DD)`)
+  }
+  return texto
+}
+
 const filtros = (userId: string, params: ListParams): SQL | undefined => {
   const f = params.filters ?? {}
   const search = params.search?.trim()
+  const desde = fechaDeFiltro(f.desde, 'desde')
+  const hasta = fechaDeFiltro(f.hasta, 'hasta')
   return and(
     // Primero, siempre: la consulta no puede devolver algo ajeno.
     eq(transactions.userId, userId),
-    f.desde ? gte(transactions.date, String(f.desde)) : undefined,
-    f.hasta ? lte(transactions.date, String(f.hasta)) : undefined,
+    desde ? gte(transactions.date, desde) : undefined,
+    hasta ? lte(transactions.date, hasta) : undefined,
     f.categoriaId ? eq(transactions.categoryId, String(f.categoriaId)) : undefined,
     // `ilike` y no `like`: en Postgres `like` distingue mayúsculas, y buscar
     // "merca" tiene que encontrar "Mercadona".

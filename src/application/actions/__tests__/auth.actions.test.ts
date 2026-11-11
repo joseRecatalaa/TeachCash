@@ -57,6 +57,9 @@ const base = usarBaseDeTest()
 beforeEach(async () => {
   reiniciarLimites()
   vi.unstubAllEnvs()
+  // Sin APP_URL salvo que el test la ponga: si viniera del entorno (el CI, un
+  // .env local), los tests del origen por cabeceras dejarían de probar nada.
+  vi.stubEnv('APP_URL', '')
   h.session = null
   h.cabeceras = new Map([
     ['user-agent', NAVEGADOR],
@@ -735,6 +738,27 @@ describe('origen de los enlaces de email (password reset poisoning)', () => {
 
     expect(r.ok).toBe(false)
     expect(h.auth.resetPasswordForEmail).not.toHaveBeenCalled()
+  })
+
+  // Auditoría run-2: con APP_URL vacía en producción, un Origin bien formado
+  // pero AJENO pasaba el filtro y el enlace de recuperación de otra persona
+  // acababa en el dominio del atacante. En producción no hay plan B.
+  test.each([
+    ['recuperar la contraseña', () => solicitarRecuperacion({ email: 'ana@example.com', captchaToken: 't' })],
+    ['crear cuenta', () => registrarse({ email: 'ana@example.com', captchaToken: 't' })],
+  ])('en producción sin APP_URL, %s no usa las cabeceras', async (_caso, accion) => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('APP_URL', '')
+    h.cabeceras.set('origin', 'https://atacante.example')
+    h.cabeceras.set('x-forwarded-host', 'atacante.example')
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const r = await accion()
+
+    expect(r.ok).toBe(false)
+    expect(h.auth.resetPasswordForEmail).not.toHaveBeenCalled()
+    expect(h.auth.signUp).not.toHaveBeenCalled()
+    expect(h.auth.updateUser).not.toHaveBeenCalled()
   })
 })
 

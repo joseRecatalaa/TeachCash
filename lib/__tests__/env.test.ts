@@ -125,6 +125,18 @@ describe('APP_URL (el origen de los enlaces de email)', () => {
     expect(urlDeLaApp()).toBeUndefined()
   })
 
+  test('fuera de producción, el servidor arranca sin ella', () => {
+    poner({ ...PUBLICO, ...SERVIDOR, APP_URL: undefined, NODE_ENV: 'development' })
+    expect(() => validarEntorno()).not.toThrow()
+  })
+
+  // Auditoría run-2: era opcional también en producción, y sin ella los
+  // enlaces de email volvían a salir de las cabeceras de la petición.
+  test.each([undefined, ''])('en producción, sin ella (%j) el servidor no arranca', (valor) => {
+    poner({ ...PUBLICO, ...SERVIDOR, APP_URL: valor, NODE_ENV: 'production' })
+    expect(() => validarEntorno()).toThrow(/APP_URL/)
+  })
+
   test('con ella, devuelve el origen sin barra final', () => {
     poner({ APP_URL: 'https://teachcash.example.com/' })
     expect(urlDeLaApp()).toBe('https://teachcash.example.com')

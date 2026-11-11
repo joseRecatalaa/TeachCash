@@ -25,6 +25,11 @@ cargarEntornoE2e()
 const PUERTO = 3100
 const BASE_URL = `http://localhost:${PUERTO}`
 
+// El servidor de los E2E es un build de PRODUCCIÓN, y en producción `APP_URL`
+// es obligatoria (`lib/env.ts`). Si `.env.e2e` no la trae, es esta: la misma
+// que ya está en las Redirect URLs del proyecto de los E2E.
+process.env.APP_URL ||= BASE_URL
+
 /** Los visuales son opt-in (`pnpm test:e2e:visual`): las capturas dependen del SO. */
 const VISUAL = !!process.env.E2E_VISUAL
 

@@ -35,6 +35,11 @@ const AUTH_STUB = `
   $$;
   create role anon nologin;
   create role authenticated nologin;
+  -- Lo que Supabase hace de serie: TODA tabla nueva de \`public\` nace con todos
+  -- los permisos para los roles de la API. Sin esto, el test de los permisos
+  -- de escritura pasaría en verde aunque faltara la migración que los quita.
+  grant usage on schema public to anon, authenticated;
+  alter default privileges in schema public grant all on tables to anon, authenticated;
 `
 
 /**
