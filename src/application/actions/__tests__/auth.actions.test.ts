@@ -57,6 +57,9 @@ const base = usarBaseDeTest()
 beforeEach(async () => {
   reiniciarLimites()
   vi.unstubAllEnvs()
+  // Sin APP_URL salvo que el test la ponga: si viniera del entorno (el CI, un
+  // .env local), los tests del origen por cabeceras dejarían de probar nada.
+  vi.stubEnv('APP_URL', '')
   h.session = null
   h.cabeceras = new Map([
     ['user-agent', NAVEGADOR],
