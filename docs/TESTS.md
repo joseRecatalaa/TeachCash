@@ -165,7 +165,7 @@ AGENTS.md.
 | `lib/__tests__/dates.test.ts` | 22 | Fechas civiles, periodos, rangos de mes, `addDays`/`daysBetween` inversos, reloj congelado | 5 |
 | `lib/__tests__/rutas.test.ts` | 12 | `rutaInterna`: ninguna redirección sale del sitio (`//x`, `/\x`, `https://…`) | — |
 | `lib/__tests__/auth.test.ts` | 21 | `getSession`: el `userId` sale solo del `sub` de `getClaims()` verificado | 3 |
-| `lib/__tests__/env.test.ts` | 18 | Entorno validado al arrancar; URL de Supabase con ruta rechazada | — |
+| `lib/__tests__/env.test.ts` | 26 | Entorno validado al arrancar; URL de Supabase con ruta rechazada; `APP_URL` obligatoria en producción | — |
 | `lib/__tests__/csp.test.ts` | 7 | La CSP con nonce y sus directivas | — |
 | `lib/__tests__/log.test.ts` | 14 | Los errores se registran sin `params` de Drizzle (ni importes ni descripciones); los eventos de seguridad, en JSON y con la IP recortada | — |
 | `lib/__tests__/limite.test.ts` | 10 | Límite de peticiones: deniega pasado el máximo, la ventana se reabre, claves y reglas independientes, tope de memoria | — |
@@ -178,8 +178,8 @@ AGENTS.md.
 | Fichero | Casos | Qué cubre | RD |
 |---|---|---|---|
 | `db/__tests__/schema.test.ts` | 29 | RLS en `categories`, `transactions` y `hero_progress` (SELECT; ni UPDATE, ni DELETE, ni INSERT, ni siquiera de lo propio); `hero_progress` y `hero_items` de solo lectura para la API (nada de INSERT, UPDATE ni DELETE, ni de lo propio); catálogo: **toda tabla de `public`** tiene RLS y `user_id` con cascada; borrar un usuario se lleva sus datos | 4 |
-| `db/__tests__/rls.test.ts` | 4 | Sobre el catálogo de Postgres: toda tabla de `public` con RLS, con su política de lectura, **ninguna política de escritura** y ninguna para `anon` | — |
-| `repositories/__tests__/movimientos.repository.test.ts` | 48 | CRUD, `update` (gasto ↔ ingreso, categoría ajena), fechas futuras prohibidas, filtros, orden, paginación, idempotencia entre usuarios, aislamiento | 1, 4, 5 |
+| `db/__tests__/rls.test.ts` | 7 | Sobre el catálogo de Postgres: toda tabla de `public` con RLS, con su política de lectura, **ninguna política de escritura** y ninguna para `anon`; y, debajo, **ningún permiso de escritura** de tabla para `anon`/`authenticated`, tampoco en las tablas futuras (el stub de `db/testing.ts` reproduce los permisos que Supabase da de serie) | — |
+| `repositories/__tests__/movimientos.repository.test.ts` | 51 | CRUD, `update` (gasto ↔ ingreso, categoría ajena), fechas futuras prohibidas, filtros (con fechas civiles válidas), orden, paginación, idempotencia entre usuarios, aislamiento | 1, 4, 5 |
 | `repositories/__tests__/categorias.repository.test.ts` | 47 | CRUD, nombre único, ocultar/activar, borrado en cascada de sus movimientos, catálogo inicial | 4 |
 | `repositories/__tests__/informes.repository.test.ts` | 27 | Agregaciones; **el saldo actual = el último punto de la serie** (propiedad) | 7 |
 | `repositories/__tests__/cuenta.repository.test.ts` | 7 | Fecha de alta y borrado de la cuenta | — |
@@ -199,7 +199,7 @@ AGENTS.md.
 |---|---|---|---|
 | `actions/__tests__/entity.actions.test.ts` | 37 | El dispatcher: mapa cerrado de recursos (`__proto__`, `constructor`…), sesión, propiedad, errores devueltos y no lanzados | 3, 4 |
 | `actions/__tests__/frontera.actions.test.ts` | 43 | Zod en la frontera: `ListParams`, ids, rango de la serie (≤ 731 días), periodo, meses, topes | 3, 6 |
-| `actions/__tests__/auth.actions.test.ts` | 80 | Invitado, login, registro (el invitado conserva su id), contraseña actual según `amr`, borrar cuenta, mensajes que no revelan si un email existe; límites por IP y por cuenta, revocar las otras sesiones, origen de los enlaces (`APP_URL`) y eventos de seguridad | 3 |
+| `actions/__tests__/auth.actions.test.ts` | 82 | Invitado, login, registro (el invitado conserva su id), contraseña actual según `amr`, borrar cuenta, mensajes que no revelan si un email existe; límites por IP y por cuenta, revocar las otras sesiones, origen de los enlaces (`APP_URL`, sin plan B en producción) y eventos de seguridad | 3 |
 | `actions/__tests__/informes.actions.test.ts` | 8 | Informes sin sesión y con error genérico | 3 |
 | `actions/__tests__/heroe.actions.test.ts` | 16 | Camino del héroe: sin sesión no hace nada, ids mal formados son "No encontrado", el progreso es el de la sesión | 3, 4 |
 | `providers/__tests__/refine-data-provider.test.ts` | 11 | La traducción Refine → Server Actions y de vuelta (errores a excepción en el cliente) | — |

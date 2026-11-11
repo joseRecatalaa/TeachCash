@@ -64,6 +64,13 @@
       "when": 1794340226036,
       "tag": "0008_datos_solo_lectura",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794396692311,
+      "tag": "0009_api_sin_escritura",
+      "breakpoints": true
     }
   ]
 }

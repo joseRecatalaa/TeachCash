@@ -60,15 +60,18 @@ const EsquemaServidor = z.object({ DATABASE_URL: urlPostgres })
 const EsquemaMigraciones = z.object({ DATABASE_URL_MIGRATIONS: urlPostgres })
 
 /**
- * `APP_URL`: la URL pública de la aplicación, sin ruta. Opcional, pero en
- * producción debería estar.
+ * `APP_URL`: la URL pública de la aplicación, sin ruta. Opcional en desarrollo
+ * y en los tests; **obligatoria en producción** (`validarEntorno` no arranca
+ * sin ella y `origen()` no recurre a las cabeceras).
  *
  * Es el origen de los enlaces de los emails (confirmar, recuperar). Sin ella
  * sale de las cabeceras `Origin`/`Host` de la petición, y esas las escribe quien
  * llama: con `curl`, "recuperar la contraseña de pepito@…" con un `Host` propio
  * pediría a Supabase un enlace que acaba en el dominio del atacante (password
- * reset poisoning). Hoy lo frena la lista de Redirect URLs de Supabase; con
- * `APP_URL` no depende de que esa lista esté bien.
+ * reset poisoning). Sin `APP_URL` lo frena solo la lista de Redirect URLs de
+ * Supabase; con ella no depende de que esa lista esté bien. Por eso en
+ * producción no es opcional: la auditoría run-2 vio que, vacía, el arreglo
+ * quedaba en nada sin que nadie se enterara.
  */
 const EsquemaApp = z.object({
   APP_URL: z
@@ -114,6 +117,14 @@ export const entornoPublico = (): EntornoPublico => leer(EsquemaPublico, valores
 
 export const entornoServidor = (): EntornoServidor => leer(EsquemaServidor, valoresServidor())
 
+/** En producción `APP_URL` es obligatoria: ver `EsquemaApp`. */
+export const exigeUrlDeLaApp = (): boolean => process.env.NODE_ENV === 'production'
+
+const faltaUrlEnProduccion = (): string[] =>
+  exigeUrlDeLaApp() && valoresApp().APP_URL === undefined
+    ? ['APP_URL: obligatoria en producción, la URL pública de la app (https://dominio). Sin ella, los enlaces de email saldrían de las cabeceras de la petición']
+    : []
+
 /** El origen fijo de la app (`https://dominio`), o `undefined` si no hay. */
 export function urlDeLaApp(): string | undefined {
   const { APP_URL } = leer(EsquemaApp, valoresApp())
@@ -133,6 +144,7 @@ export function validarEntorno(): void {
     ...problemas(EsquemaPublico, valoresPublicos()),
     ...problemas(EsquemaServidor, valoresServidor()),
     ...problemas(EsquemaApp, valoresApp()),
+    ...faltaUrlEnProduccion(),
   ]
   if (todos.length > 0) fallar(todos)
 }

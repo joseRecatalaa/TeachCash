@@ -451,6 +451,18 @@ describe('listado: lo que manda el cliente no llega al SQL tal cual', () => {
     expect(barra.data.map((m) => m.id)).toEqual(['barra'])
   })
 
+  // Auditoría run-2: llegaban a SQL como texto libre, y una fecha mala era un
+  // error de conversión de Postgres (genérico para el usuario, y en los logs).
+  test.each([
+    ['desde', 'ayer'],
+    ['hasta', '2026-02-30'],
+    ['desde', "2026-01-01' or '1'='1"],
+  ])('un filtro "%s" que no es una fecha civil (%s) es un error de validación', async (campo, valor) => {
+    const error = await repo.list(USER_A, { filters: { [campo]: valor } }).catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(RepositoryError)
+    expect((error as RepositoryError).message).toMatch(/fecha/i)
+  })
+
   test('sin paginar, devuelve como mucho FILAS_SIN_PAGINAR_MAXIMO filas', async () => {
     await seedMovimiento(base().db, 'semilla', USER_A)
     const [{ categoryId }] = await base().db.select().from(transactions)

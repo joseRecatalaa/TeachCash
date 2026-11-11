@@ -62,3 +62,39 @@ describe('RLS', () => {
     expect((await politicas()).filter((p) => !p.roles.includes('authenticated'))).toEqual([])
   })
 })
+
+/**
+ * La segunda red, por debajo de las políticas (auditoría run-2). Hoy no se
+ * escribe por la API porque no hay política de escritura; si alguien añadiera
+ * una por error, RLS la dejaría pasar. Sin el permiso de tabla, ni así.
+ */
+describe('permisos de tabla de los roles de la API', () => {
+  test('anon y authenticated no pueden escribir en ninguna tabla de la app', async () => {
+    const { rows } = await ctx.pg.query<{ tabla: string; rol: string; permiso: string }>(
+      `select c.relname as tabla, r.rol, p.permiso
+         from pg_class c
+         join pg_namespace n on n.oid = c.relnamespace
+         cross join (values ('anon'), ('authenticated')) as r(rol)
+         cross join (values ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE')) as p(permiso)
+        where n.nspname = 'public' and c.relkind = 'r'
+          and has_table_privilege(r.rol, c.oid, p.permiso)
+        order by 1, 2, 3`,
+    )
+    expect(rows).toEqual([])
+  })
+
+  test('y una tabla que se cree después tampoco nace con permisos de escritura', async () => {
+    await ctx.pg.exec('create table public.tabla_futura (id int)')
+    const { rows } = await ctx.pg.query<{ puede: boolean }>(
+      `select has_table_privilege('authenticated', 'public.tabla_futura', 'INSERT') as puede`,
+    )
+    expect(rows[0].puede).toBe(false)
+  })
+
+  test('siguen pudiendo leer: la API REST lee lo suyo a través de RLS', async () => {
+    const { rows } = await ctx.pg.query<{ puede: boolean }>(
+      `select has_table_privilege('authenticated', 'public.transactions', 'SELECT') as puede`,
+    )
+    expect(rows[0].puede).toBe(true)
+  })
+})

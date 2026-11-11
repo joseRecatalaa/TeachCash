@@ -91,6 +91,8 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: https://relleno.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_relleno
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000BB
+      # Obligatoria en producción (`lib/env.ts`), y el build lo es.
+      APP_URL: https://relleno.example
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
