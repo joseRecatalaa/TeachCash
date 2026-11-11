@@ -31,6 +31,10 @@ Cloudflare Turnstile ◄── el navegador pide el token; Supabase lo comprueba
 
 - [ ] Mezclar en `develop` la rama de la auditoría de seguridad, por PR, con el
       CI en verde.
+- [ ] Mezclar también `fix/seguridad-antes-de-publicar` (auditoría run-2):
+      `APP_URL` obligatoria en producción, la API REST sin permisos de
+      escritura (`REVOKE`) y las fechas de los filtros validadas. Incluye una
+      migración: después toca 1.1.
 - [ ] Abrir la PR `develop` → `main` y mezclarla.
 - [ ] En local, antes de seguir:
       `pnpm typecheck && pnpm lint && pnpm test && pnpm test:tz && pnpm build`.
@@ -57,6 +61,17 @@ pnpm db:migrate:e2e    # proyecto de los E2E (lee .env.e2e)
 
   ```sql
   select tablename, policyname, cmd from pg_policies where schemaname = 'public';
+  ```
+- [ ] **Comprobación** de la migración del `REVOKE`: esta consulta tiene que
+      devolver **cero filas**. Cualquier fila es un permiso de escritura que
+      `anon` o `authenticated` aún conservan.
+
+  ```sql
+  select table_name, grantee, privilege_type
+  from information_schema.role_table_grants
+  where table_schema = 'public'
+    and grantee in ('anon', 'authenticated')
+    and privilege_type in ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE');
   ```
 
 ### 1.2 Limpieza de invitados
@@ -141,7 +156,13 @@ En Settings → Environment Variables, todas con el ámbito **Production**
   (`lib/env.ts` la acepta opcional). Sin ella, quien pida "he olvidado mi
   contraseña" para el email de otra persona puede hacer que el enlace apunte a
   su propio dominio, y con ese enlace quedarse con la sesión de la víctima.
-  Solo lo frenan las Redirect URLs exactas de 3.1.
+  Solo lo frenan las Redirect URLs exactas de 3.1. (Con la rama
+  `fix/seguridad-antes-de-publicar` mezclada, la app no arranca en producción
+  sin `APP_URL`.)
+
+- [ ] **Si falla la comprobación de abajo** (Vercel deja pasar una IP falsa),
+      los tres arreglos marcados en la Fase 5 pasan a urgentes: hazlos antes de
+      dejar la app publicada.
 
 > En Vercel no hace falta `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`: todas las
 > funciones de un despliegue salen del mismo build. Solo hace falta en un
@@ -216,7 +237,8 @@ Los nombres de las secciones pueden variar un poco según la versión del panel.
       usuarios: en la práctica son un único cupo compartido. Compáralos con lo
       que la app deja pasar por visitante (10 invitados/h y 20 operaciones de
       auth cada 10 min por IP). Si con dos o tres visitantes se llega al de
-      Supabase, un atacante puede dejar a todos sin poder entrar.
+      Supabase, un atacante puede dejar a todos sin poder entrar, y los tres
+      arreglos marcados en la Fase 5 pasan a urgentes.
 - [ ] En **Auth → Logs**, confirma que las peticiones de la app llegan desde
       una sola IP o desde muy pocas (las de Vercel).
 
@@ -242,6 +264,27 @@ Sin SMTP propio, Supabase manda **2 emails por hora** y **solo a los miembros
 del equipo del proyecto**. Para ti basta para probar; para cualquier otra
 persona, registrarse o recuperar la contraseña **no funciona**. Los invitados
 sí funcionan, porque no usan email.
+
+> **Antes de abrirla, tres arreglos de código son obligatorios.** Salen de la
+> auditoría `standard` (run-2) y están descritos en Limitaciones. Mientras solo
+> entres tú y algún invitado de prueba, el riesgo es bajo; con más gente, no.
+>
+> - [ ] **Limitador** (`lib/limite.ts`): al llenarse, que expulse primero los
+>       cubos con menos cuenta y nunca uno bloqueado, y un mapa por regla.
+>       Sin esto, el límite de intentos de login de una cuenta se puede
+>       resetear.
+> - [ ] **Sesión viva** (`ejecutar` + `cuenta.repository`): comprobar que el
+>       `session_id` del token sigue en `auth.sessions`. Sin esto, cerrar sesión
+>       o cambiar la contraseña no corta una cookie robada hasta que caduca.
+> - [ ] **Refresco con límite** (`lib/supabase/proxy.ts`): un límite por IP
+>       antes de `getClaims()` para las peticiones con cookie de sesión; al
+>       pasarlo, saltarse el refresco, no bloquear. Sin esto, una cookie falsa
+>       provoca una llamada a Supabase por petición.
+>
+> **Pasan a urgentes, aunque no abras el registro**, si falla la comprobación
+> de `x-real-ip` de 2.4 (Vercel deja pasar una IP falsa) o si en 3.3 los Rate
+> Limits de Supabase se agotan con dos o tres visitantes: en ese caso cualquiera
+> puede tirar el alta de invitados y el login desde una sola máquina.
 
 - [ ] Si vas a abrirla: crea una cuenta en un proveedor SMTP con plan gratuito
       (Resend, Brevo…) y verifica tu dominio de envío.
