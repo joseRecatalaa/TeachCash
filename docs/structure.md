@@ -73,6 +73,8 @@ Cada cambio tiene un sitio y solo uno:
         heroe.repository.ts           # progreso del héroe: desbloqueo en orden y corrección
         tienda.repository.ts          # estrellas, compras y equipo
         cuadro.repository.ts          # reúne lo que enseña el Cuadro de mando
+        capacidad.repository.ts       # el freno general por tamaño de la base
+        transaccion.ts                # conCandado(): transacción con candado por usuario
         __tests__/
     application/
       actions/

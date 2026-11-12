@@ -121,8 +121,9 @@ mismo cambio, como el resto de `docs/`.
 | Control | Dónde |
 |---|---|
 | Lo que da valor lo calcula el servidor: aciertos, estrellas, precio y saldo | Reglas duras 6 y 7 |
-| Comprar va con candado por usuario (`pg_advisory_xact_lock`) para que no se gaste dos veces | `tienda.repository.ts` |
-| Cuotas por usuario: 1.000 movimientos para un invitado, 50.000 para una cuenta y 200 categorías | `limites.types.ts` |
+| Comprar y dar de alta movimientos o categorías van con candado por usuario (`pg_advisory_xact_lock`): ni se gasta dos veces ni dos altas a la vez pasan de la cuota | `transaccion.ts`, `tienda.repository.ts` |
+| Cuotas por usuario: 200 movimientos y 100 KB de texto para un invitado, 4.000 movimientos y 5 MB de texto para una cuenta, y 200 categorías | `limites.types.ts` |
+| **Freno general**: con la base por encima de 400 MB no se crean invitados, movimientos ni categorías, y queda un evento para la alerta | `capacidad.repository.ts` |
 | Los invitados caducan a los 4 días y pasan por CAPTCHA | `db/sql/limpieza-invitados.sql`, `lib/turnstile.ts` |
 | **Límite de peticiones** por usuario, por IP y por cuenta (ver API4) | `lib/limite.ts` |
 | Pruebas de abuso en la suite: ids ajenos, `pageSize` gigante, respuestas basura y compras repetidas | `frontera.actions.test.ts`, repositorios |
@@ -167,7 +168,8 @@ mismo cambio, como el resto de `docs/`.
 - un pico de `{"evento":"login","resultado":"fallo"}`;
 - cualquier `"resultado":"bloqueo"`;
 - muchos `enlace_email`/`fallo` seguidos;
-- `borrar_cuenta` en ráfaga.
+- `borrar_cuenta` en ráfaga;
+- cualquier `capacidad`/`bloqueo` (la base está llena).
 
 ### A10 · Mishandling of Exceptional Conditions
 
@@ -188,7 +190,7 @@ mismo cambio, como el resto de `docs/`.
 | API1 | **BOLA** (acceder a objetos ajenos por id) | `userId` dentro del `where` en todo acceso; ids UUID; "No encontrado" igual para lo ajeno y lo inexistente. Tests de acceso cruzado por repositorio |
 | API2 | **Autenticación rota** | Todo lo de A07: JWT verificado, CAPTCHA, límites por IP y por cuenta, reautenticación, revocación de sesiones y enlaces que no se pueden envenenar |
 | API3 | **BOPLA** (leer o escribir propiedades de más) | Escritura: Zod con lista explícita de campos, sin esparcir `values` sobre la tabla (no hay *mass assignment*). Lectura: DTOs por pantalla, nunca la fila entera. **La API REST de Supabase ya no permite escribir en ninguna tabla**: antes, `categories`, `transactions` y `profiles` tenían `for all` |
-| API4 | **Consumo sin límites** | **300 acciones/min por usuario** en `ejecutar`; **cuerpo de Server Action ≤ 256 KB** (`next.config.ts`); `pageSize` ≤ 100, **`page` ≤ 50.000**, filas sin paginar ≤ 5.000 y serie de saldo ≤ 731 días; cuotas por usuario. **El refresco de sesión del proxy, 120 por minuto e IP**: pasado el límite deja de llamar a Supabase, sin bloquear la página. El limitador tiene un tope de memoria (10.000 claves **por regla**) para no ser él mismo la denegación de servicio; al llenarse olvida primero las claves con menos cuenta y nunca una bloqueada mientras quede otra |
+| API4 | **Consumo sin límites** | **300 acciones/min por usuario** en `ejecutar`; **cuerpo de Server Action ≤ 256 KB** (`next.config.ts`); `pageSize` ≤ 100, **`page` ≤ 4.000**, filas sin paginar ≤ 5.000 y serie de saldo ≤ 731 días; cuotas por usuario. **El refresco de sesión del proxy, 120 por minuto e IP**: pasado el límite deja de llamar a Supabase, sin bloquear la página. El limitador tiene un tope de memoria (10.000 claves **por regla**) para no ser él mismo la denegación de servicio; al llenarse olvida primero las claves con menos cuenta y nunca una bloqueada mientras quede otra |
 | API5 | **BFLA** (funciones que no deberías poder invocar) | No hay funciones de administración. Las acciones de cuenta (cambiar contraseña, borrar) comprueban el tipo de sesión **en el servidor**: un invitado no puede |
 | API6 | **Flujos de negocio sin protección** | Crear invitado: CAPTCHA, filtro de bots por User-Agent y 10 por IP y hora. Comprar en la tienda: estrellas calculadas en el servidor y con candado. Partidas: corregidas en el servidor. Las estrellas no se pueden fabricar escribiendo por REST |
 | API7 | **SSRF** | El servidor no pide ninguna URL que venga del usuario. Las únicas salidas son a Supabase, y la URL sale del entorno validado |

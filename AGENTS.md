@@ -564,9 +564,20 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   repositorio. Los topes viven con nombre en `src/types/limites.types.ts`: importe
   y presupuesto ≤ 1.000.000.000 céntimos, 100 filas por página, 5.000 sin
   paginar, serie de saldo ≤ 731 días.
-- **Cuotas por usuario en la base**, sin Redis: 1.000 movimientos para un
-  invitado, 50.000 para una cuenta y 200 categorías. Al superarlas, un
+- **Cuotas por usuario en la base**, sin Redis: 200 movimientos y 100 KB de
+  texto para un invitado, 4.000 movimientos y 5 MB de texto para una cuenta, y
+  200 categorías. El texto cuenta BYTES de descripción y notas (un emoji son
+  4), porque la cuota de movimientos sola dejaba que uno con el texto al máximo
+  ocupara cien veces lo normal. Se comprueban con el candado del usuario
+  (`conCandado`, `transaccion.ts`): sin él, dos altas a la vez contaban las dos
+  antes de escribir. Editar a menos texto siempre se puede. Al superarlas, un
   `RepositoryError` legible.
+- **Freno general por tamaño de la base** (`capacidad.repository.ts`): con la
+  base por encima de 400 MB (el plan gratuito tiene 500) no se crean
+  invitados, movimientos ni categorías; leer, editar y borrar siguen. Deja un
+  evento `capacidad`/`bloqueo` para la alerta. Se mira en cada alta, sin caché:
+  `pg_database_size` cuesta milisegundos y una caché por instancia dejaría
+  pasar altas.
 - **No se anotan movimientos con fecha futura.** El tope es el "hoy" de
   `Pacific/Kiritimati`, la zona más adelantada del planeta, para no rechazar el
   hoy de nadie; el `DateInput` lleva `maxDate` como cortesía. La serie de saldo
@@ -600,7 +611,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     nace con ellos (`alter default privileges`).
   - **Cambiar la contraseña cierra las demás sesiones**, y `/auth/confirm`
     acepta solo `?code=` (PKCE): `?token_hash=` permitía un login CSRF.
-  - Server Actions con cuerpo ≤ 256 KB, `page` ≤ 50.000, cabeceras CORP y
+  - Server Actions con cuerpo ≤ 256 KB, `page` ≤ 4.000, cabeceras CORP y
     compañía, y la CSP también en las rutas con extensión de imagen.
 - **Dependencias sin un solo aviso de `pnpm audit`** (producción y desarrollo):
   `xlsx` 0.20.3 del CDN oficial de SheetJS (npm se quedó en una versión con

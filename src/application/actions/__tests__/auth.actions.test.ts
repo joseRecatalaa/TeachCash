@@ -22,9 +22,14 @@ const h = vi.hoisted(() => ({
   },
   cabeceras: new Map<string, string>(),
   auth: {} as Record<string, ReturnType<typeof vi.fn>>,
+  baseConSitio: true,
 }))
 
 vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
+vi.mock('@/src/infrastructure/repositories/capacidad.repository', async (original) => ({
+  ...(await original<typeof import('@/src/infrastructure/repositories/capacidad.repository')>()),
+  hayEspacioEnLaBase: async () => h.baseConSitio,
+}))
 // Con el id de sesión que `crearUsuario` le abre a cada usuario: así pasa la
 // comprobación de sesión viva contra la base de test.
 vi.mock('@/lib/auth', () => ({
@@ -35,6 +40,7 @@ vi.mock('next/headers', () => ({
   headers: async () => ({ get: (k: string) => h.cabeceras.get(k.toLowerCase()) ?? null }),
 }))
 
+import { BASE_LLENA } from '@/src/infrastructure/repositories/capacidad.repository'
 import { crearUsuario, USER_A, USER_B } from '@/db/testing'
 import { LIMITE_AUTH_IP, LIMITE_INVITADO_IP, LIMITE_LOGIN_EMAIL, reiniciarLimites } from '@/lib/limite'
 import { usarBaseDeTest } from '@/test/harness'
@@ -65,6 +71,7 @@ beforeEach(async () => {
   // .env local), los tests del origen por cabeceras dejarían de probar nada.
   vi.stubEnv('APP_URL', '')
   h.session = null
+  h.baseConSitio = true
   h.cabeceras = new Map([
     ['user-agent', NAVEGADOR],
     ['origin', 'http://localhost:3000'],
@@ -96,6 +103,13 @@ describe('invitado', () => {
     expect(r.ok && r.data.tipo).toBe('invitado')
     const cats = await base().db.select().from(categories).where(eq(categories.userId, INVITADO))
     expect(cats).toHaveLength(17)
+  })
+
+  test('con la base llena no se crea, ni se llega a pedir a Supabase', async () => {
+    h.baseConSitio = false
+    const r = await iniciarInvitado('token-ok')
+    expect(r).toEqual({ ok: false, error: BASE_LLENA })
+    expect(h.auth.signInAnonymously).not.toHaveBeenCalled()
   })
 
   test('caduca a los 4 días de su alta', async () => {

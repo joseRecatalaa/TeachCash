@@ -76,9 +76,16 @@ export async function fechaAltaUsuario(userId: string): Promise<Date | null> {
  * ¿Es un invitado? Se lee de la base y no de la sesión porque quien pregunta
  * es un repositorio, que solo recibe el `userId`. Un usuario que no está en
  * `auth.users` cuenta como invitado: ante la duda, la cuota más baja.
+ *
+ * `ejecutor` es la transacción cuando quien pregunta ya está dentro de una:
+ * con una sola conexión (PGlite en los tests), salir a `db` esperaría a la
+ * transacción, que a su vez espera a esta consulta.
  */
-export async function esInvitado(userId: string): Promise<boolean> {
-  const [fila] = await db
+export async function esInvitado(
+  userId: string,
+  ejecutor: Pick<typeof db, 'select'> = db,
+): Promise<boolean> {
+  const [fila] = await ejecutor
     .select({ anonimo: usuarios.isAnonymous })
     .from(usuarios)
     .where(eq(usuarios.id, userId))

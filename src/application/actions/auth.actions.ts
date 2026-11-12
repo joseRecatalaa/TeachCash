@@ -41,6 +41,7 @@ import {
 } from '@/lib/limite'
 import { registrarError, registrarEvento, type DatosEvento } from '@/lib/log'
 import { crearClienteSupabase } from '@/lib/supabase/server'
+import { BASE_LLENA, hayEspacioEnLaBase } from '@/src/infrastructure/repositories/capacidad.repository'
 import { asegurarCatalogoInicial } from '@/src/infrastructure/repositories/categorias.repository'
 import {
   borrarUsuario,
@@ -291,6 +292,8 @@ export async function iniciarInvitado(token: unknown): Promise<ActionResult<Cuen
 
     const ip = await ipCliente()
     if (bloqueado('invitado', [[LIMITE_INVITADO_IP, ip]], { ip })) return fallo(MENSAJES.limite)
+    // El freno general: cada invitado es una fila y un catálogo de categorías.
+    if (!(await hayEspacioEnLaBase())) return fallo(BASE_LLENA)
 
     const supabase = await crearClienteSupabase()
     const { data, error } = await supabase.auth.signInAnonymously({

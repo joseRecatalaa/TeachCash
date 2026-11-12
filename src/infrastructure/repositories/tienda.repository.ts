@@ -16,9 +16,8 @@ import { heroItems } from '@/db/schema'
 import { CATALOGO, idsDelHueco, objetoPorId, type Hueco, type Objeto } from '@/lib/tienda'
 import type { EstrellasDto, TiendaDto } from '@/src/types/tienda.types'
 import { getEstrellasGanadas } from './heroe.repository'
+import { bloquearUsuario, type Transaccion } from './transaccion'
 import { NOT_FOUND, RepositoryError } from './types'
-
-type Transaccion = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 const unObjeto = (itemId: string): Objeto => {
   const objeto = objetoPorId(itemId)
@@ -77,13 +76,6 @@ export async function getTienda(userId: string): Promise<TiendaDto> {
     equipo: CATALOGO.filter((o) => compradas.get(o.id) === true).map((o) => o.id),
   }
 }
-
-/**
- * Pone en fila las escrituras de un usuario. El candado es de la transacción y se
- * suelta solo al terminar, así que funciona a través del Transaction pooler.
- */
-const bloquearUsuario = (tx: Transaccion, userId: string) =>
-  tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}::text))`)
 
 const quitarDelHueco = (tx: Transaccion, userId: string, hueco: Hueco) =>
   tx

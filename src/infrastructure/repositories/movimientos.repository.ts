@@ -10,7 +10,7 @@
  * `informes.repository.ts`).
  */
 
-import { and, asc, desc, eq, gte, ilike, lte, sql, type SQL } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, ilike, lte, ne, sql, type SQL } from 'drizzle-orm'
 import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 import { db } from '@/db'
@@ -21,11 +21,15 @@ import {
   IMPORTE_MAXIMO,
   MAX_MOVIMIENTOS_CUENTA,
   MAX_MOVIMIENTOS_INVITADO,
+  MAX_TEXTO_CUENTA,
+  MAX_TEXTO_INVITADO,
 } from '@/src/types/limites.types'
 import type { MovimientoFormDto, MovimientoListDto } from '@/src/types/movimiento.types'
+import { assertBaseConSitio } from './capacidad.repository'
 import { esInvitado } from './cuenta.repository'
 import { columnaDeOrden, patronContiene, trozo } from './listado'
 import { esChoqueUnico } from './postgres-errors'
+import { conCandado, type Transaccion } from './transaccion'
 import {
   fromFieldErrors,
   NOT_FOUND,
@@ -229,23 +233,28 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
       if (previo) return { id: previo }
     }
 
-    await assertCuotaLibre(userId)
+    await assertBaseConSitio()
 
     try {
-      // El id y la fecha de alta los pone la base.
-      const [creado] = await db
-        .insert(transactions)
-        .values({
-          userId,
-          categoryId: d.categoriaId,
-          amount: conSigno(d.importe, d.sentido),
-          date: d.fecha,
-          description: d.descripcion,
-          notes: d.notas || null,
-          idempotencyKey: d.idempotencyKey ?? null,
-        })
-        .returning({ id: transactions.id })
-      return { id: creado.id }
+      // Contar y escribir con el candado del usuario: sin él, dos altas a la
+      // vez cuentan las dos antes de que ninguna escriba, y las dos pasan.
+      return await conCandado(userId, async (tx) => {
+        await assertCuotaLibre(tx, userId, bytesDeTexto(d.descripcion, d.notas))
+        // El id y la fecha de alta los pone la base.
+        const [creado] = await tx
+          .insert(transactions)
+          .values({
+            userId,
+            categoryId: d.categoriaId,
+            amount: conSigno(d.importe, d.sentido),
+            date: d.fecha,
+            description: d.descripcion,
+            notes: d.notas || null,
+            idempotencyKey: d.idempotencyKey ?? null,
+          })
+          .returning({ id: transactions.id })
+        return { id: creado.id }
+      })
     } catch (err) {
       // Dos envíos simultáneos pasan los dos la comprobación de arriba antes
       // de que ninguno inserte; el segundo choca con el UNIQUE. Tampoco es un
@@ -265,17 +274,20 @@ export const movimientosRepository: EntityRepository<MovimientoListDto, Movimien
     const d = parsed.data
     await assertCategoriaCompatible(userId, d.categoriaId, d.sentido)
 
-    const updated = await db
-      .update(transactions)
-      .set({
-        categoryId: d.categoriaId,
-        amount: conSigno(d.importe, d.sentido),
-        date: d.fecha,
-        description: d.descripcion,
-        notes: d.notas || null,
-      })
-      .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
-      .returning({ id: transactions.id })
+    const updated = await conCandado(userId, async (tx) => {
+      await assertTextoLibreAlEditar(tx, userId, id, bytesDeTexto(d.descripcion, d.notas))
+      return tx
+        .update(transactions)
+        .set({
+          categoryId: d.categoriaId,
+          amount: conSigno(d.importe, d.sentido),
+          date: d.fecha,
+          description: d.descripcion,
+          notes: d.notas || null,
+        })
+        .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+        .returning({ id: transactions.id })
+    })
 
     if (updated.length === 0) throw new RepositoryError(NOT_FOUND)
     return { id }
@@ -310,21 +322,32 @@ async function idPorClave(userId: string, clave: string): Promise<string | null>
   return previo?.id ?? null
 }
 
+/** Lo que ocupa el texto de un movimiento: bytes en UTF-8, como `octet_length`. */
+const bytesDeTexto = (descripcion: string, notas: string): number =>
+  Buffer.byteLength(descripcion, 'utf8') + Buffer.byteLength(notas, 'utf8')
+
+/** Bytes de texto (descripción + notas) de las filas que se sumen. */
+const textoGuardado = () =>
+  sql<number>`coalesce(sum(octet_length(${transactions.description}) + coalesce(octet_length(${transactions.notes}), 0)), 0)`.mapWith(
+    Number,
+  )
+
+const MENSAJE_TEXTO_INVITADO =
+  'Has llegado al máximo de texto que puede guardar un invitado. Crea una cuenta para seguir anotando.'
+const MENSAJE_TEXTO_CUENTA =
+  'Has llegado al máximo de texto de una cuenta. Acorta descripciones o notas, o borra movimientos que ya no necesites.'
+
 /**
- * Cuota de movimientos por usuario (`src/types/limites.types.ts`).
- *
- * Es una cuota contra el abuso, no un control exacto: dos altas simultáneas
- * justo en el límite pueden dejarlo uno por encima, y eso no daña a nadie. Lo
- * que impide es que un bucle llene la base del plan gratuito.
+ * Cuotas por usuario (`src/types/limites.types.ts`): cuántos movimientos y
+ * cuánto texto. Se llama con el candado del usuario puesto (`conCandado`), así
+ * que es exacta: dos altas a la vez no pasan de la cuota.
  */
-async function assertCuotaLibre(userId: string): Promise<void> {
-  const [[{ total }], invitado] = await Promise.all([
-    db
-      .select({ total: sql<number>`count(*)`.mapWith(Number) })
-      .from(transactions)
-      .where(eq(transactions.userId, userId)),
-    esInvitado(userId),
-  ])
+async function assertCuotaLibre(tx: Transaccion, userId: string, bytesNuevos: number): Promise<void> {
+  const [{ total, texto }] = await tx
+    .select({ total: sql<number>`count(*)`.mapWith(Number), texto: textoGuardado() })
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+  const invitado = await esInvitado(userId, tx)
 
   if (invitado && total >= MAX_MOVIMIENTOS_INVITADO) {
     throw new RepositoryError(
@@ -335,6 +358,37 @@ async function assertCuotaLibre(userId: string): Promise<void> {
     throw new RepositoryError(
       `Has llegado al máximo de ${MAX_MOVIMIENTOS_CUENTA} movimientos de una cuenta.`,
     )
+  }
+  assertTextoCabe(invitado, texto + bytesNuevos)
+}
+
+/**
+ * Al editar, cuenta el texto de los DEMÁS movimientos más el nuevo de este.
+ * Quitar texto siempre se puede, aunque se esté por encima: si la cuota baja,
+ * quien ya la pasaba tiene que poder recortar.
+ */
+async function assertTextoLibreAlEditar(
+  tx: Transaccion,
+  userId: string,
+  id: string,
+  bytesNuevos: number,
+): Promise<void> {
+  const [{ actual }] = await tx
+    .select({ actual: textoGuardado() })
+    .from(transactions)
+    .where(and(eq(transactions.userId, userId), eq(transactions.id, id)))
+  if (bytesNuevos <= actual) return
+
+  const [{ resto }] = await tx
+    .select({ resto: textoGuardado() })
+    .from(transactions)
+    .where(and(eq(transactions.userId, userId), ne(transactions.id, id)))
+  assertTextoCabe(await esInvitado(userId, tx), resto + bytesNuevos)
+}
+
+function assertTextoCabe(invitado: boolean, bytes: number): void {
+  if (bytes > (invitado ? MAX_TEXTO_INVITADO : MAX_TEXTO_CUENTA)) {
+    throw new RepositoryError(invitado ? MENSAJE_TEXTO_INVITADO : MENSAJE_TEXTO_CUENTA)
   }
 }
 

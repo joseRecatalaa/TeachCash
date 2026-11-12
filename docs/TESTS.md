@@ -185,7 +185,8 @@ AGENTS.md.
 | `repositories/__tests__/categorias.repository.test.ts` | 47 | CRUD, nombre único, ocultar/activar, borrado en cascada de sus movimientos, catálogo inicial | 4 |
 | `repositories/__tests__/informes.repository.test.ts` | 27 | Agregaciones; **el saldo actual = el último punto de la serie** (propiedad) | 7 |
 | `repositories/__tests__/cuenta.repository.test.ts` | 7 | Fecha de alta y borrado de la cuenta | — |
-| `repositories/__tests__/cuotas.repository.test.ts` | 3 | Cuotas por usuario (invitado < cuenta) | — |
+| `repositories/__tests__/cuotas.repository.test.ts` | 10 | Cuotas por usuario de movimientos, texto (en bytes) y categorías; altas simultáneas que no pasan de la cuota | — |
+| `repositories/__tests__/capacidad.repository.test.ts` | 5 | Freno general: con la base llena no se crea nada, pero se edita y se borra | — |
 | `repositories/__tests__/metadata.repository.test.ts` | 7 | Opciones de los select, sin claves del prototipo | — |
 | `repositories/__tests__/postgres-errors.test.ts` | 9 | Carreras contra las UNIQUE (`23505`) traducidas a id existente o error de campo | — |
 | `repositories/__tests__/types.test.ts` | 4 | `RepositoryError` y `fromFieldErrors` | — |
