@@ -8,7 +8,7 @@
  */
 
 import { beforeEach, describe, expect, test } from 'vitest'
-import { claveSegura, consumir, MAX_CLAVES, reiniciarLimites, type Regla } from '../limite'
+import { claveSegura, clavesVivas, consumir, MAX_CLAVES, reiniciarLimites, type Regla } from '../limite'
 
 const REGLA: Regla = { nombre: 'prueba', maximo: 3, ventanaMs: 1000 }
 
@@ -42,11 +42,11 @@ describe('consumir', () => {
     expect(consumir(otra, 'a', 0).permitido).toBe(true)
   })
 
-  test('la memoria tiene tope: con más claves que el máximo, se olvidan las más viejas', () => {
+  test('la memoria tiene tope: lleno de claves nuevas, se olvidan las de menos cuenta', () => {
     for (let i = 0; i <= MAX_CLAVES; i++) consumir(REGLA, `k${i}`, 0)
-    // Al entrar la clave MAX_CLAVES + 1 se ha olvidado la primera: vuelve a
-    // empezar su cuenta, que es lo menos malo (el tope protege la memoria).
-    for (let i = 0; i < 3; i++) expect(consumir(REGLA, 'k0', 0).permitido).toBe(true)
+    // Todas llevan 1: al entrar la MAX_CLAVES + 1 se ha olvidado alguna, y la
+    // memoria no pasa del tope.
+    expect(clavesVivas(REGLA)).toBeLessThanOrEqual(MAX_CLAVES)
   })
 
   test('al llenarse, primero barre las ventanas caducadas', () => {
@@ -55,6 +55,40 @@ describe('consumir', () => {
     // Entra una nueva cuando todas las k* han caducado: se barren ellas, no "viva".
     consumir(REGLA, 'nueva', 5000)
     expect(consumir(REGLA, 'viva', 5000).permitido).toBe(false)
+  })
+
+  test('llenar la memoria de claves nuevas NO desbloquea una clave bloqueada', () => {
+    for (let i = 0; i < 3; i++) consumir(REGLA, 'victima', 0)
+    expect(consumir(REGLA, 'victima', 0).permitido).toBe(false)
+    for (let i = 0; i < 3 * MAX_CLAVES; i++) consumir(REGLA, `basura${i}`, 0)
+    expect(consumir(REGLA, 'victima', 0).permitido).toBe(false)
+  })
+
+  test('ni le borra los intentos a quien está a medias', () => {
+    consumir(REGLA, 'victima', 0)
+    consumir(REGLA, 'victima', 0)
+    for (let i = 0; i < 3 * MAX_CLAVES; i++) consumir(REGLA, `basura${i}`, 0)
+    expect(consumir(REGLA, 'victima', 0).permitido).toBe(true)
+    expect(consumir(REGLA, 'victima', 0).permitido).toBe(false)
+  })
+
+  test('las claves de una regla no echan de la memoria a las de otra', () => {
+    const otra: Regla = { ...REGLA, nombre: 'otra' }
+    consumir(otra, 'a', 0)
+    for (let i = 0; i < 3 * MAX_CLAVES; i++) consumir(REGLA, `basura${i}`, 0)
+    consumir(otra, 'a', 0)
+    consumir(otra, 'a', 0)
+    expect(consumir(otra, 'a', 0).permitido).toBe(false)
+  })
+
+  test('lleno solo de claves bloqueadas, deja entrar la nueva y la memoria sigue con tope', () => {
+    for (let i = 0; i < MAX_CLAVES; i++) {
+      for (let j = 0; j < 3; j++) consumir(REGLA, `b${i}`, i % 500)
+    }
+    expect(consumir(REGLA, 'nueva', 600).permitido).toBe(true)
+    expect(clavesVivas(REGLA)).toBeLessThanOrEqual(MAX_CLAVES)
+    // Se olvida la que antes iba a caducar (b0, que acaba en 1000), no otra.
+    expect(consumir(REGLA, 'b499', 600).permitido).toBe(false)
   })
 
   test('usa el reloj si no se le pasa', () => {
@@ -72,5 +106,11 @@ describe('claveSegura', () => {
 
   test('es estable y no distingue mayúsculas (un email es el mismo con o sin ellas)', () => {
     expect(claveSegura('Pepito@Example.com')).toBe(claveSegura('pepito@example.com'))
+  })
+})
+
+describe('clavesVivas', () => {
+  test('de una regla que aún no ha contado nada, ninguna', () => {
+    expect(clavesVivas({ ...REGLA, nombre: 'sin-usar' })).toBe(0)
   })
 })

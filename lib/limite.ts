@@ -23,7 +23,7 @@
 import { createHash } from 'node:crypto'
 
 export type Regla = {
-  /** Separa las cuentas de dos reglas que usen la misma clave. */
+  /** Separa las cuentas de dos reglas que usen la misma clave. Único por regla. */
   nombre: string
   maximo: number
   ventanaMs: number
@@ -32,26 +32,68 @@ export type Regla = {
 export type Consumo = { permitido: boolean; reintentarEnMs: number }
 
 /**
- * Cuántas claves vivas como mucho. Sin tope, quien invente una clave por
- * petición (una IP falsa en `x-forwarded-for`, un email nuevo) llenaría la
- * memoria del servidor: el limitador sería él mismo la denegación de servicio.
+ * Cuántas claves vivas como mucho, POR REGLA. Sin tope, quien invente una
+ * clave por petición (una IP falsa en `x-forwarded-for`, un email nuevo)
+ * llenaría la memoria del servidor: el limitador sería él mismo la denegación
+ * de servicio.
  */
 export const MAX_CLAVES = 10_000
 
+/**
+ * Cuántas se olvidan de golpe al llenarse. De una en una, cada clave nueva con
+ * la memoria llena costaría recorrer las 10.000; así se recorren una vez por
+ * cada mil.
+ */
+const LOTE = MAX_CLAVES / 10
+
 type Cubo = { reinicio: number; cuenta: number }
 
-const cubos = new Map<string, Cubo>()
+/**
+ * Un mapa por regla, y no uno para todas: con uno compartido, inventar IPs
+ * contra una regla barata (la de invitados) echaba de la memoria los intentos
+ * de contraseña que llevaba otra regla.
+ */
+const porRegla = new Map<string, Map<string, Cubo>>()
 
-/** Quita las ventanas caducadas y, si aún no hay sitio, las más antiguas. */
-function hacerSitio(ahora: number): void {
+function cubosDe(regla: Regla): Map<string, Cubo> {
+  let cubos = porRegla.get(regla.nombre)
+  if (!cubos) {
+    cubos = new Map()
+    porRegla.set(regla.nombre, cubos)
+  }
+  return cubos
+}
+
+/**
+ * Hace sitio para una clave nueva. Primero quita las ventanas caducadas. Si no
+ * basta, olvida las claves con MENOS cuenta (y de ellas, las que antes
+ * caducan), y nunca una bloqueada mientras quede otra.
+ *
+ * Por qué así y no "la más antigua": olvidar una clave es ponerle la cuenta a
+ * cero. Con "la más antigua", quien llenaba la memoria de claves inventadas
+ * borraba el bloqueo de una cuenta atacada y volvía a tener sus 10 intentos.
+ * Ahora las claves inventadas llevan cuenta 1 y se echan entre ellas.
+ */
+function hacerSitio(cubos: Map<string, Cubo>, regla: Regla, ahora: number): void {
   for (const [clave, cubo] of cubos) {
     if (cubo.reinicio <= ahora) cubos.delete(clave)
   }
-  // Un `Map` recorre en orden de inserción: la primera es la más antigua.
-  for (const clave of cubos.keys()) {
-    if (cubos.size < MAX_CLAVES) break
-    cubos.delete(clave)
+  if (cubos.size < MAX_CLAVES) return
+
+  const libres = [...cubos].filter(([, c]) => c.cuenta < regla.maximo)
+  if (libres.length > 0) {
+    libres.sort(([, a], [, b]) => a.cuenta - b.cuenta || a.reinicio - b.reinicio)
+    for (const [clave] of libres.slice(0, LOTE)) cubos.delete(clave)
+    return
   }
+  // Todas bloqueadas: hace falta un ejército de IPs para llegar aquí. Se olvida
+  // la que antes iba a quedar libre de todos modos, que es la que menos regala.
+  let primera: [string, Cubo] | null = null
+  for (const entrada of cubos) {
+    if (!primera || entrada[1].reinicio < primera[1].reinicio) primera = entrada
+  }
+  /* v8 ignore next -- con la memoria llena siempre hay una */
+  if (primera) cubos.delete(primera[0])
 }
 
 /**
@@ -60,18 +102,23 @@ function hacerSitio(ahora: number): void {
  * consigue pasar antes.
  */
 export function consumir(regla: Regla, clave: string, ahora = Date.now()): Consumo {
-  const id = `${regla.nombre}:${clave}`
-  let cubo = cubos.get(id)
+  const cubos = cubosDe(regla)
+  let cubo = cubos.get(clave)
   if (!cubo || cubo.reinicio <= ahora) {
-    if (!cubo && cubos.size >= MAX_CLAVES) hacerSitio(ahora)
+    if (!cubo && cubos.size >= MAX_CLAVES) hacerSitio(cubos, regla, ahora)
     cubo = { reinicio: ahora + regla.ventanaMs, cuenta: 0 }
-    cubos.set(id, cubo)
+    cubos.set(clave, cubo)
   }
   if (cubo.cuenta >= regla.maximo) {
     return { permitido: false, reintentarEnMs: cubo.reinicio - ahora }
   }
   cubo.cuenta++
   return { permitido: true, reintentarEnMs: 0 }
+}
+
+/** Para los tests: cuántas claves guarda ahora una regla. */
+export function clavesVivas(regla: Regla): number {
+  return porRegla.get(regla.nombre)?.size ?? 0
 }
 
 /**
@@ -85,7 +132,7 @@ export function claveSegura(texto: string): string {
 
 /** Para los tests: cada uno empieza con todas las cuentas a cero. */
 export function reiniciarLimites(): void {
-  cubos.clear()
+  porRegla.clear()
 }
 
 // ─── Las reglas de la aplicación ─────────────────────────────────────────────
@@ -111,3 +158,11 @@ export const LIMITE_LOGIN_EMAIL: Regla = { nombre: 'login-email', maximo: 10, ve
 
 /** Invitados nuevos por IP. Cada uno es una fila en `auth.users`. */
 export const LIMITE_INVITADO_IP: Regla = { nombre: 'invitado-ip', maximo: 10, ventanaMs: 60 * 60_000 }
+
+/**
+ * Peticiones con cookie de sesión que el proxy deja pasar a refrescar, por IP.
+ * Una persona navegando no llega (cada página son unas pocas); un script con
+ * cookies inventadas, sí. Pasado el límite el proxy no bloquea: solo deja de
+ * llamar a Supabase (`lib/supabase/proxy.ts`).
+ */
+export const LIMITE_REFRESCO_IP: Regla = { nombre: 'refresco-ip', maximo: 120, ventanaMs: 60_000 }

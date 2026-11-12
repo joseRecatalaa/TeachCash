@@ -152,17 +152,7 @@ En Settings → Environment Variables, todas con el ámbito **Production**
       *Redeploy*). Hasta entonces, los enlaces de los emails se construyen con
       las cabeceras de la petición.
 
-  **No la dejes vacía nunca.** El código todavía no la exige en producción
-  (`lib/env.ts` la acepta opcional). Sin ella, quien pida "he olvidado mi
-  contraseña" para el email de otra persona puede hacer que el enlace apunte a
-  su propio dominio, y con ese enlace quedarse con la sesión de la víctima.
-  Solo lo frenan las Redirect URLs exactas de 3.1. (Con la rama
-  `fix/seguridad-antes-de-publicar` mezclada, la app no arranca en producción
-  sin `APP_URL`.)
-
-- [ ] **Si falla la comprobación de abajo** (Vercel deja pasar una IP falsa),
-      los tres arreglos marcados en la Fase 5 pasan a urgentes: hazlos antes de
-      dejar la app publicada.
+  Sin `APP_URL`, la app no arranca en producción (`lib/env.ts`).
 
 > En Vercel no hace falta `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`: todas las
 > funciones de un despliegue salen del mismo build. Solo hace falta en un
@@ -177,8 +167,8 @@ En Settings → Environment Variables, todas con el ámbito **Production**
       DevTools (Network → la petición POST → *Copy as cURL*), añádele
       `-H "X-Real-IP: 1.2.3.4" -H "X-Forwarded-For: 1.2.3.4"`, lánzala y busca
       el evento `login` en los logs (6.4). Tiene que
-      salir **tu** IP acabada en `.0`, no `1.2.3.0`. Si sale la falsa, cualquiera
-      puede saltarse los límites por IP y vaciar los de los demás.
+      salir **tu** IP acabada en `.0`, no `1.2.3.0`. Si sale la falsa, no
+      dejes la app publicada hasta que el proxy de delante la sobrescriba.
 
 ---
 
@@ -226,19 +216,16 @@ Los nombres de las secciones pueden variar un poco según la versión del panel.
       *secret key* del widget.
 - [ ] **Sessions**: rotación de refresh tokens ON; caducidad del JWT ≤ 3600 s
       (son los valores por defecto).
-- [ ] **JWT Keys**: apunta si la clave activa es **ES256** (asimétrica) o
-      HS256. Con ES256 la app verifica el token sin preguntar a Supabase, así
-      que cerrar sesión o cambiar la contraseña **no corta una cookie robada**
-      hasta que caduca el token. La caducidad del JWT es, por tanto, cuánto
-      dura ese hueco: bájala (p. ej. 900 s) si quieres acortarlo.
+- [ ] **JWT Keys**: la clave activa tiene que ser **ES256** (asimétrica): la
+      app verifica el token con la clave pública, y comprueba aparte en la base
+      que la sesión sigue abierta.
 - [ ] **Rate Limits**: deja los de fábrica, pero **apunta sus valores**
       (*token refresh*, *anonymous sign-ins*, *sign-ups and sign-ins*).
       Supabase los cuenta por IP y ve la IP de Vercel, la misma para todos los
       usuarios: en la práctica son un único cupo compartido. Compáralos con lo
-      que la app deja pasar por visitante (10 invitados/h y 20 operaciones de
-      auth cada 10 min por IP). Si con dos o tres visitantes se llega al de
-      Supabase, un atacante puede dejar a todos sin poder entrar, y los tres
-      arreglos marcados en la Fase 5 pasan a urgentes.
+      que la app deja pasar por visitante (10 invitados/h, 20 operaciones de
+      auth cada 10 min y 120 refrescos de sesión por minuto, por IP). Si con
+      dos o tres visitantes se llega al de Supabase, súbelos.
 - [ ] En **Auth → Logs**, confirma que las peticiones de la app llegan desde
       una sola IP o desde muy pocas (las de Vercel).
 
@@ -265,26 +252,9 @@ del equipo del proyecto**. Para ti basta para probar; para cualquier otra
 persona, registrarse o recuperar la contraseña **no funciona**. Los invitados
 sí funcionan, porque no usan email.
 
-> **Antes de abrirla, tres arreglos de código son obligatorios.** Salen de la
-> auditoría `standard` (run-2) y están descritos en Limitaciones. Mientras solo
-> entres tú y algún invitado de prueba, el riesgo es bajo; con más gente, no.
->
-> - [ ] **Limitador** (`lib/limite.ts`): al llenarse, que expulse primero los
->       cubos con menos cuenta y nunca uno bloqueado, y un mapa por regla.
->       Sin esto, el límite de intentos de login de una cuenta se puede
->       resetear.
-> - [ ] **Sesión viva** (`ejecutar` + `cuenta.repository`): comprobar que el
->       `session_id` del token sigue en `auth.sessions`. Sin esto, cerrar sesión
->       o cambiar la contraseña no corta una cookie robada hasta que caduca.
-> - [ ] **Refresco con límite** (`lib/supabase/proxy.ts`): un límite por IP
->       antes de `getClaims()` para las peticiones con cookie de sesión; al
->       pasarlo, saltarse el refresco, no bloquear. Sin esto, una cookie falsa
->       provoca una llamada a Supabase por petición.
->
-> **Pasan a urgentes, aunque no abras el registro**, si falla la comprobación
-> de `x-real-ip` de 2.4 (Vercel deja pasar una IP falsa) o si en 3.3 los Rate
-> Limits de Supabase se agotan con dos o tres visitantes: en ese caso cualquiera
-> puede tirar el alta de invitados y el login desde una sola máquina.
+> Los tres arreglos de código que pedía la auditoría `standard` (run-2) antes
+> de abrir el registro ya están hechos (ver `docs/SECURITY.md`). Antes de
+> abrirla, repite la auditoría (Fase 7).
 
 - [ ] Si vas a abrirla: crea una cuenta en un proveedor SMTP con plan gratuito
       (Resend, Brevo…) y verifica tu dominio de envío.
@@ -330,10 +300,7 @@ curl -s -X POST "https://<proyecto>.supabase.co/rest/v1/categories" \
       **`APP_URL`/auth/confirm** → eliges contraseña.
 - [ ] Salir y volver a entrar con la contraseña.
 - [ ] Iniciar sesión en dos navegadores, cambiar la contraseña en uno → en el
-      otro, la sesión **sigue valiendo hasta que caduca el token de acceso**
-      (la caducidad del JWT de 3.3) y después deja de valer. Comprueba que corta
-      dentro de ese plazo; antes no corta, y no es un fallo de este paso (ver
-      Limitaciones).
+      otro, la siguiente acción (anotar o editar un movimiento) ya no funciona.
 - [ ] "He olvidado mi contraseña" → el enlace apunta a `APP_URL`.
 - [ ] Diez contraseñas mal seguidas → la undécima responde "Demasiados intentos".
 
@@ -356,46 +323,20 @@ curl -s -X POST "https://<proyecto>.supabase.co/rest/v1/categories" \
 | `xlsx` | De vez en cuando | Mirar https://cdn.sheetjs.com; al subir, sustituir el `.tgz` de `vendor/` y `pnpm install` |
 | Repetir la auditoría | Antes de abrir la app a más gente | La skill `security-audit`, perfil `standard` |
 | Revisar la configuración | Tras tocar el panel de Supabase o de Vercel | Las casillas de las fases 3 y 4 |
-| Tamaño de la base | Semanal, y a diario si la app se abre a más gente | Supabase → Reports → Database. Las cuotas cuentan filas, no bytes (ver Limitaciones) |
+| Tamaño de la base | Semanal, y a diario si la app se abre a más gente | Supabase → Reports → Database |
 | Job de limpieza de invitados | Tras restaurar una copia o recrear el proyecto | La comprobación de 1.2: el job vive fuera de las migraciones |
 
 ---
 
 ## Limitaciones conocidas de este montaje
 
-- **Límites de peticiones por instancia.** Vercel reparte las peticiones entre
-  varias instancias de la función, cada una con su propia memoria, así que el
-  límite real es más alto que el configurado. El CAPTCHA y el límite por cuenta
-  siguen frenando el abuso de contraseñas. Si hiciera falta uno exacto: Redis
-  (Upstash, con plan gratuito). Ver Decisiones abiertas en `AGENTS.md`.
+- **Límites de peticiones por instancia.** Cada instancia de la función lleva
+  su propia memoria. Si hiciera falta un límite común: Redis (Upstash, con plan
+  gratuito). Ver Decisiones abiertas en `AGENTS.md`.
 - **Logs con retención corta en el plan gratuito**, y sin envío a un sistema
   externo (*log drains*), que es lo que permitiría alertas automáticas. Mientras
   tanto, revisa los eventos de seguridad a mano tras cualquier sospecha.
 - **Vercel Hobby es para uso no comercial.** Si TeachCash pasa a tener
   ingresos, hay que pasar a Pro.
 - **Supabase gratuito** pausa el proyecto tras 7 días sin uso (lo evita el
-  ping) y tiene un tamaño de base limitado. Lo protegen las cuotas por usuario
-  y la API REST en solo lectura, pero **solo en parte**: la cuota cuenta
-  movimientos, no bytes. Con descripción y notas al máximo, una cuenta puede
-  ocupar unos 200 MB y unos cientos de invitados llenan los 500 MB del plan.
-  Por eso se vigila el tamaño en la Fase 7.
-
-Las cuatro siguientes salen de la auditoría `standard` de noviembre de 2026
-(run-2). Dependen de la configuración que se comprueba en este plan y tienen
-arreglo en el código, que está pendiente.
-
-- **Una sesión revocada dura hasta que caduca su token.** Cerrar sesión,
-  cambiar la contraseña o borrar la cuenta revocan el refresh token, pero el
-  token de acceso ya emitido sigue valiendo para las Server Actions hasta su
-  caducidad (3.3). Arreglo pendiente: comprobar en `getSession` que la sesión
-  sigue viva.
-- **Una cookie de sesión falsa hace que cada petición llame a Supabase.** El
-  `proxy.ts` refresca la sesión en todas las peticiones, sin límite, y Supabase
-  ve todas esas llamadas desde la IP de Vercel. Con suficientes, se agota el
-  cupo de refresco de 3.3 y a los usuarios reales se les cae la sesión; un
-  invitado, que no tiene contraseña, pierde así sus datos.
-- **El límite de intentos de login por cuenta se puede resetear.** Todos los
-  límites de `lib/limite.ts` comparten un mapa de 10.000 claves que, lleno,
-  expulsa las más antiguas. Si la comprobación de `x-real-ip` (2.4) falla,
-  basta una máquina para hacerlo; si no, hacen falta cientos de IPs.
-- **Los límites de Supabase por IP son uno solo para todos** (ver 3.3).
+  ping) y tiene un tamaño de base limitado: se vigila en la Fase 7.

@@ -25,7 +25,11 @@ const h = vi.hoisted(() => ({
 }))
 
 vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
-vi.mock('@/lib/auth', () => ({ getSession: async () => h.session }))
+// Con el id de sesión que `crearUsuario` le abre a cada usuario: así pasa la
+// comprobación de sesión viva contra la base de test.
+vi.mock('@/lib/auth', () => ({
+  getSession: async () => h.session && { user: { sesionId: h.session.user.id, ...h.session.user } },
+}))
 vi.mock('@/lib/supabase/server', () => ({ crearClienteSupabase: async () => ({ auth: h.auth }) }))
 vi.mock('next/headers', () => ({
   headers: async () => ({ get: (k: string) => h.cabeceras.get(k.toLowerCase()) ?? null }),
@@ -168,6 +172,7 @@ describe('iniciar sesión', () => {
 
 describe('crear cuenta', () => {
   test('siendo invitado, la cuenta se crea SOBRE el invitado (mismo usuario)', async () => {
+    await crearUsuario(base().pg, INVITADO, { anonimo: true })
     h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
     const r = await registrarse({ email: 'ana@example.com', captchaToken: 't' })
 
@@ -603,17 +608,16 @@ describe('caminos de error que la persona tiene que entender', () => {
     })
   })
 
-  test('un invitado sin fila en auth.users caduca contando desde ahora', async () => {
-    vi.useFakeTimers({ now: new Date('2026-10-07T12:00:00Z'), toFake: ['Date'] })
-    try {
-      h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
-      expect(await getCuenta()).toEqual({
-        ok: true,
-        data: { tipo: 'invitado', caducaEl: '2026-10-11T12:00:00.000Z' },
-      })
-    } finally {
-      vi.useRealTimers()
-    }
+  test('un invitado ya borrado de auth.users no tiene cuenta, aunque su token aún firme', async () => {
+    // Borrarlo se lleva sus sesiones: el token que quedó en la cookie ya no vale.
+    h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
+    expect(await getCuenta()).toEqual({ ok: true, data: { tipo: 'ninguna' } })
+  })
+
+  test('una sesión cerrada no cuenta como sesión, aunque su token aún firme', async () => {
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+    await base().pg.query('delete from auth.sessions where user_id = $1', [USER_A])
+    expect(await getCuenta()).toEqual({ ok: true, data: { tipo: 'ninguna' } })
   })
 })
 

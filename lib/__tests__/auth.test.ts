@@ -19,6 +19,7 @@ vi.mock('../supabase/server', () => ({
 import { getSession, requireUserId } from '../auth'
 
 const UID = '11111111-1111-4111-8111-111111111111'
+const SID = '22222222-2222-4222-8222-222222222222'
 
 beforeEach(() => {
   h.respuesta = { data: null, error: null }
@@ -36,23 +37,31 @@ describe('getSession', () => {
   })
 
   test('un usuario con email', async () => {
-    h.respuesta = { data: { claims: { sub: UID, email: 'ana@example.com', is_anonymous: false } }, error: null }
+    h.respuesta = { data: { claims: { sub: UID, session_id: SID, email: 'ana@example.com', is_anonymous: false } }, error: null }
     expect(await getSession()).toEqual({
-      user: { id: UID, email: 'ana@example.com', esInvitado: false, entroConPassword: false },
+      user: { id: UID, sesionId: SID, email: 'ana@example.com', esInvitado: false, entroConPassword: false },
     })
   })
 
   test('un invitado: sin email y marcado como invitado', async () => {
-    h.respuesta = { data: { claims: { sub: UID, email: '', is_anonymous: true } }, error: null }
+    h.respuesta = { data: { claims: { sub: UID, session_id: SID, email: '', is_anonymous: true } }, error: null }
     expect(await getSession()).toEqual({
-      user: { id: UID, email: null, esInvitado: true, entroConPassword: false },
+      user: { id: UID, sesionId: SID, email: null, esInvitado: true, entroConPassword: false },
     })
   })
 
   test('el userId es el `sub` del token, nada más', async () => {
-    h.respuesta = { data: { claims: { sub: UID, user_id: 'otro' } }, error: null }
+    h.respuesta = { data: { claims: { sub: UID, session_id: SID, user_id: 'otro' } }, error: null }
     expect(await requireUserId()).toBe(UID)
   })
+
+  test.each([undefined, '', 42])(
+    'un token sin `session_id` (%j) no da sesión: sin él no se puede comprobar si la revocaron',
+    async (session_id) => {
+      h.respuesta = { data: { claims: { sub: UID, session_id } }, error: null }
+      expect(await getSession()).toBeNull()
+    },
+  )
 })
 
 describe('cómo se abrió la sesión (claim `amr`)', () => {
@@ -60,7 +69,7 @@ describe('cómo se abrió la sesión (claim `amr`)', () => {
   // sabe; quien llegó desde el enlace de recuperación o de alta, no. El claim
   // va dentro del JWT firmado, así que no se puede falsificar desde la cookie.
   const conAmr = async (amr: unknown) => {
-    h.respuesta = { data: { claims: { sub: UID, email: 'ana@example.com', amr } }, error: null }
+    h.respuesta = { data: { claims: { sub: UID, session_id: SID, email: 'ana@example.com', amr } }, error: null }
     return (await getSession())?.user.entroConPassword
   }
 

@@ -213,6 +213,11 @@ La sesión es `getSession()` de `lib/auth.ts`, y el `userId` es el `sub` del JWT
 la puede escribir cualquiera. Un invitado es un usuario como otro cualquiera:
 tiene `userId` y pasa por el mismo camino.
 
+Una Server Action no llama a `getSession()` directamente sino a `sesionActiva()`
+(`src/application/actions/sesion.ts`; `ejecutar` ya lo hace): la firma del token
+sigue siendo buena después de cerrar sesión, y es la base la que dice si la
+sesión sigue abierta.
+
 ### 4. Nunca confíes en un ID que venga del cliente
 
 Filtra por el `userId` de la sesión **dentro del `where`**, no después. Un `get`

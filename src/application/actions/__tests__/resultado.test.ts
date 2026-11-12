@@ -1,18 +1,24 @@
 /**
  * `ejecutar`, la envoltura de toda Server Action con sesión.
  *
- * Aquí se prueba lo que añade el límite de peticiones (OWASP API4): un usuario
+ * Aquí se prueba que una sesión revocada no ejecuta nada aunque su token siga
+ * siendo válido, y lo que añade el límite de peticiones (OWASP API4): un usuario
  * que pasa de `LIMITE_ACCIONES` deja de llegar a la base, se le dice que espere
  * y queda un evento de seguridad; y su límite no toca al de otro usuario.
  */
 
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-const h = vi.hoisted(() => ({ userId: 'u-a' as string | null }))
+const h = vi.hoisted(() => ({ userId: 'u-a' as string | null, viva: true }))
 
 vi.mock('@/lib/auth', () => ({
   getSession: async () =>
-    h.userId ? { user: { id: h.userId, email: null, esInvitado: true, entroConPassword: false } } : null,
+    h.userId
+      ? { user: { id: h.userId, sesionId: `s-${h.userId}`, email: null, esInvitado: true, entroConPassword: false } }
+      : null,
+}))
+vi.mock('@/src/infrastructure/repositories/cuenta.repository', () => ({
+  sesionViva: async (userId: string, sesionId: string) => h.viva && sesionId === `s-${userId}`,
 }))
 
 import { LIMITE_ACCIONES, reiniciarLimites } from '@/lib/limite'
@@ -21,11 +27,19 @@ import { DEMASIADAS_PETICIONES, ejecutar, NO_AUTORIZADO } from '../resultado'
 beforeEach(() => {
   reiniciarLimites()
   h.userId = 'u-a'
+  h.viva = true
 })
 
 describe('ejecutar', () => {
   test('sin sesión no ejecuta nada', async () => {
     h.userId = null
+    const operacion = vi.fn()
+    expect(await ejecutar('prueba', operacion)).toEqual({ ok: false, error: NO_AUTORIZADO })
+    expect(operacion).not.toHaveBeenCalled()
+  })
+
+  test('con el token aún válido pero la sesión cerrada (logout, cambio de contraseña), no ejecuta nada', async () => {
+    h.viva = false
     const operacion = vi.fn()
     expect(await ejecutar('prueba', operacion)).toEqual({ ok: false, error: NO_AUTORIZADO })
     expect(operacion).not.toHaveBeenCalled()

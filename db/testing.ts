@@ -30,6 +30,13 @@ const AUTH_STUB = `
     is_anonymous boolean not null default false,
     created_at timestamptz not null default now()
   );
+  -- Las sesiones abiertas: \`ejecutar\` comprueba que la del token sigue aquí.
+  -- Como en Supabase, borrar el usuario se lleva sus sesiones.
+  create table auth.sessions (
+    id uuid primary key,
+    user_id uuid not null references auth.users (id) on delete cascade,
+    not_after timestamptz
+  );
   create function auth.uid() returns uuid language sql stable as $$
     select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
   $$;
@@ -91,7 +98,11 @@ export async function createTestDb(): Promise<TestDb> {
   return { db, pg, close: () => pg.close() }
 }
 
-/** Da de alta un usuario en el `auth.users` de mentira. Los datos lo exigen por FK. */
+/**
+ * Da de alta un usuario en el `auth.users` de mentira (los datos lo exigen por
+ * FK) y le abre una sesión con su MISMO id, que es la que da por buena el mock
+ * de `@/lib/auth` (`test/mocks/auth.ts`).
+ */
 export async function crearUsuario(
   pg: PGlite,
   id: string,
@@ -102,5 +113,6 @@ export async function crearUsuario(
     opciones.email ?? null,
     opciones.anonimo ?? false,
   ])
+  await pg.query('insert into auth.sessions (id, user_id) values ($1, $1)', [id])
   return id
 }

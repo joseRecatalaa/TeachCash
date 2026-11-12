@@ -164,11 +164,13 @@ AGENTS.md.
 | `lib/__tests__/format.test.ts` | 29 | `formatMoney` en es-ES, signo, ida y vuelta input → `parseMoney` | 1 |
 | `lib/__tests__/dates.test.ts` | 22 | Fechas civiles, periodos, rangos de mes, `addDays`/`daysBetween` inversos, reloj congelado | 5 |
 | `lib/__tests__/rutas.test.ts` | 12 | `rutaInterna`: ninguna redirección sale del sitio (`//x`, `/\x`, `https://…`) | — |
-| `lib/__tests__/auth.test.ts` | 21 | `getSession`: el `userId` sale solo del `sub` de `getClaims()` verificado | 3 |
+| `lib/__tests__/auth.test.ts` | 24 | `getSession`: el `userId` sale solo del `sub` de `getClaims()` verificado; sin `session_id`, no hay sesión | 3 |
 | `lib/__tests__/env.test.ts` | 26 | Entorno validado al arrancar; URL de Supabase con ruta rechazada; `APP_URL` obligatoria en producción | — |
 | `lib/__tests__/csp.test.ts` | 7 | La CSP con nonce y sus directivas | — |
 | `lib/__tests__/log.test.ts` | 14 | Los errores se registran sin `params` de Drizzle (ni importes ni descripciones); los eventos de seguridad, en JSON y con la IP recortada | — |
-| `lib/__tests__/limite.test.ts` | 10 | Límite de peticiones: deniega pasado el máximo, la ventana se reabre, claves y reglas independientes, tope de memoria | — |
+| `lib/__tests__/limite.test.ts` | 15 | Límite de peticiones: deniega pasado el máximo, la ventana se reabre, claves y reglas independientes, tope de memoria por regla que nunca olvida una clave bloqueada ni a medias | — |
+| `lib/__tests__/ip.test.ts` | 3 | De qué cabecera sale la IP de los límites | — |
+| `lib/supabase/__tests__/proxy.test.ts` | 4 | El refresco de sesión del proxy: sin cookie no llama a Supabase y, pasado el límite por IP, deja de llamar sin bloquear | — |
 | `lib/__tests__/colores.test.ts`, `ids.test.ts` | 4 + 3 | Claves de la paleta; bits de versión y variante del UUID | — |
 | `lib/__tests__/heroe.test.ts` | 23 | Camino del héroe: qué respuesta es buena (`calcula` con su tolerancia, propiedad) y las estrellas (más aciertos nunca dan menos) | 1, 6 |
 | `lib/__tests__/marcas.test.ts` | 15 | `**negrita**` y `_cursiva_` del contenido: anidadas, sin cerrar, y lo que NO es marca (`3 * 4`, `mi_cuenta`, el `___` del hueco). Propiedad: no se pierde texto | — |
@@ -204,7 +206,7 @@ AGENTS.md.
 | `actions/__tests__/heroe.actions.test.ts` | 16 | Camino del héroe: sin sesión no hace nada, ids mal formados son "No encontrado", el progreso es el de la sesión | 3, 4 |
 | `providers/__tests__/refine-data-provider.test.ts` | 11 | La traducción Refine → Server Actions y de vuelta (errores a excepción en el cliente) | — |
 | `app/auth/confirm/__tests__/route.test.ts` | 10 | `code` frente a `token_hash`, `type` fuera de lista, enlace inválido, `next` externo filtrado | — |
-| `actions/__tests__/resultado.test.ts` | 3 | `ejecutar`: sin sesión no ejecuta; pasado el límite por usuario, tampoco, y lo registra | — |
+| `actions/__tests__/resultado.test.ts` | 4 | `ejecutar`: sin sesión, o con una ya cerrada, no ejecuta; pasado el límite por usuario, tampoco, y lo registra | — |
 | `src/__tests__/cabeceras.test.ts` | 21 | Cabeceras de seguridad de `next.config.ts`, tope del cuerpo de las Server Actions y qué rutas cubre la CSP del proxy | — |
 
 ### Guardas estructurales (`src/__tests__/invariantes.test.ts`, 44 casos)

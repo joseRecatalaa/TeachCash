@@ -79,6 +79,7 @@ Cada cambio tiene un sitio y solo uno:
         entity.actions.ts             # 'use server' — la frontera
         frontera.ts                   # los esquemas Zod de lo que llega del cliente
         resultado.ts                  # run(): errores esperados como valor
+        sesion.ts                     # sesionActiva(): token verificado y sesión aún abierta
         informes.actions.ts
         perfil.actions.ts             # leer el primero y fijar el total de hoy
         heroe.actions.ts              # mapa, mundo, nivel y enviar una partida
@@ -157,6 +158,8 @@ Cada cambio tiene un sitio y solo uno:
     auth.ts                           # getSession(): lo único que sabe de auth
     env.ts                            # el entorno, validado con Zod al arrancar
     log.ts                            # registrarError(): sin los params de Drizzle
+    limite.ts                         # límites de peticiones en memoria, por regla
+    ip.ts                             # la IP de quien llama (x-real-ip primero)
     ids.ts                            # uuid() que funciona fuera de https
     supabase/                         # clientes de servidor y de proxy
     rutas.ts                          # filtro de redirección abierta

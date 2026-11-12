@@ -7,7 +7,7 @@
  * Como todo `'use server'`, cada export es un endpoint POST público (regla dura
  * 3). Por eso todo lo que llega se valida con Zod aquí, aunque el formulario ya
  * lo haya comprobado, y nada de lo que llega decide QUIÉN es el usuario: eso
- * sale siempre de la cookie verificada (`getSession`).
+ * sale siempre de la cookie verificada y de una sesión abierta (`sesionActiva`).
  *
  * Tres criterios que atraviesan el fichero:
  *   - **No se revela si un email existe.** "Te hemos enviado un enlace" sale
@@ -28,8 +28,9 @@
 import { headers } from 'next/headers'
 import type { AuthError } from '@supabase/supabase-js'
 import { z } from 'zod'
-import { getSession, type Session } from '@/lib/auth'
+import type { Session } from '@/lib/auth'
 import { exigeUrlDeLaApp, urlDeLaApp } from '@/lib/env'
+import { ipDe } from '@/lib/ip'
 import {
   claveSegura,
   consumir,
@@ -47,6 +48,7 @@ import {
 } from '@/src/infrastructure/repositories/cuenta.repository'
 import { VIDA_INVITADO_DIAS, type CuentaDto } from '@/src/types/cuenta.types'
 import type { ActionResult } from './resultado'
+import { sesionActiva } from './sesion'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Validación
@@ -198,18 +200,9 @@ async function origen(): Promise<string> {
   return url.origin
 }
 
-/**
- * La IP de quien llama, para los límites y el registro. `x-real-ip` primero
- * porque es la que ponen los proxies de despliegue (Vercel, nginx) sobre la que
- * traía la petición; si no, la primera de `x-forwarded-for`. Las dos las puede
- * escribir el cliente si no hay un proxy delante que las pise, y por eso los
- * intentos de contraseña cuentan ADEMÁS por cuenta, que no se puede falsear.
- */
+/** La IP de quien llama, para los límites y el registro. Ver `lib/ip.ts`. */
 async function ipCliente(): Promise<string> {
-  const h = await headers()
-  const real = h.get('x-real-ip')?.trim()
-  if (real) return real
-  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconocida'
+  return ipDe(await headers())
 }
 
 /**
@@ -244,11 +237,15 @@ const AGENTE_BOT =
 const MS_POR_DIA = 24 * 60 * 60 * 1000
 
 /** La cuenta que ve la interfaz, a partir de la sesión verificada. */
-async function cuentaDe(session: Session | null): Promise<CuentaDto> {
+/** Solo mira quién es: le vale también la sesión recién creada, sin id todavía. */
+async function cuentaDe(session: { user: Omit<Session['user'], 'sesionId'> } | null): Promise<CuentaDto> {
   if (!session) return { tipo: 'ninguna' }
   if (!session.user.esInvitado && session.user.email) {
     return { tipo: 'usuario', email: session.user.email }
   }
+  // Sin fila solo si lo borraron justo entre `sesionActiva` y aquí (borrarlo
+  // se lleva sus sesiones): caduca contando desde ahora.
+  /* v8 ignore next */
   const alta = (await fechaAltaUsuario(session.user.id)) ?? new Date()
   const caducaEl = new Date(alta.getTime() + VIDA_INVITADO_DIAS * MS_POR_DIA)
   return { tipo: 'invitado', caducaEl: caducaEl.toISOString() }
@@ -272,7 +269,7 @@ async function intentar<T>(
 
 /** Quién es quien pregunta. Lo usa el layout al pintar y la Navbar al refrescar. */
 export async function getCuenta(): Promise<ActionResult<CuentaDto>> {
-  return intentar('getCuenta', async () => ({ ok: true, data: await cuentaDe(await getSession()) }))
+  return intentar('getCuenta', async () => ({ ok: true, data: await cuentaDe(await sesionActiva()) }))
 }
 
 /**
@@ -283,7 +280,7 @@ export async function getCuenta(): Promise<ActionResult<CuentaDto>> {
  */
 export async function iniciarInvitado(token: unknown): Promise<ActionResult<CuentaDto>> {
   return intentar('iniciarInvitado', async () => {
-    const actual = await getSession()
+    const actual = await sesionActiva()
     if (actual) return { ok: true, data: await cuentaDe(actual) }
 
     const agente = (await headers()).get('user-agent') ?? ''
@@ -367,7 +364,7 @@ export async function registrarse(values: unknown): Promise<ActionResult<{ mensa
     if (!parsed.success) return erroresDeCampo(parsed.error)
     const { email, captchaToken } = parsed.data
 
-    const session = await getSession()
+    const session = await sesionActiva()
     if (session && !session.user.esInvitado) return fallo(MENSAJES.yaTienesCuenta)
 
     const ip = await ipCliente()
@@ -429,7 +426,7 @@ export async function solicitarRecuperacion(
  */
 export async function requisitosCambioPassword(): Promise<ActionResult<{ pideActual: boolean }>> {
   return intentar('requisitosCambioPassword', async () => {
-    const session = await getSession()
+    const session = await sesionActiva()
     if (!session || session.user.esInvitado) return fallo(MENSAJES.noAutorizado)
     return { ok: true, data: { pideActual: session.user.entroConPassword } }
   })
@@ -499,7 +496,7 @@ async function reautenticar(
  */
 export async function cambiarPassword(values: unknown): Promise<ActionResult<CuentaDto>> {
   return intentar('cambiarPassword', async () => {
-    const session = await getSession()
+    const session = await sesionActiva()
     if (!session || session.user.esInvitado) return fallo(MENSAJES.noAutorizado)
 
     const parsed = CambiarPassword.safeParse(values)
@@ -562,7 +559,7 @@ export async function cerrarSesion(): Promise<ActionResult<null>> {
  */
 export async function borrarCuenta(values: unknown): Promise<ActionResult<null>> {
   return intentar('borrarCuenta', async () => {
-    const session = await getSession()
+    const session = await sesionActiva()
     if (!session || session.user.esInvitado || !session.user.email) {
       return fallo(MENSAJES.noAutorizado)
     }
