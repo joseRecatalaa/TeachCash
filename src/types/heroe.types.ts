@@ -10,7 +10,7 @@
  * mano casi siempre es una errata ("explicaion"), y sin esto pasaría en
  * silencio y la explicación no se vería nunca.
  *
- * Cómo se escribe un nivel, con ejemplos: `docs/CONTENIDO_HEROE.md`.
+ * Cómo se escribe un nivel, con ejemplos: `docs/CONTENIDO-HEROE.md`.
  */
 
 import { z } from 'zod'

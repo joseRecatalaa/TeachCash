@@ -20,11 +20,11 @@ reales, y una cifra legal equivocada es peor que un nivel de menos.
 
 ━━ 2. ANTES DE EMPEZAR ━━
 
-1. Lee: AGENTS.md, docs/plans/CAMINO_HEROE.md, docs/CONTENIDO_HEROE.md,
+1. Lee: AGENTS.md, docs/plans/CAMINO-HEROE.md, docs/CONTENIDO-HEROE.md,
    src/types/heroe.types.ts y content/heroe/ahorro/*.json.
 2. Comprueba que feat/CaminoDelHeroe ya está mergeada en develop:
      git -c http.sslBackend=schannel fetch origin
-     git cat-file -e origin/develop:docs/plans/prompt-primeros-cursos.txt
+     git cat-file -e origin/develop:docs/plans/PROMPT-PRIMEROS-CURSOS.txt
    Si falla, PARA y dímelo: falta mergear la PR.
 3. Crea la rama:
      git switch develop
@@ -37,9 +37,9 @@ En este equipo, git contra GitHub necesita `-c http.sslBackend=schannel`
 ━━ 3. LO QUE HAY ━━
 
 Informes de Gemini Deep Research, con estos nombres EXACTOS (llevan tildes):
-  docs/investigación-heroe/mundo-salud-financiera.md
-  docs/investigación-heroe/mundo-inversión.md
-  docs/investigación-heroe/mundo-deuda.md
+  docs/investigación-heroe/MUNDO-SALUD-FINANCIERA.md
+  docs/investigación-heroe/MUNDO-INVERSION.md
+  docs/investigación-heroe/MUNDO-DEUDA.md
 Cada uno trae 9 niveles (L, P, L, P, L, P, L, P, Jefe), con pantallas, mito y
 realidad, gancho, 4 preguntas de minitest por lectura, 6-7 ejercicios por
 práctica, 12 preguntas de jefe, glosario, tabla de cifras y fuentes.
@@ -60,7 +60,7 @@ Ahorro NO tiene informe: su subagente investiga por su cuenta (ver 6).
   que no se pueda verificar (ver 5) o lo que rompa una regla de este documento.
   Si algo no cabe en un nivel por los límites del formato, va al siguiente.
 - Jefe: las 12 preguntas del informe, "aprobado": 70. Esto sustituye a las "10
-  preguntas" que dicen docs/CONTENIDO_HEROE.md y docs/plans/prompt-cursos.txt.
+  preguntas" que dicen docs/CONTENIDO-HEROE.md y docs/plans/PROMPT-CURSOS.txt.
 - Villanos: La Niebla Financiera (Salud), El Oráculo de Humo (Inversión), El
   Marqués del Mínimo (Deuda) y El Tragaperras (Ahorro, ya existe).
 - EL PERSONAJE SE LLAMA PEPITO, SIEMPRE. Los informes traen a Lucía, Mateo,
@@ -76,7 +76,7 @@ Ahorro NO tiene informe: su subagente investiga por su cuenta (ver 6).
   decorado ni orden, aunque el informe proponga otra descripción.
 - "Práctica" en el informe es `interactivo` en el formato. "Pantalla" es una
   página.
-- Donde esta especificación y docs/plans/prompt-cursos.txt no coincidan, manda esta.
+- Donde esta especificación y docs/plans/PROMPT-CURSOS.txt no coincidan, manda esta.
   Ese fichero tiene dos cosas ya caducadas: pide un emoji en los títulos (hoy el
   validador los rechaza) y, en tres de sus prompts, "alguien con nombre".
 
@@ -138,7 +138,7 @@ la gente se guarda con ellos: 01-fondo-de-emergencia, 02-practica-el-colchon y
 El orden lo da mundo.json, no el nombre del fichero; 03-<slug> tiene que ser un
 nombre distinto del del jefe.
 
-- Temario: el ENFOQUE de la sección AHORRO de docs/plans/prompt-cursos.txt (línea
+- Temario: el ENFOQUE de la sección AHORRO de docs/plans/PROMPT-CURSOS.txt (línea
   "ENFOQUE: Apartar dinero…"): cuentas remuneradas y depósitos, TAE y TIN, FGD,
   Letras del Tesoro, inflación e IPC, interés simple y compuesto, metas con
   fecha, fiscalidad de los intereses. Sin repetir lo del nivel 1.
@@ -232,16 +232,16 @@ FASE 1: lanza los cuatro subagentes a la vez, en segundo plano, con este encargo
 cambiando <MUNDO> e <INFORME>:
 
   | <MUNDO>   | <INFORME>                                         |
-  | salud     | docs/investigación-heroe/mundo-salud-financiera.md |
-  | inversion | docs/investigación-heroe/mundo-inversión.md        |
-  | deuda     | docs/investigación-heroe/mundo-deuda.md            |
+  | salud     | docs/investigación-heroe/MUNDO-SALUD-FINANCIERA.md |
+  | inversion | docs/investigación-heroe/MUNDO-INVERSION.md        |
+  | deuda     | docs/investigación-heroe/MUNDO-DEUDA.md            |
   | ahorro    | (no hay: investiga según la sección 6)             |
 
   ---------------------------- encargo del subagente -----------------------
   Escribe los 9 niveles del mundo <MUNDO> del Camino del héroe de TeachCash.
 
-  Lee docs/plans/prompt-primeros-cursos.txt ENTERO (secciones 3 a 8: son tu
-  especificación), docs/CONTENIDO_HEROE.md, src/types/heroe.types.ts,
+  Lee docs/plans/PROMPT-PRIMEROS-CURSOS.txt ENTERO (secciones 3 a 8: son tu
+  especificación), docs/CONTENIDO-HEROE.md, src/types/heroe.types.ts,
   content/heroe/ahorro/*.json como ejemplo, y <INFORME> ENTERO.
 
   Escribe SOLO en .borrador-heroe/<MUNDO>/. Los JSON van en
@@ -272,7 +272,7 @@ Espera a que terminen los cuatro. Mientras tanto no hagas su trabajo.
 FASE 2: publicar y repasar. Copia .borrador-heroe/<mundo>/<mundo>/* a
 content/heroe/<mundo>/ y pasa `pnpm heroe:validar`, que ahora sí mira los
 cuatro juntos (títulos repetidos, sobre todo). Mueve el informe de Ahorro a
-docs/investigación-heroe/mundo-ahorro.md. Revisa TÚ, sin fiarte de los
+docs/investigación-heroe/MUNDO-AHORRO.md. Revisa TÚ, sin fiarte de los
 subagentes:
   - Nombres: grep de Lucía, Mateo, Carmen, David, Julián, Marc, Roberto, Elena y
     cualquier otro nombre propio de persona en content/heroe/. Solo Pepito.
@@ -290,15 +290,15 @@ FASE 3: lo que deja de valer. Lee el código antes de cambiarlo.
     `mundos.find((x) => !x.proximamente)`). Hay que elegir Ahorro antes de
     comprobarlo y de entrar. Verifica los nombres accesibles contra el código.
   - AGENTS.md (decisión abierta "Camino del héroe, contenido") y
-    docs/plans/CAMINO_HEROE.md (estado y fase 6): los cursos están escritos y
+    docs/plans/CAMINO-HEROE.md (estado y fase 6): los cursos están escritos y
     pendientes de revisión humana.
-  - docs/CONTENIDO_HEROE.md: jefe de hasta 12 preguntas si hace falta, y que los
-    prompts y los informes están en docs/plans/prompt-cursos.txt y
+  - docs/CONTENIDO-HEROE.md: jefe de hasta 12 preguntas si hace falta, y que los
+    prompts y los informes están en docs/plans/PROMPT-CURSOS.txt y
     docs/investigación-heroe/.
-  - docs/plans/prompt-cursos.txt: quita las dos cosas caducadas de la sección 4.
+  - docs/plans/PROMPT-CURSOS.txt: quita las dos cosas caducadas de la sección 4.
   - Los temporales se borran al final de la fase 4, no antes.
 
-FASE 4: la lista de revisión. Escribe docs/investigación-heroe/revision-cifras.md
+FASE 4: la lista de revisión. Escribe docs/investigación-heroe/REVISION-CIFRAS.md
 juntando los cuatro revision.md, por mundo, con lo NO VERIFICADO y lo CORREGIDO
 arriba del todo. Es lo que voy a leer yo: "Nada se publica sin esta lectura".
 Luego borra src/__tests__/borrador-heroe.test.ts y .borrador-heroe/.
@@ -329,5 +329,5 @@ con squash.
 [ ] Toda lectura lleva imagen, dato con fuente, ejemplo, mito y gancho final.
 [ ] `pnpm heroe:validar`, typecheck, lint, test, test:tz y build pasan.
 [ ] git status no enseña ni .borrador-heroe/ ni el test temporal.
-[ ] docs/investigación-heroe/revision-cifras.md existe y lo he leído yo antes de
+[ ] docs/investigación-heroe/REVISION-CIFRAS.md existe y lo he leído yo antes de
     mergear.

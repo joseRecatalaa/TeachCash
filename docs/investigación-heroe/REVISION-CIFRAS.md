@@ -13,8 +13,8 @@ Dónde está cada cosa:
   discutibles.
 - **`content/heroe/<mundo>/FUENTES.md`**: cada dato de cada nivel con su fuente,
   ordenado por nivel. Es la referencia para mantener el curso al día.
-- **Los informes de investigación**: `mundo-salud-financiera.md`,
-  `mundo-inversión.md`, `mundo-deuda.md` y `mundo-ahorro.md` (este último no es
+- **Los informes de investigación**: `MUNDO-SALUD-FINANCIERA.md`,
+  `MUNDO-INVERSION.md`, `MUNDO-DEUDA.md` y `MUNDO-AHORRO.md` (este último no es
   de Gemini: lo hizo el subagente de Ahorro, con URLs). Son borradores: una
   cifra no es cierta porque salga ahí.
 
@@ -265,7 +265,7 @@ confirmar se ha quitado o se ha dejado como regla práctica sin atribuir.
 
 ## Ahorro: revisión
 
-`pnpm heroe:validar` pasa con los cuatro mundos juntos. Las fuentes con sus URLs están en `docs/investigación-heroe/mundo-ahorro.md`.
+`pnpm heroe:validar` pasa con los cuatro mundos juntos. Las fuentes con sus URLs están en `docs/investigación-heroe/MUNDO-AHORRO.md`.
 
 ### a) Los 9 niveles (en el orden de `mundo.json`)
 

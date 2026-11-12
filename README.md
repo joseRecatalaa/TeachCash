@@ -129,7 +129,7 @@ invitados caducados.
 Un curso es un fichero JSON en `content/heroe/<mundo>/`, no código: se revisa en
 una PR y, si está mal escrito, `pnpm heroe:validar` y la CI lo rechazan. Cómo se
 escribe —tipos de nivel, bloques de lectura, preguntas y el tono—, en
-`docs/CONTENIDO_HEROE.md`.
+`docs/CONTENIDO-HEROE.md`.
 
 ## Tests y calidad
 

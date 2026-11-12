@@ -3,7 +3,7 @@
  *
  * Pregunta dos cosas —el nombre en singular y el plural— y de ahí deriva las
  * cuatro carpetas de la entidad, cada una con su caso. La tabla de derivación
- * está en docs/architecture.md, sección "Añadir una entidad".
+ * está en docs/ARCHITECTURE.md, sección "Añadir una entidad".
  *
  * Los DTOs traen un campo `nombre` de ejemplo para que el andamiaje se sostenga;
  * el trabajo es sustituirlo por los reales, y hay un `// TODO` en cada uno de

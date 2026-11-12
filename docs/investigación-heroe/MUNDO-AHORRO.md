@@ -1,6 +1,6 @@
 # Ahorro: informe de investigación
 
-Fecha de consulta: 4 de noviembre de 2026. Ahorro no tenía informe de Gemini. Este lo he hecho yo, con fuentes oficiales, a partir del ENFOQUE de la sección AHORRO de `docs/plans/prompt-cursos.txt`. Las normas se han leído en el **texto consolidado del BOE**, descargado ese mismo día. La fecha de "última modificación" que da cada texto va anotada al lado.
+Fecha de consulta: 4 de noviembre de 2026. Ahorro no tenía informe de Gemini. Este lo he hecho yo, con fuentes oficiales, a partir del ENFOQUE de la sección AHORRO de `docs/plans/PROMPT-CURSOS.txt`. Las normas se han leído en el **texto consolidado del BOE**, descargado ese mismo día. La fecha de "última modificación" que da cada texto va anotada al lado.
 
 ## 1. Fondo de Garantía de Depósitos (FGD)
 

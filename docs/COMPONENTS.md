@@ -5,7 +5,7 @@ antes de escribir código de interfaz o de crear un componente**: casi todo lo
 que vas a necesitar ya existe, y lo que no existe tiene un sitio y unas reglas.
 
 Las reglas duras (dinero en céntimos, fechas civiles…) están en `AGENTS.md`;
-dónde vive cada fichero, en `docs/structure.md`.
+dónde vive cada fichero, en `docs/STRUCTURE.md`.
 
 ## Antes de escribir un componente
 

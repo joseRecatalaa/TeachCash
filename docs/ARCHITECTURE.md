@@ -5,7 +5,7 @@ la sesión y cómo se añade una entidad. **Léelo antes de tocar una Server Act
 un repositorio, un hook de datos o la sesión.**
 
 Las reglas duras están en `AGENTS.md` y aquí se dan por sabidas; dónde vive cada
-fichero, en `docs/structure.md`.
+fichero, en `docs/STRUCTURE.md`.
 
 ## Las cuatro capas
 

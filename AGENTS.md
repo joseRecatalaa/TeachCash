@@ -20,7 +20,7 @@ personas, no contabilidad de empresa.
 
 "Veraz" es un requisito, no un adjetivo: las cifras y normas del contenido son
 las de España, salen de fuentes oficiales y no se publican sin revisión humana
-(`docs/CONTENIDO_HEROE.md`). Un curso con un dato mal es un bug, igual que un
+(`docs/CONTENIDO-HEROE.md`). Un curso con un dato mal es un bug, igual que un
 importe mal sumado.
 
 Tiene **tres módulos**, y el menú lateral cambia de uno a otro:
@@ -33,8 +33,8 @@ Tiene **tres módulos**, y el menú lateral cambia de uno a otro:
 - **Camino del héroe** (`/CaminoHeroe`): educación financiera con forma de
   videojuego a píxel. Mundos (planetas) con un camino de niveles: lecturas con
   minitest, prácticas y un jefe. El plan y su porqué están en
-  `docs/plans/CAMINO_HEROE.md`; cómo se escribe el contenido, en
-  `docs/CONTENIDO_HEROE.md`.
+  `docs/plans/CAMINO-HEROE.md`; cómo se escribe el contenido, en
+  `docs/CONTENIDO-HEROE.md`.
 
 **Es multiusuario y se usa sin registrarse.** Quien entra sin sesión recibe una
 de **invitado** (usuario anónimo de Supabase, caduca a los 4 días); si crea una
@@ -64,17 +64,17 @@ nómina, IRPF o la fiscalidad de un fondo.
 
 | Si vas a… | Lee antes |
 |---|---|
-| Escribir código de interfaz, crear un componente o algo que lo parezca (un formulario, una tabla, un botón, un título, una tarjeta, un gráfico, un sprite) | **`docs/components.md`**: qué piezas existen y se reutilizan, el sistema de diseño y cómo se declara una vista |
-| Tocar el camino de los datos, una Server Action, la sesión, un repositorio o añadir una entidad | **`docs/architecture.md`**: las capas, cómo viajan los datos y la sesión, y `pnpm generate:crud` |
-| Buscar dónde está algo o dónde va un fichero nuevo | **`docs/structure.md`**: la hoja de ruta ("Dónde va cada cosa") y el árbol de ficheros |
+| Escribir código de interfaz, crear un componente o algo que lo parezca (un formulario, una tabla, un botón, un título, una tarjeta, un gráfico, un sprite) | **`docs/COMPONENTS.md`**: qué piezas existen y se reutilizan, el sistema de diseño y cómo se declara una vista |
+| Tocar el camino de los datos, una Server Action, la sesión, un repositorio o añadir una entidad | **`docs/ARCHITECTURE.md`**: las capas, cómo viajan los datos y la sesión, y `pnpm generate:crud` |
+| Buscar dónde está algo o dónde va un fichero nuevo | **`docs/STRUCTURE.md`**: la hoja de ruta ("Dónde va cada cosa") y el árbol de ficheros |
 | Escribir o arreglar un test | **`docs/TESTS.md`**: cómo está montado, qué cubre cada fichero y qué no merece test |
-| Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO_HEROE.md`**, y las cifras en `docs/investigación-heroe/revision-cifras.md` |
+| Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO-HEROE.md`**, y las cifras en `docs/investigación-heroe/REVISION-CIFRAS.md` |
 | Tocar auth, sesión, cabeceras, CSP, límites, logs, RLS, dependencias o el CI | **`docs/SECURITY.md`**: las medidas por cada punto de OWASP Top 10 y API Top 10, lo que depende de configuración fuera del repo y los riesgos aceptados |
 | Desplegar en producción (Vercel + Supabase) o tocar su configuración | **`docs/plans/PLAN-DESPLIEGUE.md`**: los pasos en orden, las variables de entorno, el panel de Supabase y Turnstile y cómo comprobarlo |
-| Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO_HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
+| Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO-HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
 
 La regla que más se olvida: **antes de escribir un componente, búscalo en
-`docs/components.md`**. Si te ves escribiendo un formulario a mano con
+`docs/COMPONENTS.md`**. Si te ves escribiendo un formulario a mano con
 `<TextInput>` sueltos, o una `<DataTable>` fuera de `AppTable`, párate: casi
 siempre significa que no has encontrado la pieza genérica.
 
@@ -90,7 +90,7 @@ un fichero que se mueve), actualiza el documento en el mismo cambio.
 | Lenguaje | TypeScript 5, `strict` | |
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
 | UI | **Mantine v9** + `mantine-datatable` | Iconos: `@tabler/icons-react` |
-| Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" en `docs/components.md` |
+| Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" en `docs/COMPONENTS.md` |
 | Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Fredoka en `app/fonts/` (`next/font/local`); las demás, `next/font/google` |
 | Estado de servidor | **React Query v5** | Lo usa Refine por dentro |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
@@ -472,7 +472,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   la regla de "sin JSX" se vigile por ruta.
 - **La documentación, partida por tarea**: este fichero lleva solo lo que vale
   para cualquier cambio (reglas duras, comandos, trampas, decisiones) y remite
-  a `docs/components.md`, `docs/architecture.md`, `docs/structure.md` y
+  a `docs/COMPONENTS.md`, `docs/ARCHITECTURE.md`, `docs/STRUCTURE.md` y
   `docs/TESTS.md` según lo que se vaya a hacer. Antes era un único fichero de
   más de mil líneas que se cargaba entero en cada sesión. Los planes ya
   ejecutados viven en `docs/plans/` como histórico: lo vigente está aquí.
@@ -727,7 +727,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   tarjetas del mes; el patrimonio es siempre el de hoy y los dos gráficos de
   tendencia siguen en los últimos 12 meses. El tope es de navegación y no se
   impone en el servidor: un movimiento anterior sigue siendo válido.
-- **Camino del héroe** (plan completo en `docs/plans/CAMINO_HEROE.md`):
+- **Camino del héroe** (plan completo en `docs/plans/CAMINO-HEROE.md`):
   - **El contenido es JSON en el repo; la base guarda solo el progreso**
     (`hero_progress`: usuario + nivel, mejor marca, intentos y primera vez
     superado). Un curso se revisa en una PR y un JSON mal escrito rompe la CI
@@ -844,8 +844,8 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Camino del héroe, contenido**: los cuatro mundos tienen sus 9 niveles,
   escritos y **pendientes de revisión humana**. La lista de cifras oficiales,
   con su estado (verificada, corregida o no verificada) y su fuente, está en
-  `docs/investigación-heroe/revision-cifras.md`; nada se publica sin esa
-  lectura (fase 6 de `docs/plans/CAMINO_HEROE.md`).
+  `docs/investigación-heroe/REVISION-CIFRAS.md`; nada se publica sin esa
+  lectura (fase 6 de `docs/plans/CAMINO-HEROE.md`).
 - **Camino del héroe, vidas y rachas**: fuera de la primera versión a
   propósito. Si llegan, son progreso derivado o una tabla aparte, nunca un
   contador guardado junto a la mejor marca.

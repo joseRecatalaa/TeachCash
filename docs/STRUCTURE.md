@@ -2,8 +2,8 @@
 
 La hoja de ruta del repo: dónde vive cada cosa y dónde va cada cambio. **Léelo
 cuando busques algo o vayas a crear un fichero nuevo.** Qué hace cada pieza de
-interfaz, en `docs/components.md`; cómo se conectan las capas, en
-`docs/architecture.md`.
+interfaz, en `docs/COMPONENTS.md`; cómo se conectan las capas, en
+`docs/ARCHITECTURE.md`.
 
 ## Dónde va cada cosa
 
@@ -23,7 +23,7 @@ Cada cambio tiene un sitio y solo uno:
 | Cambiar el color de una categoría en tabla y gráficos | La clave en `categories.color`; los tonos, en `app/globals.css` (`--sd-cat-*`) |
 | Añadir una entidad entera | `pnpm generate:crud` |
 | Añadir un módulo al menú lateral | `MODULOS` en `src/presentation/components/SideMenu/SideMenu.tsx` |
-| Añadir o cambiar un curso del Camino del héroe | Un JSON en `content/heroe/<mundo>/` (guía en `docs/CONTENIDO_HEROE.md`) y `pnpm heroe:validar` |
+| Añadir o cambiar un curso del Camino del héroe | Un JSON en `content/heroe/<mundo>/` (guía en `docs/CONTENIDO-HEROE.md`) y `pnpm heroe:validar` |
 | Cambiar el formato de ese contenido | Los esquemas Zod de `src/types/heroe.types.ts` |
 | Poner el título de una pantalla | `SketchTitle` de `src/presentation/components/ui` |
 | Añadir o cambiar un objeto de la tienda | `CATALOGO` en `lib/tienda.ts`; si es un tipo nuevo, sus DOS dibujos: el grande en `Pixel/spritesGrande.ts` y `SPRITE_OBJETO`, y el pequeño en `Pixel/spritesEquipo.ts`, `PIEZAS_PEQUENAS` y su capa en `PixelHero` |
@@ -186,12 +186,12 @@ Cada cambio tiene un sitio y solo uno:
   e2e/                                # Playwright: specs y Page Objects (e2e/pages/)
   playwright.config.ts
   docs/                               # la documentación a la que remite AGENTS.md
-    components.md                     # qué piezas de interfaz hay y cómo se reutilizan
-    architecture.md                   # capas, camino de los datos y de la sesión, añadir una entidad
-    structure.md                      # esta hoja de ruta
+    COMPONENTS.md                     # qué piezas de interfaz hay y cómo se reutilizan
+    ARCHITECTURE.md                   # capas, camino de los datos y de la sesión, añadir una entidad
+    STRUCTURE.md                      # esta hoja de ruta
     TESTS.md                          # todo lo de tests y quality gates
-    CONTENIDO_HEROE.md                # cómo se escribe un curso
-    investigación-heroe/              # informes por mundo y revision-cifras.md
+    CONTENIDO-HEROE.md                # cómo se escribe un curso
+    investigación-heroe/              # informes por mundo y REVISION-CIFRAS.md
     plans/                            # los planes (históricos) y los prompts de los cursos
   .github/workflows/                  # calidad.yml (CI) y ping-supabase.yml
   .husky/pre-commit                   # ESLint + typecheck en cada commit

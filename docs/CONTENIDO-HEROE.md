@@ -1,7 +1,7 @@
 # Contenido del Camino del héroe
 
 Cómo se escribe un mundo o un nivel nuevo. El plan del módulo está en
-`docs/plans/CAMINO_HEROE.md`; esto es solo el contenido.
+`docs/plans/CAMINO-HEROE.md`; esto es solo el contenido.
 
 **Añadir un curso es añadir un fichero JSON, sin tocar código.** El contenido
 vive en `content/heroe/`, lo lee `src/infrastructure/heroe/contenido.ts` y su
@@ -24,10 +24,10 @@ concretos.
    lectura.
 
 Los prompts que se usaron de verdad, ya rellenados por mundo, están en
-`docs/plans/prompt-cursos.txt` (y el de la conversión de los cuatro mundos a la vez,
-en `docs/plans/prompt-primeros-cursos.txt`). Los informes de investigación y la lista
+`docs/plans/PROMPT-CURSOS.txt` (y el de la conversión de los cuatro mundos a la vez,
+en `docs/plans/PROMPT-PRIMEROS-CURSOS.txt`). Los informes de investigación y la lista
 de cifras comprobadas, con su estado y su fuente, están en
-`docs/investigación-heroe/` (`revision-cifras.md`). Los informes son un
+`docs/investigación-heroe/` (`REVISION-CIFRAS.md`). Los informes son un
 borrador: una cifra no es cierta porque salga ahí.
 
 ## Dónde va cada cosa
@@ -201,7 +201,7 @@ Reglas:
 ```text
 Te paso un informe de investigación sobre <MUNDO> para el Camino del héroe
 de TeachCash. Conviértelo en los JSON de content/heroe/<carpeta>/ siguiendo
-EXACTAMENTE docs/CONTENIDO_HEROE.md y los esquemas de
+EXACTAMENTE docs/CONTENIDO-HEROE.md y los esquemas de
 src/types/heroe.types.ts:
 
 - mundo.json con decorado "<decorado>" y orden <orden>.

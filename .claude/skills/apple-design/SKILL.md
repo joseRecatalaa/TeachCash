@@ -9,7 +9,7 @@ metadata:
 > Origen: `chaos-xxl/apple-design-skill` (MIT), contenido de su `CLAUDE.md`.
 >
 > **En TeachCash**: los colores, trazos y sombras salen de los tokens `--sd-*` y
-> nunca de un hexadecimal en un `*.module.css` (ver `docs/components.md`, "El sistema de
+> nunca de un hexadecimal en un `*.module.css` (ver `docs/COMPONENTS.md`, "El sistema de
 > diseño"). Usa esta skill como referencia de criterio, no para pegar sus `:root`.
 
 
