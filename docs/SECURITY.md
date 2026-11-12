@@ -254,10 +254,10 @@ El paso a paso para producción (Vercel + Supabase) está en
 
 - [ ] **URL Configuration**: Site URL = `APP_URL` y Redirect URLs exactas en producción, **sin comodines**.
 - [ ] **Captcha** activado (Turnstile, con su secret aquí y no en la app).
-- [ ] **Secure password change** y **Secure email change** activados. `PUT /auth/v1/user` es un camino paralelo a la reautenticación de la app.
+- [ ] **Secure password change** y **Secure email change** activados.
 - [ ] Rotación de refresh tokens activada; JWT de 3.600 s como mucho.
 - [ ] Contraseña mínima de 10 con los cuatro tipos de carácter; *leaked password protection* si el plan lo permite.
-- [ ] **Aplicar las migraciones 0007 y 0008** (`pnpm db:migrate` y `pnpm db:migrate:e2e`). Hasta entonces, la API REST sigue dejando escribir.
+- [ ] **Todas las migraciones aplicadas** (`pnpm db:migrate` y `pnpm db:migrate:e2e`).
 - [ ] Data API: si un día no se usa ni para el ping, se puede desactivar entera.
 
 **GitHub**
@@ -270,9 +270,7 @@ El paso a paso para producción (Vercel + Supabase) está en
 
 No se publican. Lo que esté abierto se lleva en avisos privados de GitHub
 (**Security → Advisories**) y, al cerrarse, pasa a las tablas de arriba como un
-control más. Las mejoras que no son un fallo (MFA, un límite compartido entre
-instancias, un rol de base propio) están en "Decisiones abiertas" de
-`AGENTS.md`.
+control más.
 
 ---
 
