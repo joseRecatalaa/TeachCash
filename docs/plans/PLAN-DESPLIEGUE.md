@@ -45,9 +45,8 @@ Cloudflare Turnstile ◄── el navegador pide el token; Supabase lo comprueba
 
 ### 1.1 Aplicar todas las migraciones
 
-Las migraciones 0007 y 0008 dejan la API REST de Supabase en solo lectura.
-Hasta que se apliquen, cualquiera con su propia sesión puede escribir en
-movimientos, categorías y patrimonio saltándose las cuotas.
+Las migraciones 0007 a 0009 dejan la API REST de Supabase en solo lectura.
+Aplícalas antes de publicar la app.
 
 ```bash
 pnpm db:migrate        # proyecto principal (lee .env.local)
@@ -83,7 +82,33 @@ Los invitados caducan a los 4 días y los borra un job de `pg_cron`.
       `limpieza-invitados | 0 * * * *`. Si no sale, ejecuta una vez en el SQL
       Editor el contenido de `db/sql/limpieza-invitados.sql`.
 
-### 1.3 Copias de seguridad
+### 1.3 Comprobaciones con Claude y el MCP de Supabase
+
+Claude puede hacer por ti las comprobaciones de la base de esta fase si le
+conectas el MCP de Supabase. Conéctalo **en solo lectura y limitado al
+proyecto**, para que no pueda cambiar nada de producción ni por error
+(`<ref>` es el identificador del proyecto, el que sale en la URL del panel):
+
+```bash
+claude mcp add --transport http supabase "https://mcp.supabase.com/mcp?project_ref=<ref>&read_only=true"
+```
+
+Pide el inicio de sesión de Supabase en el navegador. Después, pídele a Claude
+que compruebe:
+
+- [ ] **Que el rol de la app puede leer `auth.sessions`.** Es la más
+      importante: toda Server Action comprueba ahí que la sesión sigue abierta
+      (`sesionViva`). Si no puede leerla, nadie puede hacer nada en la app.
+- [ ] Las migraciones aplicadas y las dos consultas de 1.1.
+- [ ] El job de limpieza de invitados de 1.2.
+- [ ] Cuánto ocupa la base (`pg_database_size`), lejos de los 400 MB del freno
+      general (`MAX_TAMANO_BASE`).
+- [ ] Los avisos de seguridad del propio Supabase (*advisors*).
+
+El MCP no llega a los ajustes de Authentication (Fase 3): esos se revisan a
+mano en el panel.
+
+### 1.4 Copias de seguridad
 
 - [ ] Database → Backups: mira qué incluye tu plan. Si no hay copias que puedas
       descargar, haz una antes de abrir la app y después de cada migración:
