@@ -12,7 +12,16 @@ export function authMock() {
   return {
     getSession: async () =>
       harness.userId
-        ? { user: { id: harness.userId, email: null, esInvitado: false, entroConPassword: false } }
+        ? {
+            user: {
+              id: harness.userId,
+              // La sesión que le abre `crearUsuario`, para que pase `sesionViva`.
+              sesionId: harness.userId,
+              email: null,
+              esInvitado: false,
+              entroConPassword: false,
+            },
+          }
         : null,
     requireUserId: async () => {
       if (!harness.userId) throw new Error('No autorizado')

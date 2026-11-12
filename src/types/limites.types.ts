@@ -16,7 +16,7 @@
  * La columna es `integer` (int4, hasta 2.147.483.647). Sin este tope, un
  * importe mayor llega hasta Postgres y vuelve como un error genérico; con él,
  * es un error del campo que la persona puede corregir. Y deja margen: la suma
- * de 50.000 movimientos al máximo sigue siendo exacta en un `Number` (< 2^53).
+ * de 4.000 movimientos al máximo sigue siendo exacta en un `Number` (< 2^53).
  */
 export const IMPORTE_MAXIMO = 1_000_000_000
 
@@ -25,11 +25,30 @@ export const IMPORTE_MAXIMO = 1_000_000_000
  *
  * Es una cuota contra el abuso, no un límite de uso: un invitado nace sin
  * registrarse y vive 4 días, así que sin cuota cualquiera podría llenar la base
- * del plan gratuito con un bucle. Una persona que anota diez movimientos al día
- * tarda más de diez años en llegar al de cuenta.
+ * del plan gratuito con un bucle. Nadie anota 200 movimientos a mano en 4 días,
+ * y una persona que anota 30 al mes tarda once años en llegar al de cuenta.
  */
-export const MAX_MOVIMIENTOS_INVITADO = 1_000
-export const MAX_MOVIMIENTOS_CUENTA = 50_000
+export const MAX_MOVIMIENTOS_INVITADO = 200
+export const MAX_MOVIMIENTOS_CUENTA = 4_000
+
+/**
+ * Bytes de texto (descripción + notas, en UTF-8) que puede guardar un usuario.
+ *
+ * La cuota de movimientos sola no basta: un movimiento con descripción y notas
+ * al máximo ocupa cien veces uno normal. Con uso normal (unos 30 caracteres de
+ * descripción) estos topes no se notan: antes llega la de movimientos. Cuenta
+ * BYTES y no caracteres porque es lo que ocupa en disco, y un emoji son 4.
+ */
+export const MAX_TEXTO_INVITADO = 100 * 1024
+export const MAX_TEXTO_CUENTA = 5 * 1024 * 1024
+
+/**
+ * El freno general: con la base por encima de esto no se crean invitados,
+ * movimientos ni categorías (`capacidad.repository.ts`). El plan gratuito de
+ * Supabase tiene 500 MB; el margen es para lo que ya esté a medio escribir y
+ * para lo que ocupa Supabase por su cuenta.
+ */
+export const MAX_TAMANO_BASE = 400 * 1024 * 1024
 
 /** Cuántas categorías puede tener un usuario. El catálogo de fábrica trae 17. */
 export const MAX_CATEGORIAS = 200

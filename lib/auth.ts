@@ -17,6 +17,11 @@ import { crearClienteSupabase } from './supabase/server'
 export type Session = {
   user: {
     id: string
+    /**
+     * El `session_id` del token. Con él se comprueba que la sesión sigue
+     * abierta (`sesionActiva`), porque la firma del token no lo dice.
+     */
+    sesionId: string
     email: string | null
     esInvitado: boolean
     /**
@@ -65,10 +70,13 @@ export async function getSession(): Promise<Session | null> {
   const { data, error } = await supabase.auth.getClaims()
   const claims = data?.claims
   if (error || !claims?.sub) return null
+  // Sin id de sesión no hay forma de saber si la cerraron: no cuenta como sesión.
+  if (typeof claims.session_id !== 'string' || !claims.session_id) return null
 
   return {
     user: {
       id: claims.sub,
+      sesionId: claims.session_id,
       email: typeof claims.email === 'string' && claims.email ? claims.email : null,
       esInvitado: claims.is_anonymous === true,
       entroConPassword: metodoDeEntrada(claims.amr) === 'password',

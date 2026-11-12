@@ -23,7 +23,7 @@ partir de una web real.
 
 **En TeachCash**: lo que se adopte se convierte en tokens `--sd-*` de
 `app/globals.css` y en reglas de los `*.module.css`, nunca en hexadecimales
-sueltos ni en un `style` inline (ver `docs/components.md`, "El sistema de diseño").
+sueltos ni en un `style` inline (ver `docs/COMPONENTS.md`, "El sistema de diseño").
 
 Se han dejado solo las ocho más cercanas a una app de finanzas personales; el
 resto de la colección está en el repo de origen.

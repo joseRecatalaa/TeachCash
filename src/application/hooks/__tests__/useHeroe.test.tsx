@@ -9,6 +9,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { nuevoQueryClient } from '@/test/render'
+import { claveNueva, ocultar } from '@/lib/ocultar'
 import { useEnviarNivel, useMapaHeroe, useMundoHeroe, useNivelHeroe } from '../useHeroe'
 
 const acciones = vi.hoisted(() => ({
@@ -31,13 +32,27 @@ describe('cada consulta pide su acción y cuelga de ["heroe"]', () => {
   test.each<[string, () => { data?: unknown }, ReturnType<typeof vi.fn>, unknown[]]>([
     ['mapa', () => useMapaHeroe(), acciones.fetchMapa, []],
     ['mundo', () => useMundoHeroe('ahorro'), acciones.fetchMundo, ['ahorro']],
-    ['nivel', () => useNivelHeroe('ahorro/01'), acciones.fetchNivel, ['ahorro/01']],
   ])('%s', async (_nombre, hook, accion, argumentos) => {
     accion.mockResolvedValue({ ok: true, data: 'dato' })
     const { result, queryClient } = montar(hook)
 
     await waitFor(() => expect(result.current.data).toBe('dato'))
     expect(accion).toHaveBeenCalledWith(...argumentos)
+    expect(queryClient.getQueryCache().getAll().map((q) => q.queryKey[0])).toEqual(['heroe'])
+  })
+
+  test('nivel: lo pide, cuelga de ["heroe"] y lo abre en memoria', async () => {
+    const clave = claveNueva()
+    const nivel = { id: 'ahorro/01', tipo: 'lectura' }
+    acciones.fetchNivel.mockResolvedValue({
+      ok: true,
+      data: { nivel: ocultar(nivel, clave), clave, mundo: { id: 'ahorro' }, estrellas: 1 },
+    })
+    const { result, queryClient } = montar(() => useNivelHeroe('ahorro/01'))
+
+    await waitFor(() => expect(result.current.data).toBeDefined())
+    expect(result.current.data).toEqual({ nivel, mundo: { id: 'ahorro' }, estrellas: 1 })
+    expect(acciones.fetchNivel).toHaveBeenCalledWith('ahorro/01')
     expect(queryClient.getQueryCache().getAll().map((q) => q.queryKey[0])).toEqual(['heroe'])
   })
 

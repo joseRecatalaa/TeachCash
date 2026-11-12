@@ -14,10 +14,10 @@
  * en el navegador, que es donde Refine y React Query las quieren.
  */
 
-import { getSession } from '@/lib/auth'
 import { consumir, LIMITE_ACCIONES } from '@/lib/limite'
 import { registrarError, registrarEvento } from '@/lib/log'
 import { RepositoryError } from '@/src/infrastructure/repositories/types'
+import { sesionActiva } from './sesion'
 
 export type ActionOk<T> = { ok: true; data: T }
 export type ActionFail = {
@@ -35,7 +35,8 @@ export const DEMASIADAS_PETICIONES = 'Demasiadas peticiones seguidas. Espera un 
 /**
  * Resuelve la sesión, ejecuta y traduce el fallo.
  *
- * - Sin sesión no se ejecuta nada (regla dura 3). El `userId` que recibe la
+ * - Sin sesión no se ejecuta nada (regla dura 3), ni con una ya cerrada cuyo
+ *   token aún firma bien (`sesionActiva`). El `userId` que recibe la
  *   operación sale de la sesión verificada, nunca de los argumentos.
  * - Pasado `LIMITE_ACCIONES`, tampoco: se devuelve que espere.
  * - Un `RepositoryError` es un error de negocio y su mensaje SE LE ENSEÑA a la
@@ -50,7 +51,7 @@ export async function ejecutar<T>(
   contexto: string,
   operacion: (userId: string) => Promise<T>,
 ): Promise<ActionResult<T>> {
-  const session = await getSession()
+  const session = await sesionActiva()
   if (!session) return { ok: false, error: NO_AUTORIZADO }
 
   // Por usuario y antes de tocar la base (OWASP API4): un script con una

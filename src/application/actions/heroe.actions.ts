@@ -20,7 +20,7 @@ import {
 import type {
   MapaDto,
   MundoDto,
-  NivelDto,
+  NivelOcultoDto,
   ResultadoNivelDto,
 } from '@/src/types/heroe.types'
 import { validarLevelId, validarMundoId } from './frontera'
@@ -37,7 +37,7 @@ export async function fetchMundo(mundoId: string): Promise<ActionResult<MundoDto
   return run((userId) => getMundo(userId, validarMundoId(mundoId)))
 }
 
-export async function fetchNivel(levelId: string): Promise<ActionResult<NivelDto>> {
+export async function fetchNivel(levelId: string): Promise<ActionResult<NivelOcultoDto>> {
   return run((userId) => getNivel(userId, validarLevelId(levelId)))
 }
 

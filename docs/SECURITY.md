@@ -17,6 +17,12 @@ Este documento recoge la auditoría de noviembre de 2026, hecha sobre el commit
 Si cambias algo de lo que se describe aquí, actualiza este documento en el
 mismo cambio, como el resto de `docs/`.
 
+> **Este documento es público** (el repositorio lo es). Aquí van los controles
+> que existen y la configuración que hay que revisar, **nunca** un fallo que
+> siga abierto ni cómo aprovecharlo. Un fallo sin arreglar se lleva en un aviso
+> privado de GitHub (**Security → Advisories**) y entra aquí, como control,
+> cuando ya está corregido.
+
 ---
 
 ## 1. Qué hay que proteger y de quién
@@ -36,8 +42,8 @@ mismo cambio, como el resto de `docs/`.
 
 **Fronteras de confianza:**
 
-- navegador → `proxy.ts` (CSP y refresco de sesión);
-- Server Action → `getSession()` (JWT verificado) → repositorio, que filtra por `userId` en el `where`;
+- navegador → `proxy.ts` (CSP y refresco de sesión, con límite por IP);
+- Server Action → `sesionActiva()` (JWT verificado y sesión aún abierta) → repositorio, que filtra por `userId` en el `where`;
 - servidor → Supabase Auth, que comprueba el CAPTCHA y guarda las contraseñas;
 - Internet → la API REST de Supabase, protegida con RLS.
 
@@ -115,8 +121,9 @@ mismo cambio, como el resto de `docs/`.
 | Control | Dónde |
 |---|---|
 | Lo que da valor lo calcula el servidor: aciertos, estrellas, precio y saldo | Reglas duras 6 y 7 |
-| Comprar va con candado por usuario (`pg_advisory_xact_lock`) para que no se gaste dos veces | `tienda.repository.ts` |
-| Cuotas por usuario: 1.000 movimientos para un invitado, 50.000 para una cuenta y 200 categorías | `limites.types.ts` |
+| Comprar y dar de alta movimientos o categorías van con candado por usuario (`pg_advisory_xact_lock`): ni se gasta dos veces ni dos altas a la vez pasan de la cuota | `transaccion.ts`, `tienda.repository.ts` |
+| Cuotas por usuario: 200 movimientos y 100 KB de texto para un invitado, 4.000 movimientos y 5 MB de texto para una cuenta, y 200 categorías | `limites.types.ts` |
+| **Freno general**: con la base por encima de 400 MB no se crean invitados, movimientos ni categorías, y queda un evento para la alerta | `capacidad.repository.ts` |
 | Los invitados caducan a los 4 días y pasan por CAPTCHA | `db/sql/limpieza-invitados.sql`, `lib/turnstile.ts` |
 | **Límite de peticiones** por usuario, por IP y por cuenta (ver API4) | `lib/limite.ts` |
 | Pruebas de abuso en la suite: ids ajenos, `pageSize` gigante, respuestas basura y compras repetidas | `frontera.actions.test.ts`, repositorios |
@@ -134,6 +141,8 @@ mismo cambio, como el resto de `docs/`.
 | **Los enlaces de email salen de `APP_URL`**, no de las cabeceras. Con `curl` y un `Host` falso, "recuperar la contraseña de otra persona" podía pedir un enlace hacia el dominio del atacante (*password reset poisoning*). En producción `APP_URL` es obligatoria: sin ella el servidor no arranca (auditoría run-2: antes era opcional y el arreglo quedaba en nada). Fuera de producción, todo lo que no sea un origen http(s) limpio se rechaza | `origen()` en `auth.actions.ts`, `lib/env.ts` |
 | **`/auth/confirm` acepta solo `?code=`** (PKCE, ligado al navegador que pidió el enlace). Se quitó la rama `?token_hash=`: permitía un *login CSRF*, es decir, meter a la víctima en la cuenta del atacante | `app/auth/confirm/route.ts` |
 | Salir revoca el refresh token de esa sesión | `cerrarSesion` |
+| **Una sesión cerrada deja de valer al momento**: toda Server Action comprueba que el `session_id` del token sigue en `auth.sessions`, así que salir, cambiar la contraseña o borrar la cuenta cortan también el token de acceso ya emitido | `sesionActiva` (`src/application/actions/sesion.ts`), `sesionViva` (`cuenta.repository.ts`) |
+| Un token sin `session_id` no cuenta como sesión | `lib/auth.ts` |
 | El access token dura 1 hora y el refresh token rota | Supabase |
 
 ### A08 · Software or Data Integrity Failures
@@ -159,7 +168,8 @@ mismo cambio, como el resto de `docs/`.
 - un pico de `{"evento":"login","resultado":"fallo"}`;
 - cualquier `"resultado":"bloqueo"`;
 - muchos `enlace_email`/`fallo` seguidos;
-- `borrar_cuenta` en ráfaga.
+- `borrar_cuenta` en ráfaga;
+- cualquier `capacidad`/`bloqueo` (la base está llena).
 
 ### A10 · Mishandling of Exceptional Conditions
 
@@ -180,7 +190,7 @@ mismo cambio, como el resto de `docs/`.
 | API1 | **BOLA** (acceder a objetos ajenos por id) | `userId` dentro del `where` en todo acceso; ids UUID; "No encontrado" igual para lo ajeno y lo inexistente. Tests de acceso cruzado por repositorio |
 | API2 | **Autenticación rota** | Todo lo de A07: JWT verificado, CAPTCHA, límites por IP y por cuenta, reautenticación, revocación de sesiones y enlaces que no se pueden envenenar |
 | API3 | **BOPLA** (leer o escribir propiedades de más) | Escritura: Zod con lista explícita de campos, sin esparcir `values` sobre la tabla (no hay *mass assignment*). Lectura: DTOs por pantalla, nunca la fila entera. **La API REST de Supabase ya no permite escribir en ninguna tabla**: antes, `categories`, `transactions` y `profiles` tenían `for all` |
-| API4 | **Consumo sin límites** | **300 acciones/min por usuario** en `ejecutar`; **cuerpo de Server Action ≤ 256 KB** (`next.config.ts`); `pageSize` ≤ 100, **`page` ≤ 50.000**, filas sin paginar ≤ 5.000 y serie de saldo ≤ 731 días; cuotas por usuario. El limitador tiene un tope de memoria (10.000 claves) para no ser él mismo la denegación de servicio |
+| API4 | **Consumo sin límites** | **300 acciones/min por usuario** en `ejecutar`; **cuerpo de Server Action ≤ 256 KB** (`next.config.ts`); `pageSize` ≤ 100, **`page` ≤ 4.000**, filas sin paginar ≤ 5.000 y serie de saldo ≤ 731 días; cuotas por usuario. **El refresco de sesión del proxy, 120 por minuto e IP**: pasado el límite deja de llamar a Supabase, sin bloquear la página. El limitador tiene un tope de memoria (10.000 claves **por regla**) para no ser él mismo la denegación de servicio; al llenarse olvida primero las claves con menos cuenta y nunca una bloqueada mientras quede otra |
 | API5 | **BFLA** (funciones que no deberías poder invocar) | No hay funciones de administración. Las acciones de cuenta (cambiar contraseña, borrar) comprueban el tipo de sesión **en el servidor**: un invitado no puede |
 | API6 | **Flujos de negocio sin protección** | Crear invitado: CAPTCHA, filtro de bots por User-Agent y 10 por IP y hora. Comprar en la tienda: estrellas calculadas en el servidor y con candado. Partidas: corregidas en el servidor. Las estrellas no se pueden fabricar escribiendo por REST |
 | API7 | **SSRF** | El servidor no pide ninguna URL que venga del usuario. Las únicas salidas son a Supabase, y la URL sale del entorno validado |
@@ -210,20 +220,18 @@ Notas de endurecimiento que dejó, y su estado:
 | Revocar las otras sesiones al cambiar la contraseña | ✅ Hecho |
 | `xlsx` sin hash en el lockfile y acciones del CI con tags flotantes | ✅ Hecho |
 | `page` sin tope | ✅ Hecho |
-| Las cuotas se comprueban contando y luego insertando, así que dos altas a la vez pueden pasarse | Aceptado. Es una cuota contra el abuso, no un saldo; el límite de 300 acciones/min acota cuánto se puede pasar |
-| Clave ajena compuesta `(user_id, category_id)` | Aceptado. El repositorio ya comprueba que la categoría es del usuario antes de escribir, y por la API REST ya no se escribe |
-| La rama de invitado de `registrarse` (`updateUser`) no lleva CAPTCHA | Aceptado. `updateUser` de Supabase no lo admite; queda el límite por IP y el invitado ya pasó un CAPTCHA al nacer |
-| `allowedDevOrigins` con `192.168.1.*` | Aceptado. Solo afecta a `next dev` en la red local |
+
+Una segunda pasada (perfil `standard`, run-2) dejó tres arreglos, ya hechos:
+la comprobación de sesión viva (A07), el límite del refresco en el proxy y el
+reparto de memoria del limitador (API4).
 
 Los artefactos de la ejecución (`architecture.md`, `coverage-ledger.json`,
 `findings.json` y `NEEDS-VALIDATION.md`) están fuera del repositorio, en
 `~/security-audit-skill/TeachCash/run-1`. Ese run quedó como `incomplete` por
 dos razones de forma: el entorno no dejó escribir dos de los informes, y en
 Windows sus validadores necesitaron un envoltorio. Ninguna de las dos cambia
-los hallazgos. Era un perfil `quick`: **no es una cobertura exhaustiva**, y
-según la propia skill una pasada encuentra aproximadamente la mitad de lo que
-encuentran varias. Conviene repetirla (`standard`) antes de abrir la app a más
-gente.
+los hallazgos. Era un perfil `quick`; la segunda pasada, con perfil
+`standard` (run-2), ya está hecha y sus arreglos, aplicados.
 
 ---
 
@@ -236,18 +244,18 @@ El paso a paso para producción (Vercel + Supabase) está en
 **Despliegue**
 
 - [ ] `APP_URL` con la URL pública, sin ruta. Sin ella, el servidor de producción no arranca.
-- [ ] El proxy de delante (Vercel, nginx…) **sobrescribe** `x-real-ip`/`x-forwarded-for` con la IP real. Si deja pasar la del cliente, el límite por IP se esquiva (el límite por cuenta sigue funcionando).
-- [ ] Con varias instancias: `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` compartida entre todas, y saber que cada una lleva sus propios límites (ver riesgos).
+- [ ] El proxy de delante (Vercel, nginx…) **sobrescribe** `x-real-ip`/`x-forwarded-for` con la IP real. Los límites por IP la necesitan.
+- [ ] Con varias instancias: `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` compartida entre todas.
 - [ ] Alertas en el agregador de logs sobre los eventos `tipo: "seguridad"` (A09).
 
 **Supabase** (Authentication → …)
 
 - [ ] **URL Configuration**: Site URL = `APP_URL` y Redirect URLs exactas en producción, **sin comodines**.
 - [ ] **Captcha** activado (Turnstile, con su secret aquí y no en la app).
-- [ ] **Secure password change** y **Secure email change** activados. `PUT /auth/v1/user` es un camino paralelo a la reautenticación de la app.
+- [ ] **Secure password change** y **Secure email change** activados.
 - [ ] Rotación de refresh tokens activada; JWT de 3.600 s como mucho.
 - [ ] Contraseña mínima de 10 con los cuatro tipos de carácter; *leaked password protection* si el plan lo permite.
-- [ ] **Aplicar las migraciones 0007 y 0008** (`pnpm db:migrate` y `pnpm db:migrate:e2e`). Hasta entonces, la API REST sigue dejando escribir.
+- [ ] **Todas las migraciones aplicadas** (`pnpm db:migrate` y `pnpm db:migrate:e2e`).
 - [ ] Data API: si un día no se usa ni para el ping, se puede desactivar entera.
 
 **GitHub**
@@ -256,17 +264,11 @@ El paso a paso para producción (Vercel + Supabase) está en
 
 ---
 
-## 6. Riesgos aceptados y trabajo pendiente
+## 6. Riesgos y trabajo pendiente
 
-| Riesgo | Por qué se acepta / qué falta |
-|---|---|
-| **Límites en memoria por proceso** | Con N instancias, el límite efectivo es N veces el configurado, y se reinicia al desplegar. Uno compartido pide Redis o una tabla (Decisión abierta). El límite por cuenta y el CAPTCHA siguen ahí |
-| **Sin MFA** | Decisión abierta (TOTP de Supabase). Lo compensan el CAPTCHA, los límites y la reautenticación en las acciones sensibles |
-| **Soluciones de los tests en el navegador** | Es para corregir al momento. Permite sacar 3 estrellas haciendo trampa en la propia partida, sin afectar a nadie más |
-| **Logs sin centralizar ni inmutables** | Van a la salida estándar de la plataforma. Un SIEM es una Decisión abierta (coste y privacidad) |
-| **Sin SBOM por release** | No se publican artefactos: lo que se despliega se construye desde el lockfile con hashes. Si se publica algo, `pnpm sbom` o CycloneDX en el CI |
-| **Rol de base sin mínimo privilegio** | La app se conecta con un rol que se salta RLS. Lo frena el `userId` en cada `where`; un rol propio es Decisión abierta |
-| **`style-src 'unsafe-inline'`** | Lo exigen Mantine y Recharts. Inyectar CSS es mucho menos grave que inyectar JS, y el JS sí está cerrado |
+No se publican. Lo que esté abierto se lleva en avisos privados de GitHub
+(**Security → Advisories**) y, al cerrarse, pasa a las tablas de arriba como un
+control más.
 
 ---
 

@@ -4,7 +4,7 @@ Cada cifra legal, fiscal u oficial del mundo, nivel a nivel, con la norma o la
 estadística de la que sale y su estado. Comprobado el **4 de noviembre de
 2026** en la fuente oficial. Este fichero no lo lee la aplicación: es para
 quien revisa o actualiza el curso. El informe de investigación completo está
-en `docs/investigación-heroe/mundo-ahorro.md`.
+en `docs/investigación-heroe/MUNDO-AHORRO.md`.
 
 **Estados**
 

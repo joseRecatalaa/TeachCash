@@ -20,7 +20,7 @@ personas, no contabilidad de empresa.
 
 "Veraz" es un requisito, no un adjetivo: las cifras y normas del contenido son
 las de España, salen de fuentes oficiales y no se publican sin revisión humana
-(`docs/CONTENIDO_HEROE.md`). Un curso con un dato mal es un bug, igual que un
+(`docs/CONTENIDO-HEROE.md`). Un curso con un dato mal es un bug, igual que un
 importe mal sumado.
 
 Tiene **tres módulos**, y el menú lateral cambia de uno a otro:
@@ -33,8 +33,8 @@ Tiene **tres módulos**, y el menú lateral cambia de uno a otro:
 - **Camino del héroe** (`/CaminoHeroe`): educación financiera con forma de
   videojuego a píxel. Mundos (planetas) con un camino de niveles: lecturas con
   minitest, prácticas y un jefe. El plan y su porqué están en
-  `docs/plans/CAMINO_HEROE.md`; cómo se escribe el contenido, en
-  `docs/CONTENIDO_HEROE.md`.
+  `docs/plans/CAMINO-HEROE.md`; cómo se escribe el contenido, en
+  `docs/CONTENIDO-HEROE.md`.
 
 **Es multiusuario y se usa sin registrarse.** Quien entra sin sesión recibe una
 de **invitado** (usuario anónimo de Supabase, caduca a los 4 días); si crea una
@@ -64,17 +64,17 @@ nómina, IRPF o la fiscalidad de un fondo.
 
 | Si vas a… | Lee antes |
 |---|---|
-| Escribir código de interfaz, crear un componente o algo que lo parezca (un formulario, una tabla, un botón, un título, una tarjeta, un gráfico, un sprite) | **`docs/components.md`**: qué piezas existen y se reutilizan, el sistema de diseño y cómo se declara una vista |
-| Tocar el camino de los datos, una Server Action, la sesión, un repositorio o añadir una entidad | **`docs/architecture.md`**: las capas, cómo viajan los datos y la sesión, y `pnpm generate:crud` |
-| Buscar dónde está algo o dónde va un fichero nuevo | **`docs/structure.md`**: la hoja de ruta ("Dónde va cada cosa") y el árbol de ficheros |
+| Escribir código de interfaz, crear un componente o algo que lo parezca (un formulario, una tabla, un botón, un título, una tarjeta, un gráfico, un sprite) | **`docs/COMPONENTS.md`**: qué piezas existen y se reutilizan, el sistema de diseño y cómo se declara una vista |
+| Tocar el camino de los datos, una Server Action, la sesión, un repositorio o añadir una entidad | **`docs/ARCHITECTURE.md`**: las capas, cómo viajan los datos y la sesión, y `pnpm generate:crud` |
+| Buscar dónde está algo o dónde va un fichero nuevo | **`docs/STRUCTURE.md`**: la hoja de ruta ("Dónde va cada cosa") y el árbol de ficheros |
 | Escribir o arreglar un test | **`docs/TESTS.md`**: cómo está montado, qué cubre cada fichero y qué no merece test |
-| Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO_HEROE.md`**, y las cifras en `docs/investigación-heroe/revision-cifras.md` |
+| Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO-HEROE.md`**, y las cifras en `docs/investigación-heroe/REVISION-CIFRAS.md` |
 | Tocar auth, sesión, cabeceras, CSP, límites, logs, RLS, dependencias o el CI | **`docs/SECURITY.md`**: las medidas por cada punto de OWASP Top 10 y API Top 10, lo que depende de configuración fuera del repo y los riesgos aceptados |
 | Desplegar en producción (Vercel + Supabase) o tocar su configuración | **`docs/plans/PLAN-DESPLIEGUE.md`**: los pasos en orden, las variables de entorno, el panel de Supabase y Turnstile y cómo comprobarlo |
-| Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO_HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
+| Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO-HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
 
 La regla que más se olvida: **antes de escribir un componente, búscalo en
-`docs/components.md`**. Si te ves escribiendo un formulario a mano con
+`docs/COMPONENTS.md`**. Si te ves escribiendo un formulario a mano con
 `<TextInput>` sueltos, o una `<DataTable>` fuera de `AppTable`, párate: casi
 siempre significa que no has encontrado la pieza genérica.
 
@@ -90,7 +90,7 @@ un fichero que se mueve), actualiza el documento en el mismo cambio.
 | Lenguaje | TypeScript 5, `strict` | |
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
 | UI | **Mantine v9** + `mantine-datatable` | Iconos: `@tabler/icons-react` |
-| Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" en `docs/components.md` |
+| Estilos | **CSS Modules** + tokens `--sd-*` | Sin Tailwind. Ver "El sistema de diseño" en `docs/COMPONENTS.md` |
 | Tipografía | **Fredoka** (titulares) + **Nunito** (texto) + **Geist Mono** (dinero) | Fredoka en `app/fonts/` (`next/font/local`); las demás, `next/font/google` |
 | Estado de servidor | **React Query v5** | Lo usa Refine por dentro |
 | Gestor de paquetes | **pnpm 10.28.2** | Hay `pnpm-workspace.yaml` en la raíz |
@@ -212,6 +212,11 @@ La sesión es `getSession()` de `lib/auth.ts`, y el `userId` es el `sub` del JWT
 `auth.getSession()` en el servidor: esa se cree la cookie tal cual, y una cookie
 la puede escribir cualquiera. Un invitado es un usuario como otro cualquiera:
 tiene `userId` y pasa por el mismo camino.
+
+Una Server Action no llama a `getSession()` directamente sino a `sesionActiva()`
+(`src/application/actions/sesion.ts`; `ejecutar` ya lo hace): la firma del token
+sigue siendo buena después de cerrar sesión, y es la base la que dice si la
+sesión sigue abierta.
 
 ### 4. Nunca confíes en un ID que venga del cliente
 
@@ -467,7 +472,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   la regla de "sin JSX" se vigile por ruta.
 - **La documentación, partida por tarea**: este fichero lleva solo lo que vale
   para cualquier cambio (reglas duras, comandos, trampas, decisiones) y remite
-  a `docs/components.md`, `docs/architecture.md`, `docs/structure.md` y
+  a `docs/COMPONENTS.md`, `docs/ARCHITECTURE.md`, `docs/STRUCTURE.md` y
   `docs/TESTS.md` según lo que se vaya a hacer. Antes era un único fichero de
   más de mil líneas que se cargaba entero en cada sesión. Los planes ya
   ejecutados viven en `docs/plans/` como histórico: lo vigente está aquí.
@@ -559,9 +564,20 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   repositorio. Los topes viven con nombre en `src/types/limites.types.ts`: importe
   y presupuesto ≤ 1.000.000.000 céntimos, 100 filas por página, 5.000 sin
   paginar, serie de saldo ≤ 731 días.
-- **Cuotas por usuario en la base**, sin Redis: 1.000 movimientos para un
-  invitado, 50.000 para una cuenta y 200 categorías. Al superarlas, un
+- **Cuotas por usuario en la base**, sin Redis: 200 movimientos y 100 KB de
+  texto para un invitado, 4.000 movimientos y 5 MB de texto para una cuenta, y
+  200 categorías. El texto cuenta BYTES de descripción y notas (un emoji son
+  4), porque la cuota de movimientos sola dejaba que uno con el texto al máximo
+  ocupara cien veces lo normal. Se comprueban con el candado del usuario
+  (`conCandado`, `transaccion.ts`): sin él, dos altas a la vez contaban las dos
+  antes de escribir. Editar a menos texto siempre se puede. Al superarlas, un
   `RepositoryError` legible.
+- **Freno general por tamaño de la base** (`capacidad.repository.ts`): con la
+  base por encima de 400 MB (el plan gratuito tiene 500) no se crean
+  invitados, movimientos ni categorías; leer, editar y borrar siguen. Deja un
+  evento `capacidad`/`bloqueo` para la alerta. Se mira en cada alta, sin caché:
+  `pg_database_size` cuesta milisegundos y una caché por instancia dejaría
+  pasar altas.
 - **No se anotan movimientos con fecha futura.** El tope es el "hoy" de
   `Pacific/Kiritimati`, la zona más adelantada del planeta, para no rechazar el
   hoy de nadie; el `DateInput` lleva `maxDate` como cortesía. La serie de saldo
@@ -595,7 +611,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     nace con ellos (`alter default privileges`).
   - **Cambiar la contraseña cierra las demás sesiones**, y `/auth/confirm`
     acepta solo `?code=` (PKCE): `?token_hash=` permitía un login CSRF.
-  - Server Actions con cuerpo ≤ 256 KB, `page` ≤ 50.000, cabeceras CORP y
+  - Server Actions con cuerpo ≤ 256 KB, `page` ≤ 4.000, cabeceras CORP y
     compañía, y la CSP también en las rutas con extensión de imagen.
 - **Dependencias sin un solo aviso de `pnpm audit`** (producción y desarrollo):
   `xlsx` 0.20.3 del CDN oficial de SheetJS (npm se quedó en una versión con
@@ -711,7 +727,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   tarjetas del mes; el patrimonio es siempre el de hoy y los dos gráficos de
   tendencia siguen en los últimos 12 meses. El tope es de navegación y no se
   impone en el servidor: un movimiento anterior sigue siendo válido.
-- **Camino del héroe** (plan completo en `docs/plans/CAMINO_HEROE.md`):
+- **Camino del héroe** (plan completo en `docs/plans/CAMINO-HEROE.md`):
   - **El contenido es JSON en el repo; la base guarda solo el progreso**
     (`hero_progress`: usuario + nivel, mejor marca, intentos y primera vez
     superado). Un curso se revisa en una PR y un JSON mal escrito rompe la CI
@@ -721,6 +737,12 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     para el feedback inmediato, pero manda las respuestas en bruto y el
     repositorio calcula aciertos, estrellas y superado. La mejor marca no baja
     al repetir (`greatest()` en el upsert).
+  - **El nivel viaja oculto** (`lib/ocultar.ts`): `getNivel` lo manda como un
+    bloque ilegible con una clave nueva en cada visita, y `useNivelHeroe` lo
+    abre en memoria; las pantallas reciben el `NivelDto` de siempre. No es
+    cifrado (la clave va al lado): es para que las soluciones no se lean en la
+    pestaña de red. Se descartó corregir pregunta a pregunta en el servidor
+    porque añadía una espera a cada respuesta.
   - **Los mundos están libres; dentro, los niveles van en orden.** Un nivel
     bloqueado no se lee ni se envía: "No encontrado", como uno que no existe.
     Todo lo del mapa y del camino es derivado (regla dura 7).
@@ -793,9 +815,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     (`soloLeerLoSuyo` en `hero_progress` y `hero_items`, en vez de `soloSuyo`):
     con su propia sesión, cualquiera podía escribir esas filas por la API REST de
     Supabase y regalarse estrellas u objetos. Las escribe solo el servidor, cuyo
-    rol se salta RLS. Lo que sigue siendo posible, y se acepta: sacar 3 estrellas
-    mirando las soluciones que el navegador recibe para corregir al momento, e
-    inflar Riqueza y Constancia inventándose movimientos (que no dan estrellas).
+    rol se salta RLS. Inventarse movimientos sube Riqueza y Constancia, pero no
+    da estrellas.
   - **Siete estadísticas de 0 a 100, derivadas** (`lib/estadisticas.ts`): una por
     mundo (niveles superados), Riqueza por tramos de ganancia (ni porcentaje, que
     divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses
@@ -828,8 +849,8 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Camino del héroe, contenido**: los cuatro mundos tienen sus 9 niveles,
   escritos y **pendientes de revisión humana**. La lista de cifras oficiales,
   con su estado (verificada, corregida o no verificada) y su fuente, está en
-  `docs/investigación-heroe/revision-cifras.md`; nada se publica sin esa
-  lectura (fase 6 de `docs/plans/CAMINO_HEROE.md`).
+  `docs/investigación-heroe/REVISION-CIFRAS.md`; nada se publica sin esa
+  lectura (fase 6 de `docs/plans/CAMINO-HEROE.md`).
 - **Camino del héroe, vidas y rachas**: fuera de la primera versión a
   propósito. Si llegan, son progreso derivado o una tabla aparte, nunca un
   contador guardado junto a la mejor marca.

@@ -22,15 +22,25 @@ const h = vi.hoisted(() => ({
   },
   cabeceras: new Map<string, string>(),
   auth: {} as Record<string, ReturnType<typeof vi.fn>>,
+  baseConSitio: true,
 }))
 
 vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
-vi.mock('@/lib/auth', () => ({ getSession: async () => h.session }))
+vi.mock('@/src/infrastructure/repositories/capacidad.repository', async (original) => ({
+  ...(await original<typeof import('@/src/infrastructure/repositories/capacidad.repository')>()),
+  hayEspacioEnLaBase: async () => h.baseConSitio,
+}))
+// Con el id de sesión que `crearUsuario` le abre a cada usuario: así pasa la
+// comprobación de sesión viva contra la base de test.
+vi.mock('@/lib/auth', () => ({
+  getSession: async () => h.session && { user: { sesionId: h.session.user.id, ...h.session.user } },
+}))
 vi.mock('@/lib/supabase/server', () => ({ crearClienteSupabase: async () => ({ auth: h.auth }) }))
 vi.mock('next/headers', () => ({
   headers: async () => ({ get: (k: string) => h.cabeceras.get(k.toLowerCase()) ?? null }),
 }))
 
+import { BASE_LLENA } from '@/src/infrastructure/repositories/capacidad.repository'
 import { crearUsuario, USER_A, USER_B } from '@/db/testing'
 import { LIMITE_AUTH_IP, LIMITE_INVITADO_IP, LIMITE_LOGIN_EMAIL, reiniciarLimites } from '@/lib/limite'
 import { usarBaseDeTest } from '@/test/harness'
@@ -61,6 +71,7 @@ beforeEach(async () => {
   // .env local), los tests del origen por cabeceras dejarían de probar nada.
   vi.stubEnv('APP_URL', '')
   h.session = null
+  h.baseConSitio = true
   h.cabeceras = new Map([
     ['user-agent', NAVEGADOR],
     ['origin', 'http://localhost:3000'],
@@ -92,6 +103,13 @@ describe('invitado', () => {
     expect(r.ok && r.data.tipo).toBe('invitado')
     const cats = await base().db.select().from(categories).where(eq(categories.userId, INVITADO))
     expect(cats).toHaveLength(17)
+  })
+
+  test('con la base llena no se crea, ni se llega a pedir a Supabase', async () => {
+    h.baseConSitio = false
+    const r = await iniciarInvitado('token-ok')
+    expect(r).toEqual({ ok: false, error: BASE_LLENA })
+    expect(h.auth.signInAnonymously).not.toHaveBeenCalled()
   })
 
   test('caduca a los 4 días de su alta', async () => {
@@ -168,6 +186,7 @@ describe('iniciar sesión', () => {
 
 describe('crear cuenta', () => {
   test('siendo invitado, la cuenta se crea SOBRE el invitado (mismo usuario)', async () => {
+    await crearUsuario(base().pg, INVITADO, { anonimo: true })
     h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
     const r = await registrarse({ email: 'ana@example.com', captchaToken: 't' })
 
@@ -603,17 +622,16 @@ describe('caminos de error que la persona tiene que entender', () => {
     })
   })
 
-  test('un invitado sin fila en auth.users caduca contando desde ahora', async () => {
-    vi.useFakeTimers({ now: new Date('2026-10-07T12:00:00Z'), toFake: ['Date'] })
-    try {
-      h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
-      expect(await getCuenta()).toEqual({
-        ok: true,
-        data: { tipo: 'invitado', caducaEl: '2026-10-11T12:00:00.000Z' },
-      })
-    } finally {
-      vi.useRealTimers()
-    }
+  test('un invitado ya borrado de auth.users no tiene cuenta, aunque su token aún firme', async () => {
+    // Borrarlo se lleva sus sesiones: el token que quedó en la cookie ya no vale.
+    h.session = { user: { id: INVITADO, email: null, esInvitado: true } }
+    expect(await getCuenta()).toEqual({ ok: true, data: { tipo: 'ninguna' } })
+  })
+
+  test('una sesión cerrada no cuenta como sesión, aunque su token aún firme', async () => {
+    h.session = { user: { id: USER_A, email: 'ana@example.com', esInvitado: false } }
+    await base().pg.query('delete from auth.sessions where user_id = $1', [USER_A])
+    expect(await getCuenta()).toEqual({ ok: true, data: { tipo: 'ninguna' } })
   })
 })
 

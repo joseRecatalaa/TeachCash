@@ -5,7 +5,7 @@ la sesión y cómo se añade una entidad. **Léelo antes de tocar una Server Act
 un repositorio, un hook de datos o la sesión.**
 
 Las reglas duras están en `AGENTS.md` y aquí se dan por sabidas; dónde vive cada
-fichero, en `docs/structure.md`.
+fichero, en `docs/STRUCTURE.md`.
 
 ## Las cuatro capas
 
@@ -56,7 +56,7 @@ y si tocas ese fichero ninguna es negociable:
    ejecuta nada.
 2. `values` llega como `unknown` y **nunca se esparce sobre la tabla**: cada
    repositorio lo pasa por su esquema Zod y escribe campo a campo.
-3. El `userId` sale de `getSession()`. Jamás de los argumentos.
+3. El `userId` sale de `sesionActiva()` (token verificado y sesión aún abierta). Jamás de los argumentos.
 4. Todo `where`, de lectura y de escritura, lleva el `userId` dentro.
 
 **Los errores esperados se DEVUELVEN, no se lanzan.** Una excepción en una Server
@@ -90,8 +90,8 @@ dinero no parece un error — parece un dato.
 ```
 Navegador ── cookie httpOnly (JWT + refresh, @supabase/ssr) ──►
   CuentaProvider   sin sesión → Turnstile → iniciarInvitado() → usuario anónimo + catálogo
-  proxy.ts         refresca la sesión y pone la CSP con nonce; no redirige ni protege rutas
-  Server Action    getSession() → getClaims() verifica ES256 → userId = sub
+  proxy.ts         refresca la sesión (con límite por IP) y pone la CSP con nonce; no redirige ni protege rutas
+  Server Action    sesionActiva() → getClaims() verifica ES256 → sesión en auth.sessions → userId = sub
   Repositorio      where user_id = userId
   Postgres         RLS user_id = auth.uid() (la red, no el mecanismo)
 ```

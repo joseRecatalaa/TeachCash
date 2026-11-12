@@ -11,7 +11,7 @@ después de probarlo. **La fase 6 está escrita y pendiente de revisión
 humana** (rama `feat/PrimerosCursosMundos`): los cuatro mundos tienen sus 9
 niveles (lectura, interactivo ×4 y el jefe de 12 preguntas). Las cifras
 oficiales, con su estado y su fuente, están en
-`docs/investigación-heroe/revision-cifras.md`, y nada se publica sin que una
+`docs/investigación-heroe/REVISION-CIFRAS.md`, y nada se publica sin que una
 persona la lea. Lo que se decidió por el camino ya está en `AGENTS.md`
 ("Decisiones tomadas"); este documento se queda como el plan original.
 
@@ -30,7 +30,7 @@ persona la lea. Lo que se decidió por el camino ya está en `AGENTS.md`
 - **No hay regla de ESLint para `content/`**: nadie lo importa; solo lo lee
   `contenido.ts` del disco.
 - **El contenido admite más que el formato inicial**: `**negrita**`,
-  `_cursiva_` y los bloques `imagen` y `dato` (`docs/CONTENIDO_HEROE.md`).
+  `_cursiva_` y los bloques `imagen` y `dato` (`docs/CONTENIDO-HEROE.md`).
 - **El E2E se adelantó a la fase 5**, junto al reproductor.
 
 ## Qué es
@@ -228,7 +228,7 @@ Rutas en PascalCase con `?id=`, y `<Suspense>` por `useSearchParams`.
 
 ### 6. Cómo se crea el contenido
 
-`docs/CONTENIDO_HEROE.md` recogerá el flujo en tres pasos:
+`docs/CONTENIDO-HEROE.md` recogerá el flujo en tres pasos:
 
 1. **Investigar.** Un prompt listo para **Gemini Deep Research** por mundo:
    temario de 8–10 niveles, contexto de **España** (fondos indexados, cuentas
@@ -277,13 +277,13 @@ Una PR por fase, sobre `develop`.
 2. ✔ **Datos**: tabla + migración, esquemas Zod, `contenido.ts`, repositorio,
    acciones, hooks y tests.
 3. ✔ **Contenido piloto**: un mundo (Ahorro) con 3 niveles, uno de cada tipo, para
-   probar el formato. Más `docs/CONTENIDO_HEROE.md` con los prompts de Gemini.
+   probar el formato. Más `docs/CONTENIDO-HEROE.md` con los prompts de Gemini.
 4. ✔ **Mapa y camino**: páginas, SideMenu, Navbar por módulo y el héroe caminando.
 5. ✔ **Reproductor**: lectura, minitest, los 6 ejercicios, jefe, resultado y
    estrellas.
 6. **Contenido completo** de los 4 mundos: escrito (9 niveles por mundo,
    jefe de 12 preguntas) y **pendiente de revisión humana** con
-   `docs/investigación-heroe/revision-cifras.md`. El E2E (✔) y la
+   `docs/investigación-heroe/REVISION-CIFRAS.md`. El E2E (✔) y la
    actualización de `AGENTS.md` (✔) ya están.
 
 ## Ficheros
@@ -296,7 +296,7 @@ Una PR por fase, sobre `develop`.
   - `src/application/actions/heroe.actions.ts`, `src/application/hooks/useHeroe.ts`
   - `app/CaminoHeroe/**`, `src/presentation/components/Heroe/**`,
     `src/presentation/components/Pixel/**`
-  - `content/heroe/**`, `docs/CONTENIDO_HEROE.md`
+  - `content/heroe/**`, `docs/CONTENIDO-HEROE.md`
 - **Se tocan**:
   - `Splash/PixelScene.tsx`, `Splash/Splash.module.css`, `Splash/sprites.ts`
   - `SideMenu/SideMenu.tsx`, `Navbar.tsx`

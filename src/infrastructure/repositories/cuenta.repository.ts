@@ -5,8 +5,8 @@
  * del usuario de la sesión.
  */
 
-import { eq } from 'drizzle-orm'
-import { boolean, pgSchema, uuid } from 'drizzle-orm/pg-core'
+import { and, eq, gt, isNull, or, sql } from 'drizzle-orm'
+import { boolean, pgSchema, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { authUsers } from 'drizzle-orm/supabase'
 import { db } from '@/db'
 
@@ -20,6 +20,47 @@ const usuarios = pgSchema('auth').table('users', {
   id: uuid('id').primaryKey(),
   isAnonymous: boolean('is_anonymous'),
 })
+
+/**
+ * Las sesiones abiertas de Supabase Auth. Cerrar sesión, cambiar la contraseña
+ * o borrar la cuenta quitan aquí la fila; `not_after` es el fin de una sesión
+ * con caducidad fija.
+ */
+const sesiones = pgSchema('auth').table('sessions', {
+  id: uuid('id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+  notAfter: timestamp('not_after', { withTimezone: true }),
+})
+
+const UUID = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i
+
+/**
+ * ¿Sigue abierta la sesión `sesionId` de este usuario?
+ *
+ * Hace falta porque el token de acceso es autosuficiente: su firma vale hasta
+ * que caduca, aunque la sesión ya se haya cerrado. Sin esta consulta, una
+ * cookie robada seguía sirviendo hasta que caducaba su token, aunque su dueño
+ * hubiera cerrado sesión o cambiado la contraseña.
+ *
+ * Por usuario Y por id dentro del `where` (regla dura 4): el id de sesión de
+ * otro usuario no vale. Un id que no es UUID ni se consulta: Postgres
+ * reventaría al convertirlo, y la respuesta es la misma, "no".
+ */
+export async function sesionViva(userId: string, sesionId: string): Promise<boolean> {
+  if (!UUID.test(sesionId)) return false
+  const [fila] = await db
+    .select({ id: sesiones.id })
+    .from(sesiones)
+    .where(
+      and(
+        eq(sesiones.id, sesionId),
+        eq(sesiones.userId, userId),
+        or(isNull(sesiones.notAfter), gt(sesiones.notAfter, sql`now()`)),
+      ),
+    )
+    .limit(1)
+  return fila !== undefined
+}
 
 /** Cuándo se dio de alta el usuario. Para un invitado, es lo que fija cuándo caduca. */
 export async function fechaAltaUsuario(userId: string): Promise<Date | null> {
@@ -35,9 +76,16 @@ export async function fechaAltaUsuario(userId: string): Promise<Date | null> {
  * ¿Es un invitado? Se lee de la base y no de la sesión porque quien pregunta
  * es un repositorio, que solo recibe el `userId`. Un usuario que no está en
  * `auth.users` cuenta como invitado: ante la duda, la cuota más baja.
+ *
+ * `ejecutor` es la transacción cuando quien pregunta ya está dentro de una:
+ * con una sola conexión (PGlite en los tests), salir a `db` esperaría a la
+ * transacción, que a su vez espera a esta consulta.
  */
-export async function esInvitado(userId: string): Promise<boolean> {
-  const [fila] = await db
+export async function esInvitado(
+  userId: string,
+  ejecutor: Pick<typeof db, 'select'> = db,
+): Promise<boolean> {
+  const [fila] = await ejecutor
     .select({ anonimo: usuarios.isAnonymous })
     .from(usuarios)
     .where(eq(usuarios.id, userId))

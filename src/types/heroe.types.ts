@@ -10,7 +10,7 @@
  * mano casi siempre es una errata ("explicaion"), y sin esto pasaría en
  * silencio y la explicación no se vería nunca.
  *
- * Cómo se escribe un nivel, con ejemplos: `docs/CONTENIDO_HEROE.md`.
+ * Cómo se escribe un nivel, con ejemplos: `docs/CONTENIDO-HEROE.md`.
  */
 
 import { z } from 'zod'
@@ -333,6 +333,16 @@ export interface NivelDto {
   mundo: Pick<Mundo, 'id' | 'titulo' | 'decorado'>
   /** La mejor marca hasta ahora, para la pantalla final. */
   estrellas: Estrellas
+}
+
+/**
+ * El `NivelDto` tal como VIAJA: el nivel, con sus soluciones, oculto en un
+ * bloque ilegible y la clave para abrirlo (`lib/ocultar.ts`). Lo abre
+ * `useNivelHeroe`, así que las pantallas reciben el `NivelDto` de siempre.
+ */
+export interface NivelOcultoDto extends Omit<NivelDto, 'nivel'> {
+  nivel: string
+  clave: string
 }
 
 export interface ResultadoNivelDto {

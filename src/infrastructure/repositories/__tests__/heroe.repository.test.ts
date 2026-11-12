@@ -24,6 +24,8 @@ vi.mock('../../heroe/contenido', async (original) => {
 import { and, eq } from 'drizzle-orm'
 import { usarBaseDeTest } from '@/test/harness'
 import { heroProgress } from '@/db/schema'
+import { revelar } from '@/lib/ocultar'
+import type { Nivel } from '@/src/types/heroe.types'
 import { completarNivel, evaluables, getMapa, getMundo, getNivel } from '../heroe.repository'
 import { esperarErrorDeCampo, USER_A, USER_B } from './helpers'
 
@@ -74,7 +76,8 @@ describe('el orden', () => {
     const { niveles, siguiente } = await getMundo(USER_A, 'prueba')
     expect(niveles.map((n) => n.estado)).toEqual(['hecho', 'disponible', 'bloqueado'])
     expect(siguiente).toBe(INTERACTIVO)
-    await expect(getNivel(USER_A, INTERACTIVO)).resolves.toMatchObject({ nivel: { id: INTERACTIVO } })
+    const { nivel, clave } = await getNivel(USER_A, INTERACTIVO)
+    expect(revelar<Nivel>(nivel, clave)).toMatchObject({ id: INTERACTIVO })
   })
 
   test('jugarlo sin superarlo NO abre el siguiente', async () => {
@@ -268,6 +271,22 @@ describe('getNivel', () => {
     const r = await getNivel(USER_A, LECTURA)
     expect(r.mundo).toEqual({ id: 'prueba', titulo: 'Mundo de prueba', decorado: 'hucha' })
     expect(r.estrellas).toBe(2)
-    expect(evaluables(r.nivel)).toHaveLength(5)
+    expect(evaluables(revelar<Nivel>(r.nivel, r.clave))).toHaveLength(5)
+  })
+
+  test('el contenido viaja oculto: ni las soluciones ni el texto se leen en la respuesta', async () => {
+    const r = await getNivel(USER_A, LECTURA)
+    const enClaro = revelar<Nivel>(r.nivel, r.clave)
+    const respuesta = JSON.stringify(r)
+
+    expect(respuesta).not.toContain('correcta')
+    expect(respuesta).not.toContain(enClaro.titulo)
+  })
+
+  test('con una clave nueva en cada visita', async () => {
+    const a = await getNivel(USER_A, LECTURA)
+    const b = await getNivel(USER_A, LECTURA)
+    expect(a.clave).not.toBe(b.clave)
+    expect(a.nivel).not.toBe(b.nivel)
   })
 })

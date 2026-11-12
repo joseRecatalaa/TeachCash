@@ -13,8 +13,10 @@ import { categories, transactions, CATEGORY_KINDS } from '@/db/schema'
 import { CLAVES_COLOR, type ClaveColor } from '@/lib/colores'
 import type { CategoriaFormDto, CategoriaListDto } from '@/src/types/categoria.types'
 import { IMPORTE_MAXIMO, MAX_CATEGORIAS } from '@/src/types/limites.types'
+import { assertBaseConSitio } from './capacidad.repository'
 import { columnaDeOrden, patronContiene, trozo } from './listado'
 import { esChoqueUnico } from './postgres-errors'
+import { conCandado, type Transaccion } from './transaccion'
 import {
   fromFieldErrors,
   NOT_FOUND,
@@ -101,9 +103,9 @@ async function conNombreUnico<T>(escribir: () => Promise<T>): Promise<T> {
   }
 }
 
-/** Cuota de categorías por usuario. Contra el abuso; ver `limites.types.ts`. */
-async function assertCuotaLibre(userId: string): Promise<void> {
-  const [{ total }] = await db
+/** Cuota de categorías por usuario, con el candado puesto. Ver `limites.types.ts`. */
+async function assertCuotaLibre(tx: Transaccion, userId: string): Promise<void> {
+  const [{ total }] = await tx
     .select({ total: sql<number>`count(*)`.mapWith(Number) })
     .from(categories)
     .where(eq(categories.userId, userId))
@@ -228,22 +230,27 @@ export const categoriasRepository: EntityRepository<CategoriaListDto, CategoriaF
 
     await assertNombreLibre(userId, parsed.data.nombre, null)
     assertPresupuestoValido(parsed.data.tipo, parsed.data.presupuesto)
-    await assertCuotaLibre(userId)
+    await assertBaseConSitio()
 
+    // Contar e insertar con el candado del usuario: dos altas a la vez no
+    // pasan de la cuota.
     const [creada] = await conNombreUnico(() =>
-      db
-        .insert(categories)
-        .values({
-          userId,
-          name: parsed.data.nombre,
-          kind: parsed.data.tipo,
-          icon: parsed.data.icono || null,
-          color: parsed.data.color || null,
-          // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
-          monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
-          hidden: false,
-        })
-        .returning({ id: categories.id }),
+      conCandado(userId, async (tx) => {
+        await assertCuotaLibre(tx, userId)
+        return tx
+          .insert(categories)
+          .values({
+            userId,
+            name: parsed.data.nombre,
+            kind: parsed.data.tipo,
+            icon: parsed.data.icono || null,
+            color: parsed.data.color || null,
+            // Una categoría de ingreso nunca guarda presupuesto, aunque llegue uno.
+            monthlyBudget: parsed.data.tipo === 'expense' ? parsed.data.presupuesto : null,
+            hidden: false,
+          })
+          .returning({ id: categories.id })
+      }),
     )
     return { id: creada.id }
   },
