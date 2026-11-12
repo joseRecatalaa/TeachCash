@@ -168,6 +168,7 @@ Cada cambio tiene un sitio y solo uno:
     csp.ts                            # la Content Security Policy y su nonce
     heroe.ts                          # corrección y estrellas del héroe (puras)
     marcas.ts                         # **negrita** y _cursiva_ del contenido, a nodos
+    ocultar.ts                        # el nivel del héroe, ilegible a simple vista al viajar
     tienda.ts                         # el catálogo de objetos y sus precios
     estadisticas.ts                   # las siete estadísticas del héroe (puras)
     turnstile.ts

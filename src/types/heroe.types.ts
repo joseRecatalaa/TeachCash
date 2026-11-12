@@ -335,6 +335,16 @@ export interface NivelDto {
   estrellas: Estrellas
 }
 
+/**
+ * El `NivelDto` tal como VIAJA: el nivel, con sus soluciones, oculto en un
+ * bloque ilegible y la clave para abrirlo (`lib/ocultar.ts`). Lo abre
+ * `useNivelHeroe`, así que las pantallas reciben el `NivelDto` de siempre.
+ */
+export interface NivelOcultoDto extends Omit<NivelDto, 'nivel'> {
+  nivel: string
+  clave: string
+}
+
 export interface ResultadoNivelDto {
   aciertos: number
   total: number

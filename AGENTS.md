@@ -737,6 +737,12 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     para el feedback inmediato, pero manda las respuestas en bruto y el
     repositorio calcula aciertos, estrellas y superado. La mejor marca no baja
     al repetir (`greatest()` en el upsert).
+  - **El nivel viaja oculto** (`lib/ocultar.ts`): `getNivel` lo manda como un
+    bloque ilegible con una clave nueva en cada visita, y `useNivelHeroe` lo
+    abre en memoria; las pantallas reciben el `NivelDto` de siempre. No es
+    cifrado (la clave va al lado): es para que las soluciones no se lean en la
+    pestaña de red. Se descartó corregir pregunta a pregunta en el servidor
+    porque añadía una espera a cada respuesta.
   - **Los mundos están libres; dentro, los niveles van en orden.** Un nivel
     bloqueado no se lee ni se envía: "No encontrado", como uno que no existe.
     Todo lo del mapa y del camino es derivado (regla dura 7).
@@ -809,9 +815,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     (`soloLeerLoSuyo` en `hero_progress` y `hero_items`, en vez de `soloSuyo`):
     con su propia sesión, cualquiera podía escribir esas filas por la API REST de
     Supabase y regalarse estrellas u objetos. Las escribe solo el servidor, cuyo
-    rol se salta RLS. Lo que sigue siendo posible, y se acepta: sacar 3 estrellas
-    mirando las soluciones que el navegador recibe para corregir al momento, e
-    inflar Riqueza y Constancia inventándose movimientos (que no dan estrellas).
+    rol se salta RLS. Inventarse movimientos sube Riqueza y Constancia, pero no
+    da estrellas.
   - **Siete estadísticas de 0 a 100, derivadas** (`lib/estadisticas.ts`): una por
     mundo (niveles superados), Riqueza por tramos de ganancia (ni porcentaje, que
     divide entre cero si se empieza en 0 €, ni euros en lineal), Constancia (meses

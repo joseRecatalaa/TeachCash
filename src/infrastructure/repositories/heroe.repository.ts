@@ -22,6 +22,7 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { heroProgress } from '@/db/schema'
 import { APROBADO_POR_DEFECTO, esCorrecta, estrellas as calcularEstrellas, supera } from '@/lib/heroe'
+import { claveNueva, ocultar } from '@/lib/ocultar'
 import type {
   Estrellas,
   EstadoNivel,
@@ -29,7 +30,7 @@ import type {
   Mundo,
   MundoDto,
   Nivel,
-  NivelDto,
+  NivelOcultoDto,
   NivelEnCaminoDto,
   Pregunta,
   ResultadoNivelDto,
@@ -149,10 +150,17 @@ export async function getMundo(userId: string, mundoId: string): Promise<MundoDt
   }
 }
 
-export async function getNivel(userId: string, levelId: string): Promise<NivelDto> {
+/**
+ * El nivel, oculto con una clave nueva en cada visita: el navegador necesita
+ * las soluciones para corregir al momento, pero así no se leen en la pestaña
+ * de red. Quien corrige y da las estrellas sigue siendo `completarNivel`.
+ */
+export async function getNivel(userId: string, levelId: string): Promise<NivelOcultoDto> {
   const { nivel, mundo, progreso } = await nivelAbierto(userId, levelId)
+  const clave = claveNueva()
   return {
-    nivel,
+    nivel: ocultar(nivel, clave),
+    clave,
     mundo: { id: mundo.id, titulo: mundo.titulo, decorado: mundo.decorado },
     estrellas: estrellasDe(progreso, levelId),
   }

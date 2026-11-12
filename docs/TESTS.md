@@ -173,6 +173,7 @@ AGENTS.md.
 | `lib/supabase/__tests__/proxy.test.ts` | 4 | El refresco de sesión del proxy: sin cookie no llama a Supabase y, pasado el límite por IP, deja de llamar sin bloquear | — |
 | `lib/__tests__/colores.test.ts`, `ids.test.ts` | 4 + 3 | Claves de la paleta; bits de versión y variante del UUID | — |
 | `lib/__tests__/heroe.test.ts` | 23 | Camino del héroe: qué respuesta es buena (`calcula` con su tolerancia, propiedad) y las estrellas (más aciertos nunca dan menos) | 1, 6 |
+| `lib/__tests__/ocultar.test.ts` | 6 | El nivel oculto vuelve idéntico (propiedad, con tildes y emojis), no deja leer nada y cambia con cada clave | — |
 | `lib/__tests__/marcas.test.ts` | 15 | `**negrita**` y `_cursiva_` del contenido: anidadas, sin cerrar, y lo que NO es marca (`3 * 4`, `mi_cuenta`, el `___` del hueco). Propiedad: no se pierde texto | — |
 
 ### Base de datos y repositorios

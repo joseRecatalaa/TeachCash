@@ -22,6 +22,7 @@ vi.mock('@/src/infrastructure/heroe/contenido', async (original) => {
 import { harness, usarBaseDeTest } from '@/test/harness'
 import { heroProgress } from '@/db/schema'
 import { USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
+import { revelar } from '@/lib/ocultar'
 import { enviarNivel, fetchMapa, fetchMundo, fetchNivel } from '../heroe.actions'
 
 const base = usarBaseDeTest()
@@ -88,10 +89,9 @@ describe('el progreso es el de la sesión', () => {
     })
   })
 
-  test('fetchNivel trae el contenido del nivel abierto', async () => {
-    expect(await fetchNivel(LECTURA)).toMatchObject({
-      ok: true,
-      data: { nivel: { id: LECTURA, tipo: 'lectura' } },
-    })
+  test('fetchNivel trae el contenido del nivel abierto, oculto', async () => {
+    const r = await fetchNivel(LECTURA)
+    if (!r.ok) throw new Error(r.error)
+    expect(revelar(r.data.nivel, r.data.clave)).toMatchObject({ id: LECTURA, tipo: 'lectura' })
   })
 })
