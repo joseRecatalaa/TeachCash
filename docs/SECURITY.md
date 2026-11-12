@@ -230,10 +230,8 @@ Los artefactos de la ejecución (`architecture.md`, `coverage-ledger.json`,
 `~/security-audit-skill/TeachCash/run-1`. Ese run quedó como `incomplete` por
 dos razones de forma: el entorno no dejó escribir dos de los informes, y en
 Windows sus validadores necesitaron un envoltorio. Ninguna de las dos cambia
-los hallazgos. Era un perfil `quick`: **no es una cobertura exhaustiva**, y
-según la propia skill una pasada encuentra aproximadamente la mitad de lo que
-encuentran varias. Conviene repetirla (`standard`) antes de abrir la app a más
-gente.
+los hallazgos. Era un perfil `quick`; la segunda pasada, con perfil
+`standard` (run-2), ya está hecha y sus arreglos, aplicados.
 
 ---
 

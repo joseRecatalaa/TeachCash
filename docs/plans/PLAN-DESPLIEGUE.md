@@ -278,8 +278,7 @@ persona, registrarse o recuperar la contraseña **no funciona**. Los invitados
 sí funcionan, porque no usan email.
 
 > Los tres arreglos de código que pedía la auditoría `standard` (run-2) antes
-> de abrir el registro ya están hechos (ver `docs/SECURITY.md`). Antes de
-> abrirla, repite la auditoría (Fase 7).
+> de abrir el registro ya están hechos (ver `docs/SECURITY.md`).
 
 - [ ] Si vas a abrirla: crea una cuenta en un proveedor SMTP con plan gratuito
       (Resend, Brevo…) y verifica tu dominio de envío.
@@ -346,7 +345,6 @@ curl -s -X POST "https://<proyecto>.supabase.co/rest/v1/categories" \
 | Supabase despierto | Lunes y jueves | `ping-supabase.yml`, que ya existe. Con tráfico real deja de hacer falta, pero no estorba |
 | Dependencias | Mensual | PRs de Dependabot a `develop`; CI y `pnpm audit` en verde antes de mezclar |
 | `xlsx` | De vez en cuando | Mirar https://cdn.sheetjs.com; al subir, sustituir el `.tgz` de `vendor/` y `pnpm install` |
-| Repetir la auditoría | Antes de abrir la app a más gente | La skill `security-audit`, perfil `standard` |
 | Revisar la configuración | Tras tocar el panel de Supabase o de Vercel | Las casillas de las fases 3 y 4 |
 | Tamaño de la base | Semanal, y a diario si la app se abre a más gente | Supabase → Reports → Database |
 | Job de limpieza de invitados | Tras restaurar una copia o recrear el proyecto | La comprobación de 1.2: el job vive fuera de las migraciones |
