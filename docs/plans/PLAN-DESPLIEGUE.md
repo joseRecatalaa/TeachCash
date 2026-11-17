@@ -66,12 +66,20 @@ pnpm db:migrate:e2e    # proyecto de los E2E (lee .env.e2e)
       `anon` o `authenticated` aún conservan.
 
   ```sql
-  select table_name, grantee, privilege_type
-  from information_schema.role_table_grants
-  where table_schema = 'public'
-    and grantee in ('anon', 'authenticated')
-    and privilege_type in ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE');
+  select c.relname as tabla, r.rolname as rol, p.privilegio
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  cross join pg_roles r
+  cross join unnest(array['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) as p(privilegio)
+  where n.nspname = 'public' and c.relkind in ('r', 'p')
+    and r.rolname in ('anon', 'authenticated')
+    and has_table_privilege(r.oid, c.oid, p.privilegio);
   ```
+
+  No uses `information_schema.role_table_grants`: solo enseña los permisos
+  que ve el usuario conectado, y desde el MCP en solo lectura
+  (`supabase_read_only_user`) devuelve cero filas aunque falte la migración.
+  Pasó en la primera comprobación: dio "todo bien" con la 0009 sin aplicar.
 
 ### 1.2 Limpieza de invitados
 
