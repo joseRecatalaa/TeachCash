@@ -223,6 +223,14 @@ silencio:
 - El cliente de base desactiva las sentencias preparadas (`prepare: false`).
 - Ningún `*.module.css` lleva un hexadecimal (modo oscuro).
 
+### Dependencias parcheadas (`patches/__tests__/`)
+
+`picomatch-parcheado.test.ts` (22 casos): carga picomatch por el mismo camino que
+las herramientas (vitest > vite > tinyglobby) y comprueba que el override de
+`pnpm-workspace.yaml` llega y que un `*` suelto en un extglob repetido ya no va a
+backtracking exponencial (GHSA-fc5q-39xc-vjpf), sin romper los globs normales.
+Si un `pnpm install` deja de aplicar el override, este test es lo que se pone rojo.
+
 ### Componentes y hooks (`*.test.tsx`)
 
 | Fichero | Casos | Qué cubre |
