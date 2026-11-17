@@ -85,7 +85,7 @@ un fichero que se mueve), actualiza el documento en el mismo cambio.
 
 | Pieza | Elección | Notas |
 |---|---|---|
-| Framework | Next.js **16.3.8** (App Router) | Turbopack por defecto |
+| Framework | Next.js **16.4.6** (App Router) | Turbopack por defecto |
 | React | **19.2.8** | |
 | Lenguaje | TypeScript 5, `strict` | |
 | Framework de datos | **Refine.dev 5** | `useList`/`useOne`/`useCreate`… sobre un DataProvider propio |
@@ -617,7 +617,10 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   `xlsx` 0.20.3 del CDN oficial de SheetJS (npm se quedó en una versión con
   CVEs), VENDORIZADO en `vendor/` para que el lockfile lleve su hash (desde el
   CDN no lo llevaba), overrides documentados en `pnpm-workspace.yaml` y un parche de
-  `findup-sync` para quitar `braces` (sin versión parcheada). Dependabot mensual
+  `findup-sync` para quitar `braces` (sin versión parcheada). `picomatch` va
+  PARCHEADO en `patches/picomatch-parcheado` (GHSA-fc5q-39xc-vjpf, ReDoS sin
+  versión arreglada; el porqué en su `PARCHE.md` y el test al lado): un aviso
+  sin parche se arregla con una copia propia, no se ignora. Dependabot mensual
   y agrupado.
 - **El repo es LF** (`.gitattributes`): un CRLF hace que los `modify` de Plop no
   casen y se salten en silencio.

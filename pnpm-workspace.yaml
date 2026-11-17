@@ -58,7 +58,12 @@ overrides:
   #   - plop > liftoff > findup-sync usa `micromatch.matcher(patrón, opts)`.
   #     picomatch es el motor de micromatch y `picomatch(patrón, opts)` hace lo
   #     mismo; el parche de abajo cambia esa única llamada.
-  'findup-sync>micromatch': npm:picomatch@^4.0.7
+  'findup-sync>micromatch': file:patches/picomatch-parcheado
+  # GHSA-fc5q-39xc-vjpf (alta): ReDoS con un `*` suelto en un extglob repetido
+  # (`+(*a)`). NO hay versión con parche: es la 4.0.7 con el arreglo, en
+  # `patches/picomatch-parcheado` (ver su PARCHE.md). La traen vite, tinyglobby,
+  # fdir y eslint, solo en desarrollo. Se quita cuando salga una versión arreglada.
+  picomatch: file:patches/picomatch-parcheado
 
 # Sin avisos ignorados (`auditConfig.ignoreGhsas`): cada aviso se arregla arriba.
 # Si alguna vez hace falta ignorar uno, que sea un falso positivo comprobado
