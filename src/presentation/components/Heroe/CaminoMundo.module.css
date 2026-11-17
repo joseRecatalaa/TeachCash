@@ -1,0 +1,111 @@
+/*
+ * El camino de un mundo. Los nodos se pintan con los tokens de la aplicación
+ * (papel, tinta, acento), no con colores de ilustración: son la interfaz que
+ * se pulsa, y tienen que seguir el tema como cualquier botón. Solo los iconos
+ * de dentro son pixel art con su propia paleta.
+ *
+ * El estado nunca va solo en el color: un nivel bloqueado lleva candado, uno
+ * superado lleva sus estrellas y el disponible es el único que late.
+ */
+
+.lienzo {
+  display: block;
+  width: min(100%, 17rem);
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.senderoPendiente {
+  fill: var(--sd-ink-muted);
+}
+
+.senderoRecorrido {
+  fill: var(--sd-accent);
+}
+
+.nodo {
+  cursor: pointer;
+  outline: none;
+}
+
+.halo {
+  fill: transparent;
+}
+
+.borde {
+  fill: var(--sd-stroke-color);
+}
+
+.fondo {
+  fill: var(--sd-surface);
+}
+
+.nodo:hover .fondo {
+  fill: var(--sd-accent-wash-faint);
+}
+
+/* El foco se dibuja con el halo: un `outline` en un `<g>` de SVG no lo pinta
+   ningún navegador igual, y quien navega con teclado tiene que verlo. */
+.nodo:focus-visible .halo {
+  fill: var(--sd-accent-soft);
+}
+
+.nodo[data-estado='disponible'] .fondo {
+  fill: var(--sd-accent-wash);
+}
+
+.nodo[data-estado='disponible'] .halo {
+  fill: var(--sd-accent);
+  animation: heroe-late 1.2s steps(1, end) infinite;
+}
+
+.nodo[data-estado='bloqueado'] {
+  cursor: default;
+}
+
+.nodo[data-estado='bloqueado'] .fondo {
+  fill: var(--sd-surface-sunken);
+}
+
+.nodo[data-estado='bloqueado'] .icono {
+  opacity: 0.55;
+}
+
+/* ── El jefe: su monstruo de pie ───────────────────────────────────────── */
+
+.monstruo {
+  animation: heroe-respira-monstruo 1.1s steps(1, end) infinite;
+}
+
+/* Bloqueado, espera apagado: se le ve, pero aún no se puede pelear. */
+.nodo[data-tipo='jefe'][data-estado='bloqueado'] .monstruo {
+  filter: grayscale(1);
+  opacity: 0.55;
+  animation: none;
+}
+
+.sombraJefe {
+  fill: var(--px-sombra-heroe, var(--sd-ink-muted));
+  opacity: 0.35;
+}
+
+@keyframes heroe-respira-monstruo {
+  50%,
+  100% {
+    translate: 0 1px;
+  }
+}
+
+/* A saltos, como todo lo que es pixel art. Con el movimiento reducido el
+   bloque de `globals.css` lo anula y el halo se queda encendido. */
+@keyframes heroe-late {
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.heroe {
+  pointer-events: none;
+}

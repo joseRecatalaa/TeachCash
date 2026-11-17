@@ -17,7 +17,7 @@
   letter-spacing: -0.02em;
 
   /* El mismo trazo de rotulador que el resto de títulos. Fondo, no
-     pseudoelemento: ver la nota en `app/page.module.css`. */
+     pseudoelemento: ver la nota en `app/Patrimonio/page.module.css`. */
   background-image: linear-gradient(
     var(--sd-accent-wash),
     var(--sd-accent-wash)

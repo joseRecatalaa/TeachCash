@@ -3,7 +3,7 @@
  *
  * Pregunta dos cosas —el nombre en singular y el plural— y de ahí deriva las
  * cuatro carpetas de la entidad, cada una con su caso. La tabla de derivación
- * está en AGENTS.md, sección "Añadir una entidad".
+ * está en docs/ARCHITECTURE.md, sección "Añadir una entidad".
  *
  * Los DTOs traen un campo `nombre` de ejemplo para que el andamiaje se sostenga;
  * el trabajo es sustituirlo por los reales, y hay un `// TODO` en cada uno de
@@ -23,8 +23,8 @@ const FICHEROS = [
   'src/types/{{camelCase name}}.types.ts',
   'src/infrastructure/repositories/{{dashCase pluralName}}.repository.ts',
   'src/application/hooks/use{{pascalCase pluralName}}.ts',
-  'src/config/{{dashCase pluralName}}/sections.ts',
-  'src/config/{{dashCase pluralName}}/columns.ts',
+  'src/presentation/entidades/{{dashCase pluralName}}/formularios.ts',
+  'src/presentation/entidades/{{dashCase pluralName}}/tabla.ts',
   'src/presentation/components/Forms/EntityForms/{{camelCase name}}/{{pascalCase name}}FormRefine.tsx',
   'app/{{pascalCase pluralName}}/page.tsx',
   'app/{{pascalCase pluralName}}/Create/page.tsx',
@@ -95,8 +95,8 @@ export default function generadorCrud(plop) {
         'types.hbs',
         'repository.hbs',
         'hooks.hbs',
-        'sections.hbs',
-        'columns.hbs',
+        'formularios.hbs',
+        'tabla.hbs',
         'form.hbs',
         'list-page.hbs',
         'create-page.hbs',
@@ -146,6 +146,9 @@ export default function generadorCrud(plop) {
         ).concat(REGISTROS.map((r) => r.fichero))
 
         try {
+          // Herramienta de desarrollo, en la máquina de quien la lanza: el PATH es
+          // el suyo, y es el mismo con el que ha ejecutado `pnpm generate:crud`.
+          // eslint-disable-next-line sonarjs/no-os-command-from-path
           execFileSync('pnpm', ['exec', 'prettier', '--write', ...rutas], {
             stdio: 'ignore',
             shell: process.platform === 'win32',
@@ -182,8 +185,8 @@ Quedan cuatro TODO, en este orden:
      con su divisa al lado; una fecha de movimiento es 'YYYY-MM-DD'.
   2. src/infrastructure/repositories/${kebab}.repository.ts
      La tabla real y su esquema Zod. El userId va DENTRO del where, siempre.
-  3. src/config/${kebab}/sections.ts       — los campos del formulario
-  4. src/config/${kebab}/columns.ts        — las columnas del listado
+  3. src/presentation/entidades/${kebab}/formularios.ts— los campos del formulario
+  4. src/presentation/entidades/${kebab}/tabla.ts      — las columnas del listado
 
 Dos cosas que el generador no puede saber:
   - Si la entidad necesita tabla nueva, créala en db/schema.ts y pasa

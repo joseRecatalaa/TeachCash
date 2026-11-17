@@ -1,0 +1,211 @@
+.heroe {
+  display: flex;
+  justify-content: center;
+}
+
+.lienzo {
+  position: relative;
+}
+
+/* Encima del dibujo y del mismo tamaño: con el mismo `viewBox`, cada caja cae
+   sobre su pieza a cualquier escala. */
+.zonas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.zona {
+  cursor: pointer;
+  outline: none;
+}
+
+/* Transparentes pero con relleno: `fill: none` no recibe el ratón. El foco se ve
+   en el dibujo, que pinta el anillo de la pieza apuntada. */
+.zona rect {
+  fill: transparent;
+}
+
+/* ── El bocadillo ──────────────────────────────────────────────────────────
+ *
+ * En el móvil sale debajo del héroe, centrado: a los lados no cabe. Desde 48em
+ * sale de la pieza: su punto (`--x`, `--y`) es un porcentaje del `viewBox` de
+ * `EscenarioHeroe` (x desde -24 en 96, y desde -8 en 90), y la cola apunta ahí.
+ * El escudo, a la izquierda del héroe, abre hacia la izquierda; las alas, desde
+ * la punta de la derecha.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.bocadillo {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% - 1.5rem);
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: max-content;
+  max-width: min(19rem, calc(100vw - 2rem));
+  padding: 0.65rem 1rem 0.65rem 0.7rem;
+  background: var(--sd-surface);
+  border: var(--sd-border-bold);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-md);
+  transform-origin: top center;
+  animation: sd-pop var(--sd-dur) var(--sd-ease-pop) both;
+}
+
+/* La cola: un cuadrado con dos bordes, girado para que su esquina apunte. */
+.bocadillo::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--sd-surface);
+  border-top: var(--sd-border-bold);
+  border-left: var(--sd-border-bold);
+  translate: -50% 0;
+  rotate: 45deg;
+}
+
+@media (min-width: 48em) {
+  .bocadillo {
+    top: var(--y);
+    left: var(--x);
+    translate: 1.15rem -50%;
+    transform-origin: left center;
+  }
+
+  .bocadillo::before {
+    top: 50%;
+    left: -9px;
+    translate: 0 -50%;
+    rotate: -45deg;
+  }
+
+  .bocadillo[data-hueco='escudo'] {
+    translate: calc(-100% - 1.15rem) -50%;
+    transform-origin: right center;
+  }
+
+  .bocadillo[data-hueco='escudo']::before {
+    left: auto;
+    right: -9px;
+    rotate: 135deg;
+  }
+
+  .bocadillo[data-hueco='casco'] {
+    --x: 66.667%;
+    --y: 15.556%;
+  }
+  .bocadillo[data-hueco='armadura'] {
+    --x: 70.833%;
+    --y: 42.222%;
+  }
+  .bocadillo[data-hueco='guantes'] {
+    --x: 69.792%;
+    --y: 58.889%;
+  }
+  .bocadillo[data-hueco='botas'] {
+    --x: 66.667%;
+    --y: 75.556%;
+  }
+  .bocadillo[data-hueco='arma'] {
+    --x: 95.833%;
+    --y: 40%;
+  }
+  .bocadillo[data-hueco='escudo'] {
+    --x: 18.75%;
+    --y: 57.778%;
+  }
+  .bocadillo[data-hueco='alas'] {
+    --x: 91.667%;
+    --y: 24.444%;
+  }
+}
+
+/* A lo ancho, lo que pida el dibujo: las alas miden 80x36 y no caben en un
+   cuadrado. */
+.icono {
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-width: 3.4rem;
+  min-height: 3.4rem;
+  padding: 0.3rem;
+  background: var(--sd-accent-wash-faint);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+}
+
+.bocadillo[data-vacio] .icono {
+  background: var(--sd-surface-sunken);
+  border-style: dashed;
+}
+
+.bocadillo[data-vacio] .icono svg {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.nombre {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.bocadillo[data-vacio] .nombre {
+  color: var(--sd-ink-soft);
+}
+
+/* La calidad, en tres casillas. Solo refuerza: el nombre ya dice de qué es. */
+.pips {
+  display: flex;
+  gap: 3px;
+}
+
+.pips span {
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--sd-stroke-color);
+  background: var(--sd-surface-sunken);
+}
+
+.pips span[data-lleno] {
+  background: var(--sd-cat-4);
+}
+
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-top: 0.15rem;
+  font-family: var(--sd-font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--sd-accent);
+  text-decoration: none;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.enlace:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: var(--sd-focus-ring);
+}

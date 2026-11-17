@@ -9,9 +9,10 @@
  * tablas siguen siendo los de Mantine. Heredan el mismo trazo por el tema
  * (`src/presentation/styles/mantine-sketch.module.css`), así que no hay que
  * sustituirlos. Estos existen porque hacen algo que Mantine no hace: un botón
- * que es un `<Link>` tipado de Next, una ficha con cinta y filete, un badge que
+ * que es un `<Link>` tipado de Next, un título con trazo de rotulador, una ficha con cinta y filete, un badge que
  * resuelve su tono desde el estado, un hueco vacío que está dibujado y un
- * importe que cuenta hasta su valor sin dejar de ser exacto.
+ * importe (o una cifra que no es dinero) que cuenta hasta su valor sin dejar de
+ * ser exacto.
  */
 
 export { SketchButton } from './SketchButton/SketchButton'
@@ -20,6 +21,9 @@ export type {
   SketchButtonSize,
   SketchButtonVariant,
 } from './SketchButton/SketchButton'
+
+export { SketchTitle } from './SketchTitle/SketchTitle'
+export type { SketchTitleProps } from './SketchTitle/SketchTitle'
 
 export { SketchCard } from './SketchCard/SketchCard'
 export type {
@@ -42,3 +46,6 @@ export type { EmptyStateDibujo, EmptyStateProps } from './EmptyState/EmptyState'
 
 export { AnimatedMoney } from './AnimatedMoney/AnimatedMoney'
 export type { AnimatedMoneyProps } from './AnimatedMoney/AnimatedMoney'
+
+export { AnimatedCount } from './AnimatedCount/AnimatedCount'
+export type { AnimatedCountProps } from './AnimatedCount/AnimatedCount'

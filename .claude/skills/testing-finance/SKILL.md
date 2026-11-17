@@ -5,6 +5,10 @@ description: Estrategia y convenciones de test del gestor de finanzas — qué s
 
 # Tests
 
+Esta skill dice QUÉ testear y con qué criterio. CÓMO está montado todo (PGlite,
+mocks, Testing Library, Playwright, coverage, CI), qué fichero cubre qué y las
+trampas conocidas están en **`docs/TESTS.md`**: léelo antes de escribir un test.
+
 ## Dónde ponerlos
 
 La cobertura uniforme es un desperdicio. En esta aplicación el riesgo está muy
@@ -13,11 +17,12 @@ concentrado:
 | Zona | Cobertura | Por qué |
 |---|---|---|
 | `lib/money.ts` | Exhaustiva, con propiedades | Un fallo aquí corrompe todos los datos |
-| Agregaciones (`queries.ts`) | Alta | Errores silenciosos: el número sale, pero mal |
+| Agregaciones (`informes.repository.ts`) | Alta | Errores silenciosos: el número sale, pero mal |
 | Parsers de extracto | Alta, con ficheros reales | Entrada hostil e impredecible |
 | Autorización de acciones | Alta | Un fallo expone datos de otro usuario |
 | Fechas y periodos | Alta | Los bugs de zona horaria no se ven en el mes actual |
-| Componentes de UI | Baja | Cambian mucho, fallan de forma visible |
+| Formularios y tablas genéricos (`GenericForm`, `AppTable`, `MoneyInput`) | Media (80 %) | Los usa toda la app: un fallo aquí es un importe mal leído o un filtro que no filtra |
+| Componentes de una sola vista | Baja | Cambian mucho, fallan de forma visible |
 | Estilos, layout | Ninguna | |
 
 El criterio: **testea lo que falla en silencio.** Un botón desalineado se ve. Un
@@ -27,10 +32,27 @@ total mal calculado, no.
 
 - **Vitest** para `lib/`, parsers y agregaciones.
 - **fast-check** para propiedades sobre aritmética de dinero.
-- **Playwright** para tres o cuatro flujos completos, no más.
-- Base de datos de test: SQLite en memoria, recreada por fichero de test. Nada
-  de mockear el ORM — los bugs de agregación viven justo en el SQL que el mock
-  no ejecuta.
+- **Testing Library** (`*.test.tsx`, jsdom) para componentes y hooks, por rol y
+  nombre accesible y con `userEvent`. Los hooks, sobre Refine real
+  (`test/refine.tsx`).
+- **Playwright** (`e2e/`) para tres o cuatro flujos completos, no más, contra el
+  build de producción y un Supabase de PRUEBAS (`teachcash-e2e`), nunca el de
+  desarrollo.
+- Base de datos de test: **Postgres real sobre PGlite** (el mismo motor en
+  WASM, en proceso), con las migraciones reales y una base nueva por test
+  (`createTestDb()` de `db/testing.ts`). Nunca contra Supabase. Nada de mockear
+  el ORM — los bugs de agregación viven justo en el SQL que el mock no ejecuta,
+  y los de dialecto (`like` que distingue mayúsculas, `sum` que vuelve como
+  texto) solo los caza el mismo motor que hay en producción.
+- `db/testing.ts` monta antes de migrar un **stub del esquema `auth`** de
+  Supabase: `auth.users`, `auth.uid()` (lee `request.jwt.claim.sub`) y los
+  roles `anon` y `authenticated`. Si una migración nueva usa algo más de
+  `auth`, se añade ahí.
+- Usuarios: `USER_A` y `USER_B` ya existen en `auth.users` (los datos tienen
+  clave ajena ahí). Otro, con `crearUsuario(pg, id, { anonimo, email })`.
+- Lo que se mockea: de dónde sale la conexión (`@/db`) y la sesión
+  (`@/lib/auth`, `getSession`). Las semillas, en
+  `src/infrastructure/repositories/__tests__/helpers.ts`.
 
 ## Propiedades del dinero
 
@@ -92,15 +114,15 @@ solo limpia `\s` con `trim()`, cuidado).
 Este último es el que se escapa siempre. Ejecuta la suite con `TZ` forzado:
 
 ```json
-{ "scripts": { "test:tz": "TZ=Pacific/Kiritimati vitest run" } }
+{ "scripts": { "test:tz": "cross-env TZ=Pacific/Kiritimati vitest run" } }
 ```
 
 Si los tests pasan en `Europe/Madrid` pero fallan en UTC+14, hay un `Date` donde
 debería haber una fecha civil. → skill `finance-data-model`
 
 **El saldo, que es DERIVADO**
-- Es la suma de los movimientos vivos: lo que está en la papelera no cuenta
-- Restaurar un movimiento lo devuelve al saldo
+- Es la suma de los movimientos que quedan: borrar uno (borrado físico, sin
+  papelera) lo saca del saldo para siempre
 - `getSaldoActual` y el último punto de `getSerieSaldo` dan la MISMA cifra. Dos
   caminos distintos hasta el mismo número es lo que prueba que nadie ha
   materializado un saldo por su cuenta (regla dura 7)
@@ -118,14 +140,14 @@ datos del usuario A:
 
 ```ts
 test('no se puede editar el movimiento de otro usuario', async () => {
-  const txA = await seedTransaction({ userId: 'user-a' })
-  mockSession('user-b')
+  await seedMovimiento(h.db, 'tx-a', USER_A, { amount: -500 })
+  h.userId = USER_B                    // lo que devuelve el getSession mockeado
 
-  const result = await updateTransaction(emptyState, formDataFor(txA.id, { amount: 100 }))
+  const result = await updateEntity('Movimientos', 'tx-a', { amount: -100, … })
 
   expect(result.ok).toBe(false)
-  const unchanged = await db.query.transactions.findFirst({ where: eq(transactions.id, txA.id) })
-  expect(unchanged!.amount).toBe(txA.amount)   // comprobar el dato, no solo la respuesta
+  const [fila] = await h.db.select().from(transactions).where(eq(transactions.id, 'tx-a'))
+  expect(fila.amount).toBe(-500)       // comprobar el dato, no solo la respuesta
 })
 ```
 
@@ -135,6 +157,22 @@ error **después** de haber escrito. Verifica el estado de la base de datos.
 Cubre también: pasar un `categoryId` ajeno al crear, y una categoría de ingreso
 en un movimiento de gasto — que el repositorio rechaza porque descolocaría todos
 los informes.
+
+### Sesión y base
+
+- **`getSession`** (`lib/__tests__/auth.test.ts`): el `userId` sale solo del
+  `sub` de `getClaims()`; sin claims o con error, `null`. Nunca de
+  `auth.getSession()`.
+- **Acciones de auth** (`auth.actions.test.ts`): sin token de Turnstile no se
+  llama a Supabase; crear cuenta siendo invitado conserva el mismo usuario; los
+  mensajes no revelan si un email existe; los errores de Supabase no se filtran
+  crudos al cliente.
+- **`rutaInterna`** (`lib/__tests__/rutas.test.ts`): ninguna redirección sale
+  del sitio (`//evil.com`, `https://…`, `/\evil.com`).
+- **En la base** (`db/__tests__/schema.test.ts`): RLS con el rol
+  `authenticated` y `request.jwt.claim.sub` fijado con `set_config` no deja ver
+  ni escribir lo ajeno, y borrar de `auth.users` se lleva sus datos en cascada.
+  Toda tabla nueva de datos de usuario entra en estos dos tests.
 
 ## Parsers de extracto
 
@@ -152,12 +190,22 @@ Por cada banco soportado:
 
 ## Flujos end-to-end
 
-Cuatro, y bien elegidos. Cada uno cuesta mantenimiento:
+Pocos, y bien elegidos. Cada uno cuesta mantenimiento. Los que hay
+(`e2e/*.spec.ts`):
 
-1. Añadir movimiento → el saldo de la portada refleja el cambio
-2. Borrarlo → el saldo vuelve atrás → restaurarlo → vuelve a contar
-3. Importar extracto → previsualizar → confirmar → reimportar no duplica
-4. Crear presupuesto → gastar por encima → se ve el exceso
+1. Anotar un gasto → el saldo de la portada refleja el cambio, sin recargar
+2. Borrarlo → el saldo vuelve atrás (el borrado es físico: no hay papelera ni
+   "restaurar")
+3. Crear una categoría → anotar en ella → aparece al filtrar por ella
+4. Las tres tipografías llegan de verdad a la página (solo un navegador lo ve)
+
+Cuando existan las funcionalidades, los siguientes candidatos son:
+
+- Importar extracto → previsualizar → confirmar → reimportar no duplica
+- Crear presupuesto → gastar por encima → se ve el exceso
+
+Navega por el MENÚ, no con `page.goto`: una recarga tira la caché de React Query
+y taparía justo lo que hay que probar, que cada mutación invalida `['informes']`.
 
 No hagas e2e de validación de formularios: eso es un test unitario del esquema
 Zod, y en Playwright cuesta cien veces más.

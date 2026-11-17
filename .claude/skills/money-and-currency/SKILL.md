@@ -103,11 +103,21 @@ export const allocate = (total: Money, weights: number[]): Money[] => {
   const totalWeight = weights.reduce((a, b) => a + b, 0)
   const shares = weights.map((w) => Math.floor((total.amount * w) / totalWeight))
   let remainder = total.amount - shares.reduce((a, b) => a + b, 0)
-  // El resto se reparte de uno en uno, empezando por el primero.
-  for (let i = 0; remainder > 0; i++, remainder--) shares[i % shares.length]++
+  // El resto va a las partes con MAYOR PARTE DECIMAL (método del resto mayor);
+  // a igual parte decimal, desempata la posición. Nunca a un peso 0.
+  const faltante = weights.map((w, i) => total.amount * w - shares[i] * totalWeight)
+  const orden = weights
+    .flatMap((w, i) => (w > 0 ? [i] : []))
+    .sort((a, b) => faltante[b] - faltante[a] || a - b)
+  for (let k = 0; remainder > 0; k++, remainder--) shares[orden[k % orden.length]]++
   return shares.map((s) => money(s, total.currency))
 }
 ```
+
+Por qué así y no "por orden": 1,01 € al 10/45/45 es exactamente 0,101 / 0,4545 /
+0,4545. Por orden, el céntimo sobrante iría al primero (0,11, el que más se aleja
+de su parte); por mayor parte decimal va al segundo (0,10 / 0,46 / 0,45). La
+versión real, con sus validaciones, está en `lib/money.ts`.
 
 Invariante que debe estar cubierto por un test: `sum(allocate(t, w)) === t`,
 para cualquier `t` y `w`. Ver skill `testing-finance`.

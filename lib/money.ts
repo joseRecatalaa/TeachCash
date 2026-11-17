@@ -29,8 +29,10 @@ export const isCurrency = (value: string): value is Currency =>
   (CURRENCIES as readonly string[]).includes(value)
 
 /**
- * La columna `currency` es texto en SQLite: el tipo `Currency` es una promesa al
- * compilador, no una garantía. Este es el punto donde se comprueba de verdad.
+ * Una divisa que llega como texto (hoy, la de una fila con `divisaAccessor` en
+ * `AppTable`) es una promesa al compilador, no una garantía. Este es el punto
+ * donde se comprueba de verdad. No hay columna de divisa en la base: la decide
+ * `DIVISA_APP` (regla dura 2).
  */
 export const asCurrency = (value: string): Currency => {
   if (!isCurrency(value)) throw new TypeError(`Divisa desconocida: ${value}`)
@@ -86,7 +88,8 @@ export const isPositive = (a: Money): boolean => a.amount > 0
 /** -1, 0 o 1. Lanza si las divisas no coinciden: ordenar peras y manzanas no significa nada. */
 export const compare = (a: Money, b: Money): number => {
   assertSame(a, b)
-  return a.amount === b.amount ? 0 : a.amount < b.amount ? -1 : 1
+  // Enteros seguros: la resta es exacta y su signo es la comparación.
+  return Math.sign(a.amount - b.amount)
 }
 
 export const equals = (a: Money, b: Money): boolean =>
@@ -118,6 +121,12 @@ export const sumByCurrency = (items: readonly Money[]): Money[] => {
  *
  * Repartir 100 € entre 3 no da 33,33 € × 3 — eso son 99,99 €. El céntimo que
  * falta tiene que ir a alguien de forma determinista, no evaporarse.
+ *
+ * Los céntimos sobrantes van, de uno en uno, a las partes con MAYOR PARTE
+ * DECIMAL (método del resto mayor): a quien más cerca estaba de merecerlos.
+ * 1,01 € al 10/45/45 da 0,10 / 0,46 / 0,45, no 0,11 / 0,45 / 0,45, que es lo
+ * que daba repartirlos por orden. A igual parte decimal desempata la posición,
+ * así que el resultado sigue siendo determinista.
  */
 export const allocate = (total: Money, weights: readonly number[]): Money[] => {
   if (weights.length === 0) {
@@ -136,11 +145,22 @@ export const allocate = (total: Money, weights: readonly number[]): Money[] => {
   const shares = weights.map((w) => Math.floor((total.amount * w) / totalWeight))
   let remainder = total.amount - shares.reduce((a, b) => a + b, 0)
 
-  // El resto va de uno en uno, solo a quien tenga peso: dar un céntimo a alguien
-  // con peso 0 es repartirle algo de lo que se dijo que no le tocaba nada.
-  const eligible = weights.flatMap((w, i) => (w > 0 ? [i] : []))
+  // Lo que le faltó a cada parte para el céntimo siguiente, en unidades de
+  // `totalWeight`: es la parte decimal sin dividir, así que con pesos enteros
+  // se compara sin error de coma flotante.
+  const faltante = weights.map((w, i) => total.amount * w - shares[i] * totalWeight)
+
+  // Solo a quien tenga peso: dar un céntimo a alguien con peso 0 es repartirle
+  // algo de lo que se dijo que no le tocaba nada.
+  const orden = weights
+    .flatMap((w, i) => (w > 0 ? [i] : []))
+    .sort((a, b) => faltante[b] - faltante[a] || a - b)
+
+  // El resto es la suma de las partes decimales, así que nunca supera el número
+  // de partes con peso; el módulo es solo una red contra el redondeo flotante
+  // con pesos no enteros.
   for (let k = 0; remainder > 0; k++, remainder--) {
-    shares[eligible[k % eligible.length]]++
+    shares[orden[k % orden.length]]++
   }
 
   return shares.map((s) => money(s, total.currency))

@@ -1,0 +1,211 @@
+{
+  "id": "inversion/01-por-que-invertir",
+  "tipo": "lectura",
+  "titulo": "Por qué invertir: inflación, riesgo y plazo",
+  "descripcion": "Por qué el dinero quieto pierde valor con la inflación y cómo funcionan el riesgo, el plazo, la diversificación, la renta fija y la renta variable.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "El ladrón silencioso de tu cuenta",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "billete",
+          "pie": "Un billete a píxel: la misma cifra que, con los años, compra menos cosas."
+        },
+        {
+          "tipo": "dato",
+          "texto": "En julio de 2022 los precios en España subían un **10,8 %** respecto al año anterior: la tasa más alta desde septiembre de 1984.",
+          "fuente": "INE, nota de prensa del IPC de julio de 2022 (12 de agosto de 2022)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Con un 3 % de inflación al año, 10.000 € quietos durante diez años compran lo que hoy unos **7.441 €**. La cifra no baja: baja lo que compra."
+        }
+      ]
+    },
+    {
+      "titulo": "El excedente de Pepito en Valencia",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito tiene 27 años, trabaja en un laboratorio de Valencia y comparte piso. Su **fondo de emergencia** ya está completo. Ahora le sobra dinero que no va a necesitar en diez años."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Un mes de Pepito",
+          "filas": [
+            {
+              "concepto": "Nómina neta",
+              "importe": 175000
+            },
+            {
+              "concepto": "Habitación en piso compartido y suministros",
+              "importe": -52000
+            },
+            {
+              "concepto": "Supermercado y transporte",
+              "importe": -38000
+            },
+            {
+              "concepto": "Ocio e imprevistos",
+              "importe": -35000
+            },
+            {
+              "concepto": "Excedente para invertir a largo plazo",
+              "importe": 50000
+            }
+          ],
+          "nota": "1.750 − 520 − 380 − 350 = **500 €** al mes que pueden esperar años."
+        }
+      ]
+    },
+    {
+      "titulo": "Riesgo, rentabilidad y horizonte",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "En inversión, **riesgo y rentabilidad van de la mano**. Quien aspira a ganar más acepta más subidas y bajadas por el camino."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🎯 Ninguna rentabilidad está prometida.",
+            "📉 Las rentabilidades pasadas no garantizan las futuras.",
+            "⏳ El _horizonte temporal_ es el tiempo que tu dinero puede esperar sin tocarse."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Diversificar: varios cestos",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Poner todo en una sola empresa o un solo país es jugársela a una carta. **Diversificar** es repartir entre muchas empresas, sectores y regiones."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🧺 Si una empresa fracasa, las demás amortiguan el golpe.",
+            "🌍 Reduces los sustos sin renunciar al crecimiento de la economía mundial."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Renta fija frente a renta variable",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "📜 **Renta fija**: prestas a Estados o empresas (letras, bonos) a cambio de un interés pactado. Oscila menos, pero su precio también se mueve.",
+            "📈 **Renta variable**: compras trozos de empresas (acciones). Oscila más a corto plazo y tiene más potencial a largo."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "El dinero que puede esperar años se defiende de la inflación con **plazo y diversificación**."
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ Mito: «En la cuenta corriente nunca pierdes un euro, así que es lo más seguro».",
+            "✅ Realidad: el saldo no baja, pero la vida sube. Con un 3 % de inflación al año, en diez años compras un **25,6 % menos**."
+          ]
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Lo que compran 10.000 € quietos al cabo de 10 años",
+          "filas": [
+            {
+              "concepto": "Con una inflación del 2 % anual",
+              "importe": 820300
+            },
+            {
+              "concepto": "Con una inflación del 3 % anual",
+              "importe": 744100
+            },
+            {
+              "concepto": "Con una inflación del 4 % anual",
+              "importe": 675600
+            }
+          ],
+          "nota": "Cuenta: 10.000 € ÷ (1 + inflación) elevado a 10, al euro. Es un _ejemplo_, no una previsión."
+        }
+      ]
+    },
+    {
+      "titulo": "La pregunta de Pepito",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito ya sabe qué son las acciones y los bonos. Pero ¿cómo puede invertir en **cientos de empresas del mundo a la vez** con solo 50 € al mes, sin volverse loco eligiéndolas una a una?"
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "dinero-quieto",
+      "tipo": "opcion",
+      "enunciado": "Con el fondo de emergencia ya cubierto, ¿qué le pasa al dinero extra que dejas al 0 % en la cuenta corriente durante diez años si hay inflación?",
+      "opciones": [
+        "Mantiene su poder de compra, porque la cifra en euros no baja",
+        "Pierde poder adquisitivo: con los mismos euros compras menos cosas",
+        "Gana valor solo, gracias a la estabilidad del banco",
+        "El Fondo de Garantía de Depósitos lo protege de la subida de precios"
+      ],
+      "correcta": 1,
+      "explicacion": "El número de euros no cambia, pero si los precios suben cada euro compra menos. El Fondo de Garantía de Depósitos protege frente a la quiebra de un banco, **no** frente a la inflación."
+    },
+    {
+      "id": "rentabilidad-pasada",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si una inversión ha dado un 9 % de media al año durante los últimos diez años, esa rentabilidad está garantizada para los próximos diez.",
+      "correcta": false,
+      "explicacion": "Lo que pasó no obliga al futuro: los mercados cambian. Por eso la CNMV exige acompañar las rentabilidades históricas del aviso de que **no garantizan** las futuras."
+    },
+    {
+      "id": "empareja-pilares",
+      "tipo": "emparejar",
+      "enunciado": "Relaciona cada concepto básico de inversión con su definición.",
+      "pares": [
+        {
+          "concepto": "Horizonte temporal",
+          "definicion": "El plazo durante el que no vas a necesitar el dinero invertido"
+        },
+        {
+          "concepto": "Diversificación",
+          "definicion": "Repartir entre activos, sectores y países para que una caída concreta duela menos"
+        },
+        {
+          "concepto": "Renta fija",
+          "definicion": "Deuda de Estados o empresas, como letras o bonos, que paga un interés"
+        },
+        {
+          "concepto": "Renta variable",
+          "definicion": "Acciones: partes de empresas cuyo valor sube o baja con el negocio y el mercado"
+        }
+      ],
+      "explicacion": "Son las cuatro piezas de cualquier cartera: cuánto puede esperar el dinero, cómo se reparte el riesgo y si prestas (renta fija) o pasas a ser copropietario (renta variable)."
+    },
+    {
+      "id": "hueco-riesgo",
+      "tipo": "hueco",
+      "enunciado": "En toda inversión real, la rentabilidad posible y el ___ van unidos: no hay ganancia alta sin aceptar posibles pérdidas.",
+      "opciones": [
+        "riesgo",
+        "ahorro",
+        "salario"
+      ],
+      "correcta": 0,
+      "explicacion": "Para aspirar a más que un producto sin riesgo hay que aceptar que el valor oscile y pueda bajar. Quien promete mucho sin riesgo está vendiendo humo."
+    }
+  ]
+}

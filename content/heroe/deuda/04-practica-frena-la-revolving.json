@@ -1,0 +1,105 @@
+{
+  "id": "deuda/04-practica-frena-la-revolving",
+  "tipo": "interactivo",
+  "titulo": "Pepito frena su tarjeta revolving",
+  "descripcion": "Pepito revisa sus recibos en Sevilla: cuánto baja de verdad su deuda, si su tarjeta puede ser usuraria y cómo cortar la bola de intereses.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "cuanto-baja",
+      "tipo": "calcula",
+      "enunciado": "Pepito debe 1.000 € en su revolving y paga 35 € al mes. Este mes le cobran un **2 %** de interés sobre lo que debe, sin otros gastos. ¿Cuántos euros de su cuota bajan la deuda?",
+      "unidad": "euros",
+      "solucion": 1500,
+      "tolerancia": 0,
+      "explicacion": "Intereses: 1.000 € × 2 % = 20 €. Se cobran primero. Lo que queda, 35 € − 20 € = **15 €**, es lo único que reduce la deuda, que pasa a 985 €."
+    },
+    {
+      "id": "cuota-de-20",
+      "tipo": "calcula",
+      "enunciado": "¿Y si su cuota fuera de 20 € con esa misma deuda de 1.000 € y ese 2 % al mes? ¿Cuántos euros bajaría la deuda ese mes?",
+      "unidad": "euros",
+      "solucion": 0,
+      "tolerancia": 0,
+      "explicacion": "Los intereses son 20 € y la cuota, 20 €: se va todo en intereses y la deuda se queda en **1.000 €**. Pagaría cada mes sin avanzar nada."
+    },
+    {
+      "id": "diferencia-puntos",
+      "tipo": "calcula",
+      "enunciado": "El contrato de Pepito dice **26,8 % TAE**. El tipo medio de las tarjetas revolving del Banco de España, el mes que firmó, era del 19,5 %. ¿Cuántos puntos porcentuales hay de diferencia?",
+      "unidad": "porcentaje",
+      "solucion": 730,
+      "tolerancia": 0,
+      "explicacion": "26,8 − 19,5 = **7,3 puntos**. Se restan los dos porcentajes: los puntos son la distancia entre ellos, no un porcentaje de uno sobre otro."
+    },
+    {
+      "id": "es-usurario",
+      "tipo": "opcion",
+      "enunciado": "Con esa diferencia de 7,3 puntos, ¿qué dice el criterio del Supremo para las revolving (Sentencia 258/2023)?",
+      "opciones": [
+        "Que no es usurario: tendría que doblar el tipo medio",
+        "Que sería usurario, porque supera en más de 6 puntos el tipo medio",
+        "Que las tarjetas nunca entran en la ley de usura",
+        "Que es ilegal todo interés por encima del 10 %"
+      ],
+      "correcta": 1,
+      "explicacion": "El criterio compara la TAE del contrato con el tipo medio de su categoría en la fecha de la firma. Por encima de 6 puntos, el Supremo lo considera notablemente superior al normal del dinero."
+    },
+    {
+      "id": "no-pagar",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si Pepito deja de pagar los recibos por su cuenta, sin haber reclamado nada, se arriesga a acabar en un fichero de morosos.",
+      "correcta": true,
+      "explicacion": "Mientras la deuda no esté reclamada ante un juez o la Administración, sigue siendo exigible. Dejar de pagar trae recargos y puede acabar en un fichero (Ley Orgánica 3/2018, art. 20)."
+    },
+    {
+      "id": "medios-de-pago",
+      "tipo": "emparejar",
+      "enunciado": "Pepito pone orden en su cartera. Empareja cada medio de pago con su mejor uso.",
+      "pares": [
+        {
+          "concepto": "Tarjeta de débito",
+          "definicion": "La compra y el transporte del día a día, con dinero que ya tiene"
+        },
+        {
+          "concepto": "Crédito a fin de mes",
+          "definicion": "Un gasto de trabajo que paga entero el mes siguiente, sin intereses"
+        },
+        {
+          "concepto": "Revolving",
+          "definicion": "Crédito caro: mejor pasarla a fin de mes o saldarla cuanto antes"
+        },
+        {
+          "concepto": "Compra ahora, paga después",
+          "definicion": "Trocear una compra pequeña, sin tener varias abiertas a la vez"
+        }
+      ],
+      "explicacion": "El débito y el pago a fin de mes no cuestan intereses. La revolving y los plazos acumulados son los que hipotecan las nóminas que aún no has cobrado."
+    },
+    {
+      "id": "cortar-bola",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los pasos de Pepito para cortar la bola de nieve antes de reclamar.",
+      "pasos": [
+        "Dejar de hacer compras nuevas con la tarjeta en modo aplazado",
+        "Cambiar la forma de pago a pago total a fin de mes, o saldar lo pendiente",
+        "Reunir el contrato y los recibos para ver la TAE y lo pagado",
+        "Reclamar por escrito al Servicio de Atención al Cliente de la entidad"
+      ],
+      "explicacion": "Primero deja de crecer la deuda, luego corta el aplazamiento, después junta las pruebas y, con ellas, reclama."
+    },
+    {
+      "id": "prestamo-personal",
+      "tipo": "opcion",
+      "enunciado": "Una persona quiere saber si su préstamo personal puede ser usurario. ¿Con qué tipo medio se compara su TAE?",
+      "opciones": [
+        "Con el de las tarjetas revolving",
+        "Con el de su propia categoría de préstamo, en la fecha de la firma",
+        "Con el Euríbor de este mes",
+        "Con el interés legal del dinero"
+      ],
+      "correcta": 1,
+      "explicacion": "Cada operación se compara con el tipo medio de las operaciones de su tipo cuando se firmó. Un préstamo personal suele tener un tipo medio mucho más bajo que una revolving."
+    }
+  ]
+}

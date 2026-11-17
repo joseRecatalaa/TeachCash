@@ -1,0 +1,125 @@
+{
+  "id": "ahorro/03-jefe-del-ahorro",
+  "tipo": "jefe",
+  "titulo": "El Tragaperras",
+  "descripcion": "El monstruo que se come los ahorros que no tienen un sitio. Demuestra todo lo que sabes: colchón, depósitos, FGD, Letras, inflación y metas.",
+  "minutos": 5,
+  "aprobado": 70,
+  "preguntas": [
+    {
+      "id": "que-cubre",
+      "tipo": "opcion",
+      "enunciado": "¿Cuál de estos gastos debería pagarse con el fondo de emergencia?",
+      "opciones": [
+        "Unas zapatillas en rebajas",
+        "La reparación urgente de la caldera en invierno",
+        "Un viaje de fin de semana"
+      ],
+      "correcta": 1,
+      "explicacion": "Una avería urgente es justo un **imprevisto**. Las rebajas y los viajes son gastos que se pueden planificar o aplazar."
+    },
+    {
+      "id": "calcula-seis-meses",
+      "tipo": "calcula",
+      "enunciado": "Tus gastos imprescindibles son **1.300 €** al mes. ¿Cuánto es un fondo de 6 meses?",
+      "unidad": "euros",
+      "solucion": 780000,
+      "tolerancia": 0,
+      "explicacion": "6 × 1.300 € = **7.800 €**. El colchón se mide en meses de gastos imprescindibles, no de sueldo."
+    },
+    {
+      "id": "hueco-automatica",
+      "tipo": "hueco",
+      "enunciado": "La forma más fiable de ahorrar es una transferencia ___ el día de cobro.",
+      "opciones": ["automática", "ocasional", "en efectivo"],
+      "correcta": 0,
+      "explicacion": "**Automática**: así no depende de acordarte ni de la fuerza de voluntad, y ahorras antes de gastar."
+    },
+    {
+      "id": "tae-o-tin",
+      "tipo": "opcion",
+      "enunciado": "Para comparar dos cuentas remuneradas, ¿qué dato miras?",
+      "opciones": ["El TIN", "La TAE", "El nombre del banco"],
+      "correcta": 1,
+      "explicacion": "La **TAE** incluye comisiones y la frecuencia con la que te pagan, así que dos cuentas se comparan por su TAE."
+    },
+    {
+      "id": "cancelar-con-perdida",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si Pepito cancela su depósito antes de tiempo, puede pasar que recupere menos dinero del que metió.",
+      "correcta": true,
+      "explicacion": "La penalización no puede pasar de los intereses brutos ganados, pero la **retención** se aplica igual. Sumadas, pueden dejarle por debajo de lo que depositó."
+    },
+    {
+      "id": "calcula-retencion",
+      "tipo": "calcula",
+      "enunciado": "Una cuenta te da **200 €** de intereses brutos. Hacienda retiene un **19 %**. ¿Cuántos euros te llegan?",
+      "unidad": "euros",
+      "solucion": 16200,
+      "tolerancia": 0,
+      "explicacion": "El 19 % de 200 € son 38 €, así que llegan 200 − 38 = **162 €**. La retención es un adelanto del impuesto que luego se ajusta en la renta."
+    },
+    {
+      "id": "fgd-repartir",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Con 150.000 € a tu nombre en una sola entidad española, el Fondo de Garantía de Depósitos lo protege todo.",
+      "correcta": false,
+      "explicacion": "Solo hasta **100.000 € por titular y entidad**. Los otros 50.000 € quedarían sin cubrir; repartirlos en otra entidad los protegería."
+    },
+    {
+      "id": "ordena-compra-letra",
+      "tipo": "ordenar",
+      "enunciado": "Ordena cómo se compra una Letra del Tesoro directamente en el Tesoro.",
+      "pasos": [
+        "Hacer la petición antes de la subasta y adelantar el dinero",
+        "El Tesoro celebra la subasta y fija el precio",
+        "Te devuelven la diferencia entre lo adelantado y el precio",
+        "Al vencer, cobras 1.000 € por cada Letra"
+      ],
+      "explicacion": "Primero se pide y se paga, **luego** se conoce el precio en la subasta; lo que sobra vuelve, y al vencer cobras el valor completo."
+    },
+    {
+      "id": "empareja-mundo",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada concepto del mundo del ahorro con lo que significa.",
+      "pares": [
+        { "concepto": "Depósito a plazo", "definicion": "Dinero que dejas un tiempo fijo a cambio de un tipo pactado" },
+        { "concepto": "Fondo de Garantía de Depósitos", "definicion": "Te devuelve hasta 100.000 € si tu entidad no puede" },
+        { "concepto": "Letra del Tesoro", "definicion": "Un préstamo corto que le haces al Estado" },
+        { "concepto": "IPC", "definicion": "El índice del INE que mide cómo cambian los precios" },
+        { "concepto": "Interés compuesto", "definicion": "Los intereses ganados también generan intereses" }
+      ],
+      "explicacion": "Son las cinco herramientas del mundo: **dónde** guardar, **quién** lo protege, **a quién** prestar, qué lo amenaza y qué lo hace crecer."
+    },
+    {
+      "id": "inflacion-poder",
+      "tipo": "opcion",
+      "enunciado": "Tu cuenta te da un **2 %** al año y la inflación es del **5 %**. Al final del año, ¿qué ha pasado con tu dinero?",
+      "opciones": [
+        "Tienes más euros, pero compran menos",
+        "Tienes más euros y compran más",
+        "Tienes menos euros en la cuenta"
+      ],
+      "correcta": 0,
+      "explicacion": "Los intereses suman euros, pero los precios suben más deprisa. El saldo crece y el **poder adquisitivo** baja."
+    },
+    {
+      "id": "calcula-compuesto",
+      "tipo": "calcula",
+      "enunciado": "Dejas **10.000 €** al **3 %** de interés compuesto anual y no sacas nada en 2 años. ¿Cuántos euros de intereses brutos ganas en total?",
+      "unidad": "euros",
+      "solucion": 60900,
+      "tolerancia": 0,
+      "explicacion": "Año 1: 10.000 € × 3 % = 300 €. Año 2: 10.300 € × 3 % = 309 €. Total: **609 €**, 9 € más que con interés simple."
+    },
+    {
+      "id": "calcula-meta",
+      "tipo": "calcula",
+      "enunciado": "Pepito quiere **6.000 €** dentro de **24 meses** y empieza de cero. Sin contar intereses, ¿cuántos euros tiene que apartar al mes?",
+      "unidad": "euros",
+      "solucion": 25000,
+      "tolerancia": 0,
+      "explicacion": "Meta entre meses que faltan: 6.000 € ÷ 24 = **250 €** al mes. Automatizarlo el día de cobro es lo que hace que llegue."
+    }
+  ]
+}

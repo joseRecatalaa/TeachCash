@@ -1,0 +1,197 @@
+{
+  "id": "salud/05-nomina-bruto-neto-mei",
+  "tipo": "lectura",
+  "titulo": "La nómina por dentro: bruto, neto y MEI",
+  "descripcion": "Qué te descuentan en la nómina en 2026: cotizaciones a la Seguridad Social, el MEI, la retención del IRPF y el salario mínimo.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "La brecha del recibo",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "libro",
+          "pie": "Un libro abierto, como una nómina que por fin se entiende."
+        },
+        {
+          "tipo": "dato",
+          "texto": "En 2026, el salario mínimo es de **1.221 € al mes** (40,70 € al día), y en cómputo anual no puede quedar por debajo de 17.094 €.",
+          "fuente": "Real Decreto 126/2026, arts. 1 y 3 (BOE de 19 de febrero de 2026)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Por qué el neto no coincide con el bruto? El **bruto** es lo que pactas. El **neto**, lo que llega a tu cuenta tras las cotizaciones y la retención."
+        }
+      ]
+    },
+    {
+      "titulo": "Tu cuota a la Seguridad Social",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Con contrato indefinido, en 2026 aportas un **6,50 %** de tu base de cotización:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🏥 Contingencias comunes: 4,70 %",
+            "💼 Desempleo: 1,55 % (1,60 % con contrato temporal)",
+            "📚 Formación profesional: 0,10 %",
+            "🧓 MEI: 0,15 %"
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "La empresa aporta bastante más por su lado. El FOGASA (0,20 %) lo paga _solo_ ella."
+        }
+      ]
+    },
+    {
+      "titulo": "Qué es el MEI",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "El **MEI** (Mecanismo de Equidad Intergeneracional) es una cotización extra para las pensiones. En 2026 es el **0,90 %** de la base de contingencias comunes."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "El MEI de una base de 2.000 €",
+          "filas": [
+            {
+              "concepto": "Tu parte (0,15 %)",
+              "importe": -300
+            },
+            {
+              "concepto": "Empresa (0,75 %)",
+              "importe": -1500
+            },
+            {
+              "concepto": "Total (0,90 %)",
+              "importe": -1800
+            }
+          ],
+          "nota": "Tu parte: 2.000 × 0,0015 = **3 €** al mes."
+        }
+      ]
+    },
+    {
+      "titulo": "La retención del IRPF",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La retención es un **adelanto** a Hacienda a cuenta de tu impuesto del año. Depende del sueldo previsto y de tu familia."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Si te retienen de menos, la Renta suele salir **a pagar**."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Con sueldos bajos no hay retención: sin hijos ni cónyuge a cargo y con contrato indefinido, no se retiene hasta 15.876 € brutos al año."
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito y el salario mínimo",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito trabaja en atención al cliente en Sevilla, a jornada completa, con el salario mínimo de 2026."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "El bruto de Pepito en 2026",
+          "filas": [
+            {
+              "concepto": "12 pagas ordinarias (12 × 1.221 €)",
+              "importe": 1465200
+            },
+            {
+              "concepto": "2 pagas extra (2 × 1.221 €)",
+              "importe": 244200
+            },
+            {
+              "concepto": "Bruto del año",
+              "importe": 1709400
+            }
+          ],
+          "nota": "En 12 pagas: 17.094 / 12 = **1.424,50 €** al mes. El año es el mismo."
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ **Mito**: con 14 pagas ganas más al año que con 12.",
+            "✅ **Realidad**: el bruto anual es el mismo. Solo cambia _cuándo_ lo cobras."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "El bruto es lo pactado; las cotizaciones y la retención deciden tu neto."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "¿Sabrías sacar tú el neto de una nómina con estas cifras? En el siguiente nivel, Pepito la repasa línea a línea."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "mei-trabajador",
+      "tipo": "opcion",
+      "enunciado": "¿Qué parte del MEI paga la persona trabajadora en 2026?",
+      "opciones": [
+        "El 0,15 % de su base de contingencias comunes",
+        "El 0,75 % de su sueldo neto",
+        "El 0,90 % de su sueldo bruto"
+      ],
+      "correcta": 0,
+      "explicacion": "El MEI de 2026 es un 0,90 % de la base de contingencias comunes, pero se reparte: 0,75 puntos los paga la empresa y **0,15** quien trabaja."
+    },
+    {
+      "id": "doce-o-catorce",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si la empresa reparte las dos pagas extra en las doce nóminas, el sueldo bruto del año es mayor que con 14 pagas.",
+      "correcta": false,
+      "explicacion": "El bruto anual es idéntico. Prorratear solo divide la misma cantidad en doce cobros iguales en vez de catorce."
+    },
+    {
+      "id": "calcula-smi-doce",
+      "tipo": "calcula",
+      "enunciado": "En 2026, el salario mínimo es de 1.221 € brutos al mes en 14 pagas. Si un contrato a jornada completa lo reparte en 12 pagas iguales, ¿cuántos euros brutos son al mes?",
+      "unidad": "euros",
+      "solucion": 142450,
+      "tolerancia": 0,
+      "explicacion": "Primero el año: 1.221 × 14 = 17.094 €. Luego, entre doce: 17.094 / 12 = **1.424,50 €** brutos al mes."
+    },
+    {
+      "id": "hueco-fogasa",
+      "tipo": "hueco",
+      "enunciado": "La cotización al Fondo de Garantía Salarial (FOGASA), del 0,20 % en 2026, la paga solo ___.",
+      "opciones": [
+        "la empresa",
+        "la persona trabajadora",
+        "Hacienda"
+      ],
+      "correcta": 0,
+      "explicacion": "Quien trabaja no aporta nada al FOGASA: el 0,20 % lo paga entero la empresa, y sirve para cobrar salarios e indemnizaciones si la empresa no puede pagarlos."
+    },
+    {
+      "id": "que-es-la-retencion",
+      "tipo": "opcion",
+      "enunciado": "¿Qué es la retención del IRPF de tu nómina?",
+      "opciones": [
+        "Un adelanto a Hacienda a cuenta de tu impuesto del año",
+        "Una cuota para tu pensión",
+        "Una comisión que cobra el banco"
+      ],
+      "correcta": 0,
+      "explicacion": "La empresa la descuenta y la ingresa en Hacienda en tu nombre. En la declaración de la Renta se compara con lo que te toca pagar de verdad."
+    }
+  ]
+}

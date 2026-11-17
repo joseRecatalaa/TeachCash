@@ -1,0 +1,201 @@
+{
+  "id": "deuda/03-tarjetas-revolving-y-usura",
+  "tipo": "lectura",
+  "titulo": "Tarjetas, revolving y usura",
+  "descripcion": "Débito, crédito a fin de mes y revolving; qué considera usura el Tribunal Supremo y qué cambia con la nueva directiva europea.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Tres tarjetas muy distintas",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "tarjeta",
+          "pie": "Tres tarjetas que parecen iguales y no lo son"
+        },
+        {
+          "tipo": "dato",
+          "texto": "En 2023, el Supremo fijó que una tarjeta revolving es usuraria si su TAE supera en **más de 6 puntos** el tipo medio de esas tarjetas.",
+          "fuente": "Tribunal Supremo (Pleno), Sentencia 258/2023, de 15 de febrero"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "💳 **Débito**: descuenta al momento de tu cuenta.",
+            "📅 **Crédito a fin de mes**: cobra todo junto el mes siguiente, sin intereses.",
+            "🔁 **Revolving**: aplaza en cuotas pequeñas con intereses muy altos."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito, en Sevilla",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Ahora Pepito tiene 34 años y es diseñador autónomo en Sevilla. Debe 1.000 € en una revolving al **26,8 % TAE**: un 2 % al mes."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "El mes de Pepito",
+          "filas": [
+            {
+              "concepto": "Ingresos netos",
+              "importe": 190000
+            },
+            {
+              "concepto": "Alquiler del piso",
+              "importe": -75000
+            },
+            {
+              "concepto": "Cuota de autónomos",
+              "importe": -31000
+            },
+            {
+              "concepto": "Luz e internet",
+              "importe": -11000
+            },
+            {
+              "concepto": "Cuota de la tarjeta",
+              "importe": -3500
+            }
+          ],
+          "nota": "De esos 35 €, 20 € son intereses. Solo **15 €** bajan la deuda."
+        }
+      ]
+    },
+    {
+      "titulo": "La cuota pequeña, a cámara lenta",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pagando 35 € al mes y sin compras nuevas, Pepito tardaría **43 meses** en saldar esos 1.000 € y entregaría unos 1.498 € en total."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "❌ Mito: «Una cuota fija pequeña es la forma más cómoda y barata de pagar»."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "✅ Realidad: si la cuota apenas cubre los intereses, la deuda casi no baja. Y si no los cubre, _crece_."
+        }
+      ]
+    },
+    {
+      "titulo": "Qué es la usura",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Una ley de **1908**, aún vigente, declara nulo el préstamo con un interés _notablemente superior_ al normal del dinero."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Si un juez lo anula, devuelves solo lo prestado, y lo pagado de más te lo tienen que devolver."
+        },
+        {
+          "tipo": "idea",
+          "texto": "En las revolving se compara la TAE con el tipo medio del Banco de España del mes de la firma."
+        }
+      ]
+    },
+    {
+      "titulo": "Y los préstamos personales",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "La regla de los 6 puntos nació para las revolving. Para un préstamo personal, el Supremo ha dicho que no se aplica tal cual, pero que **puede tenerse en cuenta** (Sentencia 1378/2023)."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Lo que no cambia: el préstamo se compara con el tipo medio de **su propia categoría** en la fecha de la firma."
+        }
+      ]
+    },
+    {
+      "titulo": "Plazos y minicréditos",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "🛍️ «Compra ahora, paga después» trocea compras; el peligro es acumular varias a la vez.",
+            "⚡ Minicréditos: si te cobran 30 € por prestarte 100 € un mes, la TAE pasa del **2.000 %**."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Normas nuevas",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "🇪🇺 La Directiva (UE) 2023/2225 se aplica desde el **20 de noviembre de 2026** y abarca los créditos de menos de 200 € y el «compra ahora, paga después».",
+            "📜 La ley española que la incorpora seguía en noviembre de 2026 en _anteproyecto_: un borrador que aún no obliga."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Lo que viene",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito abre el recibo de su tarjeta. ¿Cuántos euros de su cuota bajan de verdad la deuda, y cómo sabe si su contrato puede ser usurario? Lo ves en el siguiente nivel."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "nulidad-usura",
+      "tipo": "opcion",
+      "enunciado": "Si un juez declara usurario un préstamo o una tarjeta revolving, ¿qué pasa?",
+      "opciones": [
+        "El interés baja a la mitad desde el mes siguiente",
+        "Devuelves solo el capital recibido, y lo pagado de más te lo tienen que devolver",
+        "La deuda desaparece y no devuelves nada",
+        "El banco devuelve las comisiones pero se queda los intereses"
+      ],
+      "correcta": 1,
+      "explicacion": "Lo dice el artículo 3 de la Ley de 23 de julio de 1908: anulado el contrato, se entrega solo la suma recibida, y el prestamista devuelve lo que exceda de ese capital."
+    },
+    {
+      "id": "seis-puntos",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Para las tarjetas revolving, el Supremo considera usurario el interés cuya TAE supera en más de 6 puntos el tipo medio de esas tarjetas en la fecha del contrato.",
+      "correcta": true,
+      "explicacion": "Es el criterio de la Sentencia 258/2023 del Pleno del Supremo. Lo fijó para que miles de casos parecidos se resolvieran igual."
+    },
+    {
+      "id": "fin-de-mes",
+      "tipo": "hueco",
+      "enunciado": "La tarjeta de crédito con pago ___ cobra todas las compras del mes de una vez, sin intereses.",
+      "opciones": [
+        "a fin de mes",
+        "revolving",
+        "aplazado"
+      ],
+      "correcta": 0,
+      "explicacion": "Con el pago a fin de mes la tarjeta solo te adelanta el dinero unas semanas. Los intereses aparecen cuando aplazas: revolving o pago aplazado."
+    },
+    {
+      "id": "directiva-200",
+      "tipo": "opcion",
+      "enunciado": "¿Qué hace la Directiva (UE) 2023/2225 con los créditos de menos de 200 € y el «compra ahora, paga después»?",
+      "opciones": [
+        "Los deja fuera de toda norma",
+        "Los mete dentro de las normas de protección del crédito al consumo",
+        "Prohíbe pagar con tarjeta por internet"
+      ],
+      "correcta": 1,
+      "explicacion": "La directiva anterior dejaba fuera los créditos pequeños, que es justo donde estaban muchos minicréditos. La nueva los incluye, igual que los pagos aplazados con un tercero que financia."
+    },
+    {
+      "id": "anteproyecto",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Un anteproyecto de ley obliga a los bancos desde el día en que lo aprueba el Consejo de Ministros.",
+      "correcta": false,
+      "explicacion": "Un anteproyecto es un borrador del Gobierno. Solo obliga cuando las Cortes aprueban la ley, se publica en el BOE y entra en vigor."
+    }
+  ]
+}

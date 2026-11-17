@@ -3,7 +3,7 @@
  *
  * SOLO SERVIDOR.
  *
- * **Las opciones no se declaran en la vista.** Un `select` de `sections.ts` se
+ * **Las opciones no se declaran en la vista.** Un `select` de `formularios.ts` se
  * escribe SIN `options` y el `FieldRenderer` las resuelve desde aquí usando el
  * `name` del campo como clave. Así, el día que se añade un valor a una
  * enumeración se toca un sitio y no cinco.
@@ -56,5 +56,7 @@ const VACIO: FormMetadata = { readOnlyFields: [], enumFields: {} }
  * Devolver `{}` deja que el formulario se pinte igual, con sus campos de texto.
  */
 export function getFormMetadata(resource: string): FormMetadata {
-  return METADATA[resource] ?? VACIO
+  // `Object.hasOwn` y no `METADATA[resource] ?? VACIO`: `resource` llega del
+  // cliente, y `METADATA['constructor']` es la función `Object`, no `undefined`.
+  return Object.hasOwn(METADATA, resource) ? METADATA[resource] : VACIO
 }

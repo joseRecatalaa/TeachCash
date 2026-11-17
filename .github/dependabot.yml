@@ -1,0 +1,53 @@
+# Actualizaciones de dependencias. Gratis: Dependabot viene con GitHub.
+#
+# Mensual y AGRUPADO: un PR al mes por ecosistema en vez de uno por paquete.
+# Las alertas de seguridad (Dependabot alerts) no esperan al mes: llegan en
+# cuanto se publica el aviso, y eso se activa en Settings → Code security.
+#
+# Sale contra `develop`, que es la rama de integración del repo.
+#
+# `xlsx` no lo puede actualizar: npm se quedó en una versión con CVEs, y el
+# tarball del CDN de SheetJS (https://cdn.sheetjs.com) va VENDORIZADO en
+# `vendor/`, con su hash en el lockfile (ver docs/SECURITY.md). Hay que mirar a
+# mano https://cdn.sheetjs.com/ de vez en cuando, y al subirlo, sustituir el
+# .tgz y `pnpm install`.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Las de producción y las de desarrollo por separado: un PR de
+      # herramientas de test no debería tener que esperar a revisar Next.
+      produccion:
+        dependency-type: production
+        update-types: [minor, patch]
+      desarrollo:
+        dependency-type: development
+        update-types: [minor, patch]
+    # Las mayores van una a una: cada una trae cambios que leer (AGENTS.md
+    # avisa de que este Next no es el que conoces).
+    ignore:
+      # Los tipos de Node siguen a la mayor del RUNTIME (Node 24, local y CI),
+      # no a la última: con los de la 26 el compilador aceptaría APIs que en
+      # ejecución no existen. Se sube a mano cuando se sube Node.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      acciones:
+        patterns: ['*']

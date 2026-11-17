@@ -1,0 +1,88 @@
+/*
+ * Franja de aviso del invitado. Lavado de acento y filete discontinuo: se ve,
+ * pero no compite con el contenido ni parece un error.
+ */
+
+.franja {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--sd-accent-wash);
+  border-bottom: var(--sd-stroke-hair) dashed var(--sd-stroke-color);
+  color: var(--sd-ink);
+}
+
+.contenido {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.icono {
+  flex: 0 0 auto;
+}
+
+/* Cerrado en una visita anterior: lo marca el script del <head> de
+   `app/layout.tsx` antes del primer pintado. Ver `AvisoInvitado.tsx`. */
+:global(html[data-aviso-invitado='cerrado']) .franja {
+  display: none;
+}
+
+/*
+ * La X, pegada a la derecha y fuera del texto centrado. Con trazo discontinuo
+ * en reposo, como los enlaces de la Navbar: está, pero no compite con
+ * "Crea una cuenta", que es lo que de verdad hay que pulsar.
+ */
+.cerrar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: var(--sd-stroke) dashed transparent;
+  border-radius: var(--sd-radius-sm);
+  color: var(--sd-ink);
+  cursor: pointer;
+  transition: var(--sd-transition);
+}
+
+.cerrar:hover {
+  background: var(--sd-surface);
+  border-color: var(--sd-stroke-color);
+  border-style: solid;
+  transform: rotate(90deg);
+}
+
+.cerrar:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+.texto {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.enlace {
+  color: var(--sd-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: var(--sd-stroke);
+  text-underline-offset: 3px;
+}
+
+.enlace:hover {
+  color: var(--sd-accent-strong);
+}
+
+.enlace:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: var(--sd-radius-sm);
+}

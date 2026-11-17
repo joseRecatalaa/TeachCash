@@ -1,0 +1,19 @@
+/* La pantalla de espera mientras se crea la sesión de invitado. Dura lo que
+   tarda el CAPTCHA invisible y una vuelta a Supabase: un segundo o dos. */
+
+.preparando {
+  min-height: 60vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.texto {
+  margin: 0;
+  max-width: 32rem;
+  color: var(--sd-ink-muted);
+  font-family: var(--sd-font-display);
+}

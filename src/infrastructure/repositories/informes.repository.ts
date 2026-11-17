@@ -15,9 +15,15 @@
  * ────────────────────────────────────────────────────────────────────────────
  *
  * Todos los importes son céntimos en la divisa de la aplicación (`DIVISA_APP`).
+ *
+ * Todo agregado lleva `.mapWith(Number)`. En Postgres, `sum` sobre `integer`
+ * devuelve `bigint`, y el driver entrega `bigint` como TEXTO para no perder
+ * precisión. Sin la conversión, `saldo + importe` concatena cadenas y la cifra
+ * que sale en pantalla parece un número — que es lo peligroso.
+ * Un saldo en céntimos cabe de sobra: `Number` es exacto hasta 2^53.
  */
 
-import { and, asc, eq, gte, isNull, like, lt, lte, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, lt, lte, sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { categories, transactions } from '@/db/schema'
 import {
@@ -30,21 +36,29 @@ import {
   type CivilDate,
   type Period,
 } from '@/lib/dates'
-import type {
-  GastoPorCategoriaDto,
-  PuntoSaldoDto,
-  TotalesPeriodoDto,
+import {
+  INFORME_MESES_POR_DEFECTO,
+  type GastoPorCategoriaDto,
+  type PuntoSaldoDto,
+  type TotalesPeriodoDto,
 } from '@/src/types/informe.types'
-
-/**
- * El único filtro transversal: un movimiento en la papelera no cuenta para
- * nada. Ni para el saldo ni para los informes.
- */
-const vivos = () => isNull(transactions.deletedAt)
+import { getBasePatrimonio } from './perfiles.repository'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Consultas
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Las fechas de un mes, como rango: así puede usar el índice (user_id, date). */
+const delMes = (periodo: Period) => {
+  const { from, to } = monthRange(periodo)
+  return and(gte(transactions.date, from), lte(transactions.date, to))
+}
+
+/** 'YYYY-MM' de una fecha civil. Lo calcula la base, sin pasar por ningún huso. */
+const periodoDe = sql<string>`to_char(${transactions.date}, 'YYYY-MM')`
+
+const SUMA_INGRESOS = sql<number>`coalesce(sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end), 0)`
+const SUMA_GASTOS = sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`
 
 /**
  * En qué se va el dinero durante un periodo.
@@ -62,17 +76,18 @@ export async function getGastoPorCategoria(
       categoriaId: categories.id,
       categoriaNombre: categories.name,
       categoriaColor: categories.color,
-      total: sql<number>`sum(${transactions.amount})`,
+      total: sql<number>`sum(${transactions.amount})`.mapWith(Number),
     })
     .from(transactions)
-    .leftJoin(categories, eq(categories.id, transactions.categoryId))
+    // `innerJoin`: `category_id` es NOT NULL con clave ajena, así que todo
+    // movimiento tiene su categoría y un `leftJoin` solo añadiría nulos que no
+    // pueden darse (y `?? 'Sin categoría'` que nunca se pintarían).
+    .innerJoin(categories, eq(categories.id, transactions.categoryId))
     .where(
       and(
         eq(transactions.userId, userId),
-        // 'YYYY-MM-%' sobre una columna de texto: usa el índice (user_id, date).
-        like(transactions.date, `${periodo}-%`),
+        delMes(periodo),
         lt(transactions.amount, 0),
-        vivos(),
       ),
     )
     .groupBy(categories.id)
@@ -80,10 +95,11 @@ export async function getGastoPorCategoria(
     .orderBy(asc(sql`sum(${transactions.amount})`))
 
   return rows.map((r) => ({
-    categoriaId: r.categoriaId ?? '',
-    categoriaNombre: r.categoriaNombre ?? 'Sin categoría',
+    categoriaId: r.categoriaId,
+    categoriaNombre: r.categoriaNombre,
+    // El color sí puede faltar: es opcional en la categoría.
     categoriaColor: r.categoriaColor ?? '',
-    total: Math.abs(r.total ?? 0),
+    total: Math.abs(r.total),
   }))
 }
 
@@ -98,18 +114,18 @@ export async function getIngresosVsGastos(
   userId: string,
   options: { meses?: number; hasta?: Period } = {},
 ): Promise<TotalesPeriodoDto[]> {
-  const meses = options.meses ?? 12
+  const meses = options.meses ?? INFORME_MESES_POR_DEFECTO
   const hasta = options.hasta ?? periodOf(today())
 
   const rows = await db
     .select({
-      periodo: sql<string>`substr(${transactions.date}, 1, 7)`,
-      ingresos: sql<number>`coalesce(sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end), 0)`,
-      gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
+      periodo: periodoDe,
+      ingresos: SUMA_INGRESOS.mapWith(Number),
+      gastos: SUMA_GASTOS.mapWith(Number),
     })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), vivos()))
-    .groupBy(sql`substr(${transactions.date}, 1, 7)`)
+    .where(eq(transactions.userId, userId))
+    .groupBy(periodoDe)
 
   if (rows.length === 0) return []
 
@@ -121,6 +137,7 @@ export async function getIngresosVsGastos(
   const resultado: TotalesPeriodoDto[] = []
   for (let p = inicio; p <= hasta; p = addMonths(p, 1)) {
     const row = porPeriodo.get(p)
+    // Un mes sin fila es un hueco interior: cero, no "sin datos".
     const ingresos = row?.ingresos ?? 0
     const gastos = row?.gastos ?? 0
     resultado.push({ periodo: p, ingresos, gastos, neto: ingresos - gastos })
@@ -135,37 +152,36 @@ export async function getTotalesDelMes(
 ): Promise<TotalesPeriodoDto> {
   const [row] = await db
     .select({
-      ingresos: sql<number>`coalesce(sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end), 0)`,
-      gastos: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
+      ingresos: SUMA_INGRESOS.mapWith(Number),
+      gastos: SUMA_GASTOS.mapWith(Number),
     })
     .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        like(transactions.date, `${periodo}-%`),
-        vivos(),
-      ),
-    )
+    .where(and(eq(transactions.userId, userId), delMes(periodo)))
 
-  const ingresos = row?.ingresos ?? 0
-  const gastos = row?.gastos ?? 0
+  // Un agregado sin GROUP BY devuelve siempre UNA fila, y `coalesce` la deja
+  // en cero: no hay caso "sin fila" que cubrir.
+  const { ingresos, gastos } = row
   return { periodo, ingresos, gastos, neto: ingresos - gastos }
 }
 
 /**
- * El saldo de la cuenta: la suma de todo lo anotado.
+ * El patrimonio: la base del perfil más todo lo anotado.
  *
- * Arranca en cero el día del primer movimiento. Si hace falta partir del saldo
- * real del banco, se anota como un ingreso más ("Saldo inicial"): no hay un
- * campo de apertura escondido en ninguna parte, y esa es justo la razón de que
- * el saldo no pueda divergir de sus movimientos.
+ * Sigue siendo derivado (regla dura 7). La base no es un saldo guardado sino
+ * el punto de partida que sale del patrimonio que escribe la persona
+ * (`profiles`, ver `guardarPatrimonio`); sin elegirlo, cuenta como cero. Lo que
+ * no se guarda en ninguna parte es la suma.
  */
 export async function getSaldoActual(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
-    .from(transactions)
-    .where(and(eq(transactions.userId, userId), vivos()))
-  return row?.total ?? 0
+  const [[row], base] = await Promise.all([
+    db
+      .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
+      .from(transactions)
+      .where(eq(transactions.userId, userId)),
+    getBasePatrimonio(userId),
+  ])
+  // Siempre una fila (agregado sin GROUP BY), y `coalesce` evita el null.
+  return (base ?? 0) + row.total
 }
 
 /**
@@ -178,34 +194,33 @@ export async function getSerieSaldo(
   userId: string,
   options: { desde: CivilDate; hasta: CivilDate },
 ): Promise<PuntoSaldoDto[]> {
-  // Punto de partida: todo lo anterior al rango. Sin esto, una serie de los
-  // últimos tres meses arrancaría en cero y dibujaría un salto que no existió.
-  const [previo] = await db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        lt(transactions.date, options.desde),
-        vivos(),
-      ),
-    )
+  // Punto de partida: la base del patrimonio más todo lo anterior al rango. Sin
+  // esto, una serie de los últimos tres meses arrancaría en cero y dibujaría un
+  // salto que no existió; y sin la base, su último punto dejaría de
+  // coincidir con `getSaldoActual`.
+  const [[previo], base] = await Promise.all([
+    db
+      .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)`.mapWith(Number) })
+      .from(transactions)
+      .where(and(eq(transactions.userId, userId), lt(transactions.date, options.desde))),
+    getBasePatrimonio(userId),
+  ])
 
   const deltas = await db
-    .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})` })
+    .select({ fecha: transactions.date, total: sql<number>`sum(${transactions.amount})`.mapWith(Number) })
     .from(transactions)
     .where(
       and(
         eq(transactions.userId, userId),
         gte(transactions.date, options.desde),
         lte(transactions.date, options.hasta),
-        vivos(),
       ),
     )
     .groupBy(transactions.date)
 
-  const porFecha = new Map(deltas.map((d) => [d.fecha, d.total ?? 0]))
-  let acumulado = previo?.total ?? 0
+  // `sum` de un grupo que existe nunca es null; el previo, por `coalesce`, tampoco.
+  const porFecha = new Map(deltas.map((d) => [d.fecha, d.total]))
+  let acumulado = (base ?? 0) + previo.total
 
   return eachDay(options.desde, options.hasta).map((fecha) => {
     acumulado += porFecha.get(fecha) ?? 0
@@ -216,23 +231,42 @@ export async function getSerieSaldo(
 /** Fecha del primer movimiento. Sirve para no pintar meses anteriores al alta. */
 export async function getPrimeraFecha(userId: string): Promise<CivilDate | null> {
   const [row] = await db
-    .select({ fecha: sql<string | null>`min(${transactions.date})` })
+    // ::text — un `date` sin columna detrás no pasa por el `mode: 'string'` del
+    // esquema, y según el driver volvería como `Date` (regla dura 5).
+    .select({ fecha: sql<string | null>`min(${transactions.date})::text` })
     .from(transactions)
-    .where(and(eq(transactions.userId, userId), vivos()))
-  return row?.fecha ?? null
+    .where(eq(transactions.userId, userId))
+  return row.fecha
+}
+
+/** Fecha del último movimiento. */
+export async function getUltimaFecha(userId: string): Promise<CivilDate | null> {
+  const [row] = await db
+    // ::text, por lo mismo que en `getPrimeraFecha`.
+    .select({ fecha: sql<string | null>`max(${transactions.date})::text` })
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+  return row.fecha
 }
 
 /**
  * Rango por defecto de la evolución de saldo: los últimos `meses` meses, sin
  * empezar antes del primer movimiento.
+ *
+ * Termina en `max(hoy, último movimiento)`, no en hoy a secas. Las fechas se
+ * aceptan hasta el "hoy" de la zona más adelantada (`latestToday`), que en
+ * Madrid puede ser mañana; si la serie cortara en hoy, su último punto no
+ * incluiría ese movimiento y dejaría de coincidir con `getSaldoActual` — y esa
+ * coincidencia es la prueba de que el saldo es derivado (regla dura 7).
  */
 export async function getRangoPorDefecto(
   userId: string,
-  meses = 12,
+  meses = INFORME_MESES_POR_DEFECTO,
   hoy: CivilDate = today(),
 ): Promise<{ desde: CivilDate; hasta: CivilDate }> {
   const inicioVentana = monthRange(addMonths(periodOf(hoy), -(meses - 1))).from
-  const primera = await getPrimeraFecha(userId)
+  const [primera, ultima] = await Promise.all([getPrimeraFecha(userId), getUltimaFecha(userId)])
   const desde = primera && compareDates(primera, inicioVentana) > 0 ? primera : inicioVentana
-  return { desde, hasta: hoy }
+  const hasta = ultima && compareDates(ultima, hoy) > 0 ? ultima : hoy
+  return { desde, hasta }
 }

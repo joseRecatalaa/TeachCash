@@ -1,26 +1,87 @@
 /**
  * Sesión.
  *
- * La v1 no tiene login: la aplicación es local y de un solo usuario. Pero el
- * resto del código se escribe COMO SI lo tuviera — toda consulta filtra por
- * `userId` y toda acción llama a `getSession()` antes de tocar nada.
+ * Hay dos tipos de usuario y los dos son usuarios de verdad en Supabase Auth:
+ *   - **Invitado**: usuario anónimo. Nace solo al entrar en la aplicación, vive
+ *     en la cookie de ese navegador y se borra a los 4 días.
+ *   - **Usuario**: con email y contraseña.
+ * Para la capa de datos no hay diferencia: los dos tienen un `userId` y toda
+ * consulta filtra por él.
  *
- * Ese es el punto de este fichero: cuando llegue auth de verdad, cambia esto y
- * nada más. Si en su lugar se hubiera quitado el `userId` "porque solo hay uno",
- * habría que rehacer la capa de datos entera.
+ * Este fichero es lo único que el resto del código sabe de autenticación. Las
+ * Server Actions llaman a `getSession()` y no saben que debajo hay Supabase.
  */
 
-/** Dueño de todos los datos mientras no haya login. */
-export const LOCAL_USER_ID = 'local-user'
+import { crearClienteSupabase } from './supabase/server'
 
-export type Session = { user: { id: string } }
+export type Session = {
+  user: {
+    id: string
+    /**
+     * El `session_id` del token. Con él se comprueba que la sesión sigue
+     * abierta (`sesionActiva`), porque la firma del token no lo dice.
+     */
+    sesionId: string
+    email: string | null
+    esInvitado: boolean
+    /**
+     * Si la sesión se abrió escribiendo la contraseña. Quien entró así la
+     * conoce, y por eso se le vuelve a pedir antes de cambiarla; quien llegó
+     * desde el enlace de recuperación o de alta, no la conoce (o no la tiene).
+     */
+    entroConPassword: boolean
+  }
+}
 
 /**
- * Asíncrona a propósito, aunque hoy no espere a nada: cuando la sesión venga de
- * una cookie o de un proveedor externo, ninguna firma de las que la llaman cambia.
+ * El método con que se abrió la sesión, según el claim `amr` del JWT.
+ *
+ * Supabase lo manda como lista de `{ method, timestamp }` (o como lista de
+ * cadenas, en el formato RFC 8176). Manda el MÁS RECIENTE: es el que abrió
+ * esta sesión. Cualquier forma inesperada devuelve `null`, y `null` no cuenta
+ * como contraseña: ante la duda, no se le exige a nadie una contraseña que a
+ * lo mejor no tiene (el que llega de "he olvidado mi contraseña").
+ */
+function metodoDeEntrada(amr: unknown): string | null {
+  if (!Array.isArray(amr) || amr.length === 0) return null
+  if (amr.every((e) => typeof e === 'string')) return amr.at(-1) as string
+
+  let reciente: { method: string; timestamp: number } | null = null
+  for (const e of amr) {
+    if (!e || typeof e !== 'object') continue
+    const { method, timestamp } = e as { method?: unknown; timestamp?: unknown }
+    if (typeof method !== 'string') continue
+    const t = typeof timestamp === 'number' ? timestamp : 0
+    if (!reciente || t >= reciente.timestamp) reciente = { method, timestamp: t }
+  }
+  return reciente?.method ?? null
+}
+
+/**
+ * La sesión de quien hace la petición, o `null`.
+ *
+ * `getClaims()` VERIFICA la firma del JWT (ES256, con la clave pública del
+ * proyecto, que se cachea) y su caducidad. Nunca `auth.getSession()` en el
+ * servidor: esa lee la cookie tal cual y se la cree, y una cookie la puede
+ * escribir cualquiera.
  */
 export async function getSession(): Promise<Session | null> {
-  return { user: { id: LOCAL_USER_ID } }
+  const supabase = await crearClienteSupabase()
+  const { data, error } = await supabase.auth.getClaims()
+  const claims = data?.claims
+  if (error || !claims?.sub) return null
+  // Sin id de sesión no hay forma de saber si la cerraron: no cuenta como sesión.
+  if (typeof claims.session_id !== 'string' || !claims.session_id) return null
+
+  return {
+    user: {
+      id: claims.sub,
+      sesionId: claims.session_id,
+      email: typeof claims.email === 'string' && claims.email ? claims.email : null,
+      esInvitado: claims.is_anonymous === true,
+      entroConPassword: metodoDeEntrada(claims.amr) === 'password',
+    },
+  }
 }
 
 /**

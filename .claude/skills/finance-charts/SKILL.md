@@ -66,10 +66,10 @@ Hoy es gratis: hay una sola divisa (`DIVISA_APP`). Si algún día hay más, o se
 convierte todo a la divisa base —indicando la tasa y su fecha— o se muestran
 gráficos separados. Un eje con euros y dólares sumados no significa nada.
 
-### Fuera lo que está en la papelera
+### No hay papelera que excluir
 
-Un movimiento borrado no cuenta en ningún gráfico ni en el saldo:
-`deleted_at IS NULL`, siempre. → skill `finance-data-model`
+El borrado es físico: una fila en `transactions` siempre cuenta, no hace falta
+ningún filtro para dejar fuera lo borrado. → skill `finance-data-model`
 
 ### El color de una categoría es SUYO, no de su posición
 

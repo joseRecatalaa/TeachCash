@@ -46,7 +46,7 @@
   transform: rotate(-2deg);
 }
 
-/* El trazo de rotulador. Fondo y no pseudoelemento: ver `app/page.module.css`. */
+/* El trazo de rotulador. Fondo y no pseudoelemento: ver `app/Patrimonio/page.module.css`. */
 .texto {
   padding: 0 0.12em 0.08em;
   background-image: linear-gradient(

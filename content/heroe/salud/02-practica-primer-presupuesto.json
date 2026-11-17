@@ -1,0 +1,76 @@
+{
+  "id": "salud/02-practica-primer-presupuesto",
+  "tipo": "interactivo",
+  "titulo": "El primer presupuesto mensual de Pepito",
+  "descripcion": "Acompaña a Pepito a repasar su extracto, prorratear un recibo anual y calcular cuánto le queda a final de mes.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "gasto-prescindible",
+      "tipo": "opcion",
+      "enunciado": "Es 5 de noviembre de 2026 y Pepito acaba de cobrar 1.350 € netos. En el extracto ve el alquiler de su habitación (400 €), la luz (45 €) y unas zapatillas compradas por internet (75 €). ¿Cuál de los tres podía haberse ahorrado?",
+      "opciones": ["El alquiler", "La luz", "Las zapatillas"],
+      "correcta": 2,
+      "explicacion": "El alquiler y la luz son necesidades: hay que pagarlos sí o sí, aunque la luz cambie un poco cada mes. Las zapatillas fueron una elección, y por eso es ahí donde se puede recortar."
+    },
+    {
+      "id": "ordena-presupuesto",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los pasos para que Pepito haga su presupuesto mensual desde cero.",
+      "pasos": [
+        "Anotar los ingresos netos seguros del mes",
+        "Restar los gastos fijos obligatorios",
+        "Poner un tope a cada tipo de gasto variable",
+        "Calcular lo que queda para ahorro o imprevistos"
+      ],
+      "explicacion": "Primero se sabe cuánto entra de verdad; luego se aseguran los pagos que no se pueden saltar; después se limita lo que se elige y, al final, se ve el margen."
+    },
+    {
+      "id": "prorratea-seguro",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Pepito paga un seguro médico de 480 € en un solo recibo en enero. En su presupuesto, lo más útil es apartar 40 € cada mes en vez de comerse los 480 € de golpe en enero.",
+      "correcta": true,
+      "explicacion": "480 / 12 = 40 €. Repartir los pagos que no son mensuales evita que un mes concreto se descuadre y que el recibo te pille sin dinero."
+    },
+    {
+      "id": "hueco-balance-cero",
+      "tipo": "hueco",
+      "enunciado": "Si los gastos de Pepito suman justo lo mismo que sus ingresos netos, su balance es de ___ euros y no puede ahorrar nada.",
+      "opciones": ["cero", "cien", "quinientos"],
+      "correcta": 0,
+      "explicacion": "Un balance en cero cubre el mes sin deudas, pero no deja ningún colchón: la primera avería ya no tiene de dónde salir."
+    },
+    {
+      "id": "empareja-decisiones",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada decisión de Pepito con lo que le hace a su presupuesto.",
+      "pares": [
+        { "concepto": "Cobrar 80 € por sonorizar un concierto", "definicion": "Sube el balance del mes" },
+        { "concepto": "Pagar un gimnasio al que nunca va", "definicion": "Fuga silenciosa de dinero" },
+        { "concepto": "Comprar medicinas por una gripe", "definicion": "Gasto variable pero necesario" }
+      ],
+      "explicacion": "Saber qué hace cada movimiento te deja proteger lo esencial y quitar lo que no aporta, como un gimnasio que solo existe en el extracto."
+    },
+    {
+      "id": "calcula-lo-que-queda",
+      "tipo": "calcula",
+      "enunciado": "Pepito tiene 1.350 € netos. Gasta 400 € de alquiler, 220 € de comida, 35 € de teléfono e internet, 25 € de abono, 60 € de luz y agua y 110 € en salidas. ¿Cuántos euros le quedan a final de mes?",
+      "unidad": "euros",
+      "solucion": 50000,
+      "tolerancia": 0,
+      "explicacion": "Los gastos suman 400 + 220 + 35 + 25 + 60 + 110 = 850 €. Le quedan 1.350 − 850 = **500 €**."
+    },
+    {
+      "id": "averia-portatil",
+      "tipo": "opcion",
+      "enunciado": "A mitad de mes se le estropea el portátil con el que trabaja, y arreglarlo cuesta 180 €. Contaba con 500 € de margen. ¿Qué es lo más sensato?",
+      "opciones": [
+        "Pagarlo con el margen del mes y quedarse con 320 € sin deber nada",
+        "Pagarlo a plazos con intereses para que el saldo no baje",
+        "Dejar de pagar el alquiler este mes"
+      ],
+      "correcta": 0,
+      "explicacion": "Para eso sirve tener margen: 500 − 180 = 320 €, y sin intereses. Aplazarlo encarece la reparación y dejar el alquiler crea un problema mucho mayor."
+    }
+  ]
+}

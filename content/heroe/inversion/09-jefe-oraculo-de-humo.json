@@ -1,0 +1,155 @@
+{
+  "id": "inversion/09-jefe-oraculo-de-humo",
+  "tipo": "jefe",
+  "titulo": "El Oráculo de Humo",
+  "descripcion": "El que te susurra que dejes el dinero quieto o que se lo des para doblarlo en una semana. Derrótalo con lo que sabes de inflación, fondos, comisiones, impuestos, pensiones y chiringuitos.",
+  "minutos": 5,
+  "aprobado": 70,
+  "preguntas": [
+    {
+      "id": "sobre-sin-rentabilidad",
+      "tipo": "opcion",
+      "enunciado": "El Oráculo susurra: «Guarda en un sobre los ahorros de los próximos 20 años, sin rentabilidad; así nunca perderás nada». ¿Por qué miente?",
+      "opciones": [
+        "Porque la inflación encarece la vida y el dinero quieto pierde poder de compra",
+        "Porque los billetes de euro caducan a los cinco años",
+        "Porque Hacienda cobra un 30 % al año por tener dinero sin invertir",
+        "Porque el Fondo de Garantía de Depósitos se queda el dinero que no se mueve en diez años"
+      ],
+      "correcta": 0,
+      "explicacion": "La cifra no cambia, pero sí lo que compra. Con un 3 % de inflación al año, 10.000 € quietos pierden un **25,6 %** de poder de compra en 10 años y un **44,6 %** en 20."
+    },
+    {
+      "id": "fondo-del-14",
+      "tipo": "verdaderoFalso",
+      "enunciado": "El Oráculo enseña un fondo que ganó un 14 % el año pasado y asegura que, por ley, este año tiene que dar al menos otro 14 %.",
+      "correcta": false,
+      "explicacion": "Ninguna ley obliga a un fondo a repetir resultados. Al contrario: las rentabilidades históricas tienen que ir acompañadas del aviso de que **no garantizan** las futuras."
+    },
+    {
+      "id": "empareja-reglas",
+      "tipo": "emparejar",
+      "enunciado": "El Oráculo ha mezclado las etiquetas. Empareja cada producto con su regla en España en 2026.",
+      "pares": [
+        {
+          "concepto": "Fondo indexado",
+          "definicion": "Copia un índice con comisiones bajas y se puede traspasar a otro fondo sin tributar en ese momento"
+        },
+        {
+          "concepto": "ETF",
+          "definicion": "Cotiza en bolsa en tiempo real, pero está excluido del traspaso sin tributar"
+        },
+        {
+          "concepto": "Plan de pensiones",
+          "definicion": "Reduce la base del IRPF al aportar, con límites, y al rescatarlo tributa como un sueldo"
+        },
+        {
+          "concepto": "Renta fija",
+          "definicion": "Deuda de Estados o empresas que paga intereses; oscila menos que las acciones, pero su precio también se mueve"
+        }
+      ],
+      "explicacion": "Saber cómo funciona y cómo tributa cada uno evita pagar impuestos antes de tiempo al cambiar de producto, o llevarse un susto al rescatar un plan."
+    },
+    {
+      "id": "calcula-tope-autonoma",
+      "tipo": "calcula",
+      "enunciado": "Para romper el escudo del Oráculo, calcula el tope de una autónoma en 2026: 1.500 € de límite general más los 4.250 € adicionales de un plan de empleo simplificado de autónomos. Supón que el límite del 30 % de sus rendimientos no la frena. ¿Cuántos euros puede reducir en total?",
+      "unidad": "euros",
+      "solucion": 575000,
+      "tolerancia": 0,
+      "explicacion": "1.500 + 4.250 = **5.750 €** al año. El aumento de 4.250 € solo vale para aportaciones a planes de empleo de autónomos, no a un plan individual cualquiera."
+    },
+    {
+      "id": "hueco-tramo-alto",
+      "tipo": "hueco",
+      "enunciado": "En 2026, la parte de la base del ahorro que pasa de 300.000 € tributa a un ___ %.",
+      "opciones": [
+        "30",
+        "19",
+        "47"
+      ],
+      "correcta": 0,
+      "explicacion": "La escala del ahorro tiene cinco escalones: 19, 21, 23, 27 y 30 %. El 30 % solo se aplica a lo que exceda de 300.000 €, no a toda la ganancia."
+    },
+    {
+      "id": "calcula-compensa-etf",
+      "tipo": "calcula",
+      "enunciado": "En 2026 una inversora vende un ETF con 3.500 € de ganancia y unas acciones con 1.500 € de pérdida, sin más rentas del ahorro. Tras compensar, ¿cuántos euros paga al 19 % del primer tramo?",
+      "unidad": "euros",
+      "solucion": 38000,
+      "tolerancia": 0,
+      "explicacion": "Ganancias y pérdidas por ventas se compensan entre sí: 3.500 − 1.500 = 2.000 €. Como no pasa de 6.000 €, todo va al 19 %: 2.000 × 19 / 100 = **380 €**."
+    },
+    {
+      "id": "ordena-tramos",
+      "tipo": "ordenar",
+      "enunciado": "Ordena los tramos de la base del ahorro de 2026, del tipo más bajo al más alto.",
+      "pasos": [
+        "Hasta 6.000 €: 19 %",
+        "De 6.000 € a 50.000 €: 21 %",
+        "De 50.000 € a 200.000 €: 23 %",
+        "De 200.000 € a 300.000 €: 27 %",
+        "Más de 300.000 €: 30 %"
+      ],
+      "explicacion": "Es una escalera: cada tipo se aplica solo a la parte de la ganancia que cae en su escalón, desde el 19 % de los primeros 6.000 € hasta el 30 % de lo que pasa de 300.000 €."
+    },
+    {
+      "id": "rescatar-sin-motivo",
+      "tipo": "opcion",
+      "enunciado": "Además de la jubilación y los demás supuestos previstos, ¿qué permite rescatar dinero de un plan de pensiones individual sin alegar ningún motivo?",
+      "opciones": [
+        "Que esas aportaciones tengan al menos 10 años de antigüedad",
+        "Que hayan pasado 6 meses desde que abriste el plan",
+        "Que la bolsa haya subido más de un 10 % ese trimestre",
+        "Que quieras comprar criptomonedas con ese dinero"
+      ],
+      "correcta": 0,
+      "explicacion": "La ley de planes de pensiones permite disponer de lo aportado con al menos **diez años** de antigüedad, con sus rendimientos. Lo aportado hasta 2015 se puede sacar desde el 1 de enero de 2025."
+    },
+    {
+      "id": "reembolso-y-recompra",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si reembolsas un fondo a tu cuenta corriente y cuatro días después usas ese dinero para comprar otro fondo, la operación conserva la ventaja del traspaso y no paga IRPF ese año.",
+      "correcta": false,
+      "explicacion": "El artículo 94.1.a) de la Ley del IRPF es claro: si el dinero del reembolso se pone a tu disposición, el aplazamiento ya no se aplica. Cuenta como una venta y tributa."
+    },
+    {
+      "id": "riesgo-6-de-7",
+      "tipo": "opcion",
+      "enunciado": "El Oráculo ofrece un producto con riesgo 6 de 7 en su Documento de Datos Fundamentales y asegura que «si sacas el dinero a los dos meses, el riesgo baja a 1». ¿Qué dice de verdad el indicador?",
+      "opciones": [
+        "Que supone mantener el producto todo el plazo recomendado: si sales antes, el riesgo real puede variar y puedes recuperar menos",
+        "Que mide cuántos bancos garantizan el producto",
+        "Que un 7 significa un 7 % de interés garantizado",
+        "Que salir antes da una bonificación en el IRPF"
+      ],
+      "correcta": 0,
+      "explicacion": "El indicador se calcula suponiendo que aguantas todo el periodo de mantenimiento recomendado. Salir antes no lo convierte en un 1: puedes recuperar menos de lo que esperabas."
+    },
+    {
+      "id": "hueco-veinticinco",
+      "tipo": "hueco",
+      "enunciado": "Según el artículo 49 de la Ley del IRPF, una pérdida por ventas puede restar de los intereses y dividendos del mismo año hasta un ___ % de lo ganado con ellos.",
+      "opciones": [
+        "25",
+        "100",
+        "5"
+      ],
+      "correcta": 0,
+      "explicacion": "La compensación cruzada dentro de la base del ahorro tiene un tope del 25 %, en los dos sentidos. Lo que no quepa se guarda para los cuatro años siguientes."
+    },
+    {
+      "id": "golpe-final",
+      "tipo": "opcion",
+      "enunciado": "Golpe final: ¿cuál de estas estrategias resume una inversión sana y legal a largo plazo en España?",
+      "opciones": [
+        "Invertir solo lo que no hará falta en años, con el colchón hecho, aportando cada mes a fondos baratos y diversificados de entidades registradas",
+        "Meter el fondo de emergencia en criptomonedas cuando salgan en las noticias y venderlas cuando caigan",
+        "Elegir los fondos más caros y reembolsarlos cada tres meses para pagar impuestos cuanto antes",
+        "Transferir los ahorros a grupos que prometen un 15 % al mes sin estar registrados en la CNMV"
+      ],
+      "correcta": 0,
+      "explicacion": "Plazo largo, diversificación, costes bajos, la ventaja fiscal del traspaso, entidades comprobadas en la CNMV y sangre fría frente a la euforia y el pánico: eso es lo que deja al Oráculo sin humo."
+    }
+  ]
+}

@@ -115,8 +115,10 @@ export const daysBetween = (a: CivilDate, b: CivilDate): number =>
   toEpochDay(b) - toEpochDay(a)
 
 /** Comparación de fechas civiles. El formato ISO ordena bien como texto. */
-export const compareDates = (a: CivilDate, b: CivilDate): number =>
-  a === b ? 0 : a < b ? -1 : 1
+export const compareDates = (a: CivilDate, b: CivilDate): number => {
+  if (a === b) return 0
+  return a < b ? -1 : 1
+}
 
 /** El día de hoy en el huso del usuario. El único punto que mira el reloj. */
 export const today = (timeZone: string = USER_TIME_ZONE, now: Date = new Date()): CivilDate => {
@@ -129,6 +131,22 @@ export const today = (timeZone: string = USER_TIME_ZONE, now: Date = new Date())
   const get = (type: string) => parts.find((p) => p.type === type)!.value
   return `${get('year')}-${get('month')}-${get('day')}`
 }
+
+/**
+ * La zona horaria que va más adelantada del planeta (UTC+14). Su "hoy" es el
+ * último día que ya ha empezado en alguna parte.
+ */
+export const LATEST_TIME_ZONE = 'Pacific/Kiritimati'
+
+/**
+ * El "hoy" más adelantado del planeta: ninguna persona, esté donde esté, vive
+ * en un día posterior a este.
+ *
+ * Es el tope de las fechas de movimiento. Usar el `today()` de Madrid
+ * rechazaría el "hoy" real de quien anota desde Auckland, y el servidor no
+ * sabe en qué huso está nadie.
+ */
+export const latestToday = (now: Date = new Date()): CivilDate => today(LATEST_TIME_ZONE, now)
 
 export const periodOf = (date: CivilDate): Period => {
   assertCivilDate(date)
@@ -155,6 +173,17 @@ export const addMonths = (period: Period, n: number): Period => {
   const month = Number(period.slice(5, 7))
   const total = year * 12 + (month - 1) + n
   return `${pad(Math.floor(total / 12), 4)}-${pad((total % 12) + 1, 2)}`
+}
+
+/**
+ * Acota un periodo a `[min, max]`, ambos incluidos. 'YYYY-MM' con ceros a la
+ * izquierda ordena igual como texto que como fecha, así que basta comparar
+ * cadenas. Si el rango viene al revés, gana `min`.
+ */
+export const clampPeriod = (period: Period, min: Period, max: Period): Period => {
+  assertPeriod(period)
+  const techo = period > max ? max : period
+  return techo < min ? min : techo
 }
 
 /** Los n periodos que terminan en `end`, del más antiguo al más reciente. */

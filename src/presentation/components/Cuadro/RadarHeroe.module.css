@@ -1,0 +1,326 @@
+.radar {
+  --lado-radar: 19rem;
+  position: relative;
+}
+
+@media (min-width: 75em) {
+  .radar {
+    --lado-radar: 22rem;
+  }
+}
+
+/* El color de cada estadística: paleta categórica, porque es color de DATO. Lo
+   comparten el punto del dibujo y la ficha. Nunca va solo: la clave, el nombre
+   y la cifra lo dicen igual. Cuelga de una clase local: un CSS Module no admite
+   un selector de atributo suelto. */
+.punto[data-clave='VIT'],
+.fila[data-clave='VIT'] {
+  --color-stat: var(--sd-cat-8);
+}
+.punto[data-clave='DEF'],
+.fila[data-clave='DEF'] {
+  --color-stat: var(--sd-cat-1);
+}
+.punto[data-clave='ATQ'],
+.fila[data-clave='ATQ'] {
+  --color-stat: var(--sd-cat-2);
+}
+.punto[data-clave='RES'],
+.fila[data-clave='RES'] {
+  --color-stat: var(--sd-cat-7);
+}
+.punto[data-clave='RIQ'],
+.fila[data-clave='RIQ'] {
+  --color-stat: var(--sd-cat-4);
+}
+.punto[data-clave='CON'],
+.fila[data-clave='CON'] {
+  --color-stat: var(--sd-cat-3);
+}
+.punto[data-clave='POD'],
+.fila[data-clave='POD'] {
+  --color-stat: var(--sd-cat-5);
+}
+
+/* ── El dibujo ─────────────────────────────────────────────────────────── */
+
+/* El botón de información, arriba a la derecha del dibujo: discreto, gris como
+   el "volver" del Camino, y se oscurece al pasar. */
+.info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--sd-ink-muted);
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--sd-dur) ease;
+}
+
+.info:hover {
+  color: var(--sd-ink);
+}
+
+.info:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+/* 300x270 de `viewBox`: la proporción se mantiene con el alto. */
+.grafico {
+  display: block;
+  width: var(--lado-radar);
+  height: calc(var(--lado-radar) * 0.9);
+  overflow: visible;
+}
+
+/* Los dos verdes del sol de detrás del héroe (`.haloFuera` y `.haloDentro`
+   de `pixel.module.css`): fuera el más claro, dentro el otro. Sin trazo ni
+   sombra: es fondo, como el sol y como el subrayado del patrimonio. */
+.fondoFuera {
+  fill: var(--sd-accent-wash-faint);
+  stroke: var(--sd-accent-wash);
+  stroke-width: 6;
+  stroke-linejoin: round;
+}
+
+.fondoDentro {
+  fill: var(--sd-accent-wash);
+}
+
+.anillo {
+  fill: none;
+  stroke: var(--sd-accent-soft);
+  stroke-opacity: 0.3;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 5;
+}
+
+/* El anillo del 0: el suelo de cada eje. */
+.cero {
+  fill: var(--sd-accent-wash-faint);
+  stroke: var(--sd-accent-soft);
+  stroke-opacity: 0.4;
+  stroke-width: 1.5;
+}
+
+.radio {
+  stroke: var(--sd-accent-soft);
+  stroke-opacity: 0.25;
+  stroke-width: 1.5;
+}
+
+.valores {
+  fill: var(--sd-accent);
+  fill-opacity: 0.28;
+  stroke: var(--sd-accent);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+  transform-box: view-box;
+  transform-origin: 50% 48.9%;
+  animation: sd-pop var(--sd-dur-slow) var(--sd-ease-pop) 250ms both;
+  transition: fill-opacity var(--sd-dur) ease;
+}
+
+.punto {
+  fill: var(--color-stat);
+  stroke: var(--sd-stroke-color);
+  stroke-width: 2.5;
+}
+
+.etiqueta {
+  font-size: 15px;
+}
+
+.etiquetaClave {
+  font-family: var(--sd-font-display);
+  font-weight: 700;
+  fill: var(--sd-ink);
+}
+
+.etiquetaValor {
+  font-family: var(--sd-font-mono);
+  font-weight: 700;
+  fill: var(--sd-ink-muted);
+}
+
+/* ── La ficha ──────────────────────────────────────────────────────────────
+ *
+ * En mitad de la pantalla y entera: dos columnas que caben en el alto de un
+ * portátil. Solo en una pantalla estrecha va en una columna y puede hacer
+ * scroll, porque ahí no hay otra.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* Un velo sobre la página: es un modal, y solo se sale por la cruz. */
+.fondo {
+  position: fixed;
+  z-index: 300;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--sd-paper) 70%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.ficha {
+  width: min(50rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 1.4rem;
+  background: var(--sd-surface);
+  border: var(--sd-border-bold);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-lg);
+  animation: sd-pop var(--sd-dur) var(--sd-ease-pop) both;
+}
+
+.fichaCabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: var(--sd-border);
+}
+
+/* El mismo `SketchTitle` de las pantallas, un punto más pequeño. */
+.fichaCabecera .titulo {
+  font-size: 1.85rem;
+}
+
+.cerrar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  color: var(--sd-ink);
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  cursor: pointer;
+  transition: var(--sd-transition);
+}
+
+.cerrar:hover {
+  background: var(--sd-accent-wash);
+}
+
+.cerrar:active {
+  translate: 1px 1px;
+  box-shadow: none;
+}
+
+.cerrar:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+.columnas {
+  display: grid;
+  gap: 0.5rem 2rem;
+}
+
+@media (min-width: 48em) {
+  .columnas {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.grupo {
+  margin: 0.9rem 0 0.3rem;
+  font-family: var(--sd-font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sd-ink-muted);
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.55rem 0;
+}
+
+.fila + .fila {
+  border-top: 1.5px dashed color-mix(in srgb, var(--sd-ink-muted) 45%, transparent);
+}
+
+.chip {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  color: var(--sd-on-fill);
+  background: var(--color-stat);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.nombre {
+  font-family: var(--sd-font-display);
+  font-weight: 700;
+}
+
+.clave {
+  font-family: var(--sd-font-pixel);
+  font-size: 0.55rem;
+  color: var(--sd-ink-muted);
+}
+
+.valor {
+  margin-left: auto;
+  font-family: var(--sd-font-mono);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+/* Diez casillas y no una barra continua: se lee como la vida de un juego. */
+.barra {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+}
+
+.barra span {
+  height: 10px;
+  background: var(--sd-surface-sunken);
+  border: 1.5px solid var(--sd-stroke-color);
+}
+
+.barra span[data-lleno] {
+  background: var(--color-stat);
+}
+
+.fuente {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sd-ink-muted);
+}

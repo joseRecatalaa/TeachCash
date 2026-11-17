@@ -1,0 +1,226 @@
+/*
+ * El mapa de mundos: planetas a píxel sobre el papel, el héroe en el suelo y,
+ * debajo, la ficha del mundo elegido. Los planetas son ilustración (colores
+ * `--px-*` de su mundo); la ficha y los estados de foco son interfaz, con los
+ * tokens de la aplicación.
+ */
+
+.mapa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* El mapa ocupa todo lo que queda de pantalla, sin desplazarse: tan ancho
+   como quepa, y limitado por el ALTO libre (la cabecera de la app, el título,
+   el botón y el aviso ocupan unos 19rem) con la proporción de la escena. */
+.carril {
+  position: relative;
+  width: min(100%, calc((100dvh - 19rem) * 420 / 206));
+  margin: 0 auto;
+}
+
+/* La fila de planetas se recorta en los bordes: los que no caben esperan
+   fuera, y las flechas los traen. */
+.escena {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.flecha {
+  position: absolute;
+  z-index: 1;
+  top: 38%;
+  translate: 0 -50%;
+}
+
+.flechaIzq {
+  left: 0;
+}
+
+.flechaDer {
+  right: 0;
+}
+
+@media (min-width: 62em) {
+  .flechaIzq {
+    left: -0.5rem;
+  }
+  .flechaDer {
+    right: -0.5rem;
+  }
+}
+
+.estrellasFondo {
+  fill: var(--sd-ink-muted);
+  opacity: 0.5;
+}
+
+.suelo {
+  fill: var(--sd-ink-muted);
+}
+
+/* ── Los planetas ──────────────────────────────────────────────────────── */
+
+.planeta {
+  cursor: pointer;
+  outline: none;
+}
+
+/* Al pasar el ratón (o con el foco), el planeta sobresale: crece y se
+   acerca. Es la única transición suave del mapa a propósito: es respuesta a
+   la mano, no animación del mundo. */
+.cuerpo {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: scale var(--sd-dur) var(--sd-ease-pop), translate var(--sd-dur) var(--sd-ease-pop);
+}
+
+.planeta:hover .cuerpo,
+.planeta:focus-visible .cuerpo {
+  scale: 1.1;
+  translate: 0 -3px;
+}
+
+.planeta[data-proximamente='true']:hover .cuerpo {
+  scale: 1.04;
+  translate: 0 0;
+}
+
+.contorno {
+  fill: var(--px-contorno);
+}
+
+.superficie {
+  fill: var(--px-planeta);
+}
+
+.detalle {
+  fill: var(--px-planeta-mancha);
+}
+
+.sombra {
+  fill: var(--px-planeta-sombra);
+}
+
+.brillo {
+  fill: var(--px-planeta-luz);
+}
+
+.chispa {
+  fill: var(--px-blanco);
+}
+
+.anilloDetras {
+  fill: var(--px-planeta-sombra);
+}
+
+.anilloDelante {
+  fill: var(--px-planeta-luz);
+}
+
+/* La atmósfera: un velo de un píxel alrededor. El elegido la enciende en el
+   color de marca; con el foco del teclado, más fuerte. */
+.atmosfera {
+  fill: var(--px-planeta-luz);
+  opacity: 0.6;
+}
+
+.planeta[data-elegido='true'] .atmosfera {
+  fill: var(--sd-accent-soft);
+  opacity: 1;
+}
+
+.planeta:focus-visible .atmosfera {
+  fill: var(--sd-accent);
+  opacity: 1;
+}
+
+.nombre,
+.marcador {
+  font-family: var(--sd-font-pixel);
+  font-size: 9px;
+  fill: var(--sd-ink-muted);
+}
+
+.marcador {
+  font-size: 8px;
+  dominant-baseline: middle;
+}
+
+/* Los satélites flotan a destiempo del planeta. */
+.satelite {
+  animation: heroe-flota 1.6s steps(1, end) infinite;
+}
+
+.planeta[data-proximamente='true'] .satelite {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.planeta[data-elegido='true'] .nombre,
+.planeta[data-elegido='true'] .marcador {
+  fill: var(--sd-ink);
+}
+
+/* Un mundo sin niveles todavía se ve, pero apagado: no es un sitio al que ir. */
+.planeta[data-proximamente='true'] {
+  cursor: default;
+}
+
+.planeta[data-proximamente='true'] .flota {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+/* Flotan un píxel arriba y abajo, a saltos y cada uno a su ritmo. */
+.flota {
+  animation: heroe-flota 2.4s steps(1, end) infinite;
+}
+
+.planeta:nth-of-type(2n) .flota {
+  animation-delay: -0.8s;
+}
+
+.planeta:nth-of-type(3n) .flota {
+  animation-delay: -1.6s;
+}
+
+@keyframes heroe-flota {
+  50%,
+  100% {
+    translate: 0 -2px;
+  }
+}
+
+/* ── El héroe ──────────────────────────────────────────────────────────── */
+
+.heroe {
+  pointer-events: none;
+}
+
+/* Al entrar, salta hacia arriba y se encoge dentro del planeta, a saltos.
+   Dura lo mismo que `SALTO_MS`; con el movimiento reducido no hay salto y
+   se navega directamente. */
+.entrando {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: heroe-entra 520ms steps(6, end) forwards;
+}
+
+@keyframes heroe-entra {
+  to {
+    translate: 0 -64px;
+    scale: 0.2;
+    opacity: 0;
+  }
+}
+
+/* ── Entrar ────────────────────────────────────────────────────────────── */
+
+.entrar {
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,204 @@
+{
+  "id": "deuda/07-salir-de-deudas",
+  "tipo": "lectura",
+  "titulo": "Bola de nieve, avalancha y segunda oportunidad",
+  "descripcion": "Dos métodos para salir de deudas, el riesgo de reunificarlas, cómo funciona la Ley de Segunda Oportunidad y cómo reclamar a tu banco.",
+  "minutos": 4,
+  "paginas": [
+    {
+      "titulo": "Cuando las cuotas no caben",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "monstruo",
+          "pie": "Un monstruo: la deuda que crece cuando no se mira"
+        },
+        {
+          "tipo": "dato",
+          "texto": "En la primera exoneración, la Segunda Oportunidad puede cancelar hasta **10.000 €** de deuda con Hacienda y otro tanto con la Seguridad Social.",
+          "fuente": "Texto Refundido de la Ley Concursal, art. 489.1.5.º"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito tiene 63 años, vive en Vigo y arrastra las deudas de la ferretería que cerró."
+        }
+      ]
+    },
+    {
+      "titulo": "El mes de Pepito, en Vigo",
+      "bloques": [
+        {
+          "tipo": "ejemplo",
+          "titulo": "Las cuentas de Pepito",
+          "filas": [
+            {
+              "concepto": "Pensión neta",
+              "importe": 138000
+            },
+            {
+              "concepto": "Gastos básicos y piso",
+              "importe": -79000
+            },
+            {
+              "concepto": "Cuotas de tres deudas",
+              "importe": -64000
+            },
+            {
+              "concepto": "Lo que falta cada mes",
+              "importe": -5000
+            }
+          ],
+          "nota": "Cada mes le faltan **50 €**. Así, la deuda solo puede crecer."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Si es tu caso, no es un fallo de carácter: es una cuenta que no sale, y tiene salidas."
+        }
+      ]
+    },
+    {
+      "titulo": "Bola de nieve o avalancha",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Si cubres los mínimos de todas y te sobra algo, hay dos métodos prácticos:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "⛄ **Bola de nieve**: el extra, a la deuda más pequeña. Quitas recibos antes y te motivas.",
+            "🏔️ **Avalancha**: el extra, a la de TAE más alta. Pagas menos intereses."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Los dos funcionan si no abres deudas nuevas."
+        }
+      ]
+    },
+    {
+      "titulo": "Reunificar: cuota menor, factura mayor",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Reunificar es juntar varias deudas en un préstamo con un plazo más largo. La cuota baja, pero al estirar los años sueles pagar **más intereses en total**."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Y si lo que firmas es una hipoteca sobre tu casa, un impago de lo que eran tarjetas puede acabar costándote _la vivienda_."
+        }
+      ]
+    },
+    {
+      "titulo": "La segunda oportunidad",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Si eres una persona **insolvente de buena fe**, un juez puede cancelar tus deudas: es la _exoneración del pasivo insatisfecho_."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🏠 Con plan de pagos: en general, 3 años; 5 si conservas tu vivienda habitual.",
+            "📦 Con liquidación: se venden tus bienes y se cancela lo que quede."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Lo que se cancela y lo que no",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "⚠️ No todo se cancela: por ejemplo, las pensiones de alimentos.",
+            "🏛️ Hacienda y Seguridad Social: hasta 10.000 € cada una; los primeros 5.000 €, enteros, y del resto, la mitad."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Reclamar a tu banco, por orden",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Servicio de Atención al Cliente de tu banco: 15 días hábiles para responder en servicios de pago; un mes en lo demás.",
+            "2️⃣ Si no responde o no te da la razón, el Banco de España. Tienes **un año** desde tu reclamación al banco.",
+            "3️⃣ El Banco de España resuelve con un informe motivado que **no es vinculante**."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Lo que viene",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "❌ Mito: «Lo que se debe a Hacienda no se perdona nunca». ✅ Realidad: en la primera exoneración, hasta 10.000 € sí."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Pepito se sienta a ordenar sus recibos. ¿Cuánto podría cancelar de lo que debe a Hacienda, y por qué dice que no a la reunificación que le ofrecen? En el siguiente nivel."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "herramientas",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada herramienta para salir de deudas con lo que la define.",
+      "pares": [
+        {
+          "concepto": "Avalancha",
+          "definicion": "Primero la deuda con la TAE más alta: ahorra más intereses"
+        },
+        {
+          "concepto": "Bola de nieve",
+          "definicion": "Primero la deuda más pequeña: quita recibos rápido"
+        },
+        {
+          "concepto": "Reunificación",
+          "definicion": "Junta deudas con más plazo: baja la cuota y sube el coste total"
+        },
+        {
+          "concepto": "Exoneración del pasivo insatisfecho",
+          "definicion": "Vía judicial para personas insolventes de buena fe"
+        }
+      ],
+      "explicacion": "Los dos métodos sirven cuando hay margen cada mes; la reunificación alarga la deuda, y la exoneración entra cuando ya no hay forma de pagar."
+    },
+    {
+      "id": "directo-bde",
+      "tipo": "opcion",
+      "enunciado": "¿Puedes reclamar una comisión indebida directamente al Banco de España, sin pasar antes por tu banco?",
+      "opciones": [
+        "Sí, admite cualquier queja directa",
+        "No: primero hay que reclamar al Servicio de Atención al Cliente de la entidad",
+        "Solo si reclamas más de 1.000 €"
+      ],
+      "correcta": 1,
+      "explicacion": "El Banco de España pide que primero lo intentes con tu entidad y que te haya dicho que no o se le haya pasado el plazo para responder."
+    },
+    {
+      "id": "vinculante",
+      "tipo": "verdaderoFalso",
+      "enunciado": "El informe final del Banco de España sobre una reclamación obliga al banco igual que una sentencia.",
+      "correcta": false,
+      "explicacion": "La Orden ECC/2502/2012 (art. 12.6) dice que no es vinculante. Aun así, la entidad tiene que decir si lo acepta, y te sirve como argumento si vas a juicio."
+    },
+    {
+      "id": "tope-hacienda",
+      "tipo": "hueco",
+      "enunciado": "En la primera exoneración, la deuda con Hacienda se puede cancelar hasta ___ euros, y lo mismo con la Seguridad Social.",
+      "opciones": [
+        "10.000",
+        "1.000",
+        "50.000"
+      ],
+      "correcta": 0,
+      "explicacion": "Lo fija el artículo 489.1.5.º del Texto Refundido de la Ley Concursal: los primeros 5.000 € se cancelan enteros y del resto la mitad, hasta 10.000 €."
+    }
+  ]
+}

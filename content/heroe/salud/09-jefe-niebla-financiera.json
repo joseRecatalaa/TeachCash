@@ -1,0 +1,155 @@
+{
+  "id": "salud/09-jefe-niebla-financiera",
+  "tipo": "jefe",
+  "titulo": "La Niebla Financiera",
+  "descripcion": "La que te susurra que no mires la cuenta. Despéjala con doce preguntas de presupuesto, nómina de 2026 y patrimonio neto.",
+  "minutos": 5,
+  "aprobado": 70,
+  "preguntas": [
+    {
+      "id": "doce-o-catorce-pagas",
+      "tipo": "opcion",
+      "enunciado": "La Niebla te susurra: \"Un contrato de 21.000 € brutos al año en 14 pagas paga más que otro de 21.000 € en 12 pagas, porque te regala dos nóminas\". ¿Qué es lo cierto?",
+      "opciones": [
+        "El bruto del año es el mismo; solo cambia cuándo se cobra",
+        "Las pagas extra no cotizan ni tienen retención",
+        "Con 12 pagas el sueldo baja un 14 % por gastos de gestión"
+      ],
+      "correcta": 0,
+      "explicacion": "En los dos casos son 21.000 € al año. Catorce pagas son trozos más pequeños de lo mismo, no dinero de regalo."
+    },
+    {
+      "id": "smi-2026",
+      "tipo": "verdaderoFalso",
+      "enunciado": "La Niebla asegura: \"El salario mínimo de 2026 es de 1.221 € brutos al mes en 14 pagas\".",
+      "correcta": true,
+      "explicacion": "El Real Decreto 126/2026 fija 1.221 € al mes y un mínimo de 17.094 € al año, que es justo lo que dan 14 pagas de 1.221 €."
+    },
+    {
+      "id": "calcula-mei-jefe",
+      "tipo": "calcula",
+      "enunciado": "La Niebla quiere liarte con el MEI. Tu base de contingencias comunes es de 2.400 € y en 2026 tu parte del MEI es el 0,15 %. ¿Cuántos euros te descuentan este mes por el MEI?",
+      "unidad": "euros",
+      "solucion": 360,
+      "tolerancia": 0,
+      "explicacion": "Se aplica tu tipo a la base: 2.400 × 0,0015 = **3,60 €**. El 0,75 % restante del MEI lo pone la empresa."
+    },
+    {
+      "id": "ordena-revision",
+      "tipo": "ordenar",
+      "enunciado": "La Niebla te ha desordenado la revisión mensual. Pon los pasos en orden para despejar tus cuentas.",
+      "pasos": [
+        "Descargar los movimientos reales del mes cerrado",
+        "Clasificar cada gasto en fijo o variable",
+        "Cancelar suscripciones que no usas y recortar gastos hormiga",
+        "Comparar el balance con tus metas SMART y preparar el mes siguiente"
+      ],
+      "explicacion": "Sin datos reales no hay nada que clasificar, y sin clasificar no sabes qué recortar. Con todo limpio, planificas el mes que viene."
+    },
+    {
+      "id": "empareja-conceptos",
+      "tipo": "emparejar",
+      "enunciado": "La Niebla te mezcla los conceptos. Empareja cada uno con lo que significa.",
+      "pares": [
+        {
+          "concepto": "Retención del IRPF",
+          "definicion": "Adelanto a Hacienda según lo que se prevé que ganes"
+        },
+        {
+          "concepto": "MEI",
+          "definicion": "Cotización extra para reforzar las pensiones del futuro"
+        },
+        {
+          "concepto": "Patrimonio neto",
+          "definicion": "Lo que tienes menos lo que debes"
+        },
+        {
+          "concepto": "Tasa de esfuerzo",
+          "definicion": "Parte del sueldo neto que se lleva la vivienda"
+        }
+      ],
+      "explicacion": "Cada uno mira una cosa distinta: dos salen en la nómina, otro mide tu riqueza real y el último, cuánto pesa la casa en tu sueldo."
+    },
+    {
+      "id": "hueco-adaptar-regla",
+      "tipo": "hueco",
+      "enunciado": "Si el alquiler y las facturas básicas se llevan mucho de tu sueldo, lo prudente al adaptar la regla 50/30/20 es recortar el bloque de ___ para no dejar de ahorrar.",
+      "opciones": [
+        "ocio y deseos",
+        "contingencias comunes",
+        "cotización por desempleo"
+      ],
+      "correcta": 0,
+      "explicacion": "La vivienda no se puede dejar de pagar y las cotizaciones las marca la ley, así que el margen solo puede salir de lo que eliges gastar."
+    },
+    {
+      "id": "patrimonio-o-sueldo",
+      "tipo": "opcion",
+      "enunciado": "¿Por qué el patrimonio neto dice más de tu tranquilidad financiera que tu sueldo?",
+      "opciones": [
+        "Porque el sueldo solo mide lo que entra, y el patrimonio lo que te queda después de las deudas",
+        "Porque el patrimonio neto no tiene en cuenta las deudas",
+        "Porque está prohibido medir la solvencia con el extracto"
+      ],
+      "correcta": 0,
+      "explicacion": "Un sueldo alto puede convivir con deudas que superan todo lo que tienes. El patrimonio neto lo pone a la vista."
+    },
+    {
+      "id": "calcula-neto-jefe",
+      "tipo": "calcula",
+      "enunciado": "Pepito tiene contrato indefinido en 2026 y cobra 2.000 € brutos al mes en 12 pagas, que son también su base de cotización. Le descuentan el 6,50 % de Seguridad Social y un 12 % de IRPF. ¿Cuántos euros le llegan a la cuenta?",
+      "unidad": "euros",
+      "solucion": 163000,
+      "tolerancia": 0,
+      "explicacion": "Seguridad Social: 2.000 × 0,065 = 130 €. IRPF: 2.000 × 0,12 = 240 €. Neto: 2.000 − 130 − 240 = **1.630 €**."
+    },
+    {
+      "id": "limite-sin-retencion",
+      "tipo": "verdaderoFalso",
+      "enunciado": "La Niebla afirma: \"En 2026, a una persona sin hijos ni cónyuge a cargo y con contrato indefinido no se le retiene IRPF en la nómina si gana 15.876 € brutos al año o menos\".",
+      "correcta": true,
+      "explicacion": "Es el límite que fija el artículo 81 del Reglamento del IRPF para esa situación familiar. Por debajo, la empresa no practica retención; con hijos o con cónyuge sin rentas, el límite es algo mayor."
+    },
+    {
+      "id": "empareja-conductas",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada costumbre con lo que le hace a tu patrimonio neto.",
+      "pares": [
+        {
+          "concepto": "Tapar cada mes lo que falta con la tarjeta",
+          "definicion": "Lo hace bajar mes a mes"
+        },
+        {
+          "concepto": "Ahorrar con regularidad lo que sobra",
+          "definicion": "Lo hace crecer poco a poco"
+        },
+        {
+          "concepto": "Vender el coche para pagar un préstamo del mismo valor",
+          "definicion": "Lo deja igual, con menos deudas"
+        }
+      ],
+      "explicacion": "El patrimonio sube cuando entra más de lo que sale y baja cuando vives a crédito. Cambiar un bien por una deuda del mismo valor no lo mueve."
+    },
+    {
+      "id": "hueco-letra-t",
+      "tipo": "hueco",
+      "enunciado": "En una meta SMART, ponerle una fecha límite corresponde a la letra ___.",
+      "opciones": [
+        "T",
+        "R",
+        "A"
+      ],
+      "correcta": 0,
+      "explicacion": "La T es de temporal: con una fecha, la meta no se puede aplazar para siempre. La R es de relevante y la A, de alcanzable."
+    },
+    {
+      "id": "calcula-patrimonio-final",
+      "tipo": "calcula",
+      "enunciado": "Tienes 3.000 € en el banco y un coche que vale 7.000 €. Debes 2.500 € de un préstamo y 500 € de compras aplazadas. Usas 1.000 € de la cuenta para pagar parte del préstamo. ¿Cuántos euros vale tu patrimonio neto después?",
+      "unidad": "euros",
+      "solucion": 700000,
+      "tolerancia": 0,
+      "explicacion": "Antes: 10.000 − 3.000 = 7.000 €. Después: activos 2.000 + 7.000 = 9.000 € y deudas 1.500 + 500 = 2.000 €, así que 9.000 − 2.000 = **7.000 €**. Pagar deuda con ahorros no cambia el patrimonio, pero te quita cargas."
+    }
+  ]
+}

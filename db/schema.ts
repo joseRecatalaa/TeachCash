@@ -6,60 +6,146 @@
  * - La aplicación trabaja en UNA sola divisa, y no se guarda: la decide
  *   `DIVISA_APP` en `lib/money.ts`. Por eso no hay columna de moneda en ninguna
  *   tabla — el día que haya más de una, se añade aquí y allí a la vez.
- * - Las fechas de movimiento son texto 'YYYY-MM-DD' (fecha civil).
- *   Los timestamps (createdAt, deletedAt) sí son instantes reales.
- * - Toda tabla de datos de usuario lleva `userId`.
- * - Los movimientos se borran de forma lógica (`deletedAt`), no física.
+ * - Las fechas de movimiento son `date` de Postgres, leídas como texto
+ *   'YYYY-MM-DD' (fecha civil, `mode: 'string'`). Nunca un `Date` de JS.
+ *   Los timestamps (createdAt) sí son instantes reales.
+ * - Toda tabla de datos de usuario lleva `userId`, con clave ajena a
+ *   `auth.users` de Supabase y `on delete cascade`: borrar un usuario (o que el
+ *   job de limpieza borre a un invitado caducado) se lleva sus datos.
+ * - Toda tabla de datos de usuario lleva RLS. La app NO depende de ello —se
+ *   conecta con un rol que se lo salta y filtra por `userId` en cada `where`
+ *   (regla dura 4)—: es la red para la API REST de Supabase, que cualquiera
+ *   puede llamar con la clave pública.
+ * - Los movimientos se borran de forma FÍSICA. No hay papelera ni deshacer:
+ *   el modal de confirmación es la única red, y por eso es obligatorio.
+ * - Todo movimiento tiene categoría. No existe el movimiento sin clasificar.
  *
  * No hay tabla de cuentas: hay UNA cuenta implícita y su saldo es la suma de los
  * movimientos (regla dura 7 — los saldos son derivados, no se guardan).
  */
 
-import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
+import {
+  boolean,
+  check,
+  date,
+  index,
+  integer,
+  pgPolicy,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core'
+import { authenticatedRole, authUid, authUsers } from 'drizzle-orm/supabase'
 
-export const categories = sqliteTable(
+/**
+ * Los ids son `text` con un UUID que pone la base, y no `uuid`: así un id mal
+ * formado que llegue del cliente simplemente no casa con nada y el repositorio
+ * responde "No encontrado", en vez de que Postgres reviente con un error de
+ * sintaxis de UUID que acabaría como "error inesperado".
+ */
+export const idColumn = () =>
+  text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`)
+
+/** `uuid` porque es la clave ajena a `auth.users.id`, que lo es. */
+export const userIdColumn = () =>
+  uuid('user_id')
+    .notNull()
+    .references(() => authUsers.id, { onDelete: 'cascade' })
+
+export const createdAtColumn = () =>
+  timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+
+/**
+ * Cada usuario LEE lo suyo y nada más; nadie escribe por la API REST.
+ * `(select auth.uid())` y no `auth.uid()` a secas: así Postgres lo evalúa una
+ * vez por consulta y no una vez por fila. Los invitados (usuarios anónimos de
+ * Supabase) también tienen el rol `authenticated`, así que esta misma política
+ * los cubre.
+ *
+ * Sin política de escritura, A PROPÓSITO, en TODAS las tablas. La app escribe
+ * con su propio rol, que se salta RLS, y es donde viven las garantías: las
+ * cuotas por usuario, los topes de longitud, el cobro de estrellas, la
+ * corrección de las partidas. La API REST de Supabase la puede llamar
+ * cualquiera con la clave pública y su propia sesión (también un invitado), y
+ * por ahí todo eso no existe: con una política de escritura, un script podía
+ * llenar la base gratuita de movimientos de un millón de caracteres o regalarse
+ * estrellas. Antes las tablas de dinero tenían `soloSuyo` (`for all`); ver las
+ * migraciones 0007 y 0008 y docs/SECURITY.md.
+ */
+export const soloLeerLoSuyo = (tabla: string) =>
+  pgPolicy(`${tabla}_solo_leer_lo_suyo`, {
+    for: 'select',
+    to: authenticatedRole,
+    using: sql`${authUid} = user_id`,
+  })
+
+export const categories = pgTable(
   'categories',
   {
-    id: text('id').primaryKey(),
-    userId: text('user_id').notNull(),
+    id: idColumn(),
+    userId: userIdColumn(),
     name: text('name').notNull(),
-    /** Jerarquía de un solo nivel: null = categoría raíz. */
-    parentId: text('parent_id'),
     /** income | expense — una categoría no puede ser las dos cosas. */
     kind: text('kind').notNull(),
     icon: text('icon'),
     /** Clave de la paleta categórica: 'cat-1'…'cat-8'. Ver `lib/colores.ts`. */
     color: text('color'),
-    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    /**
+     * Céntimos, positivo. Obligatorio si `kind = 'expense'`; siempre `null` en
+     * ingreso. Nullable a nivel de columna a propósito: las categorías creadas
+     * antes de esta funcionalidad no tienen uno hasta que alguien las edita —
+     * la obligatoriedad es una regla de negocio del repositorio, no una
+     * constraint de base.
+     */
+    monthlyBudget: integer('monthly_budget'),
+    /**
+     * Una categoría oculta no se ofrece en los `<Select>` de movimiento ni
+     * aparece en Planificación mensual, pero sigue siendo el destino válido de
+     * los movimientos que ya la usan. Las categorías de fábrica nacen ocultas
+     * (ver `asegurarCatalogoInicial`); las que crea el usuario, visibles.
+     */
+    hidden: boolean('hidden').notNull().default(false),
+    createdAt: createdAtColumn(),
   },
-  // OJO: SQLite considera dos NULL como distintos, así que este UNIQUE no impide
-  // dos categorías raíz con el mismo nombre (parent_id NULL). La comprobación de
-  // duplicados en la raíz se hace en la acción, no se puede delegar aquí.
   (t) => [
-    unique('categories_user_name').on(t.userId, t.name, t.parentId),
+    unique('categories_user_name').on(t.userId, t.name),
     index('categories_user_idx').on(t.userId),
+    check('categories_kind', sql`${t.kind} in ('income', 'expense')`),
+    soloLeerLoSuyo('categories'),
   ],
-)
+).enableRLS()
 
-export const transactions = sqliteTable(
+export const transactions = pgTable(
   'transactions',
   {
-    id: text('id').primaryKey(),
-    userId: text('user_id').notNull(),
-    /** Nullable: un movimiento sin clasificar es válido. */
-    categoryId: text('category_id').references(() => categories.id),
+    id: idColumn(),
+    userId: userIdColumn(),
+    /**
+     * Obligatoria: todo movimiento está clasificado, sin estado intermedio.
+     * `cascade` es la red: `categoriasRepository.remove` ya borra los
+     * movimientos a mano y dentro de una transacción.
+     */
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => categories.id, { onDelete: 'cascade' }),
     /** Céntimos CON SIGNO: negativo = gasto, positivo = ingreso. */
     amount: integer('amount').notNull(),
-    /** Fecha civil 'YYYY-MM-DD'. Nunca un timestamp. */
-    date: text('date').notNull(),
+    /** Fecha civil 'YYYY-MM-DD'. Nunca un timestamp, nunca un `Date` de JS. */
+    date: date('date', { mode: 'string' }).notNull(),
     description: text('description').notNull(),
     notes: text('notes'),
     /** Hash de deduplicación para movimientos importados (v2). */
     importHash: text('import_hash'),
     /** Clave del cliente: convierte el doble clic en un choque contra el índice. */
     idempotencyKey: text('idempotency_key'),
-    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
-    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    createdAt: createdAtColumn(),
   },
   (t) => [
     // El índice que sostiene casi todas las consultas: usuario + rango de fechas.
@@ -67,8 +153,111 @@ export const transactions = sqliteTable(
     index('tx_category_idx').on(t.categoryId),
     unique('tx_import_hash').on(t.userId, t.importHash),
     unique('tx_idempotency_key').on(t.userId, t.idempotencyKey),
+    soloLeerLoSuyo('transactions'),
   ],
-)
+).enableRLS()
+
+/**
+ * Una fila por usuario con lo que la persona ELIGE sobre sí misma. Hoy, solo
+ * el patrimonio con el que empieza.
+ *
+ * `patrimonio_inicial` no es un saldo guardado (regla dura 7): es el punto de
+ * partida que escribe la persona, y el patrimonio sigue siendo derivado
+ * —inicial + suma de movimientos—. Se descartó anotarlo como un ingreso
+ * "Saldo inicial": inflaba los ingresos del mes en que se anotaba y los
+ * gráficos de ingresos frente a gastos.
+ *
+ * Que NO haya fila significa "aún no lo ha elegido", y es lo que hace que la
+ * portada lo pregunte. Por eso la columna es NOT NULL: el cero es una elección.
+ */
+export const profiles = pgTable(
+  'profiles',
+  {
+    userId: uuid('user_id')
+      .primaryKey()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    /**
+     * La BASE del patrimonio, en céntimos CON SIGNO: patrimonio = base + suma
+     * de movimientos. No es lo que la persona escribe: al editar el patrimonio
+     * se escribe el TOTAL de hoy y la base se recalcula (total - movimientos),
+     * para que quien no anota nada pueda llevarlo solo con el lápiz.
+     */
+    netWorthWithoutMovements: integer('net_worth_without_movements').notNull(),
+    /**
+     * El PRIMER patrimonio que eligió, en céntimos con signo. No cambia al
+     * editar: es la referencia del "+X desde que empezaste" del Cuadro.
+     */
+    firstNetWorth: integer('first_net_worth').notNull(),
+    createdAt: createdAtColumn(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  () => [soloLeerLoSuyo('profiles')],
+).enableRLS()
+
+/**
+ * El progreso del Camino del héroe: una fila por usuario y nivel jugado.
+ *
+ * Solo el progreso: el CONTENIDO de los niveles vive en JSON en el repo
+ * (`content/heroe/`) y `level_id` es su id estable (`ahorro/02-interes`).
+ * Por eso no hay clave ajena hacia ningún nivel: si un nivel desaparece del
+ * contenido, su fila se queda huérfana y simplemente no se enseña.
+ *
+ * Guarda la MEJOR marca, no la última: repetir un nivel puede subir las
+ * estrellas pero nunca bajarlas (`greatest()` en el upsert). Lo que se ve en
+ * el mapa —niveles hechos, estrellas totales, siguiente nivel— es derivado
+ * (regla dura 7) y se calcula desde aquí.
+ *
+ * El invitado conserva su progreso al crear cuenta, porque el `user_id` no
+ * cambia, y el job de limpieza lo borra por la cascada.
+ */
+export const heroProgress = pgTable(
+  'hero_progress',
+  {
+    userId: userIdColumn(),
+    levelId: text('level_id').notNull(),
+    /** La mejor marca, 0-3. Cero = jugado y no superado. */
+    stars: smallint('stars').notNull().default(0),
+    /** Aciertos de la mejor partida. */
+    bestScore: smallint('best_score').notNull().default(0),
+    attempts: integer('attempts').notNull().default(0),
+    /** La PRIMERA vez que se superó. `null` = aún no. Desbloquea el siguiente. */
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.levelId] }),
+    check('hero_progress_stars', sql`${t.stars} between 0 and 3`),
+    soloLeerLoSuyo('hero_progress'),
+  ],
+).enableRLS()
+
+/**
+ * Lo que un usuario ha comprado en la tienda del héroe, una fila por objeto.
+ *
+ * `item_id` es el id estable del catálogo (`lib/tienda.ts`), sin clave ajena
+ * porque el catálogo vive en código. `price_paid` se guarda porque las estrellas
+ * gastadas son la suma de lo que se pagó: si cambiara con el precio del catálogo,
+ * subir un precio le quitaría estrellas a quien ya compró.
+ *
+ * Las estrellas disponibles son derivadas (regla dura 7): las ganadas, de
+ * `hero_progress`, menos esta suma.
+ */
+export const heroItems = pgTable(
+  'hero_items',
+  {
+    userId: userIdColumn(),
+    itemId: text('item_id').notNull(),
+    pricePaid: integer('price_paid').notNull(),
+    /** Lo lleva puesto. Hay uno por hueco; lo garantiza el repositorio. */
+    equipped: boolean('equipped').notNull().default(true),
+    createdAt: createdAtColumn(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.itemId] }),
+    check('hero_items_price', sql`${t.pricePaid} >= 0`),
+    soloLeerLoSuyo('hero_items'),
+  ],
+).enableRLS()
 
 export type Category = typeof categories.$inferSelect
 export type NewCategory = typeof categories.$inferInsert

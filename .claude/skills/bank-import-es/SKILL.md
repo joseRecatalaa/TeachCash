@@ -162,9 +162,11 @@ type CategoryRule = {
 
 - **Categoriza en la previsualización, no al escribir.** El usuario tiene que
   poder corregir antes de confirmar.
-- **Sin coincidencia → sin categoría**, nunca a "Otros" por defecto. Una
-  categoría "Otros" que se llena sola es una categoría que el usuario deja de
-  mirar.
+- **Sin coincidencia → queda por elegir, no se importa sola.** `categoryId` es
+  `NOT NULL` (no existe el movimiento sin clasificar): la fila sin regla que la
+  casque se queda pendiente en la previsualización hasta que el usuario le pone
+  una categoría, y nunca cae a "Otros" por defecto — una categoría "Otros" que
+  se llena sola es una categoría que el usuario deja de mirar.
 - Ofrece **crear la regla desde la corrección**: si el usuario recategoriza
   "MERCADONA" a Supermercado, propón la regla. Es como se construye un
   clasificador útil sin pedirle que configure nada por adelantado.

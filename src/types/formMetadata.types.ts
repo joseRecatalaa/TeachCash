@@ -6,7 +6,7 @@
  * hook `useFormMetadata(resource)`.
  *
  * La regla de fondo: **las opciones no se declaran en la vista**. Un `select` de
- * `sections.ts` se escribe SIN `options` y las recibe de aquí, usando el `name`
+ * `formularios.ts` se escribe SIN `options` y las recibe de aquí, usando el `name`
  * del campo como clave. Así el día que se añade un valor a una enumeración se toca un
  * sitio y no cinco.
  */

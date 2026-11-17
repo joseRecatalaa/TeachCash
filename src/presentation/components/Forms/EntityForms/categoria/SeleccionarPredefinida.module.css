@@ -1,0 +1,13 @@
+.fila {
+  padding: 0.55rem 0.1rem;
+  border-bottom: var(--sd-stroke-hair) dashed var(--sd-grid-color);
+}
+
+.fila:last-child {
+  border-bottom: none;
+}
+
+.icono {
+  font-size: 1.1rem;
+  line-height: 1;
+}

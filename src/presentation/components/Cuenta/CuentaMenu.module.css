@@ -1,0 +1,32 @@
+.disparador {
+  display: inline-flex;
+  border-radius: var(--sd-radius-pill);
+  transition: var(--sd-transition);
+}
+
+.disparador:hover {
+  transform: translate(-1px, -1px);
+}
+
+.disparador:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+/* El email completo: puede ser largo, así que se corta en lugar de ensanchar
+   el menú hasta salirse de la pantalla en móvil. */
+.email {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.75rem 0.5rem;
+  color: var(--sd-ink);
+  font-weight: 600;
+  min-width: 0;
+}
+
+.email span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

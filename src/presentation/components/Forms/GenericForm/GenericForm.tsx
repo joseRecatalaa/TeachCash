@@ -5,9 +5,9 @@
  *
  * No sabe nada de movimientos ni de categorías: recibe un
  * `SectionDefinition[]` y lo pinta. Todo lo específico de una entidad vive en
- * `src/config/<entidad>/sections.ts`, que es un `.ts` sin JSX.
+ * `src/presentation/entidades/<entidad>/formularios.ts`, que es un `.ts` sin JSX.
  *
- * Ver `types.ts` para el contrato con la capa de config, y `FieldRenderer.tsx`
+ * Ver `types.ts` para el contrato con `src/presentation/entidades/`, y `FieldRenderer.tsx`
  * para el mapeo tipo de campo → componente.
  */
 
@@ -54,6 +54,7 @@ const spanDe = (field: FieldDefinition) =>
 
 export function GenericForm<TSave>({
   title,
+  hideTitle = false,
   sections,
   mode,
   resource,
@@ -66,6 +67,7 @@ export function GenericForm<TSave>({
   fieldErrors,
   onSubmit,
   exitTo,
+  onSuccess,
   children,
 }: GenericFormProps<TSave>) {
   const router = useRouter()
@@ -106,9 +108,15 @@ export function GenericForm<TSave>({
   // Los errores del servidor se pintan EN EL CAMPO, no solo en la notificación:
   // en un formulario largo, un aviso arriba no dice cuál de los quince campos
   // está mal.
+  //
+  // Depende de `setErrors` y NO de `form`: `useForm` devuelve un objeto nuevo
+  // en cada render y `setErrors` siempre guarda un objeto nuevo, así que con
+  // `form` en la lista el efecto se relanzaba sin fin y la pestaña se quedaba
+  // en un bucle de renders en cuanto el servidor devolvía errores por campo.
+  const { setErrors } = form
   useEffect(() => {
-    if (fieldErrors && Object.keys(fieldErrors).length > 0) form.setErrors(fieldErrors)
-  }, [fieldErrors, form])
+    if (fieldErrors && Object.keys(fieldErrors).length > 0) setErrors(fieldErrors)
+  }, [fieldErrors, setErrors])
 
   const values = form.values
 
@@ -121,7 +129,9 @@ export function GenericForm<TSave>({
     const resultado = await onSubmit(valores as TSave)
     // `undefined` = el submit falló y ya ha avisado. No se navega: la persona
     // tiene que poder corregir sobre lo que escribió.
-    if (resultado !== undefined) router.push(exitTo)
+    if (resultado === undefined) return
+    if (onSuccess) onSuccess()
+    else router.push(exitTo!)
   })
 
   const seccionesVisibles = useMemo(
@@ -136,11 +146,13 @@ export function GenericForm<TSave>({
       <LoadingOverlay visible={cargando} zIndex={100} />
 
       <Stack gap="lg">
-        <Group justify="space-between" align="center">
-          <h1 className={styles.titulo}>
-            {mode === 'create' ? title.create : title.edit}
-          </h1>
-        </Group>
+        {!hideTitle && (
+          <Group justify="space-between" align="center">
+            <h1 className={styles.titulo}>
+              {mode === 'create' ? title.create : title.edit}
+            </h1>
+          </Group>
+        )}
 
         {mode === 'edit' && !cargando && !data && (
           <Alert color="red" icon={<IconAlertTriangle size={18} />} title="No encontrado">
@@ -192,7 +204,7 @@ export function GenericForm<TSave>({
           <SketchButton
             variant="secondary"
             leftSection={<IconArrowLeft size={16} stroke={2.2} />}
-            onClick={() => router.push(exitTo)}
+            onClick={() => (onSuccess ? onSuccess() : router.push(exitTo!))}
             disabled={isSubmitting}
           >
             Cancelar

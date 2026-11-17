@@ -1,0 +1,173 @@
+{
+  "id": "salud/03-regla-50-30-20-y-alquiler",
+  "tipo": "lectura",
+  "titulo": "La regla 50/30/20 y el peso del alquiler",
+  "descripcion": "Qué reparte la regla 50/30/20, por qué no siempre encaja con un alquiler caro y cómo adaptarla sin dejar de ahorrar.",
+  "minutos": 3,
+  "paginas": [
+    {
+      "titulo": "Una brújula, no una ley",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "estrella",
+          "pie": "Una estrella que marca el rumbo, como una brújula."
+        },
+        {
+          "tipo": "dato",
+          "texto": "Finanzas para Todos presenta la regla 50/30/20 como **un punto de partida** que cada persona tiene que adaptar a sus necesidades.",
+          "fuente": "Finanzas para Todos (Plan de Educación Financiera)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Es una regla práctica muy conocida para repartir lo que cobras. No la impone ninguna ley."
+        }
+      ]
+    },
+    {
+      "titulo": "El reparto",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "🏠 **50 %** para necesidades: vivienda, comida, transporte, suministros, seguros y cuotas de deudas.",
+            "🎉 **30 %** para deseos: ocio, viajes y caprichos.",
+            "🐷 **20 %** para ahorro."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Las cuotas de tus deudas van en el 50 % de necesidades: pagarlas no es opcional."
+        }
+      ]
+    },
+    {
+      "titulo": "El peso de la vivienda",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Una referencia habitual es que la vivienda no se lleve más del **30-35 %** de tus ingresos netos."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Pasado ese punto, aprieta todo lo demás: comida, ropa e imprevistos tienen que caber en lo que sobra."
+        }
+      ]
+    },
+    {
+      "titulo": "Pepito y su piso en Barcelona",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Ahora Pepito tiene 31 años, diseña páginas web en Barcelona y cobra 1.800 € netos al mes."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Las necesidades de Pepito en un mes",
+          "filas": [
+            {
+              "concepto": "Alquiler",
+              "importe": -72000
+            },
+            {
+              "concepto": "Comida",
+              "importe": -30000
+            },
+            {
+              "concepto": "Luz, agua e internet",
+              "importe": -15000
+            },
+            {
+              "concepto": "Total de necesidades",
+              "importe": -117000
+            }
+          ],
+          "nota": "Solo el alquiler es el **40 %** de su sueldo (720 / 1.800). Las necesidades, el **65 %** (1.170 / 1.800)."
+        }
+      ]
+    },
+    {
+      "titulo": "Cuando el 50 % no encaja",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "A Pepito el 50 % no le sale, y no es el único. Lo sensato es adaptar el reparto: un **65/20/15** o un 70/20/10."
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "El recorte sale del ocio, para que el ahorro siga vivo. Ahorrar un 10 % o un 5 % es mucho mejor que no ahorrar nada."
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ **Mito**: si tus necesidades pasan del 50 %, gestionas mal tu dinero.",
+            "✅ **Realidad**: con un alquiler caro, adaptar los porcentajes es lo normal. Lo importante es _no dejar de ahorrar_."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Los grandes gastos de Pepito están claros. Entonces, ¿por qué su cuenta llega casi a cero a fin de mes? Pista: los gastos pequeños."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "referencia-vivienda",
+      "tipo": "opcion",
+      "enunciado": "¿Qué referencia habitual se usa como tope de lo que se dedica a pagar la vivienda?",
+      "opciones": [
+        "Entre el 30 % y el 35 % de los ingresos netos",
+        "El 50 % del sueldo bruto",
+        "El 70 % de lo que entra"
+      ],
+      "correcta": 0,
+      "explicacion": "Es una regla práctica, no una ley: por encima de un 30-35 % de lo que cobras, la vivienda deja poco para comer, moverte y afrontar imprevistos."
+    },
+    {
+      "id": "regla-legal",
+      "tipo": "verdaderoFalso",
+      "enunciado": "La regla 50/30/20 es una obligación legal en España.",
+      "correcta": false,
+      "explicacion": "Es una regla práctica para orientarte. Ninguna norma te obliga a repartir así tu dinero, y lo sensato es adaptarla a tu vida."
+    },
+    {
+      "id": "hueco-el-treinta",
+      "tipo": "hueco",
+      "enunciado": "En la regla 50/30/20, el 30 % de los ingresos netos es para ___.",
+      "opciones": [
+        "los deseos y el ocio",
+        "la vivienda",
+        "el ahorro"
+      ],
+      "correcta": 0,
+      "explicacion": "El 30 % es para lo que eliges y te hace la vida más agradable, pero no es imprescindible. La vivienda va en el 50 % y el ahorro, en el 20 %."
+    },
+    {
+      "id": "cuotas-de-deudas",
+      "tipo": "opcion",
+      "enunciado": "Pepito paga una cuota mensual de un préstamo. ¿En qué bloque de la regla 50/30/20 la pone?",
+      "opciones": [
+        "En el 50 % de necesidades",
+        "En el 30 % de deseos",
+        "En ninguno: no cuenta"
+      ],
+      "correcta": 0,
+      "explicacion": "Una cuota de deuda no se puede dejar de pagar sin consecuencias, así que es una necesidad. Por eso cuenta dentro del 50 %."
+    },
+    {
+      "id": "calcula-esfuerzo",
+      "tipo": "calcula",
+      "enunciado": "Pepito cobra 1.800 € netos y paga 720 € de alquiler. ¿Qué porcentaje de su sueldo neto se lleva el alquiler?",
+      "unidad": "porcentaje",
+      "solucion": 4000,
+      "tolerancia": 0,
+      "explicacion": "Se divide el alquiler entre el sueldo neto y se multiplica por 100: 720 / 1.800 × 100 = **40 %**, por encima de la referencia del 30-35 %."
+    }
+  ]
+}

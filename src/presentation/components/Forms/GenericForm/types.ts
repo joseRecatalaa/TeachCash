@@ -1,9 +1,9 @@
 /**
- * El contrato entre `src/config/` y `src/presentation/`.
+ * El contrato entre `src/presentation/entidades/` y el `GenericForm`.
  *
- * Un `sections.ts` DESCRIBE la vista con estos tipos; el `GenericForm` la pinta.
- * Por eso `sections.ts` es `.ts` y no `.tsx`: si aparece JSX, deja de compilar,
- * y esa es la invariante que mantiene la config declarativa.
+ * Un `formularios.ts` DESCRIBE el formulario con estos tipos; el `GenericForm`
+ * lo pinta. Por eso `formularios.ts` es `.ts` y no `.tsx`: si aparece JSX, deja
+ * de compilar, y esa es la invariante que mantiene la definición declarativa.
  *
  * El tipo de campo que más importa aquí es **`money`**: ver su nota en
  * `FieldType`.
@@ -141,6 +141,12 @@ export interface FieldDefinition {
   minDateFrom?: string
   /** Solo campos `date`: idem, como fecha máxima. */
   maxDateFrom?: string
+  /**
+   * Solo campos `date`: no deja elegir días posteriores a hoy (el de quien
+   * rellena, en su huso). Es cortesía: quien prohíbe las fechas futuras es el
+   * repositorio.
+   */
+  noFutureDates?: boolean
   /** Contenido custom. Si se define, se ignora `type`. */
   render?: FieldRender
   /**
@@ -166,14 +172,22 @@ export interface FieldDefinition {
    */
   props?: Record<string, unknown> | ((args: FieldRenderArgs) => Record<string, unknown>)
   /**
-   * Solo campos `component`/`render`: de qué OTROS valores del formulario
-   * depende lo que pinta.
+   * De qué OTROS valores del formulario depende lo que pinta.
    *
-   * Sin esto la celda se repinta con cada tecla del formulario entero; con esto,
-   * solo cuando cambia su propio valor, su error o alguno de estos. `[]` = no
-   * depende de nada más.
+   * El `FieldRenderer` está memoizado y solo repinta un campo cuando cambia su
+   * propio valor, su error, o algo listado aquí. Importa en los campos que
+   * leen los valores vivos: `component`/`render` y los que tienen
+   * `optionsFrom`, `labelFrom` o `disabledWhen`.
+   *   - **Sin `dependsOn`** se repintan con cada tecla del formulario entero:
+   *     no hay forma de saber qué leen, así que el memo no corta nada. Es
+   *     correcto, pero caro en un formulario grande.
+   *   - **Con `dependsOn`** se repintan solo cuando cambia lo declarado (p. ej.
+   *     `categoriaId` filtrando por `sentido`).
    *
-   * **Cuidado: si olvidas uno, el campo deja de actualizarse en silencio.**
+   * `[]` = no depende de nada más.
+   *
+   * **Cuidado: si declaras la lista y olvidas uno, el campo deja de
+   * actualizarse en silencio.**
    */
   dependsOn?: string[]
 }
@@ -199,6 +213,12 @@ export interface SectionDefinition {
 export interface GenericFormProps<TSave> {
   /** Título por modo. */
   title: { create: string; edit: string }
+  /**
+   * Oculta el título propio del formulario. Para cuando el formulario vive
+   * dentro de un `Modal` que ya lleva su propio título en la cabecera (por
+   * ejemplo el alta rápida de un movimiento): sin esto se ve dos veces.
+   */
+  hideTitle?: boolean
   sections: SectionDefinition[]
   mode: 'create' | 'edit'
   /** Clave de `REPOSITORIES`. Resuelve las opciones de los `select` vía metadata. */
@@ -223,8 +243,18 @@ export interface GenericFormProps<TSave> {
   /** Errores por campo del último intento de guardado (del servidor). */
   fieldErrors?: Record<string, string>
   onSubmit: (values: TSave) => Promise<unknown>
-  /** A dónde se vuelve al guardar o cancelar. */
-  exitTo: string
+  /**
+   * A dónde se vuelve al guardar o cancelar. Obligatorio salvo que se pase
+   * `onSuccess` — un formulario embebido en un modal no navega a ningún sitio,
+   * simplemente se cierra.
+   */
+  exitTo?: string
+  /**
+   * Alternativa a `exitTo`: se llama al guardar con éxito y al cancelar, en
+   * vez de navegar. Es lo que usa un formulario dentro de un `Modal` (por
+   * ejemplo, el alta rápida de un movimiento desde Planificación mensual).
+   */
+  onSuccess?: () => void
   /** Contenido extra bajo las secciones (avisos, paneles). */
   children?: ReactNode
 }

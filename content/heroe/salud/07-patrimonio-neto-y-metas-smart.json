@@ -1,0 +1,158 @@
+{
+  "id": "salud/07-patrimonio-neto-y-metas-smart",
+  "tipo": "lectura",
+  "titulo": "Patrimonio neto, metas SMART y cita mensual",
+  "descripcion": "Calcula tu patrimonio neto, convierte un deseo en una meta SMART y monta una revisión mensual de tus cuentas.",
+  "minutos": 3,
+  "paginas": [
+    {
+      "titulo": "Ingresos no es lo mismo que riqueza",
+      "bloques": [
+        {
+          "tipo": "imagen",
+          "sprite": "escudo",
+          "pie": "Un escudo: lo que tienes, a salvo de lo que debes."
+        },
+        {
+          "tipo": "dato",
+          "texto": "El Banco de España propone hacer un **seguimiento mensual** del presupuesto: revisarlo y ajustar lo necesario.",
+          "fuente": "Banco de España, Portal del Cliente Bancario (diciembre de 2025)"
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Ganar mucho no garantiza salud financiera. Quien ingresa 4.000 € y gasta 4.100 € vive al límite, por mucho que cobre."
+        }
+      ]
+    },
+    {
+      "titulo": "Qué es el patrimonio neto",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "➕ **Activos**: lo que tienes con valor, como tus ahorros, un vehículo o una vivienda.",
+            "➖ **Pasivos**: lo que debes, como préstamos o el saldo de una tarjeta."
+          ]
+        },
+        {
+          "tipo": "idea",
+          "texto": "Patrimonio neto = activos − pasivos. Si tienes más de lo que debes, es positivo."
+        }
+      ]
+    },
+    {
+      "titulo": "El patrimonio de Pepito",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Ahora Pepito tiene 58 años y conduce un camión en Madrid."
+        },
+        {
+          "tipo": "ejemplo",
+          "titulo": "Lo que tiene y lo que debe Pepito",
+          "filas": [
+            { "concepto": "Dinero en la cuenta", "importe": 400000 },
+            { "concepto": "Furgoneta, a precio de tasación", "importe": 1000000 },
+            { "concepto": "Saldo de la tarjeta de crédito", "importe": -150000 },
+            { "concepto": "Préstamo de la furgoneta", "importe": -350000 },
+            { "concepto": "Patrimonio neto", "importe": 900000 }
+          ],
+          "nota": "Activos 14.000 € − pasivos 5.000 € = **9.000 €** positivos."
+        }
+      ]
+    },
+    {
+      "titulo": "Metas SMART",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "\"Quiero ahorrar\" no suele funcionar. Una meta útil es **SMART**:"
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "🎯 **S**, específica: qué vas a hacer exactamente.",
+            "📏 **M**, medible: una cifra en euros.",
+            "🧗 **A**, alcanzable: realista con tu sueldo.",
+            "❤️ **R**, relevante: importante para ti.",
+            "📅 **T**, temporal: con fecha límite."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Tu cita mensual",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Una costumbre práctica: reservar unos 20 minutos al mes, después de cobrar, para tus cuentas."
+        },
+        {
+          "tipo": "lista",
+          "items": [
+            "1️⃣ Repasa lo que has gastado.",
+            "2️⃣ Busca desvíos y cobros que no reconoces.",
+            "3️⃣ Anota tu patrimonio neto y mira si sube."
+          ]
+        }
+      ]
+    },
+    {
+      "titulo": "Mito y realidad",
+      "bloques": [
+        {
+          "tipo": "lista",
+          "items": [
+            "❌ **Mito**: el patrimonio neto solo importa a quien tiene una fortuna.",
+            "✅ **Realidad**: te dice cada año si _avanzas o te endeudas_, tengas lo que tengas."
+          ]
+        },
+        {
+          "tipo": "parrafo",
+          "texto": "Ya conoces tus gastos, tu nómina y tu patrimonio. ¿Sabrás poner en orden las cuentas de Pepito antes del duelo con La Niebla Financiera?"
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "que-es-patrimonio",
+      "tipo": "opcion",
+      "enunciado": "¿Qué es el patrimonio neto de una persona?",
+      "opciones": [
+        "Todo lo que ha cobrado en nóminas el último año",
+        "El valor de lo que tiene menos lo que debe",
+        "El límite de su tarjeta de crédito"
+      ],
+      "correcta": 1,
+      "explicacion": "El sueldo es lo que entra; el patrimonio es lo que de verdad te queda. Por eso se calcula restando las deudas a lo que tienes."
+    },
+    {
+      "id": "frase-smart",
+      "tipo": "verdaderoFalso",
+      "enunciado": "La meta \"quiero ahorrar todo lo que pueda este año\" cumple el método SMART.",
+      "correcta": false,
+      "explicacion": "No dice cuántos euros ni con qué ritmo, así que no se puede medir ni saber si se ha cumplido. Le falta, sobre todo, la **M** de medible."
+    },
+    {
+      "id": "empareja-smart",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada letra de SMART con lo que pide.",
+      "pares": [
+        { "concepto": "S, específica", "definicion": "Decir con detalle qué vas a hacer" },
+        { "concepto": "M, medible", "definicion": "Poner una cifra en euros para seguir el avance" },
+        { "concepto": "T, temporal", "definicion": "Fijar una fecha límite en el calendario" }
+      ],
+      "explicacion": "Con las tres a la vez, la meta deja de ser un deseo: sabes qué hacer, cuánto llevas y cuándo tiene que estar."
+    },
+    {
+      "id": "calcula-patrimonio",
+      "tipo": "calcula",
+      "enunciado": "Pepito tiene 4.500 € ahorrados y una moto tasada en 2.500 €. Debe 1.200 € de un préstamo y 800 € de una tarjeta. ¿Cuántos euros vale su patrimonio neto?",
+      "unidad": "euros",
+      "solucion": 500000,
+      "tolerancia": 0,
+      "explicacion": "Activos: 4.500 + 2.500 = 7.000 €. Pasivos: 1.200 + 800 = 2.000 €. Patrimonio neto: 7.000 − 2.000 = **5.000 €**."
+    }
+  ]
+}

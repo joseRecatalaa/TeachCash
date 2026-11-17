@@ -11,49 +11,20 @@
  * no se traduce devuelve resultados de más sin que nada falle.
  */
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-
-const h = vi.hoisted(() => ({
-  db: null as unknown as import('@/db/client').Database,
-  userId: 'user-a' as string | null,
-}))
+import { describe, expect, test, vi } from 'vitest'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }))
 
-vi.mock('@/lib/auth', () => ({
-  LOCAL_USER_ID: 'user-a',
-  getSession: async () => (h.userId ? { user: { id: h.userId } } : null),
-  requireUserId: async () => {
-    if (!h.userId) throw new Error('No autorizado')
-    return h.userId
-  },
-}))
+vi.mock('@/db', async () => (await import('@/test/mocks/db')).dbMock())
+vi.mock('@/lib/auth', async () => (await import('@/test/mocks/auth')).authMock())
 
-vi.mock('@/db', async () => {
-  const schema = await import('@/db/schema')
-  return {
-    ...schema,
-    get db() {
-      return h.db
-    },
-  }
-})
-
-import { createTestDb, type TestDb } from '@/db/testing'
+import { harness, usarBaseDeTest } from '@/test/harness'
 import type { CategoriaListDto } from '@/src/types/categoria.types'
 import { DataProviderError, dataProvider } from '../refine-data-provider'
 import { seedCategoria, USER_A, USER_B } from '@/src/infrastructure/repositories/__tests__/helpers'
 
-let ctx: TestDb
 const provider = dataProvider()
-
-beforeEach(async () => {
-  ctx = await createTestDb()
-  h.db = ctx.db
-  h.userId = USER_A
-})
-
-afterEach(() => ctx.close())
+const base = usarBaseDeTest()
 
 /**
  * Categorías hace de recurso de PRUEBA. Aquí no se comprueba nada del dominio
@@ -64,16 +35,16 @@ afterEach(() => ctx.close())
 const nueva = (overrides: Record<string, unknown> = {}) => ({
   nombre: 'Comida',
   tipo: 'expense',
-  padreId: '',
   icono: '',
   color: '',
+  presupuesto: 500,
   ...overrides,
 })
 
 describe('getList', () => {
   test('devuelve datos y total', async () => {
-    await seedCategoria(ctx.db, 'c1', USER_A)
-    await seedCategoria(ctx.db, 'c2', USER_A)
+    await seedCategoria(base().db, 'c1', USER_A)
+    await seedCategoria(base().db, 'c2', USER_A)
 
     const res = await provider.getList<CategoriaListDto>({ resource: 'Categorias' })
     expect(res.total).toBe(2)
@@ -84,8 +55,8 @@ describe('getList', () => {
   })
 
   test('traduce los CrudFilter de Refine al filtro del repositorio', async () => {
-    await seedCategoria(ctx.db, 'gasto', USER_A, { kind: 'expense' })
-    await seedCategoria(ctx.db, 'ingreso', USER_A, { kind: 'income' })
+    await seedCategoria(base().db, 'gasto', USER_A, { kind: 'expense' })
+    await seedCategoria(base().db, 'ingreso', USER_A, { kind: 'income' })
 
     const res = await provider.getList<CategoriaListDto>({
       resource: 'Categorias',
@@ -98,7 +69,7 @@ describe('getList', () => {
   })
 
   test('descarta los filtros vacíos en vez de filtrar por cadena vacía', async () => {
-    await seedCategoria(ctx.db, 'c1', USER_A)
+    await seedCategoria(base().db, 'c1', USER_A)
 
     const res = await provider.getList<CategoriaListDto>({
       resource: 'Categorias',
@@ -108,8 +79,8 @@ describe('getList', () => {
   })
 
   test('la ordenación de `sorters` gana a la de `meta`', async () => {
-    await seedCategoria(ctx.db, 'c1', USER_A, { name: 'Aaa' })
-    await seedCategoria(ctx.db, 'c2', USER_A, { name: 'Zzz' })
+    await seedCategoria(base().db, 'c1', USER_A, { name: 'Aaa' })
+    await seedCategoria(base().db, 'c2', USER_A, { name: 'Zzz' })
 
     const res = await provider.getList<CategoriaListDto>({
       resource: 'Categorias',
@@ -122,7 +93,7 @@ describe('getList', () => {
 
   test('la paginación de `meta` recorta los datos pero no el total', async () => {
     for (let i = 0; i < 5; i++) {
-      await seedCategoria(ctx.db, `c${i}`, USER_A, { name: `Categoría ${i}` })
+      await seedCategoria(base().db, `c${i}`, USER_A, { name: `Categoría ${i}` })
     }
 
     const res = await provider.getList<CategoriaListDto>({
@@ -134,8 +105,8 @@ describe('getList', () => {
   })
 
   test('la búsqueda global viaja por meta.searchQuery', async () => {
-    await seedCategoria(ctx.db, 'c1', USER_A, { name: 'Alimentación' })
-    await seedCategoria(ctx.db, 'c2', USER_A, { name: 'Transporte' })
+    await seedCategoria(base().db, 'c1', USER_A, { name: 'Alimentación' })
+    await seedCategoria(base().db, 'c2', USER_A, { name: 'Transporte' })
 
     const res = await provider.getList<CategoriaListDto>({
       resource: 'Categorias',
@@ -186,7 +157,7 @@ describe('los errores vuelven a ser excepciones en el cliente', () => {
   })
 
   test('un registro ajeno da "No encontrado", no los datos', async () => {
-    await seedCategoria(ctx.db, 'ajena', USER_B)
+    await seedCategoria(base().db, 'ajena', USER_B)
 
     await expect(provider.getOne({ resource: 'Categorias', id: 'ajena' })).rejects.toThrow(
       'No encontrado',
@@ -194,7 +165,7 @@ describe('los errores vuelven a ser excepciones en el cliente', () => {
   })
 
   test('sin sesión, ninguna operación pasa', async () => {
-    h.userId = null
+    harness.userId = null
     await expect(provider.getList({ resource: 'Categorias' })).rejects.toThrow('No autorizado')
   })
 

@@ -14,6 +14,21 @@
 
 import type { CivilDate, Period } from '@/lib/dates'
 
+/**
+ * La ventana por defecto de los informes de la portada: un año. La comparten
+ * la serie de saldo y "ingresos frente a gastos", y la etiqueta que lo dice en
+ * pantalla; si divergieran, el rótulo "últimos 12 meses" mentiría.
+ */
+export const INFORME_MESES_POR_DEFECTO = 12
+
+/**
+ * El mes más antiguo al que se puede ir con las flechas de Inicio. Es un tope
+ * de NAVEGACIÓN, no de datos: la aplicación arrancó en 2026 y antes no hay nada
+ * que enseñar. Por eso no se impone en el servidor —un movimiento de 2025 sigue
+ * siendo válido y sigue sumando al patrimonio—.
+ */
+export const INICIO_MES_MINIMO: Period = '2026-01'
+
 export interface GastoPorCategoriaDto {
   categoriaId: string
   categoriaNombre: string

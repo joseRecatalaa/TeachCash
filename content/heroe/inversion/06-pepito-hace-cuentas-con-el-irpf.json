@@ -1,0 +1,79 @@
+{
+  "id": "inversion/06-pepito-hace-cuentas-con-el-irpf",
+  "tipo": "interactivo",
+  "titulo": "Pepito hace cuentas con el IRPF de sus fondos",
+  "descripcion": "Resuelve con Pepito en Zaragoza sus cuentas de IRPF de 2026: tramos del ahorro, compensación de pérdidas, traspasos y planes de pensiones.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "calcula-tramos",
+      "tipo": "calcula",
+      "enunciado": "En 2026 Pepito reembolsa del todo un fondo que tiene a su nombre para reformar la casa, con una ganancia de 10.000 €. No tiene más rentas del ahorro ese año. Si los primeros 6.000 € tributan al 19 % y de ahí a 50.000 € al 21 %, ¿cuántos euros le toca pagar por esa ganancia?",
+      "unidad": "euros",
+      "solucion": 198000,
+      "tolerancia": 0,
+      "explicacion": "Tramo a tramo: 6.000 × 19 / 100 = 1.140 € y los 4.000 € restantes, 4.000 × 21 / 100 = 840 €. En total, **1.980 €**. Lo que le retuvieron al reembolsar se descuenta de esa cifra en la declaración."
+    },
+    {
+      "id": "ordena-traspaso",
+      "tipo": "ordenar",
+      "enunciado": "Pepito quiere pasar su dinero de un fondo caro a un fondo indexado de otra entidad, sin pagar impuestos gracias al traspaso. Ordena los pasos.",
+      "pasos": [
+        "Abrir cuenta en la entidad de destino, donde se comercializa el nuevo fondo",
+        "Pedir el traspaso a la entidad de destino, sin reembolsar el fondo por su cuenta",
+        "La entidad de destino lo solicita a la de origen, que reembolsa y envía el dinero directamente",
+        "Recibir las nuevas participaciones, con el valor y la fecha de compra del fondo original"
+      ],
+      "explicacion": "El traspaso se pide en la entidad de **destino**, y el dinero viaja de fondo a fondo sin pasar nunca por la cuenta de Pepito. Si lo cobrara él, dejaría de ser un traspaso y tributaría."
+    },
+    {
+      "id": "calcula-perdida-pendiente",
+      "tipo": "calcula",
+      "enunciado": "En 2026 Pepito cobra 1.000 € en dividendos e intereses y vende unas acciones con una pérdida de 400 €, sin más ventas. La pérdida solo puede restar hasta el 25 % de esos 1.000 €. ¿Cuántos euros de pérdida le quedan pendientes para los 4 años siguientes?",
+      "unidad": "euros",
+      "solucion": 15000,
+      "tolerancia": 0,
+      "explicacion": "El límite de este año es 1.000 × 25 / 100 = 250 €. De los 400 € de pérdida, quedan 400 − 250 = **150 €** guardados para compensar en los cuatro años siguientes."
+    },
+    {
+      "id": "empareja-planes",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada situación de un plan de pensiones en 2026 con su regla.",
+      "pares": [
+        { "concepto": "Tope de un autónomo con plan de empleo simplificado", "definicion": "Hasta 5.750 € al año: 1.500 € generales más 4.250 € adicionales, sin pasar del 30 % de sus rendimientos" },
+        { "concepto": "Aportaciones con 10 años de antigüedad", "definicion": "Se pueden rescatar sin alegar ningún motivo" },
+        { "concepto": "Rescate del plan", "definicion": "Tributa como rendimiento del trabajo en la base general, no en la del ahorro" },
+        { "concepto": "Movilización a otro plan", "definicion": "Pasar los derechos a otro plan sin cobrarlos, y la gestora de origen informa de la fecha de cada aportación" }
+      ],
+      "explicacion": "Un plan de pensiones reduce el IRPF al aportar, permite cambiar de plan sin cobrar el dinero y rescatar lo que tenga 10 años; a cambio, lo que se cobra tributa como un sueldo."
+    },
+    {
+      "id": "fifo",
+      "tipo": "opcion",
+      "enunciado": "Pepito compró 10 participaciones de un fondo en 2020 a 50 € y otras 10 del mismo fondo en 2024 a 80 €. En 2026 vende solo 10. ¿Cuáles considera Hacienda que ha vendido?",
+      "opciones": [
+        "Las de 2020: las primeras que entraron son las primeras que salen",
+        "Las de 2024, porque tienen menos ganancia",
+        "Las que Pepito elija marcando una casilla en su entidad",
+        "Una media a partes iguales de todas sus compras"
+      ],
+      "correcta": 0,
+      "explicacion": "El artículo 94.1.a) de la Ley del IRPF dice que, con valores homogéneos, se consideran vendidos **los que se compraron primero**. Es el criterio que se conoce como FIFO, del inglés _first in, first out_."
+    },
+    {
+      "id": "rescate-de-golpe",
+      "tipo": "verdaderoFalso",
+      "enunciado": "Si Pepito sigue con ingresos altos y rescata de golpe lo que aportó a su plan en 2015, puede acabar pagando un porcentaje de IRPF mayor que el que se ahorró al aportarlo.",
+      "correcta": true,
+      "explicacion": "Lo rescatado se suma a sus ingresos del trabajo en una escala progresiva. Cobrarlo todo de una vez en un año de ingresos altos puede llevarlo a un tramo más caro que el que tenía cuando aportó."
+    },
+    {
+      "id": "hueco-sin-traspaso",
+      "tipo": "hueco",
+      "enunciado": "A diferencia de los fondos de inversión, los fondos cotizados o ___ están excluidos por ley del traspaso sin tributar.",
+      "opciones": ["ETF", "bonos", "planes"],
+      "correcta": 0,
+      "explicacion": "El artículo 94.1.a) de la Ley del IRPF deja fuera del traspaso a los fondos cotizados. Para cambiar de un ETF a otro hay que vender y tributar por la ganancia ese año."
+    }
+  ]
+}

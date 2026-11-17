@@ -1,0 +1,91 @@
+{
+  "id": "ahorro/04-practica-tae-y-depositos",
+  "tipo": "interactivo",
+  "titulo": "Practica: elige dónde aparcar tus ahorros",
+  "descripcion": "Pepito reparte sus ahorros entre una cuenta remunerada y un depósito: compara TAE, calcula intereses y lee el contrato.",
+  "minutos": 4,
+  "ejercicios": [
+    {
+      "id": "donde-el-colchon",
+      "tipo": "opcion",
+      "enunciado": "Pepito tiene **12.000 €**: 6.000 € son su colchón y los otros 6.000 € no los va a tocar en un año. ¿Dónde encaja mejor el colchón?",
+      "opciones": [
+        "En una cuenta remunerada, separada de la del día a día",
+        "En un depósito a 3 años sin cancelación anticipada",
+        "En la cuenta de la nómina, junto al resto del dinero"
+      ],
+      "correcta": 0,
+      "explicacion": "El colchón tiene que estar **disponible cualquier día**. Un depósito sin cancelación lo bloquea, y mezclado con la nómina se acaba gastando."
+    },
+    {
+      "id": "calcula-bruto",
+      "tipo": "calcula",
+      "enunciado": "Para los otros 6.000 €, un depósito a 1 año le ofrece un **2,5 % TIN**, con los intereses pagados al vencer. ¿Cuántos euros de intereses brutos ganará?",
+      "unidad": "euros",
+      "solucion": 15000,
+      "tolerancia": 0,
+      "explicacion": "6.000 € × 2,5 % = **150 €**. Con el pago al final del año, el interés pactado se aplica una sola vez."
+    },
+    {
+      "id": "calcula-neto",
+      "tipo": "calcula",
+      "enunciado": "De esos 150 € brutos, la entidad le retiene el **19 %** para Hacienda. ¿Cuántos euros le llegan?",
+      "unidad": "euros",
+      "solucion": 12150,
+      "tolerancia": 0,
+      "explicacion": "150 € × 19 % = 28,50 € de retención. Le llegan 150 € − 28,50 € = **121,50 €**."
+    },
+    {
+      "id": "tae-con-comision",
+      "tipo": "opcion",
+      "enunciado": "Para el colchón compara dos cuentas. **A**: TIN 2,00 % y TAE 2,02 %. **B**: TIN 2,05 % y TAE 1,90 %, porque cobra una comisión de mantenimiento. ¿Cuál le rinde más en un año?",
+      "opciones": [
+        "La A",
+        "La B",
+        "Las dos igual"
+      ],
+      "correcta": 0,
+      "explicacion": "La **TAE** descuenta la comisión y el TIN no. B promete más en el TIN, pero la comisión se come la diferencia."
+    },
+    {
+      "id": "contrato-sin-cancelacion",
+      "tipo": "verdaderoFalso",
+      "enunciado": "El contrato del depósito no prevé cancelarlo antes de tiempo. Aun así, Pepito puede romperlo cuando quiera por su cuenta.",
+      "correcta": false,
+      "explicacion": "Si el contrato no da ese derecho, **una sola parte no puede cancelarlo**: tendría que pactarlo con la entidad. Por eso se mira antes de firmar."
+    },
+    {
+      "id": "empareja-ahorro",
+      "tipo": "emparejar",
+      "enunciado": "Empareja cada concepto con lo que significa.",
+      "pares": [
+        { "concepto": "Cuenta remunerada", "definicion": "Paga intereses y puedes sacar el dinero cuando quieras" },
+        { "concepto": "Depósito a plazo", "definicion": "Dinero inmovilizado un tiempo fijo a cambio de un tipo pactado" },
+        { "concepto": "Prórroga automática", "definicion": "El depósito se renueva solo al vencer si nadie dice nada" },
+        { "concepto": "Retención", "definicion": "La parte de los intereses que la entidad adelanta a Hacienda" }
+      ],
+      "explicacion": "Son las cuatro piezas que aparecen en cualquier oferta de ahorro. Saber qué es cada una te deja leer el contrato **sin sorpresas**."
+    },
+    {
+      "id": "ordena-deposito",
+      "tipo": "ordenar",
+      "enunciado": "Pepito abre el depósito de 6.000 € a 1 año. Ordena lo que pasa.",
+      "pasos": [
+        "Deposita los 6.000 €",
+        "Pasa el año sin tocarlos",
+        "La entidad calcula los intereses brutos",
+        "Le retiene el 19 % para Hacienda",
+        "Le devuelve los 6.000 € y le ingresa los intereses netos"
+      ],
+      "explicacion": "Los intereses se calculan al vencer, y la retención sale **de esos intereses**, nunca antes de que existan."
+    },
+    {
+      "id": "hueco-bruto",
+      "tipo": "hueco",
+      "enunciado": "Los intereses ___ son los que se calculan antes de la retención de Hacienda.",
+      "opciones": ["brutos", "netos", "fijos"],
+      "correcta": 0,
+      "explicacion": "**Brutos** es antes de impuestos; netos, lo que llega a tu cuenta después de la retención."
+    }
+  ]
+}

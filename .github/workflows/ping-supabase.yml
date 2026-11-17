@@ -1,0 +1,38 @@
+# El plan gratuito de Supabase pausa el proyecto tras 7 días sin actividad, y
+# entonces la app deja de responder hasta que alguien lo reanuda a mano desde el
+# panel. Una consulta a la semana basta para que cuente como usado.
+#
+# Consulta la API REST con la clave pública: RLS (soloSuyo) no deja ver nada a
+# un anónimo, así que devuelve [] — pero la petición llega a Postgres, que es lo
+# que cuenta. No hace falta la secret key y no debe usarse aquí.
+#
+# GitHub solo ejecuta los `schedule` desde la rama por defecto, y los desactiva
+# tras 60 días sin actividad en el repo (avisa por email antes).
+name: Ping a Supabase
+
+on:
+  schedule:
+    - cron: '17 6 * * 1,4' # lunes y jueves; dos por semana dan margen si uno falla
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consultar categorías
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::Faltan los secrets SUPABASE_URL o SUPABASE_PUBLISHABLE_KEY"
+            exit 1
+          fi
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 --retry 3 \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            "$SUPABASE_URL/rest/v1/categories?select=id&limit=1")
+          echo "HTTP $status"
+          [ "$status" = "200" ] || { echo "::error::Supabase respondió $status"; exit 1; }

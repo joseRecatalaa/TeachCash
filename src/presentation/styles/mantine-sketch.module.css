@@ -247,6 +247,21 @@
   cursor: pointer;
 }
 
+/*
+ * La barra de progreso de Planificación mensual. El trazo va en la pista, no
+ * en el relleno: un trazo alrededor del relleno se ve mal en cuanto el
+ * porcentaje es bajo y la sección queda más corta que su propio borde.
+ */
+.progressRoot.progressRoot {
+  border: var(--sd-stroke-hair) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-pill);
+  background: var(--sd-surface-muted);
+}
+
+.progressSection.progressSection {
+  transition: var(--sd-transition);
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * Etiquetas
  * ────────────────────────────────────────────────────────────────────────── */
@@ -262,6 +277,22 @@
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0.01em;
+}
+
+/* El círculo de la cuenta: la inicial del email sobre el verde de marca, con el
+   mismo trazo y sombra dura que el resto. Es la señal de "has iniciado sesión". */
+.avatar.avatar {
+  border: var(--sd-border);
+  box-shadow: var(--sd-shadow-xs);
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+.avatar.avatar :where(.mantine-Avatar-placeholder) {
+  background: transparent;
+  color: inherit;
 }
 
 .title.title {

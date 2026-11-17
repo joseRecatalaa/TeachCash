@@ -1,0 +1,24 @@
+/* El título del modal: "Nuevo Movimiento" + la fecha de hoy, en cursiva y
+   más translúcida — es un dato de contexto, no parte del título. */
+
+.titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.tituloTexto {
+  font-family: var(--sd-font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--sd-ink);
+}
+
+.fecha {
+  font-family: var(--sd-font-body);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--sd-ink-muted);
+  opacity: 0.75;
+}

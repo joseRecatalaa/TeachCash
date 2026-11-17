@@ -1,0 +1,72 @@
+{
+  "id": "prueba/01-lectura",
+  "tipo": "lectura",
+  "titulo": "Leer",
+  "descripcion": "Una lectura.",
+  "minutos": 2,
+  "paginas": [
+    {
+      "titulo": "Página 1",
+      "bloques": [
+        {
+          "tipo": "parrafo",
+          "texto": "Hola."
+        }
+      ]
+    }
+  ],
+  "minitest": [
+    {
+      "id": "p1",
+      "tipo": "opcion",
+      "enunciado": "¿Uno?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "opciones": [
+        "a",
+        "b",
+        "c"
+      ],
+      "correcta": 1
+    },
+    {
+      "id": "p2",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Dos?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "p3",
+      "tipo": "hueco",
+      "enunciado": "Tres ___ cuatro",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "opciones": [
+        "y",
+        "o"
+      ],
+      "correcta": 0
+    },
+    {
+      "id": "p4",
+      "tipo": "opcion",
+      "enunciado": "¿Cuatro?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "opciones": [
+        "a",
+        "b"
+      ],
+      "correcta": 0
+    },
+    {
+      "id": "p5",
+      "tipo": "opcion",
+      "enunciado": "¿Cinco?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "opciones": [
+        "a",
+        "b"
+      ],
+      "correcta": 1
+    }
+  ]
+}

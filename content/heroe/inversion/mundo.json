@@ -1,0 +1,18 @@
+{
+  "id": "inversion",
+  "titulo": "Inversión",
+  "descripcion": "Poner el dinero a trabajar: riesgo, diversificación, fondos indexados y el efecto de las comisiones.",
+  "decorado": "montana",
+  "orden": 3,
+  "niveles": [
+    "01-por-que-invertir",
+    "02-pepito-invierte-su-excedente",
+    "03-fondos-indexados-y-etf",
+    "04-pepito-compara-comisiones",
+    "05-impuestos-traspasos-y-pensiones",
+    "06-pepito-hace-cuentas-con-el-irpf",
+    "07-test-mifid-riesgo-y-chiringuitos",
+    "08-pepito-caza-un-chiringuito",
+    "09-jefe-oraculo-de-humo"
+  ]
+}

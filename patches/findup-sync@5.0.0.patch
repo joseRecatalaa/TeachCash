@@ -1,0 +1,24 @@
+diff --git a/index.js b/index.js
+index a2df8b4001980bbfc9190a1303b0ebc2873d0305..1c841b142e7588a12acb989ca5d76d92b843ebc5 100644
+--- a/index.js
++++ b/index.js
+@@ -9,6 +9,10 @@ var path = require('path');
+ var isGlob = require('is-glob');
+ var resolveDir = require('resolve-dir');
+ var detect = require('detect-file');
++// TeachCash: `micromatch` se sustituye por `picomatch` (override en
++// pnpm-workspace.yaml) para no arrastrar `braces`, que tiene un DoS sin parche
++// (GHSA-vfj7-8cjw-p6xm). picomatch es el motor de micromatch y expande las
++// llaves por su cuenta; `picomatch(patron, opts)` es el `matcher` de micromatch.
+ var mm = require('micromatch');
+ 
+ /**
+@@ -59,7 +63,7 @@ function lookup(cwd, patterns, options) {
+ }
+ 
+ function matchFile(cwd, pattern, opts) {
+-  var isMatch = mm.matcher(pattern, opts);
++  var isMatch = mm(pattern, opts);
+   var files = tryReaddirSync(cwd);
+   var len = files.length;
+   var idx = -1;

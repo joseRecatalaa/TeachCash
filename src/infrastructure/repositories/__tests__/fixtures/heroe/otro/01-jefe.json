@@ -1,0 +1,66 @@
+{
+  "id": "otro/01-jefe",
+  "tipo": "jefe",
+  "titulo": "Solo jefe",
+  "descripcion": "Un mundo de un nivel.",
+  "minutos": 3,
+  "aprobado": 50,
+  "preguntas": [
+    {
+      "id": "j1",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 1?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j2",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 2?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j3",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 3?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j4",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 4?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j5",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 5?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j6",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 6?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j7",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 7?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    },
+    {
+      "id": "j8",
+      "tipo": "verdaderoFalso",
+      "enunciado": "¿Otro 8?",
+      "explicacion": "Porque sí: es la explicación de prueba.",
+      "correcta": true
+    }
+  ]
+}

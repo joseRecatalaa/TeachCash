@@ -1,0 +1,36 @@
+/*
+ * La pregunta del patrimonio inicial, dentro de la tarjeta de Patrimonio.
+ *
+ * Ocupa el sitio de la cifra grande y no más: la tarjeta tiene que seguir
+ * midiendo lo mismo con la pregunta que con la respuesta, o la rejilla de la
+ * portada salta al guardar.
+ */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.pregunta {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--sd-ink);
+}
+
+.ayuda {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--sd-ink-muted);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}

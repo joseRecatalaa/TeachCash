@@ -5,14 +5,19 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    // Un `case` que cae en el siguiente sin `break` es casi siempre un olvido.
+    "noFallthroughCasesInSwitch": true,
+    // Sobrescribir un método de la clase padre exige decirlo (`override`): si
+    // el padre lo renombra, el hijo deja de compilar en vez de quedar huérfano.
+    "noImplicitOverride": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    // Los scripts de db/ se ejecutan con `node db/seed.ts` (type stripping de
-    // Node 24), y ahí los imports relativos necesitan extensión explícita.
+    // Los scripts de db/ se ejecutan con `node db/migrate.mts` (type stripping
+    // de Node 24), y ahí los imports relativos necesitan extensión explícita.
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
