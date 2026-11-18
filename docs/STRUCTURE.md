@@ -193,6 +193,7 @@ Cada cambio tiene un sitio y solo uno:
     TESTS.md                          # todo lo de tests y quality gates
     CONTENIDO-HEROE.md                # cómo se escribe un curso
     investigación-heroe/              # informes por mundo y REVISION-CIFRAS.md
+    emails/                           # plantillas de email de Supabase Auth (se pegan en su panel)
     plans/                            # los planes (históricos) y los prompts de los cursos
   .github/workflows/                  # calidad.yml (CI) y ping-supabase.yml
   .husky/pre-commit                   # ESLint + typecheck en cada commit

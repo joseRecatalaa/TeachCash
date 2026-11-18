@@ -503,8 +503,19 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   toca ese fichero, `lib/supabase/` y `auth.actions.ts`.
 - **Cookies `httpOnly`** (y `secure` en producción): no hay cliente de Supabase
   en el navegador, así que nada de JavaScript necesita leer el JWT.
-- **Emails con las plantillas por defecto de Supabase** hasta tener SMTP propio
-  (sin él: 2 emails/hora y solo a miembros del equipo del proyecto).
+- **Producción en `https://www.teachcash.es`** (dominio en DonDominio; la raíz
+  y `teachcash.vercel.app` redirigen ahí). Cómo se montó, paso a paso, en
+  `docs/plans/PLAN-DESPLIEGUE.md`.
+- **Emails por SMTP propio con Resend** (plan gratuito, 100 al día), desde
+  `no-reply@teachcash.es`. Sin SMTP propio, Supabase solo manda 2 emails por
+  hora y solo a los miembros del equipo del proyecto, y un SMTP solo envía a
+  cualquiera desde un dominio verificado: por eso hizo falta el dominio.
+- **Plantillas de email en `docs/emails/`**, en español, con el héroe dibujado
+  con celdas de tabla: Gmail y Outlook no pintan SVG, y una imagen pediría
+  alojarla y saldría bloqueada por defecto. Supabase no lee el repo: una
+  plantilla que cambia se vuelve a pegar en su panel. Llevan estilo inline y
+  en hexadecimal, la única excepción a los tokens `--sd-*`, porque un cliente
+  de correo no entiende variables CSS.
 - **Rutas**: PascalCase con `Create/` y `Edit/`, y el id en `?id=` sin cifrar.
   Los ids son UUID y cada consulta filtra por dueño: ofuscarlos sería mantener
   criptografía sin nada que proteger.
@@ -878,9 +889,11 @@ Anótalas aquí al resolverlas; no las asumas en silencio.
 - **Login con Google**: aplazado. Sería credenciales en Google Cloud Console,
   el proveedor en Supabase y `linkIdentity` para convertir un invitado en cuenta
   de Google sin perder sus datos.
-- **SMTP propio**: pendiente hasta abrir la app a otros. Con él se pueden poner
-  las plantillas de email en español y con enlaces `token_hash`, que funcionan
-  desde cualquier dispositivo (hoy, con `code`, solo en el mismo navegador).
+- **Enlaces de email que funcionen en otro dispositivo**: el SMTP propio y las
+  plantillas en español ya están (ver Decisiones tomadas), pero los enlaces
+  siguen siendo `code` (PKCE), que solo funcionan en el mismo navegador que
+  los pidió; las plantillas lo avisan. Con `token_hash` funcionarían desde
+  cualquier dispositivo.
   `/auth/confirm` ya NO acepta `token_hash` (se quitó por login CSRF): volver a
   aceptarlo exige una página intermedia que diga con qué cuenta se va a entrar
   y lo confirme con un botón, en vez de cambiar la sesión al abrir el enlace.
