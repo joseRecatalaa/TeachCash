@@ -1,23 +1,27 @@
 'use client'
 
 /**
- * Camino del héroe: el camino de un mundo (`?id=<mundo>`).
+ * Camino del héroe: el camino de un mundo (`/CaminoHeroe/<mundo>`).
  *
  * Al entrar, el héroe camina hasta el primer nivel abierto. Al volver de
  * jugar uno, la consulta ya está invalidada (`useEnviarNivel`) y camina hasta
  * el siguiente.
+ *
+ * El mundo sale del segmento de la ruta (`rutaMundo`, `Heroe/rutas.ts`), y como
+ * cualquier id del cliente no se cree: el servidor solo sirve lo que existe.
  */
 
-import { Suspense } from 'react'
+import { useParams } from 'next/navigation'
 import { useMundoHeroe } from '@/src/application/hooks/useHeroe'
 import { CaminoMundo } from '@/src/presentation/components/Heroe/CaminoMundo'
 import { Cargando, ErrorHeroe, PaginaHeroe } from '@/src/presentation/components/Heroe/PaginaHeroe'
-import { useEntityId } from '@/src/presentation/components/useEntityId'
+import { RUTA_CAMINO, segmento } from '@/src/presentation/components/Heroe/rutas'
 
-const AL_MAPA = { href: '/CaminoHeroe', texto: 'Mundos' } as const
+const AL_MAPA = { href: RUTA_CAMINO, texto: 'Mundos' } as const
 
-function Contenido() {
-  const mundo = useMundoHeroe(useEntityId() || null)
+export default function MundoHeroePage() {
+  const mundoId = segmento(useParams<{ mundo: string }>().mundo)
+  const mundo = useMundoHeroe(mundoId || null)
 
   if (mundo.error) {
     return (
@@ -37,14 +41,5 @@ function Contenido() {
     <PaginaHeroe titulo={mundo.data.mundo.titulo} subtitulo={mundo.data.mundo.descripcion} volver={AL_MAPA}>
       <CaminoMundo datos={mundo.data} />
     </PaginaHeroe>
-  )
-}
-
-/** `useSearchParams` obliga a un `<Suspense>` por encima, o el build avisa. */
-export default function MundoHeroePage() {
-  return (
-    <Suspense fallback={<Cargando />}>
-      <Contenido />
-    </Suspense>
   )
 }

@@ -28,7 +28,7 @@ const FICHEROS = [
   'src/presentation/components/Forms/EntityForms/{{camelCase name}}/{{pascalCase name}}FormRefine.tsx',
   'app/{{pascalCase pluralName}}/page.tsx',
   'app/{{pascalCase pluralName}}/Create/page.tsx',
-  'app/{{pascalCase pluralName}}/Edit/page.tsx',
+  'app/{{pascalCase pluralName}}/Edit/[id]/page.tsx',
 ]
 
 /**
@@ -134,7 +134,7 @@ export default function generadorCrud(plop) {
           "    name: '{{pascalCase pluralName}}',\n" +
           "    list: '/{{pascalCase pluralName}}',\n" +
           "    create: '/{{pascalCase pluralName}}/Create',\n" +
-          "    edit: '/{{pascalCase pluralName}}/Edit',\n" +
+          "    edit: '/{{pascalCase pluralName}}/Edit/:id',\n" +
           "    meta: { label: '{{pascalCase pluralName}}' },\n" +
           '  },\n',
       })

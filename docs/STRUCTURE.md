@@ -49,11 +49,11 @@ Cada cambio tiene un sitio y solo uno:
     Movimientos/                      # una carpeta por entidad
       page.tsx                        # listado
       Create/page.tsx
-      Edit/page.tsx                   # lee ?id=
+      Edit/[id]/page.tsx              # /Movimientos/Edit/<id>
     Categorias/
     CaminoHeroe/                      # el segundo módulo: mapa de mundos
-      Mundo/page.tsx                  # el camino de un mundo (?id=ahorro)
-      Nivel/page.tsx                  # el reproductor de un nivel (?id=ahorro/01-…)
+      [mundo]/page.tsx                # el camino de un mundo (/CaminoHeroe/ahorro)
+      [mundo]/[nivel]/page.tsx        # el reproductor de un nivel (/CaminoHeroe/ahorro/01-…)
     Login/ Registro/                  # pantallas de auth (sin GenericForm)
     RecuperarPassword/ CambiarPassword/ BorrarCuenta/
     auth/confirm/route.ts             # destino de los enlaces del email

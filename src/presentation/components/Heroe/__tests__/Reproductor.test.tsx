@@ -88,7 +88,7 @@ const resultado = (r: Partial<ResultadoNivelDto>): ResultadoNivelDto => ({
 })
 
 const jugar = (nivel: Nivel, alRepetir = vi.fn()) =>
-  renderConMantine(<Reproductor nivel={nivel} rutaCamino={'/CaminoHeroe/Mundo?id=ahorro' as never} alRepetir={alRepetir} />, {
+  renderConMantine(<Reproductor nivel={nivel} rutaCamino={'/CaminoHeroe/ahorro' as never} alRepetir={alRepetir} />, {
     queryClient: nuevoQueryClient(),
   })
 
@@ -131,8 +131,8 @@ describe('interactivo: feedback al momento', () => {
     expect(acciones.enviarNivel).toHaveBeenCalledWith('ahorro/02', [1, true, 285_000])
     expect(await screen.findByRole('heading', { name: '¡Nivel superado!' })).toBeInTheDocument()
     expect(screen.getByText('3 de 3 aciertos · 3 de 3 estrellas')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Siguiente nivel/ })).toHaveAttribute('href', '/CaminoHeroe/Nivel?id=ahorro%2F03')
-    expect(screen.getByRole('link', { name: /Volver al camino/ })).toHaveAttribute('href', '/CaminoHeroe/Mundo?id=ahorro')
+    expect(screen.getByRole('link', { name: /Siguiente nivel/ })).toHaveAttribute('href', '/CaminoHeroe/ahorro/03')
+    expect(screen.getByRole('link', { name: /Volver al camino/ })).toHaveAttribute('href', '/CaminoHeroe/ahorro')
   })
 })
 
