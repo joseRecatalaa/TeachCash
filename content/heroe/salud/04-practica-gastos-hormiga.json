@@ -17,15 +17,6 @@
       "explicacion": "Separar lo que hay que pagar de lo que se elige deja claro de dónde se puede sacar dinero para proteger el ahorro."
     },
     {
-      "id": "calcula-hormiga-anual",
-      "tipo": "calcula",
-      "enunciado": "Pepito se toma un café con algo en el trabajo por 3,50 € durante 20 días al mes. Además paga dos suscripciones olvidadas de 12 € y 18 € al mes. ¿Cuántos euros suma todo en un año de 12 meses iguales?",
-      "unidad": "euros",
-      "solucion": 120000,
-      "tolerancia": 0,
-      "explicacion": "Cafés: 3,50 × 20 = 70 € al mes. Suscripciones: 12 + 18 = 30 €. Juntos, 100 € al mes, y 100 × 12 = **1.200 €** al año."
-    },
-    {
       "id": "reparto-adaptado",
       "tipo": "opcion",
       "enunciado": "Las necesidades de Pepito (alquiler 720 €, comida 300 € y facturas 150 €) suman 1.170 €, el 65 % de sus 1.800 € netos. ¿Qué reparto tiene más sentido?",
@@ -63,15 +54,6 @@
       "opciones": ["ahorro", "deuda", "retención"],
       "correcta": 0,
       "explicacion": "Cada café o suscripción olvidada sale del margen que quedaba a final de mes, que es justo el dinero que podría ir a un colchón."
-    },
-    {
-      "id": "calcula-ahorro-mensual",
-      "tipo": "calcula",
-      "enunciado": "Pepito cobra 1.800 € netos y sigue un reparto 65/20/15: 1.170 € para necesidades y 360 € para deseos. ¿Cuántos euros ahorra cada mes con el 15 % restante?",
-      "unidad": "euros",
-      "solucion": 27000,
-      "tolerancia": 0,
-      "explicacion": "El 15 % de 1.800 € es 1.800 × 0,15 = **270 €**. Comprobación: 1.170 + 360 + 270 = 1.800 €."
     }
   ]
 }

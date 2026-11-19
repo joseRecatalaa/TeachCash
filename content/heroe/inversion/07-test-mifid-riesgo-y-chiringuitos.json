@@ -165,18 +165,6 @@
       "explicacion": "La conveniencia comprueba si **entiendes** el producto. Cuando la entidad te asesora o gestiona tu cartera, además tiene que comprobar que el riesgo encaja con tus ingresos, tu patrimonio y tus objetivos: eso es la idoneidad."
     },
     {
-      "id": "hueco-escala",
-      "tipo": "hueco",
-      "enunciado": "En el Documento de Datos Fundamentales, el indicador de riesgo va del 1 al ___, y el número más alto es el de más riesgo.",
-      "opciones": [
-        "7",
-        "5",
-        "100"
-      ],
-      "correcta": 0,
-      "explicacion": "La escala está estandarizada en la Unión Europea para poder comparar productos antes de contratar: del 1, el riesgo más bajo, al 7, el más alto."
-    },
-    {
       "id": "cripto-fgd",
       "tipo": "verdaderoFalso",
       "enunciado": "Si una plataforma de criptomonedas quiebra o sufre un robo, el Fondo de Garantía de Depósitos devuelve hasta 100.000 € por inversor.",

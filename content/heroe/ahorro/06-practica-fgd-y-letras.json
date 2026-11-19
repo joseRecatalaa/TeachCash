@@ -6,18 +6,9 @@
   "minutos": 4,
   "ejercicios": [
     {
-      "id": "calcula-descubierto",
-      "tipo": "calcula",
-      "enunciado": "Pepito ha ido ahorrando **120.000 €**, a su nombre y repartidos en dos cuentas de la misma entidad. ¿Cuántos euros quedan fuera de la cobertura del Fondo de Garantía de Depósitos?",
-      "unidad": "euros",
-      "solucion": 2000000,
-      "tolerancia": 0,
-      "explicacion": "El límite es de 100.000 € por titular y **entidad**, sumando todas sus cuentas en ella: 120.000 € − 100.000 € = **20.000 €** sin cubrir."
-    },
-    {
       "id": "como-cubrirlo",
       "tipo": "opcion",
-      "enunciado": "¿Qué puede hacer Pepito para que sus 120.000 € queden cubiertos?",
+      "enunciado": "Pepito tiene **120.000 €** a su nombre, repartidos en dos cuentas de la misma entidad. ¿Qué puede hacer para que queden cubiertos?",
       "opciones": [
         "Pasar al menos 20.000 € a otra entidad distinta",
         "Abrir una tercera cuenta en la misma entidad",
@@ -34,15 +25,6 @@
       "explicacion": "La ley cubre **sin límite durante 3 meses** el dinero que viene de vender una vivienda, porque es un saldo alto y pasajero."
     },
     {
-      "id": "cuenta-hermana",
-      "tipo": "calcula",
-      "enunciado": "Pepito y su hermana comparten una cuenta con **180.000 €** y el contrato no dice cómo se reparte. ¿Cuántos euros le corresponden a cada uno para el Fondo de Garantía?",
-      "unidad": "euros",
-      "solucion": 9000000,
-      "tolerancia": 0,
-      "explicacion": "Si el contrato no dice nada, se reparte **a partes iguales**: 180.000 € ÷ 2 = 90.000 €. Cada parte cabe en su límite de 100.000 €."
-    },
-    {
       "id": "empareja-letras",
       "tipo": "emparejar",
       "enunciado": "Empareja cada concepto con lo que significa.",
@@ -53,15 +35,6 @@
         { "concepto": "Subasta", "definicion": "El proceso en el que se fija el precio de las Letras nuevas" }
       ],
       "explicacion": "Con estas cuatro piezas entiendes cualquier anuncio de Letras: qué compras, **cómo ganas**, dónde y a qué precio."
-    },
-    {
-      "id": "calcula-letras",
-      "tipo": "calcula",
-      "enunciado": "Con parte del dinero, Pepito compra **5 Letras a 6 meses** a 990 € cada una (precio ilustrativo). ¿Cuántos euros gana al vencer, antes de impuestos?",
-      "unidad": "euros",
-      "solucion": 5000,
-      "tolerancia": 0,
-      "explicacion": "Paga 5 × 990 € = 4.950 € y cobra 5 × 1.000 € = 5.000 €. La diferencia, **50 €**, es su ganancia."
     },
     {
       "id": "ordena-compra-letra",

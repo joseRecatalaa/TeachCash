@@ -162,7 +162,7 @@
         },
         {
           "tipo": "parrafo",
-          "texto": "¿Cuánto te daría tu colchón en una cuenta remunerada? Lo calculas en la práctica."
+          "texto": "¿Dónde guardarías tu colchón y cómo lo empezarías? Lo practicas a continuación."
         }
       ]
     }
@@ -198,18 +198,6 @@
       "enunciado": "Es buena idea tener el fondo de emergencia invertido en bolsa para que rinda más.",
       "correcta": false,
       "explicacion": "La bolsa puede caer justo cuando necesitas el dinero, y tendrías que vender con pérdidas. El fondo de emergencia tiene que estar **disponible y estable**."
-    },
-    {
-      "id": "fgd",
-      "tipo": "opcion",
-      "enunciado": "¿Hasta cuánto protege el Fondo de Garantía de Depósitos tu dinero en un banco español?",
-      "opciones": [
-        "20.000 €",
-        "100.000 € por titular y entidad",
-        "Todo, sin límite"
-      ],
-      "correcta": 1,
-      "explicacion": "El Fondo de Garantía de Depósitos cubre hasta **100.000 € por titular y por entidad**. Si tienes más, repartirlo entre entidades distintas mantiene todo protegido."
     }
   ]
 }

@@ -109,7 +109,7 @@
         },
         {
           "tipo": "parrafo",
-          "texto": "¿Sabrías elegir entre dos ofertas y decir cuánto te llega? Pruébalo en la práctica."
+          "texto": "¿Sabrías elegir entre dos ofertas y leer su contrato? Pruébalo en la práctica."
         }
       ]
     }
@@ -141,15 +141,6 @@
       "opciones": ["19 %", "21 %", "10 %"],
       "correcta": 0,
       "explicacion": "La retención sobre los intereses es del **19 %** (Reglamento del IRPF, art. 90). Es un adelanto: el impuesto final se ajusta en la declaración de la renta."
-    },
-    {
-      "id": "calcula-neto",
-      "tipo": "calcula",
-      "enunciado": "Un depósito de **8.000 €** a 1 año al **2 % TIN**, con los intereses pagados al vencer. Con la retención del 19 %, ¿cuántos euros de intereses te llegan?",
-      "unidad": "euros",
-      "solucion": 12960,
-      "tolerancia": 0,
-      "explicacion": "Brutos: 8.000 € × 2 % = 160 €. Retención: 160 € × 19 % = 30,40 €. Netos: 160 € − 30,40 € = **129,60 €**."
     }
   ]
 }

@@ -171,18 +171,6 @@
       "explicacion": "Los intereses de cada mes se calculan sobre la deuda que queda. Al principio debes casi todo, así que esa parte de la cuota es la mayor; luego baja mes a mes."
     },
     {
-      "id": "referencia-35",
-      "tipo": "hueco",
-      "enunciado": "Una referencia habitual es que todas tus cuotas de deuda no pasen del ___ de tus ingresos netos.",
-      "opciones": [
-        "35 %",
-        "60 %",
-        "80 %"
-      ],
-      "correcta": 0,
-      "explicacion": "Es una regla práctica, no una ley: por encima de esa franja, las cuotas empiezan a comerse lo que necesitas para vivir y para ahorrar."
-    },
-    {
       "id": "conceptos-prestamo",
       "tipo": "emparejar",
       "enunciado": "Empareja cada concepto con su definición.",

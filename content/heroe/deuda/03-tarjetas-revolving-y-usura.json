@@ -177,25 +177,6 @@
       ],
       "correcta": 0,
       "explicacion": "Con el pago a fin de mes la tarjeta solo te adelanta el dinero unas semanas. Los intereses aparecen cuando aplazas: revolving o pago aplazado."
-    },
-    {
-      "id": "directiva-200",
-      "tipo": "opcion",
-      "enunciado": "¿Qué hace la Directiva (UE) 2023/2225 con los créditos de menos de 200 € y el «compra ahora, paga después»?",
-      "opciones": [
-        "Los deja fuera de toda norma",
-        "Los mete dentro de las normas de protección del crédito al consumo",
-        "Prohíbe pagar con tarjeta por internet"
-      ],
-      "correcta": 1,
-      "explicacion": "La directiva anterior dejaba fuera los créditos pequeños, que es justo donde estaban muchos minicréditos. La nueva los incluye, igual que los pagos aplazados con un tercero que financia."
-    },
-    {
-      "id": "anteproyecto",
-      "tipo": "verdaderoFalso",
-      "enunciado": "Un anteproyecto de ley obliga a los bancos desde el día en que lo aprueba el Consejo de Ministros.",
-      "correcta": false,
-      "explicacion": "Un anteproyecto es un borrador del Gobierno. Solo obliga cuando las Cortes aprueban la ley, se publica en el BOE y entra en vigor."
     }
   ]
 }

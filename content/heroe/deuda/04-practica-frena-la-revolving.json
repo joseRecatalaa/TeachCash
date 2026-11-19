@@ -2,40 +2,13 @@
   "id": "deuda/04-practica-frena-la-revolving",
   "tipo": "interactivo",
   "titulo": "Pepito frena su tarjeta revolving",
-  "descripcion": "Pepito revisa sus recibos en Sevilla: cuánto baja de verdad su deuda, si su tarjeta puede ser usuraria y cómo cortar la bola de intereses.",
+  "descripcion": "Pepito revisa sus recibos en Sevilla: por qué la cuota mínima casi no baja la deuda, si su tarjeta puede ser usuraria y cómo cortar la bola de intereses.",
   "minutos": 4,
   "ejercicios": [
     {
-      "id": "cuanto-baja",
-      "tipo": "calcula",
-      "enunciado": "Pepito debe 1.000 € en su revolving y paga 35 € al mes. Este mes le cobran un **2 %** de interés sobre lo que debe, sin otros gastos. ¿Cuántos euros de su cuota bajan la deuda?",
-      "unidad": "euros",
-      "solucion": 1500,
-      "tolerancia": 0,
-      "explicacion": "Intereses: 1.000 € × 2 % = 20 €. Se cobran primero. Lo que queda, 35 € − 20 € = **15 €**, es lo único que reduce la deuda, que pasa a 985 €."
-    },
-    {
-      "id": "cuota-de-20",
-      "tipo": "calcula",
-      "enunciado": "¿Y si su cuota fuera de 20 € con esa misma deuda de 1.000 € y ese 2 % al mes? ¿Cuántos euros bajaría la deuda ese mes?",
-      "unidad": "euros",
-      "solucion": 0,
-      "tolerancia": 0,
-      "explicacion": "Los intereses son 20 € y la cuota, 20 €: se va todo en intereses y la deuda se queda en **1.000 €**. Pagaría cada mes sin avanzar nada."
-    },
-    {
-      "id": "diferencia-puntos",
-      "tipo": "calcula",
-      "enunciado": "El contrato de Pepito dice **26,8 % TAE**. El tipo medio de las tarjetas revolving del Banco de España, el mes que firmó, era del 19,5 %. ¿Cuántos puntos porcentuales hay de diferencia?",
-      "unidad": "porcentaje",
-      "solucion": 730,
-      "tolerancia": 0,
-      "explicacion": "26,8 − 19,5 = **7,3 puntos**. Se restan los dos porcentajes: los puntos son la distancia entre ellos, no un porcentaje de uno sobre otro."
-    },
-    {
       "id": "es-usurario",
       "tipo": "opcion",
-      "enunciado": "Con esa diferencia de 7,3 puntos, ¿qué dice el criterio del Supremo para las revolving (Sentencia 258/2023)?",
+      "enunciado": "La revolving de Pepito está al **26,8 % TAE**, y el tipo medio de esas tarjetas el mes que firmó era del 19,5 %: **7,3 puntos** más. ¿Qué dice el criterio del Supremo para las revolving (Sentencia 258/2023)?",
       "opciones": [
         "Que no es usurario: tendría que doblar el tipo medio",
         "Que sería usurario, porque supera en más de 6 puntos el tipo medio",

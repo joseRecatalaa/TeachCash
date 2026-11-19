@@ -28,7 +28,7 @@ import { enviarNivel, fetchMapa, fetchMundo, fetchNivel } from '../heroe.actions
 const base = usarBaseDeTest()
 
 const LECTURA = 'prueba/01-lectura'
-const BIEN = [1, true, 0, 0, 1]
+const BIEN = [1, true, 0]
 
 describe('sesión', () => {
   test.each([

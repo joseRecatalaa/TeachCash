@@ -188,18 +188,6 @@
       "explicacion": "La ley trata lo cobrado de un plan de pensiones como **rendimiento del trabajo**: se suma al sueldo o la pensión en la base general, con su escala progresiva, y no en la del ahorro."
     },
     {
-      "id": "hueco-limite-plan",
-      "tipo": "hueco",
-      "enunciado": "En 2026, el tope general de lo aportado a planes de pensiones que reduce el IRPF es de ___ € al año, siempre que no supere el 30 % de tus rendimientos del trabajo y de actividades.",
-      "opciones": [
-        "1.500",
-        "8.000",
-        "24.250"
-      ],
-      "correcta": 0,
-      "explicacion": "El tope general es 1.500 € al año. Solo sube con un plan de empleo: hasta 8.500 € más con contribuciones de la empresa, o 4.250 € más con un plan simplificado de autónomos."
-    },
-    {
       "id": "anos-para-compensar",
       "tipo": "opcion",
       "enunciado": "Si después de compensar en el año te sigue quedando una pérdida por ventas, ¿durante cuántos años siguientes puedes usarla?",

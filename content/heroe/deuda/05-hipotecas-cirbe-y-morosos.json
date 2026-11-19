@@ -155,18 +155,6 @@
       "explicacion": "El artículo 14.1.e) de la Ley 5/2019 pone la tasación a cargo de quien pide la hipoteca; notaría, registro y gestoría son del banco. Las copias las paga quien las pide."
     },
     {
-      "id": "dias-desistir",
-      "tipo": "hueco",
-      "enunciado": "En un préstamo al consumo tienes ___ días naturales desde la firma para desistir sin dar explicaciones.",
-      "opciones": [
-        "14",
-        "7",
-        "60"
-      ],
-      "correcta": 0,
-      "explicacion": "Lo fija el artículo 28 de la Ley 16/2011. Se cuentan desde la firma, o desde que recibes el contrato y su información si es más tarde."
-    },
-    {
       "id": "factura-35",
       "tipo": "verdaderoFalso",
       "enunciado": "Una compañía puede meterte en un fichero de morosos por una factura de 35 € que no has pagado.",
@@ -184,18 +172,6 @@
       ],
       "correcta": 1,
       "explicacion": "La CIRBE recoge riesgos, no impagos. Sirve para que las entidades vean cuánto debes y avalas antes de prestarte más."
-    },
-    {
-      "id": "umbral-cirbe",
-      "tipo": "hueco",
-      "enunciado": "En tu informe de la CIRBE aparecen las entidades con las que acumulas ___ euros o más de riesgo.",
-      "opciones": [
-        "1.000",
-        "50",
-        "100.000"
-      ],
-      "correcta": 0,
-      "explicacion": "La Orden ETD/699/2020 bajó ese umbral de 9.000 € a 1.000 € desde 2021, así que hoy casi cualquier préstamo aparece."
     }
   ]
 }

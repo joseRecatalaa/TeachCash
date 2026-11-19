@@ -51,12 +51,10 @@ test('un invitado supera la primera lección de Ahorro y se le abre la siguiente
   await page.getByRole('radio', { name: '6', exact: true }).check()
   await page.getByRole('button', { name: 'Siguiente' }).click()
   await page.getByRole('radio', { name: 'Falso' }).check()
-  await page.getByRole('button', { name: 'Siguiente' }).click()
-  await page.getByRole('radio', { name: '100.000 € por titular y entidad' }).check()
   await page.getByRole('button', { name: 'Terminar' }).click()
 
   await expect(page.getByRole('heading', { name: '¡Nivel superado!' })).toBeVisible({ timeout: 30_000 })
-  await expect(page.getByText('4 de 4 aciertos · 3 de 3 estrellas')).toBeVisible()
+  await expect(page.getByText('3 de 3 aciertos · 3 de 3 estrellas')).toBeVisible()
 
   // De vuelta en el camino, sin recargar: superado con sus estrellas y el siguiente abierto.
   await page.getByRole('link', { name: /Volver al camino/ }).click()

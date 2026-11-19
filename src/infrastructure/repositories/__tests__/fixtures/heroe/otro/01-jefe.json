@@ -47,20 +47,6 @@
       "enunciado": "¿Otro 6?",
       "explicacion": "Porque sí: es la explicación de prueba.",
       "correcta": true
-    },
-    {
-      "id": "j7",
-      "tipo": "verdaderoFalso",
-      "enunciado": "¿Otro 7?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "correcta": true
-    },
-    {
-      "id": "j8",
-      "tipo": "verdaderoFalso",
-      "enunciado": "¿Otro 8?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "correcta": true
     }
   ]
 }

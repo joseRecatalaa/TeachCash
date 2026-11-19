@@ -2,7 +2,7 @@
   "id": "deuda/08-practica-plan-de-rescate",
   "tipo": "interactivo",
   "titulo": "El plan de rescate de Pepito",
-  "descripcion": "Pepito elige entre bola de nieve y avalancha, dice que no a una reunificación peligrosa, calcula su exoneración y reclama al banco.",
+  "descripcion": "Pepito elige entre bola de nieve y avalancha, dice que no a una reunificación peligrosa, busca la vía de la Segunda Oportunidad y reclama al banco.",
   "minutos": 4,
   "ejercicios": [
     {
@@ -19,38 +19,11 @@
       "explicacion": "La avalancha ordena de mayor a menor TAE. Los euros que cuestan un 22 % al año son los primeros que conviene quitarse de encima."
     },
     {
-      "id": "bola-primer-mes",
-      "tipo": "calcula",
-      "enunciado": "Con bola de nieve ataca la de 400 €. Los mínimos son 50 € (la de 400 €), 70 € y 120 €, y tiene **300 € al mes** para deudas. ¿Cuántos euros van el primer mes a la de 400 €?",
-      "unidad": "euros",
-      "solucion": 11000,
-      "tolerancia": 0,
-      "explicacion": "Mínimos: 50 + 70 + 120 = 240 €. Sobran 300 − 240 = 60 €. A la pequeña van su mínimo y el extra: 50 + 60 = **110 €**."
-    },
-    {
-      "id": "avalancha-primer-mes",
-      "tipo": "calcula",
-      "enunciado": "Con los mismos 300 € y los mismos mínimos, si aplicara la avalancha, ¿cuántos euros irían el primer mes a la deuda de 1.200 € (mínimo de 70 €)?",
-      "unidad": "euros",
-      "solucion": 13000,
-      "tolerancia": 0,
-      "explicacion": "El extra sigue siendo 60 €, pero ahora va a la de TAE más alta: 70 + 60 = **130 €**."
-    },
-    {
       "id": "reunificar-casa",
       "tipo": "verdaderoFalso",
       "enunciado": "A Pepito le ofrecen meter sus 28.000 € de préstamos y tarjetas en una hipoteca a 20 años sobre su piso, ya pagado. Aunque la cuota baje, pone en riesgo su vivienda si vuelve a no poder pagar.",
       "correcta": true,
       "explicacion": "Las tarjetas y los préstamos personales no tienen tu casa como garantía; una hipoteca, sí. Además, 20 años de plazo suelen sumar más intereses que los que tenía."
-    },
-    {
-      "id": "exoneracion-12000",
-      "tipo": "calcula",
-      "enunciado": "Pepito es insolvente de buena fe y pide la exoneración por primera vez. Debe **12.000 €** a Hacienda. Se cancelan enteros los primeros 5.000 € y la mitad del resto, con un tope de 10.000 €. ¿Cuántos euros se le cancelan?",
-      "unidad": "euros",
-      "solucion": 850000,
-      "tolerancia": 0,
-      "explicacion": "Primeros 5.000 €, enteros. Del resto, 7.000 €, la mitad: 3.500 €. Total: 5.000 + 3.500 = **8.500 €**, por debajo del tope."
     },
     {
       "id": "conservar-casa",

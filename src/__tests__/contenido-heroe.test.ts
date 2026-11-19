@@ -10,6 +10,7 @@
 
 import { beforeAll, describe, expect, test } from 'vitest'
 import { cargarContenido, type Contenido } from '@/src/infrastructure/heroe/contenido'
+import type { Nivel, Pregunta } from '@/src/types/heroe.types'
 
 let contenido: Contenido
 
@@ -18,6 +19,13 @@ beforeAll(async () => {
 })
 
 const niveles = () => [...contenido.niveles.values()]
+
+/** Las preguntas de un nivel, sea del tipo que sea. (`evaluables` es del servidor y no se importa aquí.) */
+function preguntasDe(n: Nivel): Pregunta[] {
+  if (n.tipo === 'lectura') return n.minitest
+  if (n.tipo === 'interactivo') return n.ejercicios
+  return n.preguntas
+}
 
 test('todo el contenido carga y pasa el formato', () => {
   expect(contenido.mundos.length).toBeGreaterThan(0)
@@ -39,6 +47,18 @@ describe('niveles', () => {
   test('toda lectura tiene minitest y ningún interactivo lo tiene', () => {
     const mal = niveles().filter((n) => 'minitest' in n !== (n.tipo === 'lectura'))
     expect(mal.map((n) => n.id)).toEqual([])
+  })
+
+  // `calcula` sigue existiendo en el código, pero el contenido no la usa: una
+  // cuenta con decimales obliga a salir de la app a por la calculadora, y lo
+  // que se quiere comprobar es que se ha entendido la idea, no la aritmética.
+  test('ninguna pregunta pide hacer cuentas (`calcula`)', () => {
+    const conCuentas = niveles().flatMap((n) =>
+      preguntasDe(n)
+        .filter((p) => p.tipo === 'calcula')
+        .map((p) => `${n.id}#${p.id}`),
+    )
+    expect(conCuentas).toEqual([])
   })
 
   test('ningún título de nivel se repite', () => {

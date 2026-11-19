@@ -2,7 +2,7 @@
   "id": "salud/02-practica-primer-presupuesto",
   "tipo": "interactivo",
   "titulo": "El primer presupuesto mensual de Pepito",
-  "descripcion": "Acompaña a Pepito a repasar su extracto, prorratear un recibo anual y calcular cuánto le queda a final de mes.",
+  "descripcion": "Acompaña a Pepito a repasar su extracto, prorratear un recibo anual y decidir qué hacer con lo que le queda a final de mes.",
   "minutos": 4,
   "ejercicios": [
     {
@@ -50,15 +50,6 @@
         { "concepto": "Comprar medicinas por una gripe", "definicion": "Gasto variable pero necesario" }
       ],
       "explicacion": "Saber qué hace cada movimiento te deja proteger lo esencial y quitar lo que no aporta, como un gimnasio que solo existe en el extracto."
-    },
-    {
-      "id": "calcula-lo-que-queda",
-      "tipo": "calcula",
-      "enunciado": "Pepito tiene 1.350 € netos. Gasta 400 € de alquiler, 220 € de comida, 35 € de teléfono e internet, 25 € de abono, 60 € de luz y agua y 110 € en salidas. ¿Cuántos euros le quedan a final de mes?",
-      "unidad": "euros",
-      "solucion": 50000,
-      "tolerancia": 0,
-      "explicacion": "Los gastos suman 400 + 220 + 35 + 25 + 60 + 110 = 850 €. Le quedan 1.350 − 850 = **500 €**."
     },
     {
       "id": "averia-portatil",
