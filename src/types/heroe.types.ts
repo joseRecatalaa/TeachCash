@@ -266,6 +266,21 @@ export const MundoSchema = z.strictObject({
   titulo: titulo(60),
   descripcion: texto(240),
   decorado: z.enum(DECORADOS),
+  /**
+   * Cómo sale el mundo en Google: el título y la descripción de su página
+   * pública (`/aprende/<mundo>`). Se escriben con las palabras que la gente
+   * BUSCA ("aprender a ahorrar"), no con el nombre del mundo en el juego. Sin
+   * ellos, la página usa `titulo` y `descripcion`.
+   *
+   * Topes: el título va seguido de " | TeachCash" y Google corta hacia los 60
+   * caracteres; la descripción, hacia los 160.
+   */
+  seo: z
+    .strictObject({
+      titulo: titulo(48),
+      descripcion: texto(160).min(100),
+    })
+    .optional(),
   /** Posición en el mapa. Los mundos están libres: no es un orden de desbloqueo. */
   orden: z.number().int().min(1),
   /**
@@ -308,6 +323,32 @@ export interface MapaDto {
   mundos: MundoResumenDto[]
   /** El mundo del último nivel jugado, donde espera el héroe. `null` si no ha jugado. */
   ultimoMundo: string | null
+}
+
+/* ── Lo público: los cursos tal como los ve quien no ha entrado ──────────
+ *
+ * Sin progreso y sin nada de dentro del nivel: ni páginas, ni preguntas, ni
+ * soluciones. Solo lo que ya enseña la ficha de un nivel en el camino.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+export interface NivelPublicoDto {
+  id: string
+  titulo: string
+  descripcion: string
+  tipo: TipoNivel
+  minutos: number
+}
+
+export interface MundoPublicoDto {
+  id: string
+  titulo: string
+  descripcion: string
+  decorado: Decorado
+  /** El de Google: `seo` del mundo, o su título y descripción si no lo tiene. */
+  seo: { titulo: string; descripcion: string }
+  niveles: NivelPublicoDto[]
+  /** La suma de los minutos de sus niveles. */
+  minutos: number
 }
 
 export interface NivelEnCaminoDto {

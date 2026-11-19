@@ -1,0 +1,62 @@
+/* Los colores son los del mapa (`MapaMundos.module.css`): variables `--px-*`
+   que declara `.paletaCamino` por `data-decorado`. */
+
+.planeta {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Flota a saltos de un píxel, como en el mapa: con una curva suave, el píxel
+   saldría a medio camino y se emborronaría. */
+.flota {
+  animation: planeta-flota 2.4s steps(1, end) infinite;
+}
+
+@keyframes planeta-flota {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -1px;
+  }
+}
+
+.contorno {
+  fill: var(--px-contorno);
+}
+
+.superficie {
+  fill: var(--px-planeta);
+}
+
+.detalle {
+  fill: var(--px-planeta-mancha);
+}
+
+.sombra {
+  fill: var(--px-planeta-sombra);
+}
+
+.brillo {
+  fill: var(--px-planeta-luz);
+}
+
+.chispa {
+  fill: var(--px-blanco);
+}
+
+.anilloDetras {
+  fill: var(--px-planeta-sombra);
+}
+
+.anilloDelante {
+  fill: var(--px-planeta-luz);
+}
+
+.atmosfera {
+  fill: var(--px-planeta-luz);
+  opacity: 0.6;
+}

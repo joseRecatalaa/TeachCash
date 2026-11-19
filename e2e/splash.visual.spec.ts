@@ -19,7 +19,9 @@ test('pantalla de carga con el héroe @visual', async ({ page }) => {
   await page.clock.install({ time: inicio })
   await page.clock.pauseAt(new Date(inicio.getTime() + 1000))
 
-  await page.goto('/')
+  // `/Patrimonio` y no `/`: sin sesión, `/` es la portada pública, que no lleva
+  // pantalla de carga.
+  await page.goto('/Patrimonio')
   const barra = page.getByRole('progressbar', { name: 'Cargando la aplicación' })
   await expect(barra).toBeVisible()
   await page.evaluate(() => document.fonts.ready)

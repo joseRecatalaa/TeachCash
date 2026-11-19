@@ -1,0 +1,245 @@
+/*
+ * El marco de las páginas públicas. La cabecera es la misma idea que la
+ * Navbar de la aplicación (línea gruesa de cuaderno debajo), pero de noche:
+ * las páginas públicas van en el espacio del juego, y `.noche`
+ * (`escenas.module.css`, puesta en el mismo elemento) redefine los tokens
+ * `--sd-*` que se leen aquí.
+ */
+
+.marco {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.saltar {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 300;
+  padding: 0.5rem 0.9rem;
+  background: var(--sd-surface);
+  color: var(--sd-ink);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-sm);
+}
+
+.saltar:focus-visible {
+  top: 0.75rem;
+}
+
+/* ── Cabecera ────────────────────────────────────────────────────────────── */
+
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--sd-accent-wash-faint);
+  border-bottom: var(--sd-border-bold);
+}
+
+@media (min-width: 48em) {
+  .cabecera {
+    padding-inline: 2rem;
+  }
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--sd-ink);
+  font-family: var(--sd-font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+/* La moneda a 6 px por píxel de juego: 5x5 de sprite, entero, nítido. */
+.moneda {
+  width: 30px;
+  height: 30px;
+  transition: rotate var(--sd-dur) var(--sd-ease-pop);
+}
+
+.marca:hover .moneda {
+  rotate: -12deg;
+}
+
+.nav {
+  display: none;
+  gap: 1.4rem;
+  font-family: var(--sd-font-display);
+  font-weight: 500;
+}
+
+.nav a {
+  color: var(--sd-ink);
+  text-decoration: none;
+  padding-block: 0.25rem;
+  background-image: linear-gradient(var(--sd-accent-wash), var(--sd-accent-wash));
+  background-repeat: no-repeat;
+  background-position: 0 85%;
+  background-size: 0% 0.4em;
+  transition: background-size var(--sd-dur) var(--sd-ease-out);
+}
+
+.nav a:hover,
+.nav a:focus-visible {
+  background-size: 100% 0.4em;
+}
+
+@media (min-width: 62em) {
+  .nav {
+    display: flex;
+  }
+}
+
+.acciones {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.entrar {
+  color: var(--sd-ink);
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.entrar:hover {
+  color: var(--sd-accent-soft);
+}
+
+.contenido {
+  flex: 1;
+}
+
+/* ── Pie ─────────────────────────────────────────────────────────────────── *
+ *
+ * La superficie de un planeta: la página baja por el espacio y aterriza aquí.
+ * Arriba, un horizonte de roca a píxel (un patrón de 16x8 a escala 3, que se
+ * repite a lo ancho sin estirarse) con el héroe caminando de lado a lado.
+ * Debajo, sobre la roca, todo centrado: la marca, los enlaces de jugar, las
+ * fuentes oficiales y el aviso. Los colores son de la noche (`--px-luna*`,
+ * en `.noche` de `escenas.module.css`).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.pie {
+  margin-top: 2rem;
+}
+
+.horizonte {
+  position: relative;
+  height: calc(92px + 24px - 6px);
+  overflow: hidden;
+}
+
+.superficie {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+}
+
+.roca {
+  fill: var(--px-luna);
+}
+
+.rocaLuz {
+  fill: var(--px-luna-luz);
+}
+
+.rocaSombra {
+  fill: var(--px-luna-sombra);
+}
+
+/* El héroe, con los pies sobre la roca, cruzando la pantalla. Con el
+   movimiento reducido se queda de pie a un lado. */
+.caminante {
+  position: absolute;
+  left: 0;
+  bottom: 18px;
+  translate: 12vw 0;
+  animation: pie-camina 26s linear infinite;
+}
+
+.caminante svg {
+  display: block;
+  overflow: visible;
+}
+
+@keyframes pie-camina {
+  from {
+    translate: -80px 0;
+  }
+  to {
+    translate: calc(100vw + 20px) 0;
+  }
+}
+
+.pieCuerpo {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem 1.5rem;
+  text-align: center;
+  background: var(--px-luna);
+}
+
+.pieEnlaces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--sd-font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Separados por un punto dorado, no por subrayados. */
+.pieEnlaces li + li::before {
+  content: '·';
+  margin-inline: 0.75rem;
+  color: var(--px-noche-oro);
+}
+
+.pieEnlaces a {
+  color: var(--px-noche-tinta);
+  text-decoration: none;
+}
+
+.pieEnlaces a:hover {
+  color: var(--px-noche-oro);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.pieEnlaces a:focus-visible {
+  outline: 3px solid var(--px-noche-oro);
+  outline-offset: 2px;
+}
+
+.fuentes,
+.aviso {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--px-noche-suave);
+}
+
+.aviso {
+  opacity: 0.75;
+}

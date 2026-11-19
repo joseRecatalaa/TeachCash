@@ -20,9 +20,18 @@ import styles from './layout.module.css'
 // vuelve al gris de fábrica.
 import './globals.css'
 import { CABECERA_NONCE } from '@/lib/csp'
-import { getCuenta } from '@/src/application/actions/auth.actions'
+import {
+  CABECERA_RUTA,
+  DESCRIPCION_SITIO,
+  NOMBRE_SITIO,
+  TITULO_SITIO,
+  URL_SITIO,
+  esPaginaPublica,
+} from '@/lib/seo'
+import { cuentaDeLaPeticion } from '@/src/application/cuentaDeLaPeticion'
 import { Providers } from '@/src/application/providers/providers'
 import { Navbar } from '@/src/presentation/components/Navbar'
+import { MarcoPublico } from '@/src/presentation/components/Publico/MarcoPublico'
 import { SideMenu } from '@/src/presentation/components/SideMenu/SideMenu'
 import { SplashScreen } from '@/src/presentation/components/Splash/SplashScreen'
 
@@ -56,10 +65,27 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 const pixel = Press_Start_2P({ variable: '--font-pixel', subsets: ['latin'], weight: '400' })
 
 export const metadata: Metadata = {
-  title: 'TeachCash',
-  description: 'Gestor de finanzas personales',
-  // Una aplicación de finanzas personales no tiene nada que indexar, y un
-  // rastreador que ejecuta JavaScript crearía un invitado en cada visita.
+  // Las direcciones relativas de la metadata (canónicas, Open Graph) se
+  // resuelven contra la canónica, con `www`, y no contra el host de la petición.
+  metadataBase: new URL(URL_SITIO),
+  applicationName: NOMBRE_SITIO,
+  // En la pestaña, solo la marca (ver `app/page.tsx`). El título largo se
+  // queda para cuando se comparte (Open Graph, Twitter) y para el manifiesto.
+  title: { default: NOMBRE_SITIO, template: `%s | ${NOMBRE_SITIO}` },
+  description: DESCRIPCION_SITIO,
+  openGraph: {
+    type: 'website',
+    locale: 'es_ES',
+    siteName: NOMBRE_SITIO,
+    title: TITULO_SITIO,
+    description: DESCRIPCION_SITIO,
+    url: '/',
+  },
+  twitter: { card: 'summary_large_image', title: TITULO_SITIO, description: DESCRIPCION_SITIO },
+  // Por defecto NADA se indexa: el resto de rutas es la aplicación, que sin
+  // sesión no enseña nada y con ella enseña los datos de una persona. Las
+  // páginas públicas (la portada sin sesión y `/aprende`) lo levantan en su
+  // propia metadata. Ver `lib/seo.ts`.
   robots: { index: false, follow: false },
 }
 
@@ -77,11 +103,17 @@ export const dynamic = 'force-dynamic'
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
   // Quién es, resuelto en el servidor antes de pintar: así la Navbar sale ya
   // con el círculo o con "Iniciar sesión", sin un parpadeo de carga.
-  const cuenta = await getCuenta()
-  const cuentaInicial = cuenta.ok ? cuenta.data : { tipo: 'ninguna' as const }
+  const cuentaInicial = await cuentaDeLaPeticion()
+  const cabeceras = await headers()
   // El nonce de esta petición (lo pone `proxy.ts`). Los dos scripts inline de
   // abajo lo necesitan: sin él la CSP los bloquea y vuelven los fogonazos.
-  const nonce = (await headers()).get(CABECERA_NONCE) ?? undefined
+  const nonce = cabeceras.get(CABECERA_NONCE) ?? undefined
+  // Página pública (la portada sin sesión, los cursos): HTML del servidor, sin
+  // aplicación y sin crear invitado. La ruta la pone `proxy.ts`. Esto se decide
+  // al CARGAR: una navegación con `<Link>` no vuelve a pasar por el layout, y
+  // por eso los enlaces que cruzan entre lo público y la aplicación son `<a>`.
+  const conSesion = cuentaInicial.tipo !== 'ninguna'
+  const publica = esPaginaPublica(cabeceras.get(CABECERA_RUTA) ?? '', conSesion)
 
   return (
     // `mantineHtmlProps` añade `suppressHydrationWarning`: el script de tema
@@ -117,19 +149,27 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body>
-        {/* Va FUERA de `Providers` y antes que nada: no necesita Refine ni el
-            tema de Mantine —se pinta con los tokens del sistema— y así puede
-            aparecer en el primer fotograma, mientras la aplicación hidrata por
-            detrás. Se desmonta sola al terminar su animación. */}
-        <SplashScreen />
-        <Providers cuentaInicial={cuentaInicial}>
-          <Navbar />
-          {/* DESPUÉS de la Navbar, no antes: los dos van a z-index 200 y a
-              igualdad gana el último del DOM. Así el panel tapa la cabecera. */}
-          <SideMenu />
-          {/* El hueco a la izquierda para la pestaña del menú. */}
-          <div className={styles.contenido}>{children}</div>
-        </Providers>
+        {publica ? (
+          <MarcoPublico conSesion={conSesion}>
+            {children}
+          </MarcoPublico>
+        ) : (
+          <>
+            {/* Va FUERA de `Providers` y antes que nada: no necesita Refine ni el
+                tema de Mantine —se pinta con los tokens del sistema— y así puede
+                aparecer en el primer fotograma, mientras la aplicación hidrata por
+                detrás. Se desmonta sola al terminar su animación. */}
+            <SplashScreen />
+            <Providers cuentaInicial={cuentaInicial}>
+              <Navbar />
+              {/* DESPUÉS de la Navbar, no antes: los dos van a z-index 200 y a
+                  igualdad gana el último del DOM. Así el panel tapa la cabecera. */}
+              <SideMenu />
+              {/* El hueco a la izquierda para la pestaña del menú. */}
+              <div className={styles.contenido}>{children}</div>
+            </Providers>
+          </>
+        )}
       </body>
     </html>
   )

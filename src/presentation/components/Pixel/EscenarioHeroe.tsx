@@ -58,10 +58,13 @@ const DESTELLOS = [
 export function EscenarioHeroe({
   equipo = [],
   senalado = null,
+  estreno = null,
   escala = 4,
 }: {
   equipo?: readonly string[]
   senalado?: Hueco | null
+  /** Lo que se acaba de poner: aparece con el gesto y los destellos de la tienda. */
+  estreno?: string | null
   /** Píxeles de pantalla por píxel de juego. Un entero. */
   escala?: number
 }) {
@@ -90,7 +93,7 @@ export function EscenarioHeroe({
           </g>
         ))}
       </g>
-      <HeroeGrande equipo={equipo} senalado={senalado} />
+      <HeroeGrande equipo={equipo} senalado={senalado} estreno={estreno} />
       <g className={styles.paleta}>
         {DESTELLOS.map(([x, y]) => (
           <g key={`${x},${y}`} className={styles.titila}>
