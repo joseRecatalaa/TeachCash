@@ -1,7 +1,7 @@
 /**
  * Pasar de un nivel al siguiente con "Siguiente nivel", sin recargar.
  *
- * Es la misma página (`/CaminoHeroe/Nivel`) con otro `?id=`. El bug: la
+ * Es la misma página (`/CaminoHeroe/<mundo>/<nivel>`) con otro nivel. El bug: la
  * lectura siguiente se abría directamente en su minitest, y al terminarlo el
  * servidor rechazaba las respuestas. Es lo que pasa si el reproductor nace con
  * el nivel ANTERIOR (su fase de preguntas y una respuesta por cada ejercicio
@@ -14,7 +14,7 @@ import { startTransition } from 'react'
 import { ocultar } from '@/lib/ocultar'
 import { nuevoQueryClient, renderConMantine } from '@/test/render'
 import type { Nivel, NivelDto, ResultadoNivelDto } from '@/src/types/heroe.types'
-import NivelHeroePage from '@/app/CaminoHeroe/Nivel/page'
+import NivelHeroePage from '@/app/CaminoHeroe/[mundo]/[nivel]/page'
 
 const acciones = vi.hoisted(() => ({
   fetchMapa: vi.fn(),
@@ -25,11 +25,16 @@ const acciones = vi.hoisted(() => ({
 }))
 vi.mock('@/src/application/actions/heroe.actions', () => acciones)
 
-const url = vi.hoisted(() => ({ params: new URLSearchParams() }))
+/** Los segmentos de la ruta: `ahorro/02` es `{ mundo: 'ahorro', nivel: '02' }`. */
+const url = vi.hoisted(() => ({ params: { mundo: '', nivel: '' } }))
+const segmentos = (id: string) => {
+  const [mundo, nivel] = id.split('/')
+  return { mundo, nivel }
+}
 vi.mock('next/navigation', () => ({
-  useSearchParams: () => url.params,
+  useParams: () => url.params,
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  usePathname: () => '/CaminoHeroe/Nivel',
+  usePathname: () => `/CaminoHeroe/${url.params.mundo}/${url.params.nivel}`,
 }))
 
 /**
@@ -103,7 +108,7 @@ const RESULTADO: ResultadoNivelDto = {
 /** Juega el interactivo entero, todo bien, hasta el resultado. */
 async function jugarInteractivo() {
   acciones.enviarNivel.mockResolvedValue({ ok: true, data: RESULTADO })
-  url.params = new URLSearchParams(`id=${INTERACTIVO.id}`)
+  url.params = segmentos(INTERACTIVO.id)
   const pantalla = renderConMantine(<NivelHeroePage />, { queryClient: nuevoQueryClient() })
   for (let i = 0; i < 3; i++) {
     await pantalla.usuario.click(await screen.findByRole('radio', { name: 'Verdadero' }))
@@ -112,16 +117,16 @@ async function jugarInteractivo() {
   }
   expect(await screen.findByRole('link', { name: /Siguiente nivel/ })).toHaveAttribute(
     'href',
-    `/CaminoHeroe/Nivel?id=${encodeURIComponent(LECTURA.id)}`,
+    `/CaminoHeroe/${LECTURA.id}`,
   )
   return pantalla
 }
 
-/** Lo que hace el `<Link>` de "Siguiente nivel": la misma página con otro `?id=`, en una transición. */
+/** Lo que hace el `<Link>` de "Siguiente nivel": la misma página con otro nivel, en una transición. */
 async function irA(id: string, rerender: (ui: React.ReactElement) => void) {
   await act(async () => {
     startTransition(() => {
-      url.params = new URLSearchParams(`id=${id}`)
+      url.params = segmentos(id)
       rerender(<NivelHeroePage />)
     })
   })

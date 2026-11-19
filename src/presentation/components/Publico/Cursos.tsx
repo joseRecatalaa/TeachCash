@@ -19,6 +19,7 @@ import { LIBRO, MANDO, MONSTRUO, type Sprite } from '../Pixel/sprites'
 import { SketchButton } from '../ui'
 import { EnlaceCompleto } from './EnlaceCompleto'
 import { DibujoPixel } from './DibujoPixel'
+import { rutaMundo } from '../Heroe/rutas'
 import { RUTA_JUGAR } from './MarcoPublico'
 import { PlanetaPixel } from './PlanetaPixel'
 import { QUE_ES, medida, resumir } from './resumen'
@@ -37,9 +38,6 @@ const ICONO: Record<MundoPublicoDto['niveles'][number]['tipo'], { sprite: Sprite
  * lo que se busca.
  */
 const sinGratis = (titulo: string) => titulo.replace(' gratis', '')
-
-/** Adonde entra "Jugar este mundo": su camino dentro del juego. */
-const rutaJugarMundo = (id: string) => `/CaminoHeroe/Mundo?id=${encodeURIComponent(id)}`
 
 function Niveles({ mundo }: { mundo: MundoPublicoDto }) {
   return (
@@ -126,7 +124,7 @@ export function CursoMundo({
           <p className={styles.medida}>
             Mundo {mundo.titulo} · {medida(mundo)} · Gratis
           </p>
-          <SketchButton href={rutaJugarMundo(mundo.id)} recargar size="lg" rel="nofollow">
+          <SketchButton href={rutaMundo(mundo.id)} recargar size="lg" rel="nofollow">
             Jugar este mundo
           </SketchButton>
         </div>

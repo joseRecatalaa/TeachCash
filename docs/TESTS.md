@@ -252,7 +252,7 @@ Si un `pnpm install` deja de aplicar el override, este test es lo que se pone ro
 | `Tienda/__tests__/Tienda.test.tsx` | 16 | Qué botón sale en cada estado, que comprar solo manda el id, el filtro y el probador con ratón y con teclado. Comprar se nota (estreno, destellos, las estrellas bajan contando), sin retrasar la compra; no al cargar, ni al equipar, ni si falla, ni con el movimiento reducido |
 | `Cuadro/__tests__/CuadroMando.test.tsx` | 8 | El signo de la ganancia, lo que se enseña a quien empieza y la lista legible de las estadísticas |
 | `Heroe/__tests__/Reproductor.test.tsx` | 12 | Jugar como una persona: feedback al momento, minitest y jefe con repaso, reintentar o empezar de nuevo; negrita, cursiva, emoticonos, `imagen` y `dato` |
-| `Heroe/__tests__/SiguienteNivel.test.tsx` | 2 | "Siguiente nivel" (la misma página con otro `?id=`): el nivel nuevo empieza por su lectura aunque un render traiga aún el anterior, y manda una respuesta por pregunta suya |
+| `Heroe/__tests__/SiguienteNivel.test.tsx` | 2 | "Siguiente nivel" (la misma página con otro nivel): el nivel nuevo empieza por su lectura aunque un render traiga aún el anterior, y manda una respuesta por pregunta suya |
 | `Heroe/__tests__/ejercicios.test.tsx` | 2 | Ordenar con botones y emparejar sin repetir definición |
 | `Heroe/__tests__/camino.test.ts` | 13 | La geometría del camino: enteros, dentro del lienzo, de abajo arriba, el héroe sin tapar el nodo |
 | `Heroe/__tests__/respuestas.test.ts` | 32 | La forma de cada respuesta, barajar sin dejar el orden bueno, las cifras de `calcula` |

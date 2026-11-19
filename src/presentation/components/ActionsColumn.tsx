@@ -167,7 +167,7 @@ export function actionsColumn<T extends object>({
               <ActionIcon
                 variant="subtle"
                 component={Link}
-                href={`${editPath}/Edit?id=${encodeURIComponent(id)}`}
+                href={`${editPath}/Edit/${encodeURIComponent(id)}`}
                 aria-label={`Editar ${nombre}`}
               >
                 <IconPencil size={16} />

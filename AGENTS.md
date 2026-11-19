@@ -528,9 +528,13 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
   plantilla que cambia se vuelve a pegar en su panel. Llevan estilo inline y
   en hexadecimal, la única excepción a los tokens `--sd-*`, porque un cliente
   de correo no entiende variables CSS.
-- **Rutas**: PascalCase con `Create/` y `Edit/`, y el id en `?id=` sin cifrar.
-  Los ids son UUID y cada consulta filtra por dueño: ofuscarlos sería mantener
-  criptografía sin nada que proteger.
+- **Rutas**: PascalCase con `Create/` y `Edit/`, y el id en la RUTA, sin
+  cifrar: `/Movimientos/Edit/<id>` (carpeta `Edit/[id]`), `/CaminoHeroe/ahorro`
+  y `/CaminoHeroe/ahorro/01-…` (`Heroe/rutas.ts`). Antes iba en `?id=`; se pasó
+  a la ruta solo porque se lee mejor en la barra. Los ids son UUID y cada
+  consulta filtra por dueño: cifrarlos sería mantener criptografía sin nada que
+  proteger. Las direcciones viejas con `?id=` no se redirigen: Next pasa la
+  query al destino y quedaría colgando, y solo vivían en el historial.
 - **Interfaz de cliente**: usar Refine implica que las páginas llevan
   `'use client'`. Es un intercambio consciente: se gana el CRUD declarativo
   completo y se pierde el renderizado en servidor de los datos. Lo que lo hace
@@ -801,8 +805,8 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     `calcula`; el tipo sigue en el código. Con 3 preguntas, una lectura da 3
     estrellas o 1, nunca 2.
   - **El reproductor se monta con la `key` del nivel que PINTA**, no con el
-    `?id=` de la URL, y la página solo lo pinta cuando los datos son de ese id.
-    "Siguiente nivel" es la misma página con otro `?id=`: con la `key` de la
+    id de la URL, y la página solo lo pinta cuando los datos son de ese id.
+    "Siguiente nivel" es la misma página con otro nivel: con la `key` de la
     URL, si un render llevaba aún el nivel anterior, el nuevo heredaba su fase y
     sus respuestas (la lectura se abría en el minitest y el servidor las
     rechazaba). Lo vigila `SiguienteNivel.test.tsx`.

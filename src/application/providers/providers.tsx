@@ -60,14 +60,14 @@ export const REFINE_RESOURCES = [
     name: 'Movimientos',
     list: '/Movimientos',
     create: '/Movimientos/Create',
-    edit: '/Movimientos/Edit',
+    edit: '/Movimientos/Edit/:id',
     meta: { label: 'Movimientos' },
   },
   {
     name: 'Categorias',
     list: '/Categorias',
     create: '/Categorias/Create',
-    edit: '/Categorias/Edit',
+    edit: '/Categorias/Edit/:id',
     meta: { label: 'Categorías' },
   },
 ]

@@ -13,7 +13,6 @@
  */
 
 import { Modal } from '@mantine/core'
-import type { Route } from 'next'
 import { IconCheck, IconClock, IconLock, IconPlayerPlayFilled } from '@tabler/icons-react'
 import type { Decorado, NivelEnCaminoDto, TipoNivel } from '@/src/types/heroe.types'
 import { PixelSprite } from '../Pixel/PixelSprite'
@@ -30,6 +29,7 @@ import {
 } from '../Pixel/sprites'
 import { SketchButton, StatusBadge } from '../ui'
 import { HeroeCamino } from './HeroeCamino'
+import { rutaNivel } from './rutas'
 import styles from './FichaNivel.module.css'
 
 const QUE_ES: Record<TipoNivel, string> = {
@@ -44,7 +44,6 @@ const LLAMADA: Record<TipoNivel, string> = {
   jefe: 'El test grande del mundo. Véncelo para completarlo.',
 }
 
-export const rutaNivel = (id: string) => `/CaminoHeroe/Nivel?id=${encodeURIComponent(id)}` as Route
 
 /* La escena de la cabecera, en píxeles de juego. El héroe a la izquierda,
    lo que le espera a la derecha, sobre el mismo suelo. Por encima del héroe
