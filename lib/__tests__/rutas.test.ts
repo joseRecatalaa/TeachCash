@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import { rutaInterna } from '../rutas'
 
 describe('rutaInterna', () => {
-  test.each(['/', '/Movimientos', '/CambiarPassword', '/Movimientos/Edit?id=abc'])(
+  test.each(['/', '/Movimientos', '/CambiarPassword', '/Movimientos/Edit/abc'])(
     'acepta la ruta propia %s',
     (ruta) => {
       expect(rutaInterna(ruta)).toBe(ruta)

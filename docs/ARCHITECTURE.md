@@ -155,7 +155,7 @@ producto, no de andamiaje.
    argumentos salvo que necesite opciones de un catálogo para los filtros
 6. **Form** → `EntityForms/<entidad>/<Entidad>FormRefine.tsx`. Los componentes
    propios de la entidad van también aquí, en `.tsx`
-7. **Pages** → `app/<Entidades>/page.tsx`, `Create/page.tsx`, `Edit/page.tsx`
+7. **Pages** → `app/<Entidades>/page.tsx`, `Create/page.tsx`, `Edit/[id]/page.tsx`
 8. **Resource** → añadir a `REFINE_RESOURCES` en `providers.tsx`
 9. **Menú** → añadir a `ENLACES` en `Navbar.tsx`, si procede
 10. **Tests** → `src/infrastructure/repositories/__tests__/<entidad>.repository.test.ts`

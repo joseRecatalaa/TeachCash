@@ -21,7 +21,6 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Route } from 'next'
 import { ActionIcon } from '@mantine/core'
 import { IconChevronLeft, IconChevronRight, IconLock, IconRocket } from '@tabler/icons-react'
 import type { Decorado, MapaDto, MundoResumenDto } from '@/src/types/heroe.types'
@@ -48,6 +47,7 @@ import { SketchButton } from '../ui'
 import type { Punto } from './camino'
 import { PLANETAS, RADIO_PLANETA } from './planeta'
 import { HeroeCamino } from './HeroeCamino'
+import { rutaMundo } from './rutas'
 import { useCaminata } from './useCaminata'
 import styles from './MapaMundos.module.css'
 
@@ -58,7 +58,6 @@ const DIBUJO: Record<Decorado, Sprite> = {
   tarjeta: TARJETA,
 }
 
-export const rutaMundo = (id: string) => `/CaminoHeroe/Mundo?id=${encodeURIComponent(id)}` as Route
 
 /* La escena, en píxeles de juego: tres huecos de planeta a la vista. De
    arriba abajo: el nombre del mundo, sus estrellas, el decorado, el planeta y,

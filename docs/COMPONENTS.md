@@ -62,7 +62,7 @@ Las pantallas de auth (`Auth/`) no usan `GenericForm` a propósito: no son CRUD.
 | `EntityListPage` | La página de listado entera: cabecera, búsqueda, botón de crear, exportar a Excel y la tabla. Huecos `beforePanel`, `beforeTable`, `afterTable` y `extraToolbarActions` para lo que no es tabla |
 | `ActionsColumn.tsx` | Los helpers de columna: `textColumn`, `moneyColumn`, `dateColumn`, `enumColumn`, `boolColumn` y `actionsColumn`. Son los que mantienen todas las tablas iguales |
 | `usePaginacion` (`src/application/hooks/`) | El estado de la tabla; `{ server: false }` para el modo cliente |
-| `useEntityId` | Lee el `?id=` de una página `Edit` |
+| `useEntityId` | Lee el id de la ruta de una página `Edit/[id]` |
 
 ### Gráficos (`Charts/FinanceCharts.tsx`)
 

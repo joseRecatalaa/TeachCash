@@ -49,7 +49,7 @@ describe('CaminoMundo', () => {
     expect(within(ficha).getByText('3 min')).toBeInTheDocument()
     expect(within(ficha).getByRole('link', { name: /Empezar/ })).toHaveAttribute(
       'href',
-      '/CaminoHeroe/Nivel?id=ahorro%2F02',
+      '/CaminoHeroe/ahorro/02',
     )
   })
 
@@ -95,7 +95,7 @@ describe('MapaMundos', () => {
 
     await usuario.click(screen.getByRole('button', { name: 'Entrar en Ahorro' }))
     // Navega al acabar el salto del héroe dentro del planeta.
-    await waitFor(() => expect(navegar.push).toHaveBeenCalledWith('/CaminoHeroe/Mundo?id=ahorro'))
+    await waitFor(() => expect(navegar.push).toHaveBeenCalledWith('/CaminoHeroe/ahorro'))
   })
 
   test('elegir otro mundo cambia el botón; pulsarlo otra vez entra', async () => {
@@ -108,7 +108,7 @@ describe('MapaMundos', () => {
     expect(navegar.push).not.toHaveBeenCalled()
 
     await usuario.click(inversion)
-    await waitFor(() => expect(navegar.push).toHaveBeenCalledWith('/CaminoHeroe/Mundo?id=inversion'))
+    await waitFor(() => expect(navegar.push).toHaveBeenCalledWith('/CaminoHeroe/inversion'))
   })
 
   test('un mundo sin niveles lleva candado y no se puede entrar', async () => {
