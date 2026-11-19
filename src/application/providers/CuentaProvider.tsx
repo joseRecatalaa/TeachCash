@@ -40,7 +40,7 @@ type CuentaContexto = {
   cuenta: Exclude<CuentaDto, { tipo: 'ninguna' }>
   /** Cambia de usuario tras entrar o fijar contraseña: vacía la caché y navega. */
   entrar: (cuenta: CuentaDto, destino?: string) => void
-  /** Sale, vacía la caché y deja la aplicación lista para un invitado nuevo. */
+  /** Sale, vacía la caché y recarga en la portada pública. */
   salir: () => Promise<void>
   /** Lo mismo que `salir`, cuando la sesión ya la ha cerrado `borrarCuenta`. */
   cuentaBorrada: () => void
@@ -145,11 +145,16 @@ export function CuentaProvider({
     [queryClient, router],
   )
 
+  // Recarga ENTERA y no `router.push('/')`: sin sesión, `/` es la portada
+  // pública, y el layout la monta (en vez de la aplicación) solo al CARGAR la
+  // página. Con `router.push` la portada saldría dentro de la aplicación. Y sin
+  // `setCuenta({ tipo: 'ninguna' })`: eso crearía un invitado nuevo antes de
+  // irse, y la recarga enseñaría su Cuadro en vez de la portada.
   const cuentaBorrada = useCallback(() => {
     queryClient.clear()
-    setCuenta({ tipo: 'ninguna' })
-    router.push('/')
-  }, [queryClient, router])
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- ver arriba
+    window.location.assign('/')
+  }, [queryClient])
 
   const salir = useCallback(async () => {
     await cerrarSesionAction()

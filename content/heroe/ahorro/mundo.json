@@ -2,6 +2,10 @@
   "id": "ahorro",
   "titulo": "Ahorro",
   "descripcion": "Apartar dinero sin que duela: el colchón para imprevistos, dónde guardarlo y cómo hacer que crezca solo.",
+  "seo": {
+    "titulo": "Curso gratis para aprender a ahorrar",
+    "descripcion": "Monta tu fondo de emergencia, compara cuentas y depósitos por su TAE y entiende el Fondo de Garantía y las Letras del Tesoro. Gratis y jugando."
+  },
   "decorado": "hucha",
   "orden": 2,
   "niveles": ["01-fondo-de-emergencia", "02-practica-el-colchon", "03-cuentas-y-depositos", "04-practica-tae-y-depositos", "05-fgd-y-letras-del-tesoro", "06-practica-fgd-y-letras", "07-inflacion-y-compuesto", "08-practica-metas-con-fecha", "03-jefe-del-ahorro"]

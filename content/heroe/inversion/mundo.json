@@ -2,17 +2,11 @@
   "id": "inversion",
   "titulo": "Inversión",
   "descripcion": "Poner el dinero a trabajar: riesgo, diversificación, fondos indexados y el efecto de las comisiones.",
+  "seo": {
+    "titulo": "Curso gratis de inversión para principiantes",
+    "descripcion": "Riesgo, diversificación, fondos indexados y ETF, comisiones, impuestos y cómo detectar un chiringuito financiero. Aprende a invertir jugando, gratis."
+  },
   "decorado": "montana",
   "orden": 3,
-  "niveles": [
-    "01-por-que-invertir",
-    "02-pepito-invierte-su-excedente",
-    "03-fondos-indexados-y-etf",
-    "04-pepito-compara-comisiones",
-    "05-impuestos-traspasos-y-pensiones",
-    "06-pepito-hace-cuentas-con-el-irpf",
-    "07-test-mifid-riesgo-y-chiringuitos",
-    "08-pepito-caza-un-chiringuito",
-    "09-jefe-oraculo-de-humo"
-  ]
+  "niveles": ["01-por-que-invertir", "02-pepito-invierte-su-excedente", "03-fondos-indexados-y-etf", "04-pepito-compara-comisiones", "05-impuestos-traspasos-y-pensiones", "06-pepito-hace-cuentas-con-el-irpf", "07-test-mifid-riesgo-y-chiringuitos", "08-pepito-caza-un-chiringuito", "09-jefe-oraculo-de-humo"]
 }

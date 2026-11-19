@@ -34,7 +34,7 @@ ruta completa. Existen solo porque hacen algo que Mantine no hace.
 
 | Componente | Para qué | Props que importan |
 |---|---|---|
-| `SketchButton` | Botón o enlace con el gesto de la casa. Con `href` es un `<Link>` tipado de Next; sin él, un `<button>` | `variant`: `primary` (uno por pantalla) · `secondary` · `ghost` · `danger`; `size`; `loading`; `leftSection`/`rightSection`; `fullWidth` |
+| `SketchButton` | Botón o enlace con el gesto de la casa. Con `href` es un `<Link>` tipado de Next; con `href` y `recargar`, un `<a>` que carga la página entera (para cruzar de lo público a la aplicación); sin `href`, un `<button>` | `variant`: `primary` (uno por pantalla) · `secondary` · `ghost` · `danger`; `size`; `loading`; `leftSection`/`rightSection`; `fullWidth`; `recargar` |
 | `SketchCard` | La ficha: papel, cinta, filete, epígrafe, título, acciones y pie | `variant`: `paper` · `sticker` · `highlight` · `flat`; `tone` (nunca la única señal); `tilt`; `padding`; `ribbon`; `eyebrow`, `title`, `icon`, `actions`, `footer` |
 | `SketchTitle` | El título de pantalla con trazo de rotulador. Uno para toda la app: no se copia otro `.title` en un módulo | `as`: `h1` (uno por pantalla) · `h2` |
 | `StatusBadge` | Un estado con su tono resuelto en un solo sitio (`ESTADOS`) | `status` o `tone`; `dot`; `raised`; `size` |
@@ -96,6 +96,33 @@ Todo el dibujo es SVG generado desde sprites en código: sin ficheros de imagen.
 | `reproductor/` | El reproductor de un nivel: `Reproductor`, `Lectura`, `Secuencia` (una tanda de preguntas con feedback `inmediato` o `final`), `ProgresoNivel` y `Resultado` |
 | `Marcado`, `FiltroPixel` | Pinta `**negrita**` y `_cursiva_` del contenido sin `dangerouslySetInnerHTML`, y el filtro que pixela los emoticonos |
 | `ejercicios/` | Los seis tipos de pregunta y `Ejercicio`, que elige cuál pintar. Un tipo nuevo se añade aquí y en `src/types/heroe.types.ts` |
+
+### Páginas públicas (`Publico/`)
+
+Lo que ve quien no tiene sesión, y lo que lee Google: HTML del servidor, SIN
+Mantine ni Refine (el layout no monta `Providers` en una ruta pública). Aquí
+solo valen CSS Modules, los primitivos que no dependen de Mantine
+(`SketchButton`, `SketchTitle`) y el pixel art.
+
+Todo lo público va **de noche, en el espacio**, en los dos temas: `.noche`
+(`escenas.module.css`, puesta en `MarcoPublico`) redefine los tokens `--sd-*`
+para el espacio, así que lo que se pinta con tokens (el probador, las
+preguntas, los botones, los cursos) se adapta solo. Las animaciones son CSS
+sobre SVG, sin JavaScript, y su estado sin animar es una escena entera.
+
+| Pieza | Para qué |
+|---|---|
+| `MarcoPublico` | Cabecera y pie de las páginas públicas. Lo monta `app/layout.tsx` en lugar de la aplicación. El pie es la superficie de un planeta, con el héroe caminando por el horizonte |
+| `Portada` | La portada de `/` sin sesión, como pantalla de título de un juego: el lema, el dato, los mundos, el combate, el probador, la invitación y las preguntas |
+| `SaltoMundos` | El héroe saltando de planeta en planeta. El guion (`salto-*` en `escenas.module.css`) está atado a su geometría |
+| `Batalla` | El combate contra el jefe del primer mundo, con su marcador de vida. Guion `combate-*` |
+| `Cielo` | Estrellas a píxel que titilan, con semilla fija (el servidor y el cliente pintan el mismo cielo) |
+| `Probador` | Lo único de cliente de la portada: un inventario donde se viste al héroe con el catálogo de la tienda, con el estreno de la tienda al cambiar una pieza. No guarda nada |
+| `IndiceCursos`, `CursoMundo` (`Cursos.tsx`) | `/aprende` y `/aprende/<mundo>`: solo los títulos de cada nivel, nunca su contenido. Los jefes se mueven (`.jefeVivo`) |
+| `PlanetaPixel`, `DibujoPixel` | Un mundo como planeta y un sprite suelto, a escala entera, sin nada del juego alrededor |
+| `EnlaceCompleto` | Un `<a>` que recarga la página entera. Todo enlace que cruza entre lo público y la aplicación (o va a `/`) es esto o `SketchButton recargar`, nunca `<Link>` |
+| `DatosEstructurados` + `esquemas.ts` | El JSON-LD de schema.org de cada página. Solo dicen lo que la página enseña |
+| `preguntas.ts`, `resumen.ts` | Las preguntas frecuentes (página y JSON-LD salen de la misma lista) y las cifras de la portada, sacadas del contenido |
 
 ### Piezas de un solo sitio
 

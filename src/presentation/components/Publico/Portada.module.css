@@ -1,0 +1,618 @@
+/*
+ * La portada pública, como la pantalla de título de un juego, y toda en el
+ * espacio: la noche (fondo y tokens) la pone el marco (`MarcoPublico`, con
+ * `.noche` de `escenas.module.css`), así que aquí solo se leen sus `--px-*` y
+ * los `--sd-*` ya redefinidos para el espacio.
+ *
+ * Tres tipografías con tres papeles: Press Start 2P para lo que es del JUEGO
+ * (el rótulo del título, el botón, el marcador, "Pulsa start"), Fredoka para
+ * lo que se tiene que leer de un vistazo (las cifras, los títulos de sección)
+ * y Nunito para las pocas frases que quedan.
+ *
+ * Compacta a propósito: secciones con poco aire entre ellas, títulos de una
+ * línea y frases a lo ancho, sin columnas estrechas que las partan.
+ */
+
+.portada {
+  overflow-x: clip;
+}
+
+/* Cada sección lleva su cielo (`Cielo`, en absoluto) detrás del contenido. */
+.portada section {
+  position: relative;
+  overflow: hidden;
+}
+
+.ancho {
+  position: relative;
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 48em) {
+  .ancho {
+    padding-inline: 2rem;
+  }
+}
+
+.seccion {
+  padding-block: 2.5rem;
+}
+
+@media (min-width: 62em) {
+  .seccion {
+    padding-block: 3.25rem;
+  }
+}
+
+.h2 {
+  margin: 0 0 1.5rem;
+  font-family: var(--sd-font-display);
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.centrado {
+  text-align: center;
+}
+
+/* Para quien la oye, no para quien la ve. */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── El botón de jugar y sus flechas ───────────────────────────────────── *
+ *
+ * Un botón de máquina recreativa: dorado, con el canto de abajo más oscuro, y
+ * al pulsarlo se hunde. A cada lado, tres flechas que se encienden una tras
+ * otra hacia él.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.llamadas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 1.25rem;
+}
+
+.flechas {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+/* Las de la derecha, volteadas para que apunten al botón. */
+.flechas[data-hacia='izq'] {
+  scale: -1 1;
+}
+
+/* Sin sitio a los lados (el móvil), sobran. */
+@media (max-width: 30em) {
+  .flechas {
+    display: none;
+  }
+}
+
+.flechas path {
+  fill: var(--px-noche-oro);
+}
+
+.flechas svg {
+  animation: portada-flecha 0.9s steps(1, end) infinite;
+}
+
+.flechas svg[data-flecha='1'] {
+  animation-delay: 0.3s;
+}
+
+.flechas svg[data-flecha='2'] {
+  animation-delay: 0.6s;
+}
+
+@keyframes portada-flecha {
+  0% {
+    opacity: 1;
+    translate: 3px 0;
+  }
+  33%,
+  100% {
+    opacity: 0.25;
+    translate: 0 0;
+  }
+}
+
+.jugar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.05rem 1.5rem;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  line-height: 1;
+  color: var(--px-noche-boton-tinta);
+  text-decoration: none;
+  background: var(--px-noche-oro);
+  border: 3px solid var(--px-noche-boton-tinta);
+  box-shadow: 0 6px 0 0 var(--px-noche-oro-sombra);
+  transition:
+    translate var(--sd-dur-fast) ease,
+    box-shadow var(--sd-dur-fast) ease;
+}
+
+.jugar:hover {
+  translate: 0 -2px;
+  box-shadow: 0 8px 0 0 var(--px-noche-oro-sombra);
+}
+
+.jugar:active {
+  translate: 0 5px;
+  box-shadow: 0 1px 0 0 var(--px-noche-oro-sombra);
+}
+
+.jugar:focus-visible {
+  outline: 3px solid var(--px-noche-tinta);
+  outline-offset: 4px;
+}
+
+.jugarFlecha {
+  animation: portada-parpadeo 1s steps(1, end) infinite;
+}
+
+@keyframes portada-parpadeo {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ── 1. La pantalla de título ──────────────────────────────────────────── *
+ *
+ * Como la de un juego: el título centrado arriba, con aire, y debajo el
+ * héroe a la izquierda y la frase y el botón a la derecha.
+ *
+ * El título va en la letra a píxel (Press Start 2P), con relieve: tres capas
+ * de sombra dura, del oro al marrón, en `em` para que el relieve crezca con
+ * la letra. Es el rótulo de una recreativa, no una sombra de interfaz.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.titulo {
+  padding-block: 3rem 2.5rem;
+}
+
+@media (min-width: 62em) {
+  .titulo {
+    padding-block: 4.5rem 3rem;
+  }
+}
+
+.tituloCuerpo {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.h1 {
+  margin: 0 0 0.5rem;
+}
+
+.h1Grande {
+  display: block;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(1.6rem, 4.3vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--px-noche-tinta);
+  text-shadow:
+    0 0.06em 0 var(--px-noche-oro),
+    0 0.12em 0 var(--px-noche-oro-sombra),
+    0 0.18em 0 var(--px-noche-relieve);
+}
+
+/* En una línea en cuanto cabe; en el móvil, a dos. */
+@media (min-width: 48em) {
+  .h1Grande {
+    white-space: nowrap;
+  }
+}
+
+.h1Resto {
+  display: block;
+  margin-top: 0.85rem;
+  font-family: var(--sd-font-display);
+  font-size: clamp(1.4rem, 2.8vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--px-noche-oro);
+}
+
+/* Debajo del título: el héroe a la izquierda y la invitación a la derecha.
+   En el móvil, uno encima de otro. */
+.escenaTitulo {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+@media (min-width: 48em) {
+  .escenaTitulo {
+    grid-template-columns: auto auto;
+    justify-content: center;
+    gap: 4rem;
+  }
+}
+
+.tituloDibujo {
+  display: flex;
+  justify-content: center;
+}
+
+.soloAncho {
+  display: none;
+}
+
+/* A 384 px de ancho no cabe por debajo de 36em: ahí va el de escala 3. */
+@media (min-width: 36em) {
+  .soloMovil {
+    display: none;
+  }
+
+  .soloAncho {
+    display: block;
+  }
+}
+
+.invitacion {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+  max-width: 30rem;
+}
+
+/*
+ * El bocadillo del héroe: el cuadro de diálogo de un juego de rol. Papel
+ * claro, borde de tinta, letra a píxel y un ▼ que parpadea en la esquina.
+ * La cola es una escalera de píxeles hacia la izquierda, donde está el héroe:
+ * la de tinta debajo y la de papel encima, metida en el borde para borrarlo
+ * donde se juntan. En el móvil el héroe queda encima y la cola sobra.
+ */
+.bocadillo {
+  position: relative;
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.6rem;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  line-height: 1.85;
+  text-align: left;
+  color: var(--px-noche-boton-tinta);
+  background: var(--px-noche-tinta);
+  border: 4px solid var(--px-noche-boton-tinta);
+  box-shadow: 0 6px 0 0 var(--sd-shadow-color);
+}
+
+@media (min-width: 48em) {
+  .bocadillo::before,
+  .bocadillo::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    clip-path: polygon(
+      0 33%,
+      33% 33%,
+      33% 17%,
+      67% 17%,
+      67% 0,
+      100% 0,
+      100% 100%,
+      67% 100%,
+      67% 83%,
+      33% 83%,
+      33% 67%,
+      0 67%
+    );
+  }
+
+  .bocadillo::before {
+    left: -22px;
+    width: 18px;
+    height: 30px;
+    background: var(--px-noche-boton-tinta);
+  }
+
+  .bocadillo::after {
+    left: -14px;
+    width: 18px;
+    height: 22px;
+    background: var(--px-noche-tinta);
+  }
+}
+
+.sigue {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.3rem;
+  font-size: 0.6rem;
+  animation: portada-parpadeo 0.8s steps(1, end) infinite;
+}
+
+.verCursos {
+  margin-top: 0.25rem;
+  font-family: var(--sd-font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--px-noche-tinta);
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 2px;
+}
+
+.verCursos:hover {
+  color: var(--px-noche-oro);
+}
+
+.verCursos:focus-visible {
+  outline: 3px solid var(--px-noche-oro);
+  outline-offset: 3px;
+}
+
+/* ── 2. Por qué: la tarjeta dorada ─────────────────────────────────────── *
+ *
+ * Una tarjeta de juego, del oro de las monedas, con borde de tinta y el canto
+ * de abajo más oscuro, como el botón. La cifra enorme, y al lado once huchas:
+ * las cuatro vacías tiemblan.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.dato {
+  display: grid;
+  gap: 1rem 2.5rem;
+  align-items: center;
+  padding: 1.75rem 1.5rem;
+  color: var(--px-noche-boton-tinta);
+  background: var(--px-noche-oro);
+  border: 4px solid var(--px-noche-boton-tinta);
+  box-shadow: 0 8px 0 0 var(--px-noche-oro-sombra);
+}
+
+@media (min-width: 62em) {
+  .dato {
+    grid-template-columns: auto 1fr;
+    padding: 2rem 2.5rem;
+  }
+}
+
+.cifra {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: clamp(4.5rem, 11vw, 9rem);
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+.datoTexto {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.datoTitulo {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(0.85rem, 1.5vw, 1.15rem);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.datoFrase {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.huchas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.huchaVacia {
+  filter: grayscale(1);
+  opacity: 0.4;
+  animation: portada-tiembla 1.4s steps(1, end) infinite;
+}
+
+.huchaVacia:nth-child(2) {
+  animation-delay: 0.35s;
+}
+
+.huchaVacia:nth-child(3) {
+  animation-delay: 0.7s;
+}
+
+.huchaVacia:nth-child(4) {
+  animation-delay: 1.05s;
+}
+
+@keyframes portada-tiembla {
+  0%,
+  60% {
+    translate: 0 0;
+  }
+  70% {
+    translate: -2px 0;
+  }
+  80% {
+    translate: 2px 0;
+  }
+  90% {
+    translate: -1px 0;
+  }
+}
+
+.fuente {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ── 4. Cómo se juega ──────────────────────────────────────────────────── */
+
+.como {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (min-width: 62em) {
+  .como {
+    grid-template-columns: 1fr 2fr;
+    gap: 3rem;
+  }
+}
+
+.pasos {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 1rem;
+  align-items: center;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.pasoIcono {
+  justify-self: center;
+}
+
+.pasoNombre {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--sd-font-pixel);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--px-noche-oro);
+}
+
+/* ── 6. La invitación ──────────────────────────────────────────────────── */
+
+.final {
+  padding-block: 2.5rem 3rem;
+}
+
+.finalCuerpo {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.finalHeroe {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.pulsa {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  color: var(--px-noche-oro);
+  animation: portada-parpadeo 1.2s steps(1, end) infinite;
+}
+
+.h2Final {
+  margin: 0 0 0.75rem;
+  font-family: var(--sd-font-display);
+  font-size: clamp(2rem, 4.6vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* ── 7. Preguntas ──────────────────────────────────────────────────────── */
+
+.preguntas {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 62em) {
+  .preguntas {
+    grid-template-columns: 1fr 3fr;
+    gap: 3rem;
+    align-items: start;
+  }
+}
+
+.lista {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.pregunta {
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.pregunta summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.15rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--sd-font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.pregunta summary::-webkit-details-marker {
+  display: none;
+}
+
+.pregunta summary::after {
+  content: '+';
+  flex: none;
+  font-family: var(--sd-font-pixel);
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--px-noche-oro);
+}
+
+.pregunta[open] summary::after {
+  content: '−';
+}
+
+.pregunta summary:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: inherit;
+}
+
+.pregunta p {
+  margin: 0;
+  padding: 0 1.15rem 1rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}

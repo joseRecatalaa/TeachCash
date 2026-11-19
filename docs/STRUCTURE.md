@@ -28,17 +28,24 @@ Cada cambio tiene un sitio y solo uno:
 | Poner el título de una pantalla | `SketchTitle` de `src/presentation/components/ui` |
 | Añadir o cambiar un objeto de la tienda | `CATALOGO` en `lib/tienda.ts`; si es un tipo nuevo, sus DOS dibujos: el grande en `Pixel/spritesGrande.ts` y `SPRITE_OBJETO`, y el pequeño en `Pixel/spritesEquipo.ts`, `PIEZAS_PEQUENAS` y su capa en `PixelHero` |
 | Cambiar cómo se calcula una estadística del héroe | `lib/estadisticas.ts` |
+| Cambiar la portada pública o las páginas de cursos | `src/presentation/components/Publico/` (y el lema y qué rutas son públicas, en `lib/seo.ts`) |
+| Cambiar cómo sale un mundo en Google | `seo` en su `content/heroe/<mundo>/mundo.json` |
+| Cambiar una pregunta frecuente de la portada | `PREGUNTAS` en `Publico/preguntas.ts` (la página y los datos estructurados salen de ahí) |
 
 ## El árbol de ficheros
 
 ```
 .
-  app/                                # rutas, en PascalCase
-    page.tsx                          # Cuadro de mando: patrimonio, héroe, radar y estrellas
+  app/                                # rutas, en PascalCase (salvo las públicas)
+    page.tsx                          # `/`: la portada pública sin sesión, el Cuadro de mando con ella
+    PantallaCuadro.tsx                # el Cuadro de mando: patrimonio, héroe, radar y estrellas
     page.module.css                   # su aspecto: cada vista lleva el suyo
+    aprende/                          # PÚBLICAS: el índice de cursos y uno por mundo ([mundo])
+    robots.ts  sitemap.ts             # lo que leen los buscadores (lib/seo.ts)
+    manifest.ts  opengraph-image.tsx  # la app en el móvil y la imagen al compartir
     Patrimonio/                       # Inicio: saldo, mes, gráficos y últimos
     Tienda/page.tsx                   # lo que se compra con las estrellas
-    layout.tsx                        # Providers + Navbar + CSS de Mantine
+    layout.tsx                        # Providers + Navbar + CSS de Mantine, o el marco público (esPaginaPublica)
     Movimientos/                      # una carpeta por entidad
       page.tsx                        # listado
       Create/page.tsx

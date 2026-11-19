@@ -13,6 +13,7 @@
 
 import type { NextRequest } from 'next/server'
 import { CABECERA_NONCE, construirCsp, generarNonce } from '@/lib/csp'
+import { CABECERA_RUTA } from '@/lib/seo'
 import { refrescarSesion } from '@/lib/supabase/proxy'
 
 export async function proxy(request: NextRequest) {
@@ -27,6 +28,9 @@ export async function proxy(request: NextRequest) {
   // para el render. Next saca el nonce de ahí para sus propios scripts.
   request.headers.set(CABECERA_NONCE, nonce)
   request.headers.set('Content-Security-Policy', csp)
+  // La ruta, para que el layout decida entre la aplicación y la página pública
+  // (`esPaginaPublica`). SIEMPRE se escribe: pisa la que mande el cliente.
+  request.headers.set(CABECERA_RUTA, request.nextUrl.pathname)
 
   const respuesta = await refrescarSesion(request)
   respuesta.headers.set('Content-Security-Policy', csp)
@@ -41,6 +45,8 @@ export const config = {
     // no es un fichero sino el 404 de la app, HTML con sus scripts, que salía
     // SIN Content Security Policy. La app no sirve imágenes (todo es pixel art
     // en SVG inline); si un día las hay en `public/`, van con su nombre aquí.
-    '/((?!_next/static|_next/image|favicon\\.ico$|icon\\.svg$|robots\\.txt$).*)',
+    // Los de los buscadores (`app/robots.ts`, `sitemap.ts`, `manifest.ts` y
+    // `opengraph-image.tsx`) los genera Next y no son HTML: tampoco la llevan.
+    '/((?!_next/static|_next/image|favicon\\.ico$|icon\\.svg$|robots\\.txt$|sitemap\\.xml$|manifest\\.webmanifest$|opengraph-image).*)',
   ],
 }

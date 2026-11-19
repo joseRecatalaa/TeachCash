@@ -1,0 +1,888 @@
+/*
+ * Las escenas animadas de la portada: el cielo, el salto de mundo en mundo y
+ * el combate contra el jefe.
+ *
+ * Es un módulo de ILUSTRACIÓN (como `Pixel/pixel.module.css`, y por eso está
+ * en la lista de `src/__tests__/invariantes.test.ts`): sus colores son de un
+ * dibujo y no cambian con el tema: las páginas públicas son siempre de
+ * noche. Solo se declaran como variables `--px-*` (y, en `.noche`, los tokens
+ * `--sd-*` que se redefinen para el espacio).
+ *
+ * Todo el movimiento es a saltos (`steps`) salvo los trayectos, como en el
+ * resto del pixel art, y lo anula el bloque de `prefers-reduced-motion` de
+ * `globals.css`. El estado SIN animar de cada pieza es una escena entera: el
+ * héroe de pie en el primer planeta, el héroe en guardia ante el jefe.
+ *
+ * Los guiones están atados a la geometría de `SaltoMundos.tsx` y
+ * `Batalla.tsx`: si cambias una posición allí, cámbiala aquí.
+ */
+
+/* ── La noche: la paleta de las secciones con cielo ────────────────────── */
+
+.noche {
+  --px-noche: #121833;
+  --px-noche-alta: #1c2550;
+  --px-noche-tinta: #f6f1e4;
+  --px-noche-suave: #c3c9ea;
+  --px-noche-estrella: #ffffff;
+  --px-noche-oro: #ffd45e;
+  --px-noche-oro-sombra: #c98d10;
+  --px-noche-boton-tinta: #2b1a10;
+  /* La roca del planeta en el que aterriza el pie (`MarcoPublico`). */
+  --px-luna: #2c2852;
+  --px-luna-luz: #4a4482;
+  --px-luna-sombra: #1f1c3c;
+  /* El fondo del relieve del título, bajo los dos dorados. */
+  --px-noche-relieve: #5c3a0c;
+  /* El marco de cada casilla del probador: cuero, hierro y oro. */
+  --px-calidad-basica: #c58a52;
+  --px-calidad-media: #cfd8dc;
+  --px-calidad-alta: #ffd45e;
+  /*
+   * Las páginas públicas son de noche en los dos temas, y todo lo que hay
+   * dentro (el probador, las preguntas, los botones, los cursos) se pinta con
+   * los tokens del sistema. Por eso aquí se REDEFINEN para el espacio, en vez
+   * de reescribir cada componente: el papel pasa a cielo, la tinta a blanco
+   * roto y el acento, del verde de la aplicación al oro de las monedas.
+   * El sol de detrás del héroe (`EscenarioHeroe`) lee los dos `wash`: de
+   * noche es una luna.
+   */
+  --sd-paper: #121833;
+  --sd-surface: #1c2550;
+  --sd-surface-sunken: #161d40;
+  --sd-surface-muted: #19214a;
+  --sd-ink: #f6f1e4;
+  --sd-ink-soft: #dcdaf0;
+  --sd-ink-muted: #a9b0d6;
+  --sd-ink-inverse: #121833;
+  --sd-accent: #ffd45e;
+  --sd-accent-strong: #ffe08a;
+  --sd-accent-soft: #f0b429;
+  --sd-accent-wash: #253170;
+  --sd-accent-wash-faint: #1b2450;
+  --sd-accent-ink: #2b1a10;
+  --sd-stroke-color: #e8e6df;
+  --sd-shadow-color: #070a1a;
+  --sd-on-fill: #2b1a10;
+  --sd-focus-ring: 0 0 0 3px var(--px-noche-oro), 0 0 0 5px var(--px-noche);
+  background: var(--px-noche);
+  color: var(--px-noche-tinta);
+}
+
+/* ── El cielo ──────────────────────────────────────────────────────────── */
+
+.cielo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.estrella {
+  fill: var(--px-noche-estrella);
+  animation: cielo-titila 3.2s steps(1, end) infinite;
+}
+
+.estrella[data-grupo='1'] {
+  animation-delay: -0.8s;
+  opacity: 0.7;
+}
+
+.estrella[data-grupo='2'] {
+  animation-delay: -1.6s;
+  fill: var(--px-noche-suave);
+}
+
+.estrella[data-grupo='3'] {
+  animation-delay: -2.4s;
+  fill: var(--px-noche-oro);
+}
+
+@keyframes cielo-titila {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  75% {
+    opacity: 0.65;
+  }
+}
+
+/* ── El salto de mundo en mundo ────────────────────────────────────────── *
+ *
+ * 6 s por vuelta y 1,5 s por planeta: 0,9 s de pie (15 %) y 0,6 s de salto
+ * (10 %). Los fotogramas del salto son una parábola muestreada en ocho
+ * puntos; el del último al primero es más alto, porque cruza toda la fila.
+ * Los planetas están a 140 píxeles de juego y el héroe (32 de ancho) se planta
+ * en su centro: x = 54 + 140·i, con los pies sobre la superficie (y = -84).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.saltoDibujo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.viajero {
+  translate: 54px -84px;
+  animation: salto-viaje 6s linear infinite;
+}
+
+@keyframes salto-viaje {
+  0%,
+  15% {
+    translate: 54px -84px;
+  }
+  16.25% {
+    translate: 71.5px -95.37px;
+  }
+  17.5% {
+    translate: 89px -103.5px;
+  }
+  18.75% {
+    translate: 106.5px -108.37px;
+  }
+  20% {
+    translate: 124px -110px;
+  }
+  21.25% {
+    translate: 141.5px -108.37px;
+  }
+  22.5% {
+    translate: 159px -103.5px;
+  }
+  23.75% {
+    translate: 176.5px -95.37px;
+  }
+  25%,
+  40% {
+    translate: 194px -84px;
+  }
+  41.25% {
+    translate: 211.5px -95.37px;
+  }
+  42.5% {
+    translate: 229px -103.5px;
+  }
+  43.75% {
+    translate: 246.5px -108.37px;
+  }
+  45% {
+    translate: 264px -110px;
+  }
+  46.25% {
+    translate: 281.5px -108.37px;
+  }
+  47.5% {
+    translate: 299px -103.5px;
+  }
+  48.75% {
+    translate: 316.5px -95.37px;
+  }
+  50%,
+  65% {
+    translate: 334px -84px;
+  }
+  66.25% {
+    translate: 351.5px -95.37px;
+  }
+  67.5% {
+    translate: 369px -103.5px;
+  }
+  68.75% {
+    translate: 386.5px -108.37px;
+  }
+  70% {
+    translate: 404px -110px;
+  }
+  71.25% {
+    translate: 421.5px -108.37px;
+  }
+  72.5% {
+    translate: 439px -103.5px;
+  }
+  73.75% {
+    translate: 456.5px -95.37px;
+  }
+  75%,
+  90% {
+    translate: 474px -84px;
+  }
+  91.25% {
+    translate: 421.5px -101.5px;
+  }
+  92.5% {
+    translate: 369px -114px;
+  }
+  93.75% {
+    translate: 316.5px -121.5px;
+  }
+  95% {
+    translate: 264px -124px;
+  }
+  96.25% {
+    translate: 211.5px -121.5px;
+  }
+  97.5% {
+    translate: 159px -114px;
+  }
+  98.75% {
+    translate: 106.5px -101.5px;
+  }
+  100% {
+    translate: 54px -84px;
+  }
+}
+
+/* De vuelta al primero, mira hacia atrás. */
+.giro {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: salto-giro 6s steps(1, end) infinite;
+}
+
+@keyframes salto-giro {
+  0% {
+    scale: 1 1;
+  }
+  90% {
+    scale: -1 1;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+
+/* De pie al aterrizar, celebrando en el aire. */
+.enVuelo {
+  opacity: 0;
+}
+
+.enTierra {
+  animation: salto-tierra 6s steps(1, end) infinite;
+}
+
+.enVuelo {
+  animation: salto-vuelo 6s steps(1, end) infinite;
+}
+
+@keyframes salto-tierra {
+  0%,
+  25%,
+  50%,
+  75%,
+  100% {
+    opacity: 1;
+  }
+  15%,
+  40%,
+  65%,
+  90% {
+    opacity: 0;
+  }
+}
+
+@keyframes salto-vuelo {
+  0%,
+  25%,
+  50%,
+  75%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  40%,
+  65%,
+  90% {
+    opacity: 1;
+  }
+}
+
+/* El planeta se aplasta al recibirlo, y suelta destellos. Cada uno, cuando el
+   héroe llega a él: 1,5 s después que el anterior. */
+.aterriza,
+.chispazo {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.aterriza {
+  animation: salto-aterriza 6s ease-out infinite;
+}
+
+.chispazo {
+  opacity: 0;
+  animation: salto-chispa 6s steps(1, end) infinite;
+}
+
+.aterriza[data-orden='1'],
+.chispazo[data-orden='1'] {
+  animation-delay: 1.5s;
+}
+
+.aterriza[data-orden='2'],
+.chispazo[data-orden='2'] {
+  animation-delay: 3s;
+}
+
+.aterriza[data-orden='3'],
+.chispazo[data-orden='3'] {
+  animation-delay: 4.5s;
+}
+
+@keyframes salto-aterriza {
+  0% {
+    scale: 1.1 0.88;
+  }
+  3% {
+    scale: 0.95 1.06;
+  }
+  6%,
+  100% {
+    scale: 1 1;
+  }
+}
+
+@keyframes salto-chispa {
+  0% {
+    opacity: 1;
+  }
+  2% {
+    opacity: 0.3;
+  }
+  4% {
+    opacity: 1;
+  }
+  8%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* La escena no pasa de un ancho cómodo: a todo lo ancho, la fila de planetas
+   se comía la pantalla en alto. Los nombres comparten el mismo ancho. */
+.salto {
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+/* Los nombres, bajo su planeta: cuatro columnas, la del centro de cada uno. */
+.saltoNombres {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+}
+
+.saltoNombres li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.saltoTitulo {
+  font-family: var(--sd-font-display);
+  font-size: clamp(0.95rem, 2vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.saltoMedida {
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(0.5rem, 1vw, 0.75rem);
+  color: var(--px-noche-oro);
+}
+
+/* ── El combate ────────────────────────────────────────────────────────── *
+ *
+ * 7 s por vuelta: en guardia (0-8 %), carrera (8-20 %), tres golpes (24, 34 y
+ * 44 %), el jefe parpadea y revienta (50-62 %), tres estrellas y "¡Jefe
+ * derrotado!" (60-93 %), y fundido para volver a empezar sin que se vea el
+ * salto atrás.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.combate {
+  --px-cielo-combate: #1c2550;
+  --px-hierba: #6bb35a;
+  --px-hierba-luz: #9fd88a;
+  --px-tierra: #8a5a34;
+  --px-piedra: #6b4426;
+  --px-vida: #e5484d;
+  --px-vida-vacia: #5a2026;
+  --px-trazo: #2b1a10;
+  --px-letra: #ffffff;
+  --px-oro: #ffd45e;
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: var(--px-cielo-combate);
+  border: var(--sd-stroke-bold) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-doodle);
+}
+
+.combateDibujo {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hierbaLuz {
+  fill: var(--px-hierba-luz);
+}
+
+.hierba {
+  fill: var(--px-hierba);
+}
+
+.tierra {
+  fill: var(--px-tierra);
+}
+
+.piedra {
+  fill: var(--px-piedra);
+}
+
+/* El marcador: el nombre del jefe y su vida, arriba a la derecha. */
+.marcador {
+  position: absolute;
+  top: clamp(0.5rem, 2vw, 1rem);
+  right: clamp(0.5rem, 2vw, 1rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  font-family: var(--sd-font-pixel);
+  font-size: clamp(0.5rem, 1.1vw, 0.8rem);
+  color: var(--px-letra);
+  z-index: 1;
+  animation: combate-marcador 7s steps(1, end) infinite;
+}
+
+/* Sin jefe no hay marcador: se va cuando revienta y vuelve con él. */
+@keyframes combate-marcador {
+  0% {
+    opacity: 1;
+  }
+  56% {
+    opacity: 0;
+  }
+  96%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.vida {
+  display: block;
+  width: clamp(5rem, 22vw, 13rem);
+  height: clamp(0.6rem, 1.4vw, 0.9rem);
+  padding: 2px;
+  background: var(--px-vida-vacia);
+  border: 2px solid var(--px-trazo);
+}
+
+.vidaBarra {
+  display: block;
+  height: 100%;
+  background: var(--px-vida);
+  transform-origin: left;
+  animation: combate-vida 7s steps(1, end) infinite;
+}
+
+@keyframes combate-vida {
+  0% {
+    scale: 1 1;
+  }
+  24% {
+    scale: 0.66 1;
+  }
+  34% {
+    scale: 0.33 1;
+  }
+  44% {
+    scale: 0 1;
+  }
+  96%,
+  100% {
+    scale: 1 1;
+  }
+}
+
+.escenaCombate {
+  animation: combate-escena 7s linear infinite;
+}
+
+@keyframes combate-escena {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  93% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* El héroe: x 24 en guardia, 126 delante del jefe y 134 en cada estocada. */
+.luchador {
+  translate: 126px 48px;
+  animation: combate-avance 7s linear infinite;
+}
+
+@keyframes combate-avance {
+  0%,
+  8% {
+    translate: 24px 48px;
+  }
+  20%,
+  23% {
+    translate: 126px 48px;
+  }
+  24% {
+    translate: 134px 48px;
+  }
+  27%,
+  33% {
+    translate: 126px 48px;
+  }
+  34% {
+    translate: 134px 48px;
+  }
+  37%,
+  43% {
+    translate: 126px 48px;
+  }
+  44% {
+    translate: 134px 48px;
+  }
+  47%,
+  100% {
+    translate: 126px 48px;
+  }
+}
+
+.corriendo,
+.ganando {
+  opacity: 0;
+}
+
+.enGuardia {
+  animation: combate-guardia 7s steps(1, end) infinite;
+}
+
+.corriendo {
+  animation: combate-corre 7s steps(1, end) infinite;
+}
+
+.ganando {
+  animation: combate-gana 7s steps(1, end) infinite;
+}
+
+@keyframes combate-guardia {
+  0% {
+    opacity: 1;
+  }
+  8% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes combate-corre {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  20%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes combate-gana {
+  0% {
+    opacity: 0;
+  }
+  56%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* El jefe: a cada golpe, un fotograma en blanco y un temblor. */
+.recibe {
+  transform-box: fill-box;
+  animation: combate-recibe 7s steps(1, end) infinite;
+}
+
+@keyframes combate-recibe {
+  0% {
+    translate: 0 0;
+    filter: none;
+  }
+  24%,
+  34%,
+  44% {
+    translate: 5px 0;
+    filter: brightness(0) invert(1);
+  }
+  25%,
+  35%,
+  45% {
+    translate: -3px 0;
+    filter: none;
+  }
+  26%,
+  36%,
+  46% {
+    translate: 2px 0;
+  }
+  27%,
+  37%,
+  47%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+.jefe {
+  animation: combate-jefe 7s steps(1, end) infinite;
+}
+
+@keyframes combate-jefe {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  52%,
+  54% {
+    opacity: 0;
+  }
+  51%,
+  53%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.tajo,
+.estallido {
+  opacity: 0;
+}
+
+.tajo {
+  animation: combate-tajo 7s steps(1, end) infinite;
+}
+
+@keyframes combate-tajo {
+  0% {
+    opacity: 0;
+  }
+  24%,
+  34%,
+  44% {
+    opacity: 1;
+  }
+  26%,
+  36%,
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.estallido {
+  animation: combate-estallido 7s steps(1, end) infinite;
+}
+
+.estallido:nth-child(even) {
+  animation-delay: 0.1s;
+}
+
+@keyframes combate-estallido {
+  0% {
+    opacity: 0;
+  }
+  52%,
+  56%,
+  60% {
+    opacity: 1;
+  }
+  54%,
+  58%,
+  62%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Lo que pega cada golpe, subiendo desde el jefe. */
+.golpe,
+.victoria {
+  font-family: var(--sd-font-pixel);
+  text-anchor: middle;
+  fill: var(--px-letra);
+  stroke: var(--px-trazo);
+  paint-order: stroke;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.golpe {
+  font-size: 5.5px;
+  stroke-width: 1.6px;
+  animation: combate-golpe 7s linear infinite;
+}
+
+.golpe[data-golpe='1'] {
+  animation-delay: 0.7s;
+}
+
+.golpe[data-golpe='2'] {
+  animation-delay: 1.4s;
+}
+
+@keyframes combate-golpe {
+  0%,
+  23.9% {
+    opacity: 0;
+    translate: 0 0;
+  }
+  24% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  31% {
+    opacity: 1;
+    translate: 0 -12px;
+  }
+  32%,
+  100% {
+    opacity: 0;
+    translate: 0 -14px;
+  }
+}
+
+/* El premio: tres estrellas que saltan una tras otra, y el letrero. */
+.premio {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: combate-premio 7s steps(1, end) infinite;
+}
+
+.premio[data-premio='1'] {
+  animation-delay: 0.28s;
+}
+
+.premio[data-premio='2'] {
+  animation-delay: 0.56s;
+}
+
+@keyframes combate-premio {
+  0% {
+    opacity: 0;
+    scale: 1;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.4;
+  }
+  62% {
+    scale: 1;
+  }
+  93%,
+  100% {
+    opacity: 0;
+    scale: 1;
+  }
+}
+
+.victoria {
+  font-size: 7px;
+  fill: var(--px-oro);
+  stroke-width: 2px;
+  animation: combate-victoria 7s steps(1, end) infinite;
+}
+
+@keyframes combate-victoria {
+  0% {
+    opacity: 0;
+  }
+  60%,
+  72% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0;
+  }
+  93%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ── Los jefes de los cursos ───────────────────────────────────────────── *
+ *
+ * En la lista de niveles, el jefe no está quieto: da saltitos a pasos de
+ * píxel y, de vez en cuando, se agita como si fuera a atacar. Quieto con el
+ * movimiento reducido.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.jefeVivo {
+  animation: jefe-vivo 1.6s steps(1, end) infinite;
+}
+
+@keyframes jefe-vivo {
+  0% {
+    translate: 0 0;
+  }
+  12% {
+    translate: 0 -4px;
+  }
+  24% {
+    translate: 0 -6px;
+  }
+  36% {
+    translate: 0 -4px;
+  }
+  48% {
+    translate: 0 0;
+  }
+  70% {
+    translate: -2px 0;
+  }
+  76% {
+    translate: 2px 0;
+  }
+  82% {
+    translate: -2px 0;
+  }
+  88%,
+  100% {
+    translate: 0 0;
+  }
+}

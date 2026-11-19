@@ -12,7 +12,12 @@
 
 import type { Paleta, Sprite } from './sprites'
 
-function trazos(sprite: Sprite): Map<string, string> {
+/**
+ * Los trazos de un sprite, uno por letra de su paleta. Exportado para la imagen
+ * que se comparte en redes (`app/opengraph-image.tsx`), que no tiene CSS y
+ * pinta cada letra con su color a mano.
+ */
+export function trazos(sprite: Sprite): Map<string, string> {
   const porColor = new Map<string, string>()
   sprite.filas.forEach((fila, j) => {
     let i = 0

@@ -1,0 +1,274 @@
+/*
+ * El probador de la portada, como un inventario de juego. Va dentro de la
+ * noche de las páginas públicas (`.noche`, `escenas.module.css`): de allí
+ * salen las `--px-*` (el oro, las calidades) y los `--sd-*` ya de espacio.
+ *
+ * El color del marco de cada casilla dice su calidad (cuero, hierro, oro),
+ * pero nunca va solo: lo dicen también el nombre ("Casco de oro") y los tres
+ * puntos de nivel.
+ */
+
+.probador {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1rem;
+  background: var(--sd-surface);
+  border: 3px solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: 0 8px 0 0 var(--sd-shadow-color);
+}
+
+@media (min-width: 62em) {
+  .probador {
+    grid-template-columns: auto 1fr;
+    gap: 2.5rem;
+    padding: 1.25rem 2rem 1.25rem 1.25rem;
+  }
+}
+
+/* El escenario: el héroe en su isla, sobre su propio trozo de cielo. */
+.escenario {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+  overflow: hidden;
+  background: var(--px-noche);
+  border-radius: var(--sd-radius-sm);
+}
+
+.escenario > div {
+  position: relative;
+}
+
+.soloAncho {
+  display: none;
+}
+
+@media (min-width: 36em) {
+  .soloMovil {
+    display: none;
+  }
+
+  .soloAncho {
+    display: block;
+  }
+}
+
+.inventario {
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* ── Las casillas ──────────────────────────────────────────────────────── */
+
+.casillas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.casilla {
+  --marco: var(--sd-ink-muted);
+  width: 100%;
+  min-height: 9rem;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0.5rem 0.6rem;
+  font: inherit;
+  color: var(--sd-ink);
+  text-align: center;
+  cursor: pointer;
+  background: var(--sd-surface-sunken);
+  border: 3px solid var(--marco);
+  box-shadow: 0 4px 0 0 var(--sd-shadow-color);
+  transition:
+    translate var(--sd-dur-fast) ease,
+    box-shadow var(--sd-dur-fast) ease;
+}
+
+.casilla[data-calidad='ninguna'] {
+  border-style: dashed;
+}
+
+.casilla[data-calidad='basica'] {
+  --marco: var(--px-calidad-basica);
+}
+
+.casilla[data-calidad='media'] {
+  --marco: var(--px-calidad-media);
+}
+
+.casilla[data-calidad='alta'] {
+  --marco: var(--px-calidad-alta);
+  background: var(--sd-accent-wash);
+}
+
+.casilla:hover {
+  translate: 0 -3px;
+  box-shadow: 0 7px 0 0 var(--sd-shadow-color);
+}
+
+.casilla:active {
+  translate: 0 3px;
+  box-shadow: 0 1px 0 0 var(--sd-shadow-color);
+}
+
+.casilla:focus-visible {
+  outline: 3px solid var(--px-noche-oro);
+  outline-offset: 3px;
+}
+
+/* El dibujo da un salto a píxel al cambiar (se vuelve a montar por su `key`). */
+.dibujo,
+.silueta {
+  display: grid;
+  place-items: center;
+  min-height: 3.25rem;
+}
+
+.dibujo {
+  animation: casilla-salto 0.36s steps(3, end);
+}
+
+.silueta {
+  filter: grayscale(1) brightness(1.6);
+  opacity: 0.25;
+}
+
+@keyframes casilla-salto {
+  0% {
+    translate: 0 0;
+    scale: 1;
+  }
+  33% {
+    translate: 0 -8px;
+    scale: 1.15;
+  }
+  66% {
+    translate: 0 -3px;
+    scale: 1.05;
+  }
+}
+
+.nombre {
+  font-family: var(--sd-font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+/* Tres puntos: cuantos más encendidos, mejor la pieza. */
+.nivel {
+  display: flex;
+  gap: 4px;
+}
+
+.nivel > span {
+  width: 8px;
+  height: 8px;
+  background: var(--sd-surface);
+  border: 2px solid var(--marco);
+}
+
+.nivel > span[data-lleno] {
+  background: var(--marco);
+}
+
+/* ── El precio y los botones ───────────────────────────────────────────── */
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
+.precio {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+.cifra {
+  font-family: var(--sd-font-display);
+  font-size: clamp(2.2rem, 3.6vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--px-noche-oro);
+}
+
+.total {
+  font-family: var(--sd-font-pixel);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--sd-ink-muted);
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Botones de recreativa, como el de jugar, más pequeños. */
+.boton,
+.botonSuave {
+  padding: 0.75rem 1rem;
+  font-family: var(--sd-font-pixel);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  border: 3px solid var(--px-noche-boton-tinta);
+  transition:
+    translate var(--sd-dur-fast) ease,
+    box-shadow var(--sd-dur-fast) ease;
+}
+
+.boton {
+  color: var(--px-noche-boton-tinta);
+  background: var(--px-noche-oro);
+  box-shadow: 0 4px 0 0 var(--px-noche-oro-sombra);
+}
+
+.botonSuave {
+  color: var(--sd-ink);
+  background: transparent;
+  border-color: var(--sd-ink-muted);
+  box-shadow: 0 4px 0 0 var(--sd-shadow-color);
+}
+
+.boton:hover,
+.botonSuave:hover {
+  translate: 0 -2px;
+}
+
+.boton:active,
+.botonSuave:active {
+  translate: 0 3px;
+  box-shadow: none;
+}
+
+.boton:focus-visible,
+.botonSuave:focus-visible {
+  outline: 3px solid var(--px-noche-tinta);
+  outline-offset: 3px;
+}
