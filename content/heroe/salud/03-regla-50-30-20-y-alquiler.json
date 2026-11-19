@@ -147,27 +147,6 @@
       ],
       "correcta": 0,
       "explicacion": "El 30 % es para lo que eliges y te hace la vida más agradable, pero no es imprescindible. La vivienda va en el 50 % y el ahorro, en el 20 %."
-    },
-    {
-      "id": "cuotas-de-deudas",
-      "tipo": "opcion",
-      "enunciado": "Pepito paga una cuota mensual de un préstamo. ¿En qué bloque de la regla 50/30/20 la pone?",
-      "opciones": [
-        "En el 50 % de necesidades",
-        "En el 30 % de deseos",
-        "En ninguno: no cuenta"
-      ],
-      "correcta": 0,
-      "explicacion": "Una cuota de deuda no se puede dejar de pagar sin consecuencias, así que es una necesidad. Por eso cuenta dentro del 50 %."
-    },
-    {
-      "id": "calcula-esfuerzo",
-      "tipo": "calcula",
-      "enunciado": "Pepito cobra 1.800 € netos y paga 720 € de alquiler. ¿Qué porcentaje de su sueldo neto se lleva el alquiler?",
-      "unidad": "porcentaje",
-      "solucion": 4000,
-      "tolerancia": 0,
-      "explicacion": "Se divide el alquiler entre el sueldo neto y se multiplica por 100: 720 / 1.800 × 100 = **40 %**, por encima de la referencia del 30-35 %."
     }
   ]
 }

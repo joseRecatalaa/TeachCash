@@ -68,12 +68,24 @@ Todo nivel lleva `id`, `tipo`, `titulo`, `descripcion` (la ficha del camino) y
 
 | Tipo | Lleva | Para superarlo |
 |---|---|---|
-| `lectura` | `paginas` (1–8) y `minitest` (3–5 preguntas) | 60 % del minitest |
-| `interactivo` | `ejercicios` (3–12). **Sin minitest**: ya hace de test | 60 % |
-| `jefe` | `preguntas` (8–12) y `aprobado` (50–100, en %) | Su `aprobado` |
+| `lectura` | `paginas` (1–8) y `minitest` (2–3 preguntas) | 60 % del minitest |
+| `interactivo` | `ejercicios` (3–6). **Sin minitest**: ya hace de test | 60 % |
+| `jefe` | `preguntas` (4–6) y `aprobado` (50–100, en %) | Su `aprobado` |
 
-El jefe de los cuatro mundos lleva **12 preguntas** (el máximo) de todo el
-mundo, con los seis tipos, y `"aprobado": 70`.
+Los topes son cortos a propósito: un nivel se juega en un rato. El jefe de
+los cuatro mundos lleva **6 preguntas** (el máximo) de todo el mundo, de
+varios tipos, y `"aprobado": 65` (4 de 6). Se bajaron de 12 preguntas y un
+70 % porque el test se hacía pesado.
+
+Con un minitest de 3 preguntas no hay término medio de estrellas: 3 de 3 son
+tres estrellas y 2 de 3, una (el 80 % de las dos estrellas no cae en ninguna).
+
+**Sin cuentas de calculadora.** Se comprueba que se ha entendido la idea, no
+la aritmética: nadie tiene que salir de la app a por la calculadora. Para eso
+están el verdadero/falso, elegir entre dos ofertas, ordenar los pasos o
+emparejar conceptos. Una cifra en el enunciado está bien si se compara de un
+vistazo (26,8 % frente a 19,5 %); calcular el 19 % de 150 € no.
+`pnpm heroe:validar` rechaza cualquier pregunta `calcula`.
 
 **Estrellas**: 3 si es perfecto, 2 si llega al 80 %, 1 si se supera. Se puede
 repetir y cuenta la mejor marca.
@@ -134,9 +146,9 @@ explica el porqué, no repite la respuesta.
 | `ordenar` | `pasos` (3–6) | **Se escriben en el orden bueno**; la app los baraja |
 | `emparejar` | `pares` (3–5) de `concepto` y `definicion` | Cada concepto con **su** definición; la app las baraja |
 | `hueco` | `enunciado` con UN `___`, `opciones`, `correcta` | La palabra que falta |
-| `calcula` | `unidad`, `solucion`, `tolerancia` | Un número |
+| `calcula` | `unidad`, `solucion`, `tolerancia` | Un número. **No se usa en el contenido** (arriba) |
 
-En `calcula`, la solución es un **entero en la unidad mínima**:
+`calcula` sigue en el código por si algún día vuelve. Su solución es un **entero en la unidad mínima**:
 
 - `euros`: céntimos. 2.850 € es `285000`.
 - `porcentaje`: centésimas de punto. 5,25 % es `525`.
@@ -145,7 +157,7 @@ En `calcula`, la solución es un **entero en la unidad mínima**:
 `tolerancia` va en esa misma unidad: `100` en euros acepta un euro arriba o
 abajo. Con cifras redondas, `0`.
 
-Ejemplo mínimo de cada tipo: `content/heroe/ahorro/`, que es el mundo piloto.
+Ejemplo de cada tipo que se usa: `content/heroe/ahorro/`, que es el mundo piloto.
 
 ## Prompts
 
@@ -205,11 +217,12 @@ EXACTAMENTE docs/CONTENIDO-HEROE.md y los esquemas de
 src/types/heroe.types.ts:
 
 - mundo.json con decorado "<decorado>" y orden <orden>.
-- 9 niveles: L, I, L, I, L, I, L, I y el jefe al final (hasta 12
-  preguntas, aprobado 70). Cada lectura de unas 4 páginas y 4 preguntas de minitest;
-  cada interactivo, de 5 a 7 ejercicios mezclando los seis tipos.
-- Importes en céntimos y con signo; porcentajes de calcula en centésimas de
-  punto.
+- 9 niveles: L, I, L, I, L, I, L, I y el jefe al final (6 preguntas,
+  aprobado 65). Cada lectura de unas 4 páginas y 3 preguntas de minitest;
+  cada interactivo, de 4 a 6 ejercicios mezclando los tipos.
+- NINGUNA pregunta `calcula` ni ninguna que pida hacer cuentas: se pregunta
+  por la idea, no por la aritmética.
+- Importes de los ejemplos en céntimos y con signo.
 - Toda pregunta con una explicación que diga POR QUÉ, en una o dos frases.
 - Si un ejemplo necesita una persona, se llama Pepito (nunca otro nombre).
 - Nada que no esté en el informe y respaldado por una fuente. Ningún producto
@@ -224,7 +237,7 @@ dame la lista de cifras y datos legales que tiene que comprobar una persona.
 Antes de commitear un mundo, una persona comprueba:
 
 - [ ] Cada cifra legal o fiscal está vigente y en su fuente oficial.
-- [ ] Cada `calcula` da la `solucion` haciendo la cuenta a mano.
+- [ ] Ninguna pregunta obliga a sacar la calculadora.
 - [ ] Cada pregunta tiene UNA respuesta buena y ninguna trampa de redacción.
 - [ ] Las explicaciones dicen el porqué y no solo la respuesta.
 - [ ] No se nombra ningún banco, fondo, producto ni plataforma.

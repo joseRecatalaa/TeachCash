@@ -36,7 +36,14 @@ function Contenido() {
       </PaginaHeroe>
     )
   }
-  if (!nivel.data) {
+  // Solo se juega el nivel que pide la URL. "Siguiente nivel" llega a esta
+  // misma página con otro `?id=`; si en ese paso se pintara aún el nivel de
+  // antes, el reproductor nacería con su fase y sus respuestas, y luego le
+  // llegaría el nivel nuevo sin volver a montarse: la lectura saltaba directa
+  // al minitest y el servidor rechazaba las respuestas (eran tantas como
+  // ejercicios tenía el nivel anterior).
+  const datos = nivel.data?.nivel.id === id ? nivel.data : null
+  if (!datos) {
     return (
       <PaginaHeroe titulo="Camino del héroe" volver={cabecera}>
         <Cargando />
@@ -44,10 +51,12 @@ function Contenido() {
     )
   }
   return (
-    <PaginaHeroe titulo={nivel.data.nivel.titulo} subtitulo={nivel.data.nivel.descripcion} volver={cabecera} heroeEncima>
+    <PaginaHeroe titulo={datos.nivel.titulo} subtitulo={datos.nivel.descripcion} volver={cabecera} heroeEncima>
       <Reproductor
-        key={`${id}#${partida}`}
-        nivel={nivel.data.nivel}
+        // La `key` es la del nivel que se PINTA, no la de la URL: así su
+        // estado no puede pasar nunca de un nivel a otro.
+        key={`${datos.nivel.id}#${partida}`}
+        nivel={datos.nivel}
         rutaCamino={alCamino.href}
         alRepetir={() => setPartida((n) => n + 1)}
       />

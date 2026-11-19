@@ -3,8 +3,8 @@
   "tipo": "jefe",
   "titulo": "El Marqués del Mínimo",
   "descripcion": "«¿Para qué pagar hoy si puedes pagar veinte euritos al mes toda la vida?» Desmonta sus contratos trampa en doce preguntas.",
-  "minutos": 5,
-  "aprobado": 70,
+  "minutos": 3,
+  "aprobado": 65,
   "preguntas": [
     {
       "id": "aristocratico",
@@ -38,27 +38,6 @@
       ],
       "correcta": 1,
       "explicacion": "27,5 − 19,8 = 7,7 puntos, más de los 6 del criterio. Anulado el contrato, la Ley de 1908 (art. 3) te obliga a devolver solo lo recibido."
-    },
-    {
-      "id": "fecha-directiva",
-      "tipo": "hueco",
-      "enunciado": "La Directiva (UE) 2023/2225 de crédito al consumo se aplica desde el 20 de noviembre de ___.",
-      "opciones": [
-        "2026",
-        "2028",
-        "2030"
-      ],
-      "correcta": 0,
-      "explicacion": "Es su fecha de aplicación, y ese día deroga la directiva de 2008. En España llega con una ley propia, que en noviembre de 2026 seguía en anteproyecto."
-    },
-    {
-      "id": "gastos-marques",
-      "tipo": "calcula",
-      "enunciado": "El Marqués te pasa las facturas de la hipoteca: tasación 420 €, notaría de la escritura 650 €, registro 320 €, gestoría 300 € y una copia que has pedido tú, 30 €. ¿Cuántos euros te tocan?",
-      "unidad": "euros",
-      "solucion": 45000,
-      "tolerancia": 0,
-      "explicacion": "Tú pagas la tasación (420 €) y la copia que pediste (30 €): **450 €**. El resto es del banco por el artículo 14.1.e) de la Ley 5/2019."
     },
     {
       "id": "registros-plazos",
@@ -95,46 +74,6 @@
         "Préstamo de estudios de 2.000 € al 3,5 % TAE"
       ],
       "explicacion": "La avalancha mira solo la TAE, de mayor a menor. El tamaño de cada deuda no cuenta para el orden."
-    },
-    {
-      "id": "exoneracion-doble",
-      "tipo": "calcula",
-      "enunciado": "Una persona autónoma, insolvente de buena fe, pide la exoneración por primera vez. Debe **15.000 €** a Hacienda y 15.000 € a la Seguridad Social. ¿Cuántos euros se le cancelan entre las dos?",
-      "unidad": "euros",
-      "solucion": 2000000,
-      "tolerancia": 0,
-      "explicacion": "Con cada una: 5.000 € enteros más la mitad de los 10.000 € restantes, 5.000 €. Son 10.000 €, justo el tope. Entre las dos: **20.000 €**."
-    },
-    {
-      "id": "fichero-reclamada",
-      "tipo": "verdaderoFalso",
-      "enunciado": "Para meter una deuda en un fichero de morosos, la ley exige que el deudor no la haya reclamado ante un juez o la Administración.",
-      "correcta": true,
-      "explicacion": "Es una de las condiciones del artículo 20.1.b) de la Ley Orgánica 3/2018: la deuda tiene que ser cierta, vencida, exigible y no estar reclamada."
-    },
-    {
-      "id": "plazo-bde",
-      "tipo": "hueco",
-      "enunciado": "Si tu banco rechaza tu reclamación, tienes un máximo de ___ desde que reclamaste en el banco para acudir al Banco de España.",
-      "opciones": [
-        "1 año",
-        "15 días",
-        "10 años"
-      ],
-      "correcta": 0,
-      "explicacion": "Pasado un año desde la reclamación a la entidad, el Banco de España no la admite (Ley 7/2017, art. 18.1.e)."
-    },
-    {
-      "id": "descubierto",
-      "tipo": "opcion",
-      "enunciado": "El último truco del Marqués: cobrarte una barbaridad por unos días en números rojos sin haberlo pactado. Con la Ley 16/2011, ¿cuánto puede costar ese descubierto?",
-      "opciones": [
-        "Una TAE de hasta 2,5 veces el interés legal del dinero",
-        "Hasta un 45 % TAE si dura más de tres días",
-        "Lo que decida cada banco"
-      ],
-      "correcta": 0,
-      "explicacion": "El artículo 20.4 de la Ley 16/2011 prohíbe que un descubierto tácito tenga una TAE superior a 2,5 veces el interés legal del dinero."
     },
     {
       "id": "derrotar-marques",

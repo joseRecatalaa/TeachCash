@@ -311,4 +311,20 @@ describe('si el servidor falla', () => {
     expect(await screen.findByRole('heading', { name: '¡Nivel superado!' })).toBeInTheDocument()
     expect(acciones.enviarNivel).toHaveBeenNthCalledWith(2, 'ahorro/03', Array(8).fill(true))
   })
+
+  test('si rechaza las respuestas, se puede empezar de nuevo en vez de reintentar sin fin', async () => {
+    acciones.enviarNivel.mockResolvedValue({ ok: false, error: 'Respuestas no válidas' })
+    const alRepetir = vi.fn()
+    const { usuario } = jugar(LECTURA, alRepetir)
+    await usuario.click(screen.getByRole('button', { name: 'Siguiente' }))
+    await usuario.click(screen.getByRole('button', { name: /minitest/i }))
+    for (let i = 0; i < 3; i++) {
+      await usuario.click(screen.getAllByRole('radio')[0])
+      await usuario.click(screen.getByRole('button', { name: i === 2 ? 'Terminar' : 'Siguiente' }))
+    }
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Respuestas no válidas')
+    await usuario.click(screen.getByRole('button', { name: 'Empezar de nuevo' }))
+    expect(alRepetir).toHaveBeenCalled()
+  })
 })

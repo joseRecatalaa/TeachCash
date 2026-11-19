@@ -30,15 +30,6 @@
       "explicacion": "Las cuatro tienen el mismo final: comprar caro, vender barato o perder el dinero entero. La disciplina y la comprobación en la CNMV son el antídoto."
     },
     {
-      "id": "calcula-baja-y-sube",
-      "tipo": "calcula",
-      "enunciado": "Un vecino de Pepito mete 1.000 € en una criptomoneda pensando que «si baja un 50 % y luego sube un 50 %, me quedo igual». El primer mes cae un 50 %; el segundo sube un 50 % sobre lo que quedaba. ¿Cuántos euros tiene al final?",
-      "unidad": "euros",
-      "solucion": 75000,
-      "tolerancia": 0,
-      "explicacion": "Tras caer un 50 %, quedan 1.000 − 500 = 500 €. La subida del 50 % se calcula sobre esos 500: 500 × 50 / 100 = 250 €. Total, **750 €**. Para volver a 1.000 € desde 500 € haría falta subir un 100 %."
-    },
-    {
       "id": "test-gestion-carteras",
       "tipo": "opcion",
       "enunciado": "Pepito contrata con una entidad autorizada la gestión de su cartera: la entidad decide y gestiona las inversiones por él. ¿Qué test tiene que hacerle antes?",

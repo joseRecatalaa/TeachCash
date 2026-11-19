@@ -6,15 +6,6 @@
   "minutos": 4,
   "ejercicios": [
     {
-      "id": "calcula-tramos",
-      "tipo": "calcula",
-      "enunciado": "En 2026 Pepito reembolsa del todo un fondo que tiene a su nombre para reformar la casa, con una ganancia de 10.000 €. No tiene más rentas del ahorro ese año. Si los primeros 6.000 € tributan al 19 % y de ahí a 50.000 € al 21 %, ¿cuántos euros le toca pagar por esa ganancia?",
-      "unidad": "euros",
-      "solucion": 198000,
-      "tolerancia": 0,
-      "explicacion": "Tramo a tramo: 6.000 × 19 / 100 = 1.140 € y los 4.000 € restantes, 4.000 × 21 / 100 = 840 €. En total, **1.980 €**. Lo que le retuvieron al reembolsar se descuenta de esa cifra en la declaración."
-    },
-    {
       "id": "ordena-traspaso",
       "tipo": "ordenar",
       "enunciado": "Pepito quiere pasar su dinero de un fondo caro a un fondo indexado de otra entidad, sin pagar impuestos gracias al traspaso. Ordena los pasos.",
@@ -25,15 +16,6 @@
         "Recibir las nuevas participaciones, con el valor y la fecha de compra del fondo original"
       ],
       "explicacion": "El traspaso se pide en la entidad de **destino**, y el dinero viaja de fondo a fondo sin pasar nunca por la cuenta de Pepito. Si lo cobrara él, dejaría de ser un traspaso y tributaría."
-    },
-    {
-      "id": "calcula-perdida-pendiente",
-      "tipo": "calcula",
-      "enunciado": "En 2026 Pepito cobra 1.000 € en dividendos e intereses y vende unas acciones con una pérdida de 400 €, sin más ventas. La pérdida solo puede restar hasta el 25 % de esos 1.000 €. ¿Cuántos euros de pérdida le quedan pendientes para los 4 años siguientes?",
-      "unidad": "euros",
-      "solucion": 15000,
-      "tolerancia": 0,
-      "explicacion": "El límite de este año es 1.000 × 25 / 100 = 250 €. De los 400 € de pérdida, quedan 400 − 250 = **150 €** guardados para compensar en los cuatro años siguientes."
     },
     {
       "id": "empareja-planes",

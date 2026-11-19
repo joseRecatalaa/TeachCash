@@ -161,27 +161,6 @@
       "explicacion": "El bruto anual es idéntico. Prorratear solo divide la misma cantidad en doce cobros iguales en vez de catorce."
     },
     {
-      "id": "calcula-smi-doce",
-      "tipo": "calcula",
-      "enunciado": "En 2026, el salario mínimo es de 1.221 € brutos al mes en 14 pagas. Si un contrato a jornada completa lo reparte en 12 pagas iguales, ¿cuántos euros brutos son al mes?",
-      "unidad": "euros",
-      "solucion": 142450,
-      "tolerancia": 0,
-      "explicacion": "Primero el año: 1.221 × 14 = 17.094 €. Luego, entre doce: 17.094 / 12 = **1.424,50 €** brutos al mes."
-    },
-    {
-      "id": "hueco-fogasa",
-      "tipo": "hueco",
-      "enunciado": "La cotización al Fondo de Garantía Salarial (FOGASA), del 0,20 % en 2026, la paga solo ___.",
-      "opciones": [
-        "la empresa",
-        "la persona trabajadora",
-        "Hacienda"
-      ],
-      "correcta": 0,
-      "explicacion": "Quien trabaja no aporta nada al FOGASA: el 0,20 % lo paga entero la empresa, y sirve para cobrar salarios e indemnizaciones si la empresa no puede pagarlos."
-    },
-    {
       "id": "que-es-la-retencion",
       "tipo": "opcion",
       "enunciado": "¿Qué es la retención del IRPF de tu nómina?",

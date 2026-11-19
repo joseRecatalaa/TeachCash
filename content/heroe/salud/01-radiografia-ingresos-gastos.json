@@ -138,15 +138,6 @@
         { "concepto": "Transferencia de la nómina", "definicion": "Ingreso regular neto" }
       ],
       "explicacion": "Distinguir lo que no puedes dejar de pagar de lo que eliges cada mes te dice de un vistazo dónde recortar si hace falta."
-    },
-    {
-      "id": "calcula-balance",
-      "tipo": "calcula",
-      "enunciado": "Pepito cobra 1.350 € netos este mes. Sus gastos fijos suman 620 € y los variables, 480 €. ¿Cuántos euros le quedan de balance?",
-      "unidad": "euros",
-      "solucion": 25000,
-      "tolerancia": 0,
-      "explicacion": "Se restan todos los gastos a lo que entra de verdad: 1.350 − 620 − 480 = **250 €**."
     }
   ]
 }

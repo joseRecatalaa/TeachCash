@@ -132,7 +132,7 @@
         },
         {
           "tipo": "parrafo",
-          "texto": "¿Estarían cubiertos Pepito y su hermana con 180.000 €? ¿Cuánto gana con cinco Letras? Compruébalo en la práctica."
+          "texto": "¿Qué haría Pepito para tener todo su dinero cubierto? ¿Cómo se compra una Letra? Compruébalo en la práctica."
         }
       ]
     }
@@ -164,18 +164,6 @@
       "opciones": ["1.000 €", "100 €", "10.000 €"],
       "correcta": 0,
       "explicacion": "Su valor al vencer es de **1.000 €**. Como normalmente la pagas por menos, la diferencia es lo que ganas."
-    },
-    {
-      "id": "letra-hacienda",
-      "tipo": "opcion",
-      "enunciado": "¿Qué pasa en el IRPF con la ganancia de una Letra del Tesoro?",
-      "opciones": [
-        "No lleva retención, pero se declara en la renta",
-        "Está exenta de impuestos",
-        "Le retienen un 19 % al cobrarla"
-      ],
-      "correcta": 0,
-      "explicacion": "Las Letras están **exentas de retención**, no de impuestos: la ganancia es un rendimiento del capital mobiliario y se declara en la base del ahorro."
     }
   ]
 }

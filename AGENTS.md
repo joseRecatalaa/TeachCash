@@ -793,6 +793,19 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     Los títulos del contenido no llevan emoticonos; en el texto sí, y se
     pintan pixelados con un filtro SVG.
   - **El personaje de los ejemplos se llama Pepito**, siempre.
+  - **Niveles cortos y sin calculadora** (noviembre de 2026): minitest de 3
+    preguntas como mucho, práctica de 6 y jefe de 6 con un 65 % (antes, hasta
+    5, 12 y 12 con un 70 %). El contenido no usa `calcula`: se pregunta por la
+    idea, no por la cuenta, y nadie tiene que salir de la app a por la
+    calculadora. Los topes los pone el esquema y `pnpm heroe:validar` rechaza
+    `calcula`; el tipo sigue en el código. Con 3 preguntas, una lectura da 3
+    estrellas o 1, nunca 2.
+  - **El reproductor se monta con la `key` del nivel que PINTA**, no con el
+    `?id=` de la URL, y la página solo lo pinta cuando los datos son de ese id.
+    "Siguiente nivel" es la misma página con otro `?id=`: con la `key` de la
+    URL, si un render llevaba aún el nivel anterior, el nuevo heredaba su fase y
+    sus respuestas (la lectura se abría en el minitest y el servidor las
+    rechazaba). Lo vigila `SiguienteNivel.test.tsx`.
   - Aviso fijo en todo el módulo: "Contenido educativo, no asesoramiento
     financiero".
 - **Cuadro de mando y Tienda**:
