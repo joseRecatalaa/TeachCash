@@ -3,8 +3,8 @@
   "tipo": "jefe",
   "titulo": "La Niebla Financiera",
   "descripcion": "La que te susurra que no mires la cuenta. Despéjala con doce preguntas de presupuesto, nómina de 2026 y patrimonio neto.",
-  "minutos": 5,
-  "aprobado": 70,
+  "minutos": 3,
+  "aprobado": 65,
   "preguntas": [
     {
       "id": "doce-o-catorce-pagas",
@@ -24,15 +24,6 @@
       "enunciado": "La Niebla asegura: \"El salario mínimo de 2026 es de 1.221 € brutos al mes en 14 pagas\".",
       "correcta": true,
       "explicacion": "El Real Decreto 126/2026 fija 1.221 € al mes y un mínimo de 17.094 € al año, que es justo lo que dan 14 pagas de 1.221 €."
-    },
-    {
-      "id": "calcula-mei-jefe",
-      "tipo": "calcula",
-      "enunciado": "La Niebla quiere liarte con el MEI. Tu base de contingencias comunes es de 2.400 € y en 2026 tu parte del MEI es el 0,15 %. ¿Cuántos euros te descuentan este mes por el MEI?",
-      "unidad": "euros",
-      "solucion": 360,
-      "tolerancia": 0,
-      "explicacion": "Se aplica tu tipo a la base: 2.400 × 0,0015 = **3,60 €**. El 0,75 % restante del MEI lo pone la empresa."
     },
     {
       "id": "ordena-revision",
@@ -93,63 +84,6 @@
       ],
       "correcta": 0,
       "explicacion": "Un sueldo alto puede convivir con deudas que superan todo lo que tienes. El patrimonio neto lo pone a la vista."
-    },
-    {
-      "id": "calcula-neto-jefe",
-      "tipo": "calcula",
-      "enunciado": "Pepito tiene contrato indefinido en 2026 y cobra 2.000 € brutos al mes en 12 pagas, que son también su base de cotización. Le descuentan el 6,50 % de Seguridad Social y un 12 % de IRPF. ¿Cuántos euros le llegan a la cuenta?",
-      "unidad": "euros",
-      "solucion": 163000,
-      "tolerancia": 0,
-      "explicacion": "Seguridad Social: 2.000 × 0,065 = 130 €. IRPF: 2.000 × 0,12 = 240 €. Neto: 2.000 − 130 − 240 = **1.630 €**."
-    },
-    {
-      "id": "limite-sin-retencion",
-      "tipo": "verdaderoFalso",
-      "enunciado": "La Niebla afirma: \"En 2026, a una persona sin hijos ni cónyuge a cargo y con contrato indefinido no se le retiene IRPF en la nómina si gana 15.876 € brutos al año o menos\".",
-      "correcta": true,
-      "explicacion": "Es el límite que fija el artículo 81 del Reglamento del IRPF para esa situación familiar. Por debajo, la empresa no practica retención; con hijos o con cónyuge sin rentas, el límite es algo mayor."
-    },
-    {
-      "id": "empareja-conductas",
-      "tipo": "emparejar",
-      "enunciado": "Empareja cada costumbre con lo que le hace a tu patrimonio neto.",
-      "pares": [
-        {
-          "concepto": "Tapar cada mes lo que falta con la tarjeta",
-          "definicion": "Lo hace bajar mes a mes"
-        },
-        {
-          "concepto": "Ahorrar con regularidad lo que sobra",
-          "definicion": "Lo hace crecer poco a poco"
-        },
-        {
-          "concepto": "Vender el coche para pagar un préstamo del mismo valor",
-          "definicion": "Lo deja igual, con menos deudas"
-        }
-      ],
-      "explicacion": "El patrimonio sube cuando entra más de lo que sale y baja cuando vives a crédito. Cambiar un bien por una deuda del mismo valor no lo mueve."
-    },
-    {
-      "id": "hueco-letra-t",
-      "tipo": "hueco",
-      "enunciado": "En una meta SMART, ponerle una fecha límite corresponde a la letra ___.",
-      "opciones": [
-        "T",
-        "R",
-        "A"
-      ],
-      "correcta": 0,
-      "explicacion": "La T es de temporal: con una fecha, la meta no se puede aplazar para siempre. La R es de relevante y la A, de alcanzable."
-    },
-    {
-      "id": "calcula-patrimonio-final",
-      "tipo": "calcula",
-      "enunciado": "Tienes 3.000 € en el banco y un coche que vale 7.000 €. Debes 2.500 € de un préstamo y 500 € de compras aplazadas. Usas 1.000 € de la cuenta para pagar parte del préstamo. ¿Cuántos euros vale tu patrimonio neto después?",
-      "unidad": "euros",
-      "solucion": 700000,
-      "tolerancia": 0,
-      "explicacion": "Antes: 10.000 − 3.000 = 7.000 €. Después: activos 2.000 + 7.000 = 9.000 € y deudas 1.500 + 500 = 2.000 €, así que 9.000 − 2.000 = **7.000 €**. Pagar deuda con ahorros no cambia el patrimonio, pero te quita cargas."
     }
   ]
 }

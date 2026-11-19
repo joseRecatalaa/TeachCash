@@ -172,30 +172,6 @@
       "explicacion": "Lo que pasó no obliga al futuro: los mercados cambian. Por eso la CNMV exige acompañar las rentabilidades históricas del aviso de que **no garantizan** las futuras."
     },
     {
-      "id": "empareja-pilares",
-      "tipo": "emparejar",
-      "enunciado": "Relaciona cada concepto básico de inversión con su definición.",
-      "pares": [
-        {
-          "concepto": "Horizonte temporal",
-          "definicion": "El plazo durante el que no vas a necesitar el dinero invertido"
-        },
-        {
-          "concepto": "Diversificación",
-          "definicion": "Repartir entre activos, sectores y países para que una caída concreta duela menos"
-        },
-        {
-          "concepto": "Renta fija",
-          "definicion": "Deuda de Estados o empresas, como letras o bonos, que paga un interés"
-        },
-        {
-          "concepto": "Renta variable",
-          "definicion": "Acciones: partes de empresas cuyo valor sube o baja con el negocio y el mercado"
-        }
-      ],
-      "explicacion": "Son las cuatro piezas de cualquier cartera: cuánto puede esperar el dinero, cómo se reparte el riesgo y si prestas (renta fija) o pasas a ser copropietario (renta variable)."
-    },
-    {
       "id": "hueco-riesgo",
       "tipo": "hueco",
       "enunciado": "En toda inversión real, la rentabilidad posible y el ___ van unidos: no hay ganancia alta sin aceptar posibles pérdidas.",

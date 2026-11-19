@@ -2,7 +2,7 @@
   "id": "salud/06-practica-revisa-la-nomina",
   "tipo": "interactivo",
   "titulo": "Pepito revisa su nómina línea a línea",
-  "descripcion": "Comprueba las cotizaciones de 2026 de una nómina, calcula el MEI y llega hasta el neto que se ingresa en la cuenta.",
+  "descripcion": "Comprueba las cotizaciones de 2026 de una nómina, entiende cada descuento y llega hasta el neto que se ingresa en la cuenta.",
   "minutos": 4,
   "ejercicios": [
     {
@@ -16,24 +16,6 @@
         { "concepto": "MEI", "definicion": "0,15 %" }
       ],
       "explicacion": "Son las cuatro cotizaciones que se descuentan a quien trabaja con contrato indefinido en 2026. El resto, hasta llegar al total de cada tipo, lo paga la empresa."
-    },
-    {
-      "id": "calcula-total-cotizacion",
-      "tipo": "calcula",
-      "enunciado": "Suma lo que aporta Pepito: contingencias comunes (4,70 %), desempleo (1,55 %), formación profesional (0,10 %) y MEI (0,15 %). ¿Qué porcentaje de su base de cotización le descuentan en total?",
-      "unidad": "porcentaje",
-      "solucion": 650,
-      "tolerancia": 0,
-      "explicacion": "4,70 + 1,55 + 0,10 + 0,15 = **6,50 %**. Es la cifra que verás sumada en el apartado de deducciones de la nómina."
-    },
-    {
-      "id": "calcula-mei",
-      "tipo": "calcula",
-      "enunciado": "En su nómina de noviembre de 2026, la base de contingencias comunes de Pepito es de 2.000 €. Su parte del MEI es el 0,15 %. ¿Cuántos euros le descuentan por el MEI?",
-      "unidad": "euros",
-      "solucion": 300,
-      "tolerancia": 0,
-      "explicacion": "Se aplica el tipo sobre la base: 2.000 × 0,0015 = **3 €**. Es pequeño porque la mayor parte del MEI, el 0,75 %, la paga la empresa."
     },
     {
       "id": "ordena-hasta-el-neto",

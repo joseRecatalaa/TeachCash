@@ -45,28 +45,6 @@
         "o"
       ],
       "correcta": 0
-    },
-    {
-      "id": "p4",
-      "tipo": "opcion",
-      "enunciado": "¿Cuatro?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "opciones": [
-        "a",
-        "b"
-      ],
-      "correcta": 0
-    },
-    {
-      "id": "p5",
-      "tipo": "opcion",
-      "enunciado": "¿Cinco?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "opciones": [
-        "a",
-        "b"
-      ],
-      "correcta": 1
     }
   ]
 }

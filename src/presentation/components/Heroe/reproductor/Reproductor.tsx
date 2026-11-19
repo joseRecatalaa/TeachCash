@@ -128,7 +128,15 @@ export function Reproductor({
     return (
       <div className={styles.error} role="alert">
         <p>No se ha podido guardar la partida: {enviar.error.message}</p>
-        <SketchButton onClick={() => mandar(respuestas)}>Reintentar</SketchButton>
+        {/* Reintentar sirve si falló la red; si el servidor rechazó las
+            respuestas, mandarlas otra vez falla igual, y la única salida era
+            recargar. Empezar de nuevo monta la partida desde cero. */}
+        <div className={styles.acciones}>
+          <SketchButton onClick={() => mandar(respuestas)}>Reintentar</SketchButton>
+          <SketchButton variant="secondary" onClick={alRepetir}>
+            Empezar de nuevo
+          </SketchButton>
+        </div>
       </div>
     )
   }

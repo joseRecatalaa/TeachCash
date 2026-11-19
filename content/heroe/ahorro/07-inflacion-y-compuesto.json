@@ -141,7 +141,7 @@
         },
         {
           "tipo": "parrafo",
-          "texto": "¿Y si Pepito ya tiene algo ahorrado, o su meta sube de precio? Lo calculas en la práctica."
+          "texto": "¿Cómo convierte Pepito una meta en una cuota al mes, sin que la inflación le gane? Lo practicas a continuación."
         }
       ]
     }
@@ -165,15 +165,6 @@
       "enunciado": "Si tu cuenta te da un 1 % al año y los precios suben un 4 %, al final del año tu dinero compra más que antes.",
       "correcta": false,
       "explicacion": "Tienes un 1 % más de euros, pero las cosas cuestan un 4 % más. Con tu dinero compras **menos**: has perdido poder adquisitivo."
-    },
-    {
-      "id": "calcula-compuesto",
-      "tipo": "calcula",
-      "enunciado": "Pepito mete **5.000 €** al **4 %** de interés compuesto anual y no saca nada en 2 años. Antes de impuestos, ¿cuántos euros tiene al final?",
-      "unidad": "euros",
-      "solucion": 540800,
-      "tolerancia": 0,
-      "explicacion": "Año 1: 5.000 € + 200 € = 5.200 €. Año 2: 5.200 € + 208 € = **5.408 €**. El segundo año también cobran los 200 € del primero."
     },
     {
       "id": "hueco-meta",

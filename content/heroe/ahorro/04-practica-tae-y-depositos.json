@@ -2,7 +2,7 @@
   "id": "ahorro/04-practica-tae-y-depositos",
   "tipo": "interactivo",
   "titulo": "Practica: elige dónde aparcar tus ahorros",
-  "descripcion": "Pepito reparte sus ahorros entre una cuenta remunerada y un depósito: compara TAE, calcula intereses y lee el contrato.",
+  "descripcion": "Pepito reparte sus ahorros entre una cuenta remunerada y un depósito: compara TAE, entiende los intereses brutos y netos y lee el contrato.",
   "minutos": 4,
   "ejercicios": [
     {
@@ -16,24 +16,6 @@
       ],
       "correcta": 0,
       "explicacion": "El colchón tiene que estar **disponible cualquier día**. Un depósito sin cancelación lo bloquea, y mezclado con la nómina se acaba gastando."
-    },
-    {
-      "id": "calcula-bruto",
-      "tipo": "calcula",
-      "enunciado": "Para los otros 6.000 €, un depósito a 1 año le ofrece un **2,5 % TIN**, con los intereses pagados al vencer. ¿Cuántos euros de intereses brutos ganará?",
-      "unidad": "euros",
-      "solucion": 15000,
-      "tolerancia": 0,
-      "explicacion": "6.000 € × 2,5 % = **150 €**. Con el pago al final del año, el interés pactado se aplica una sola vez."
-    },
-    {
-      "id": "calcula-neto",
-      "tipo": "calcula",
-      "enunciado": "De esos 150 € brutos, la entidad le retiene el **19 %** para Hacienda. ¿Cuántos euros le llegan?",
-      "unidad": "euros",
-      "solucion": 12150,
-      "tolerancia": 0,
-      "explicacion": "150 € × 19 % = 28,50 € de retención. Le llegan 150 € − 28,50 € = **121,50 €**."
     },
     {
       "id": "tae-con-comision",
@@ -50,7 +32,7 @@
     {
       "id": "contrato-sin-cancelacion",
       "tipo": "verdaderoFalso",
-      "enunciado": "El contrato del depósito no prevé cancelarlo antes de tiempo. Aun así, Pepito puede romperlo cuando quiera por su cuenta.",
+      "enunciado": "El contrato de un depósito que mira Pepito no prevé cancelarlo antes de tiempo. Aun así, puede romperlo cuando quiera por su cuenta.",
       "correcta": false,
       "explicacion": "Si el contrato no da ese derecho, **una sola parte no puede cancelarlo**: tendría que pactarlo con la entidad. Por eso se mira antes de firmar."
     },

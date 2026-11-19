@@ -2,27 +2,9 @@
   "id": "ahorro/08-practica-metas-con-fecha",
   "tipo": "interactivo",
   "titulo": "Practica: la meta de Pepito contra la inflación",
-  "descripcion": "Pepito ahorra para un viaje: calcula su cuota mensual, pon a trabajar el interés compuesto y no dejes que la inflación le gane.",
+  "descripcion": "Pepito ahorra para un viaje: convierte su meta en una cuota mensual, pon a trabajar el interés compuesto y no dejes que la inflación le gane.",
   "minutos": 4,
   "ejercicios": [
-    {
-      "id": "calcula-cuota",
-      "tipo": "calcula",
-      "enunciado": "Pepito quiere **2.400 €** para un viaje dentro de **12 meses**. Sin contar intereses, ¿cuántos euros tiene que apartar al mes?",
-      "unidad": "euros",
-      "solucion": 20000,
-      "tolerancia": 0,
-      "explicacion": "Meta entre meses que faltan: 2.400 € ÷ 12 = **200 €** al mes."
-    },
-    {
-      "id": "calcula-con-ahorro",
-      "tipo": "calcula",
-      "enunciado": "Pepito ya tenía **600 €** apartados para el viaje. Para llegar a los 2.400 € en esos 12 meses, ¿cuántos euros al mes le hacen falta ahora?",
-      "unidad": "euros",
-      "solucion": 15000,
-      "tolerancia": 0,
-      "explicacion": "Primero lo que falta: 2.400 € − 600 € = 1.800 €. Luego, entre los meses: 1.800 € ÷ 12 = **150 €**."
-    },
     {
       "id": "poder-adquisitivo",
       "tipo": "opcion",
@@ -34,15 +16,6 @@
       ],
       "correcta": 0,
       "explicacion": "Sus euros crecen un 1 %, pero los precios suben un 3 %. Con lo que tiene puede comprar **menos** que al principio."
-    },
-    {
-      "id": "calcula-compuesto",
-      "tipo": "calcula",
-      "enunciado": "Para otra meta más lejana, Pepito deja **2.000 €** al **3 %** de interés compuesto anual y no saca nada en 2 años. Antes de impuestos, ¿cuántos euros tiene al final?",
-      "unidad": "euros",
-      "solucion": 212180,
-      "tolerancia": 0,
-      "explicacion": "Año 1: 2.000 € + 60 € = 2.060 €. Año 2: 2.060 € + 61,80 € = **2.121,80 €**. Los 60 € del primer año también cobran."
     },
     {
       "id": "intereses-de-intereses",

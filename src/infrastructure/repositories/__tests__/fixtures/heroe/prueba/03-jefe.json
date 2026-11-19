@@ -47,34 +47,6 @@
       "enunciado": "¿Jefe 6?",
       "explicacion": "Porque sí: es la explicación de prueba.",
       "correcta": true
-    },
-    {
-      "id": "j7",
-      "tipo": "verdaderoFalso",
-      "enunciado": "¿Jefe 7?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "correcta": false
-    },
-    {
-      "id": "j8",
-      "tipo": "verdaderoFalso",
-      "enunciado": "¿Jefe 8?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "correcta": true
-    },
-    {
-      "id": "j9",
-      "tipo": "verdaderoFalso",
-      "enunciado": "¿Jefe 9?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "correcta": false
-    },
-    {
-      "id": "j10",
-      "tipo": "verdaderoFalso",
-      "enunciado": "¿Jefe 10?",
-      "explicacion": "Porque sí: es la explicación de prueba.",
-      "correcta": true
     }
   ]
 }

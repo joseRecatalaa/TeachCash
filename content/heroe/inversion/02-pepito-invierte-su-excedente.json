@@ -6,15 +6,6 @@
   "minutos": 4,
   "ejercicios": [
     {
-      "id": "calcula-inflacion",
-      "tipo": "calcula",
-      "enunciado": "Pepito aparta 2.000 € para un gasto futuro y los deja un año en una cuenta al 0 %. Si ese año la inflación es del 3 %, ¿cuántos euros **de más** necesitará al final del año para comprar lo que al principio costaba 2.000 €?",
-      "unidad": "euros",
-      "solucion": 6000,
-      "tolerancia": 0,
-      "explicacion": "Si los precios suben un 3 %, lo que costaba 2.000 € pasa a costar un 3 % más: 2.000 × 3 / 100 = **60 €**. En total, 2.060 €."
-    },
-    {
       "id": "ordena-antes-de-invertir",
       "tipo": "ordenar",
       "enunciado": "Ordena los pasos de Pepito desde que cobra la nómina hasta que invierte a largo plazo.",
@@ -66,15 +57,6 @@
       "opciones": ["variable", "fija", "garantizada"],
       "correcta": 0,
       "explicacion": "Se llama variable porque ni los beneficios futuros ni el precio de la acción están asegurados de antemano: dependen de cómo le vaya al negocio y al mercado."
-    },
-    {
-      "id": "calcula-cartera-mixta",
-      "tipo": "calcula",
-      "enunciado": "Pepito reparte sus primeros 1.000 € a medias: 500 € en renta fija y 500 € en renta variable. En un año, sin meter ni sacar nada, la parte fija gana un 4 % y la variable un 8 %. ¿Cuántos euros de **beneficio bruto total** tiene?",
-      "unidad": "euros",
-      "solucion": 6000,
-      "tolerancia": 0,
-      "explicacion": "Se calcula cada parte por separado: 500 × 4 / 100 = 20 € y 500 × 8 / 100 = 40 €. Juntas, **60 €**. Son cifras de ejemplo: ninguna de las dos rentabilidades está asegurada."
     }
   ]
 }

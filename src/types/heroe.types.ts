@@ -227,25 +227,30 @@ const nivelBase = {
 const listaDePreguntas = (min: number, max: number) =>
   z.array(PreguntaSchema).min(min).max(max).refine(preguntasSinIdsRepetidos, 'Hay ids repetidos')
 
+/*
+ * Los topes son cortos a propósito: un nivel se juega en un rato y tiene que
+ * caber en él. Con 12 preguntas el jefe se hacía pesado y se abandonaba a
+ * medias. Subirlos es una decisión de diseño, no de formato.
+ */
 export const NivelSchema = z.discriminatedUnion('tipo', [
   /** Un curso corto que acaba con un minitest (el minijefe). */
   z.strictObject({
     ...nivelBase,
     tipo: z.literal('lectura'),
     paginas: z.array(PaginaSchema).min(1).max(8),
-    minitest: listaDePreguntas(3, 5),
+    minitest: listaDePreguntas(2, 3),
   }),
   /** Ejercicios en secuencia. Sin test aparte: ya hace de test. */
   z.strictObject({
     ...nivelBase,
     tipo: z.literal('interactivo'),
-    ejercicios: listaDePreguntas(3, 12),
+    ejercicios: listaDePreguntas(3, 6),
   }),
   /** El test grande del mundo. Declara su propio aprobado. */
   z.strictObject({
     ...nivelBase,
     tipo: z.literal('jefe'),
-    preguntas: listaDePreguntas(8, 12),
+    preguntas: listaDePreguntas(4, 6),
     /** Porcentaje de aciertos para superarlo. */
     aprobado: z.number().int().min(50).max(100),
   }),

@@ -178,19 +178,6 @@
       "enunciado": "Un fondo cobra su comisión de gestión sobre el patrimonio. Si un año pierde dinero, la gestora no cobra esa comisión ese año.",
       "correcta": false,
       "explicacion": "Una comisión sobre el patrimonio se carga al propio fondo y ya viene descontada del valor liquidativo, suba o baje el mercado. Solo la que se calcula sobre los **resultados** depende de que el fondo gane."
-    },
-    {
-      "id": "ventaja-aportar",
-      "tipo": "opcion",
-      "enunciado": "¿Qué ventaja tiene invertir una cantidad fija cada mes frente a esperar a adivinar cuándo está la bolsa más barata?",
-      "opciones": [
-        "Elimina por completo el riesgo de que la bolsa baje",
-        "Promedia el precio de compra y crea un hábito que no depende de las emociones",
-        "Hace que las ganancias no paguen impuestos",
-        "Obliga al banco a devolver el doble si el índice cierra en negativo"
-      ],
-      "correcta": 1,
-      "explicacion": "Con el mismo importe, en los meses de caída compras **más** participaciones y en los de subida, menos. Así no te juegas todo a entrar justo en un pico. El riesgo de que baje sigue ahí."
     }
   ]
 }
