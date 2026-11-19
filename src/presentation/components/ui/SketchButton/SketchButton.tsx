@@ -53,10 +53,25 @@ type NativeProps = SketchButtonBaseProps &
 type LinkProps = SketchButtonBaseProps &
   Omit<ComponentPropsWithoutRef<typeof Link>, keyof SketchButtonBaseProps>
 
-export type SketchButtonProps = NativeProps | LinkProps
+/**
+ * Un `<a>` de los de siempre, que carga la página ENTERA. Hace falta para ir de
+ * una página pública (la portada o los cursos) a la aplicación: el layout
+ * decide al cargar si monta la aplicación, y una navegación de `<Link>` no
+ * vuelve a pasar por él (se quedaría sin sesión ni proveedores).
+ */
+type RecargaProps = SketchButtonBaseProps &
+  Omit<ComponentPropsWithoutRef<'a'>, keyof SketchButtonBaseProps | 'href'> & {
+    href: string
+    recargar: true
+  }
 
-const esEnlace = (props: SketchButtonProps): props is LinkProps =>
+export type SketchButtonProps = NativeProps | LinkProps | RecargaProps
+
+const esEnlace = (props: SketchButtonProps): props is LinkProps | RecargaProps =>
   'href' in props && props.href !== undefined
+
+const esRecarga = (props: SketchButtonProps): props is RecargaProps =>
+  'recargar' in props && props.recargar === true
 
 /**
  * Clase y contenido, que son idénticos en las dos ramas.
@@ -129,6 +144,16 @@ function propsDelElemento<T extends SketchButtonBaseProps>(
 export function SketchButton(props: SketchButtonProps) {
   const { clase, contenido } = presentacion(props)
   const { loading } = props
+
+  if (esRecarga(props)) {
+    const { recargar, ...rest } = propsDelElemento(props)
+    return (
+      // Un `<a>` normal a propósito: ver `RecargaProps`.
+      <a {...rest} className={clase} aria-busy={loading || undefined} data-recarga={recargar}>
+        {contenido}
+      </a>
+    )
+  }
 
   if (esEnlace(props)) {
     const rest = propsDelElemento(props)

@@ -57,12 +57,21 @@ describe('proxy.ts (CSP con nonce)', () => {
   const cubre = (ruta: string) =>
     configProxy.matcher.some((m) => new RegExp(`^${m}$`).test(ruta))
 
-  test.each(['/', '/Movimientos', '/auth/confirm', '/no-existe.png', '/x.svg'])(
+  test.each(['/', '/Movimientos', '/auth/confirm', '/no-existe.png', '/x.svg', '/aprende/ahorro'])(
     'pone la CSP en %s (una ruta con extensión de imagen también pinta HTML: el 404)',
     (ruta) => expect(cubre(ruta)).toBe(true),
   )
 
-  test.each(['/_next/static/chunks/a.js', '/_next/image', '/favicon.ico', '/robots.txt', '/icon.svg'])(
+  test.each([
+    '/_next/static/chunks/a.js',
+    '/_next/image',
+    '/favicon.ico',
+    '/robots.txt',
+    '/icon.svg',
+    '/sitemap.xml',
+    '/manifest.webmanifest',
+    '/opengraph-image',
+  ])(
     'deja fuera los estáticos (%s)',
     (ruta) => expect(cubre(ruta)).toBe(false),
   )

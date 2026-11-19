@@ -1,0 +1,112 @@
+.probador {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 62em) {
+  .probador {
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+  }
+}
+
+/* La escena va a su tamaño entero (`.escena` de pixel.module.css: 276, 368 o
+   460 px de ancho). Aquí solo se le pone el papel detrás. */
+.escena {
+  padding: 1.5rem 1rem;
+  background: var(--sd-surface);
+  border: var(--sd-border-bold);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-md);
+}
+
+.mandos {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.piezas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+/* Cada pieza es un botón que cambia de calidad al pulsarlo. El borde dice en
+   qué calidad está, y el texto lo dice también (el color nunca va solo). */
+.pieza {
+  width: 100%;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  color: var(--sd-ink);
+  background: var(--sd-surface);
+  border: var(--sd-stroke) solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-sm);
+  box-shadow: var(--sd-shadow-xs);
+  cursor: pointer;
+  font: inherit;
+  transition: var(--sd-transition);
+}
+
+.pieza:hover {
+  translate: 0 -2px;
+  box-shadow: var(--sd-shadow-sm);
+}
+
+.pieza:active {
+  translate: 0 1px;
+  box-shadow: none;
+}
+
+.pieza:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+}
+
+.pieza[data-calidad='ninguna'] {
+  background: var(--sd-surface-sunken);
+  border-style: dashed;
+}
+
+.pieza[data-calidad='media'] {
+  background: var(--sd-accent-wash-faint);
+}
+
+.pieza[data-calidad='alta'] {
+  background: var(--sd-accent-wash);
+  border-width: var(--sd-stroke-bold);
+}
+
+.hueco {
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+.material {
+  font-size: 0.92rem;
+  color: var(--sd-ink-soft);
+}
+
+.precio {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.precio strong {
+  font-family: var(--sd-font-display);
+  font-size: 1.35rem;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

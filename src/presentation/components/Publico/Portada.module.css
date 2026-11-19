@@ -1,0 +1,537 @@
+/*
+ * La portada pública. Todo color sale de un token `--sd-*` (o de las `--px-*`
+ * de los dibujos), así que el modo oscuro es el de toda la aplicación.
+ *
+ * Ritmo: los márgenes son los mismos en todas las secciones (`.ancho`), y el
+ * hueco ENTRE secciones es claramente mayor que cualquiera de dentro. Dos
+ * secciones cambian el campo de color entero (el porqué y las fuentes) para
+ * que la página no se lea como una sola hoja larga.
+ */
+
+.portada {
+  overflow-x: clip;
+}
+
+.ancho {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 48em) {
+  .ancho {
+    padding-inline: 2rem;
+  }
+}
+
+.seccion,
+.seccionSuave {
+  padding-block: 4.5rem;
+}
+
+@media (min-width: 62em) {
+  .seccion,
+  .seccionSuave {
+    padding-block: 7rem;
+  }
+}
+
+.seccionSuave {
+  background: var(--sd-surface-sunken);
+  border-block: var(--sd-border);
+}
+
+.h2 {
+  margin: 0 0 1rem;
+  max-width: 22ch;
+  font-family: var(--sd-font-display);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.h3 {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.intro {
+  margin: 0 0 2.5rem;
+  max-width: 60ch;
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+/* ── 1. Qué es ───────────────────────────────────────────────────────────── */
+
+.heroe {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding: 2.5rem 1rem 3.5rem;
+}
+
+@media (min-width: 48em) {
+  .heroe {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 62em) {
+  .heroe {
+    grid-template-columns: 1.05fr 1fr;
+    gap: 2.5rem;
+    min-height: calc(100vh - 4.5rem);
+    padding-block: 3rem 4rem;
+  }
+}
+
+.heroeTexto > * {
+  animation: sd-rise var(--sd-dur-slow) var(--sd-ease-out) both;
+}
+
+.heroeTexto > :nth-child(2) {
+  animation-delay: calc(var(--sd-stagger) * 1);
+}
+
+.heroeTexto > :nth-child(3) {
+  animation-delay: calc(var(--sd-stagger) * 2);
+}
+
+.heroeTexto > :nth-child(4) {
+  animation-delay: calc(var(--sd-stagger) * 3);
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: clamp(2.6rem, 6.2vw, 5.4rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.entradilla {
+  margin: 1.5rem 0 0;
+  max-width: 30ch;
+  font-family: var(--sd-font-display);
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--sd-accent-soft);
+}
+
+.cercano {
+  margin: 1.1rem 0 0;
+  max-width: 46ch;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+
+.llamadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.heroeDibujo {
+  display: flex;
+  justify-content: center;
+  animation: sd-pop var(--sd-dur-slow) var(--sd-ease-pop) both;
+  animation-delay: calc(var(--sd-stagger) * 3);
+}
+
+.soloAncho {
+  display: none;
+}
+
+@media (min-width: 36em) {
+  .soloMovil {
+    display: none;
+  }
+
+  .soloAncho {
+    display: block;
+  }
+}
+
+/* A 480 px de ancho no cabe por debajo de 36em: ahí va el de escala 3. */
+
+/* ── 2. Por qué ──────────────────────────────────────────────────────────── */
+
+.porque {
+  padding-block: 4.5rem;
+  background: var(--sd-accent-wash);
+  border-block: var(--sd-border-bold);
+}
+
+@media (min-width: 62em) {
+  .porque {
+    padding-block: 6.5rem;
+  }
+}
+
+.porqueCuerpo {
+  display: grid;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 62em) {
+  .porqueCuerpo {
+    grid-template-columns: 1fr 1.2fr;
+    gap: 4rem;
+    align-items: start;
+  }
+}
+
+.dato {
+  margin: 0;
+}
+
+.cifra {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: clamp(4.5rem, 12vw, 8.5rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.dato figcaption {
+  margin-top: 1rem;
+  max-width: 32ch;
+  font-size: 1.2rem;
+  line-height: 1.45;
+}
+
+.dato cite {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  font-style: normal;
+  color: var(--sd-ink-soft);
+}
+
+.porqueTexto p {
+  margin: 0 0 1.1rem;
+  max-width: 52ch;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+/* ── 3. Los mundos ───────────────────────────────────────────────────────── */
+
+.mundos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3rem 2rem;
+}
+
+@media (min-width: 40em) {
+  .mundos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 75em) {
+  .mundos {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.mundo {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 0.5rem;
+}
+
+.mundo svg {
+  margin-bottom: 0.5rem;
+  transition: translate var(--sd-dur) var(--sd-ease-pop);
+}
+
+.mundo:hover svg {
+  translate: 0 -6px;
+}
+
+.mundo p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mundo .h3 a {
+  color: var(--sd-ink);
+  text-decoration: none;
+  background-image: linear-gradient(var(--sd-accent-wash), var(--sd-accent-wash));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% 0.35em;
+}
+
+.mundo .h3 a:hover {
+  color: var(--sd-accent-soft);
+}
+
+.medida {
+  font-family: var(--sd-font-display);
+  font-weight: 500;
+  color: var(--sd-ink-soft);
+}
+
+.empieza {
+  color: var(--sd-ink-soft);
+}
+
+.empieza strong {
+  color: var(--sd-ink);
+  font-weight: 600;
+}
+
+/* ── 4. Cómo se juega ────────────────────────────────────────────────────── */
+
+/* Un camino que se recorre, como el del juego: en el móvil baja por un trazo a
+   la izquierda; en ancho va de izquierda a derecha. */
+.pasos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2.5rem;
+}
+
+@media (min-width: 62em) {
+  .pasos {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+  }
+}
+
+.paso {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding-left: 1.25rem;
+  border-left: var(--sd-stroke-bold) dashed var(--sd-stroke-color);
+}
+
+@media (min-width: 62em) {
+  .paso {
+    padding: 1.25rem 0 0;
+    border-left: 0;
+    border-top: var(--sd-stroke-bold) dashed var(--sd-stroke-color);
+  }
+}
+
+.paso p {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+/* Los dibujos van a su tamaño entero (`DibujoPixel`): aquí solo se alinean por
+   abajo, como si pisaran el camino. */
+.pasoDibujo {
+  align-self: end;
+}
+
+/* ── 6. El gestor ────────────────────────────────────────────────────────── */
+
+.gestor {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 62em) {
+  .gestor {
+    grid-template-columns: 1fr 1.1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+}
+
+.usos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.usos li {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle-alt);
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+.usos li svg {
+  justify-self: center;
+}
+
+.usos strong {
+  font-family: var(--sd-font-display);
+  font-weight: 600;
+}
+
+/* ── 7. Por qué fiarse ───────────────────────────────────────────────────── */
+
+.veraz {
+  padding-block: 4.5rem;
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+}
+
+@media (min-width: 62em) {
+  .veraz {
+    padding-block: 6rem;
+  }
+}
+
+.verazCuerpo {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 48em) {
+  .verazCuerpo {
+    grid-template-columns: auto 1fr;
+    gap: 3.5rem;
+  }
+}
+
+.verazCuerpo p {
+  margin: 0 0 1rem;
+  max-width: 58ch;
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+.verazDibujo {
+  justify-self: start;
+}
+
+/* ── 8. Preguntas ────────────────────────────────────────────────────────── */
+
+.preguntas {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 62em) {
+  .preguntas {
+    grid-template-columns: 1fr 1.6fr;
+    gap: 4rem;
+    align-items: start;
+  }
+}
+
+.lista {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.pregunta {
+  background: var(--sd-surface);
+  border: var(--sd-border);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: var(--sd-shadow-xs);
+}
+
+.pregunta summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--sd-font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.pregunta summary::-webkit-details-marker {
+  display: none;
+}
+
+/* El "+" que se vuelve "−" al abrir, dibujado con dos barras de trazo. */
+.pregunta summary::after {
+  content: '+';
+  flex: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--sd-accent-soft);
+}
+
+.pregunta[open] summary::after {
+  content: '−';
+}
+
+.pregunta summary:focus-visible {
+  outline: none;
+  box-shadow: var(--sd-focus-ring);
+  border-radius: inherit;
+}
+
+.pregunta p {
+  margin: 0;
+  padding: 0 1.25rem 1.15rem;
+  max-width: 62ch;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+/* ── 9. La invitación ────────────────────────────────────────────────────── */
+
+.final {
+  padding-block: 5rem 6rem;
+  background: var(--sd-accent-wash-faint);
+  border-top: var(--sd-border-bold);
+}
+
+.finalCuerpo {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.finalCuerpo .h2 {
+  max-width: 20ch;
+}
+
+.finalCuerpo p {
+  margin: 0 0 1.5rem;
+  max-width: 46ch;
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.estrellas {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}

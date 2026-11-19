@@ -338,6 +338,18 @@ lleve hasta ella.
   y el script inline del `<head>` de `app/layout.tsx` (misma clave de
   `localStorage`, mismo día de margen). Si divergen, la franja aparece y
   desaparece al cargar, o se esconde cuando ya debería volver.
+- **Un enlace que cruza entre una página pública y la aplicación no puede ser
+  `<Link>`.** El layout decide al CARGAR si monta la aplicación o el marco
+  público (`esPaginaPublica`, `lib/seo.ts`), y una navegación de `<Link>` no
+  vuelve a pasar por él: la aplicación saldría sin sesión ni proveedores, o la
+  portada dentro de la aplicación. Se usa `EnlaceCompleto` o `SketchButton
+  recargar`. Por lo mismo, salir de la cuenta recarga en `/`
+  (`window.location.assign`) en vez de `router.push`. Lo vigila `e2e/portada.spec.ts`.
+- **Una página pública no puede usar Mantine ni Refine** (ni nada que los
+  necesite, como `useCuenta`): en esas rutas el layout no monta `Providers`. Y
+  una ruta pública nueva hay que añadirla en TRES sitios: `esPaginaPublica`, el
+  `allow` de `app/robots.ts` y `app/sitemap.ts`. Sin el primero sale "Preparando
+  tu espacio…" y Google no ve nada; sin el segundo, Google no puede entrar.
 - **`<SideMenu />` va DESPUÉS de `<Navbar />` en `app/layout.tsx`.** Los dos
   (y los modales de Mantine) están a z-index 200, y a igualdad gana el último
   del DOM: así el panel tapa la cabecera y un modal tapa el panel. Si sube por
@@ -855,6 +867,30 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     como la interfaz (no a píxel) con la cifra encima en su esquina, dorada y
     con borde de tinta, y un enlace gris a la tienda: lo ganado y lo gastado se
     ve allí.
+
+- **Portada pública y SEO** (noviembre de 2026). Hasta entonces todo era
+  `noindex` y `robots.txt` lo cerraba entero, y sin sesión cada página solo
+  enseñaba "Preparando tu espacio…": para Google, la web estaba vacía. Ahora:
+  - `/` SIN sesión es la portada pública (`Portada`), pintada en el servidor y
+    sin crear invitado; CON sesión sigue siendo el Cuadro de mando. Lo deciden
+    el layout y `app/page.tsx` con la misma respuesta (`cuentaDeLaPeticion`,
+    una vez por petición). La ruta llega al layout por la cabecera `x-tc-ruta`,
+    que pone `proxy.ts` y pisa la del cliente.
+  - `/aprende` y `/aprende/<mundo>` son públicas siempre. En minúsculas, y no
+    en PascalCase como el resto, porque son direcciones para enlazar y buscar.
+    Enseñan la ficha de cada nivel (título, tipo, minutos, descripción), nunca
+    las lecciones ni las preguntas: esas siguen pendientes de revisión humana.
+  - Todo lo demás sigue `noindex` y en el `Disallow`. El tema de toda la
+    portada es el lema del proyecto (`LEMA` en `lib/seo.ts`): *educación
+    financiera al alcance de cualquiera; construye una relación sana con la
+    economía mediante un videojuego a píxel gratuito*.
+  - La canónica es `https://www.teachcash.es` escrita en `lib/seo.ts`, no
+    `APP_URL`: es a la que redirige Vercel.
+  - Datos estructurados (schema.org): `WebApplication`/`VideoGame` gratis,
+    `Course` por mundo y `FAQPage`. Las preguntas de la página y las del JSON-LD
+    salen de la misma lista: si divergen, Google lo trata como engaño.
+  - El favicon pasó de un emoji a una moneda a píxel (`app/icon.svg`): es lo
+    que sale junto a la web en los resultados de Google.
 
 ## Decisiones abiertas
 

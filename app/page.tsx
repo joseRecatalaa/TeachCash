@@ -1,42 +1,41 @@
-'use client'
-
 /**
- * Cuadro de mando: la portada. Junta el dinero y el juego en una pantalla: el
- * patrimonio, las estrellas, el héroe con lo que ha comprado y sus estadísticas.
+ * `/`: dos páginas en una dirección, según quién mire.
  *
- * Todo llega de una vez y ya calculado por `useCuadro`. El detalle del dinero vive
- * en `/Patrimonio` y el de los objetos en `/Tienda`; aquí solo se mira y se salta.
+ *   - **Con sesión** (invitado o cuenta): el Cuadro de mando, como siempre.
+ *   - **Sin sesión**: la portada pública. Es lo que ve quien llega por primera
+ *     vez, y lo que lee Google, que nunca tiene sesión. Antes veía solo
+ *     "Preparando tu espacio…" mientras nacía el invitado.
+ *
+ * El layout toma la MISMA decisión (`esPaginaPublica`) para montar la
+ * aplicación o el marco público, y las dos preguntan a `cuentaDeLaPeticion`,
+ * que responde una vez por petición: no pueden llegar a respuestas distintas.
  */
 
-import { Container, Loader, VisuallyHidden } from '@mantine/core'
-import { useCuadro } from '@/src/application/hooks/useCuadro'
-import { CuadroMando } from '@/src/presentation/components/Cuadro/CuadroMando'
-import { EmptyState, SketchButton } from '@/src/presentation/components/ui'
-import styles from './page.module.css'
+import type { Metadata } from 'next'
+import { TITULO_SITIO } from '@/lib/seo'
+import { cuentaDeLaPeticion } from '@/src/application/cuentaDeLaPeticion'
+import { catalogoPublico } from '@/src/infrastructure/heroe/catalogo'
+import { DatosEstructurados } from '@/src/presentation/components/Publico/DatosEstructurados'
+import { esquemaPortada } from '@/src/presentation/components/Publico/esquemas'
+import { Portada } from '@/src/presentation/components/Publico/Portada'
+import { PantallaCuadro } from './PantallaCuadro'
 
-export default function CuadroDeMandoPage() {
-  const cuadro = useCuadro()
+/** La única página de la aplicación que se indexa con su dirección raíz. */
+export const metadata: Metadata = {
+  title: { absolute: TITULO_SITIO },
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+}
 
+export default async function PaginaRaiz() {
+  const cuenta = await cuentaDeLaPeticion()
+  if (cuenta.tipo !== 'ninguna') return <PantallaCuadro />
+
+  const mundos = await catalogoPublico()
   return (
-    <Container fluid px="xl" py="xl">
-      <div className={styles.page}>
-        {/* El título solo para el lector de pantalla: arriba van el patrimonio y las
-            estadísticas, como el marcador de un juego. */}
-        <VisuallyHidden component="h1">Cuadro de mando</VisuallyHidden>
-        {cuadro.isPending && (
-          <div className={styles.cargando}>
-            <Loader aria-label="Cargando el cuadro de mando" />
-          </div>
-        )}
-        {cuadro.error && (
-          <EmptyState
-            titulo="No se ha podido cargar"
-            descripcion={cuadro.error.message}
-            accion={<SketchButton onClick={() => void cuadro.refetch()}>Reintentar</SketchButton>}
-          />
-        )}
-        {cuadro.data && <CuadroMando cuadro={cuadro.data} />}
-      </div>
-    </Container>
+    <>
+      <DatosEstructurados datos={esquemaPortada(mundos)} />
+      <Portada mundos={mundos} />
+    </>
   )
 }
