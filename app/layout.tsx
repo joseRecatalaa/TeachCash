@@ -30,7 +30,6 @@ import {
 } from '@/lib/seo'
 import { cuentaDeLaPeticion } from '@/src/application/cuentaDeLaPeticion'
 import { Providers } from '@/src/application/providers/providers'
-import { catalogoPublico } from '@/src/infrastructure/heroe/catalogo'
 import { Navbar } from '@/src/presentation/components/Navbar'
 import { MarcoPublico } from '@/src/presentation/components/Publico/MarcoPublico'
 import { SideMenu } from '@/src/presentation/components/SideMenu/SideMenu'
@@ -70,7 +69,9 @@ export const metadata: Metadata = {
   // resuelven contra la canónica, con `www`, y no contra el host de la petición.
   metadataBase: new URL(URL_SITIO),
   applicationName: NOMBRE_SITIO,
-  title: { default: TITULO_SITIO, template: `%s | ${NOMBRE_SITIO}` },
+  // En la pestaña, solo la marca (ver `app/page.tsx`). El título largo se
+  // queda para cuando se comparte (Open Graph, Twitter) y para el manifiesto.
+  title: { default: NOMBRE_SITIO, template: `%s | ${NOMBRE_SITIO}` },
   description: DESCRIPCION_SITIO,
   openGraph: {
     type: 'website',
@@ -149,7 +150,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
       </head>
       <body>
         {publica ? (
-          <MarcoPublico conSesion={conSesion} mundos={await catalogoPublico()}>
+          <MarcoPublico conSesion={conSesion}>
             {children}
           </MarcoPublico>
         ) : (

@@ -891,6 +891,16 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     salen de la misma lista: si divergen, Google lo trata como engaño.
   - El favicon pasó de un emoji a una moneda a píxel (`app/icon.svg`): es lo
     que sale junto a la web en los resultados de Google.
+  - **La portada es una pantalla de título de videojuego, de noche y con poco
+    texto**: el lema como rótulo a píxel, el héroe saltando entre planetas, el
+    combate contra un jefe, el probador como inventario. Todo lo público
+    (portada, cursos, marco) va en el espacio en los dos temas: `.noche`
+    redefine los `--sd-*` (ver "Páginas públicas" en `docs/COMPONENTS.md`).
+  - **El título de la pestaña de `/` es solo "TeachCash"**, por decisión del
+    producto aunque el largo posicionaba mejor. Lo que se busca lo llevan el
+    `h1`, la descripción, el JSON-LD y Open Graph (`TITULO_SITIO`); los cursos
+    conservan su título descriptivo, y en su página el "gratis" se quita del
+    título visible pero no del de Google.
 
 ## Decisiones abiertas
 

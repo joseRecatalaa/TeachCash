@@ -1,7 +1,9 @@
 /*
  * El marco de las páginas públicas. La cabecera es la misma idea que la
- * Navbar de la aplicación (verde tenue, línea gruesa de cuaderno debajo) para
- * que entrar en la aplicación no parezca cambiar de web.
+ * Navbar de la aplicación (línea gruesa de cuaderno debajo), pero de noche:
+ * las páginas públicas van en el espacio del juego, y `.noche`
+ * (`escenas.module.css`, puesta en el mismo elemento) redefine los tokens
+ * `--sd-*` que se leen aquí.
  */
 
 .marco {
@@ -122,58 +124,122 @@
   flex: 1;
 }
 
-/* ── Pie ─────────────────────────────────────────────────────────────────── */
+/* ── Pie ─────────────────────────────────────────────────────────────────── *
+ *
+ * La superficie de un planeta: la página baja por el espacio y aterriza aquí.
+ * Arriba, un horizonte de roca a píxel (un patrón de 16x8 a escala 3, que se
+ * repite a lo ancho sin estirarse) con el héroe caminando de lado a lado.
+ * Debajo, sobre la roca, todo centrado: la marca, los enlaces de jugar, las
+ * fuentes oficiales y el aviso. Los colores son de la noche (`--px-luna*`,
+ * en `.noche` de `escenas.module.css`).
+ * ──────────────────────────────────────────────────────────────────────── */
 
 .pie {
-  display: grid;
-  gap: 2rem;
-  padding: 3rem 1rem 2rem;
-  background: var(--sd-surface-sunken);
-  border-top: var(--sd-border-bold);
+  margin-top: 2rem;
 }
 
-@media (min-width: 48em) {
-  .pie {
-    grid-template-columns: 2fr 1fr 1fr;
-    padding-inline: 2rem;
+.horizonte {
+  position: relative;
+  height: calc(92px + 24px - 6px);
+  overflow: hidden;
+}
+
+.superficie {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: block;
+}
+
+.roca {
+  fill: var(--px-luna);
+}
+
+.rocaLuz {
+  fill: var(--px-luna-luz);
+}
+
+.rocaSombra {
+  fill: var(--px-luna-sombra);
+}
+
+/* El héroe, con los pies sobre la roca, cruzando la pantalla. Con el
+   movimiento reducido se queda de pie a un lado. */
+.caminante {
+  position: absolute;
+  left: 0;
+  bottom: 18px;
+  translate: 12vw 0;
+  animation: pie-camina 26s linear infinite;
+}
+
+.caminante svg {
+  display: block;
+  overflow: visible;
+}
+
+@keyframes pie-camina {
+  from {
+    translate: -80px 0;
+  }
+  to {
+    translate: calc(100vw + 20px) 0;
   }
 }
 
-.pieMarca p {
-  margin: 0.75rem 0 0;
-  max-width: 28ch;
-  color: var(--sd-ink-soft);
-  font-size: 1.05rem;
+.pieCuerpo {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem 1.5rem;
+  text-align: center;
+  background: var(--px-luna);
 }
 
-.pieTitulo {
-  margin: 0 0 0.75rem;
-  font-family: var(--sd-font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.pieLista ul {
+.pieEnlaces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0;
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  gap: 0.5rem;
+  font-family: var(--sd-font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
-.pieLista a {
-  color: var(--sd-ink);
+/* Separados por un punto dorado, no por subrayados. */
+.pieEnlaces li + li::before {
+  content: '·';
+  margin-inline: 0.75rem;
+  color: var(--px-noche-oro);
 }
 
-.pieLista a:hover {
-  color: var(--sd-accent-soft);
+.pieEnlaces a {
+  color: var(--px-noche-tinta);
+  text-decoration: none;
+}
+
+.pieEnlaces a:hover {
+  color: var(--px-noche-oro);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.pieEnlaces a:focus-visible {
+  outline: 3px solid var(--px-noche-oro);
+  outline-offset: 2px;
+}
+
+.fuentes,
+.aviso {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--px-noche-suave);
 }
 
 .aviso {
-  grid-column: 1 / -1;
-  margin: 0;
-  padding-top: 1.25rem;
-  border-top: var(--sd-border);
-  color: var(--sd-ink-soft);
-  font-size: 0.95rem;
+  opacity: 0.75;
 }

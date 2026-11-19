@@ -26,7 +26,12 @@ export const NOMBRE_SITIO = 'TeachCash'
 /** El lema del proyecto. Es el tema de todo, no un eslogan de esta página. */
 export const LEMA = 'Educación financiera al alcance de cualquiera'
 
-/** Menos de 60 caracteres: Google corta a partir de ahí. */
+/**
+ * El título largo, para cuando se comparte un enlace (Open Graph, Twitter) y
+ * para el manifiesto. NO es el de la pestaña de la portada, que es solo
+ * `NOMBRE_SITIO` (`app/page.tsx`). Menos de 60 caracteres: Google corta a
+ * partir de ahí.
+ */
 export const TITULO_SITIO = `${NOMBRE_SITIO}: ${LEMA.charAt(0).toLowerCase()}${LEMA.slice(1)}`
 
 /** Entre 120 y 160 caracteres: es lo que sale bajo el título en Google. */

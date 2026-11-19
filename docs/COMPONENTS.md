@@ -104,12 +104,21 @@ Mantine ni Refine (el layout no monta `Providers` en una ruta pública). Aquí
 solo valen CSS Modules, los primitivos que no dependen de Mantine
 (`SketchButton`, `SketchTitle`) y el pixel art.
 
+Todo lo público va **de noche, en el espacio**, en los dos temas: `.noche`
+(`escenas.module.css`, puesta en `MarcoPublico`) redefine los tokens `--sd-*`
+para el espacio, así que lo que se pinta con tokens (el probador, las
+preguntas, los botones, los cursos) se adapta solo. Las animaciones son CSS
+sobre SVG, sin JavaScript, y su estado sin animar es una escena entera.
+
 | Pieza | Para qué |
 |---|---|
-| `MarcoPublico` | Cabecera y pie de las páginas públicas. Lo monta `app/layout.tsx` en lugar de la aplicación |
-| `Portada` | La portada de `/` sin sesión: el lema, el porqué, los mundos, cómo se juega, el probador, el gestor, las fuentes, las preguntas y la invitación |
-| `Probador` | Lo único de cliente de la portada: se viste al héroe con el catálogo de la tienda y se ve el precio en estrellas. No guarda nada |
-| `IndiceCursos`, `CursoMundo` (`Cursos.tsx`) | `/aprende` y `/aprende/<mundo>`: la ficha de cada nivel, nunca su contenido |
+| `MarcoPublico` | Cabecera y pie de las páginas públicas. Lo monta `app/layout.tsx` en lugar de la aplicación. El pie es la superficie de un planeta, con el héroe caminando por el horizonte |
+| `Portada` | La portada de `/` sin sesión, como pantalla de título de un juego: el lema, el dato, los mundos, el combate, el probador, la invitación y las preguntas |
+| `SaltoMundos` | El héroe saltando de planeta en planeta. El guion (`salto-*` en `escenas.module.css`) está atado a su geometría |
+| `Batalla` | El combate contra el jefe del primer mundo, con su marcador de vida. Guion `combate-*` |
+| `Cielo` | Estrellas a píxel que titilan, con semilla fija (el servidor y el cliente pintan el mismo cielo) |
+| `Probador` | Lo único de cliente de la portada: un inventario donde se viste al héroe con el catálogo de la tienda, con el estreno de la tienda al cambiar una pieza. No guarda nada |
+| `IndiceCursos`, `CursoMundo` (`Cursos.tsx`) | `/aprende` y `/aprende/<mundo>`: solo los títulos de cada nivel, nunca su contenido. Los jefes se mueven (`.jefeVivo`) |
 | `PlanetaPixel`, `DibujoPixel` | Un mundo como planeta y un sprite suelto, a escala entera, sin nada del juego alrededor |
 | `EnlaceCompleto` | Un `<a>` que recarga la página entera. Todo enlace que cruza entre lo público y la aplicación (o va a `/`) es esto o `SketchButton recargar`, nunca `<Link>` |
 | `DatosEstructurados` + `esquemas.ts` | El JSON-LD de schema.org de cada página. Solo dicen lo que la página enseña |

@@ -2,112 +2,172 @@
  * La portada pública: lo que ve quien llega a www.teachcash.es sin sesión, y
  * lo que lee Google.
  *
- * Todo gira alrededor del lema del proyecto: educación financiera al alcance
- * de cualquiera, una relación sana con la economía, un videojuego a píxel
- * gratuito. Cada sección es una razón para entrar y la prueba de esa razón:
+ * Es la pantalla de título de un videojuego, no un folleto: poco texto,
+ * dibujos grandes que se mueven y todo en el espacio (la noche la pone el
+ * marco, `MarcoPublico`; cada sección lleva su propio cielo de estrellas).
+ * Cada sección dice UNA cosa y la enseña:
  *
- *   1. Qué es, con el héroe en su isla (el mismo del Cuadro de mando).
- *   2. Por qué hace falta: un dato oficial y verificado, dicho sin asustar.
- *   3. Qué se aprende: los mundos como planetas, con sus cursos.
- *   4. Cómo se juega: lección, práctica y jefe, con sus dibujos del juego.
- *   5. Lo que se gana: el probador, donde se viste al héroe de verdad.
- *   6. Para tu dinero: el gestor.
- *   7. Por qué fiarse: las fuentes oficiales.
- *   8. Las dudas de quien aún no ha entrado.
- *   9. La invitación final.
+ *   1. Qué es: una pantalla de título. El lema centrado como rótulo de
+ *      recreativa y, debajo, el héroe en su isla a la izquierda y la frase y
+ *      el botón de jugar (entre flechas) a la derecha.
+ *   2. Por qué: un dato oficial en una tarjeta dorada, con sus huchas.
+ *   3. Los mundos: el héroe salta de planeta en planeta (`SaltoMundos`).
+ *   4. Cómo se juega: los tres pasos y el combate contra el jefe (`Batalla`).
+ *   5. Lo que se gana: el probador, lo único que se toca.
+ *   6. La invitación.
+ *   7. Las preguntas (las mismas del `FAQPage`: no se pueden quitar de aquí).
  *
- * Las cifras ("cuatro mundos", "108 estrellas") salen del contenido
- * (`resumir`): ninguna va escrita a mano. Se pinta en el servidor; lo único de
- * cliente es el probador.
+ * Las cifras salen del contenido (`resumir`): ninguna va escrita a mano. Todo
+ * se pinta en el servidor y se anima con CSS; lo único de cliente es el
+ * probador. Con el movimiento reducido cada escena se queda en una pose
+ * entera.
  */
 
 import Link from 'next/link'
 import type { Route } from 'next'
-import { LEMA, RUTA_CURSOS, rutaCurso } from '@/lib/seo'
+import { LEMA, RUTA_CURSOS } from '@/lib/seo'
 import type { MundoPublicoDto } from '@/src/types/heroe.types'
 import { EscenarioHeroe } from '../Pixel/EscenarioHeroe'
-import { BARRAS, CERDITO, CORAZON, ESTRELLA, LIBRO, MANDO, MONEDA, MONSTRUO, TARJETITA } from '../Pixel/sprites'
-import { SketchButton } from '../ui'
+import { PixelHero } from '../Pixel/PixelHero'
+import { CERDITO, LIBRO, MANDO, MONSTRUO } from '../Pixel/sprites'
+import { Batalla } from './Batalla'
+import { Cielo } from './Cielo'
 import { DibujoPixel } from './DibujoPixel'
+import { EnlaceCompleto } from './EnlaceCompleto'
 import { RUTA_JUGAR } from './MarcoPublico'
-import { PlanetaPixel } from './PlanetaPixel'
 import { PREGUNTAS } from './preguntas'
 import { Probador } from './Probador'
-import { enLetra, enLetraMayuscula, medida, resumir } from './resumen'
+import { enLetra, resumir } from './resumen'
+import { SaltoMundos } from './SaltoMundos'
+import escenas from './escenas.module.css'
 import styles from './Portada.module.css'
 
 /** El héroe de la portada, con algo de equipo: se ve que se gana algo. */
 const EQUIPO_PORTADA = ['casco-media', 'espada-media', 'escudo-basica', 'botas-basica', 'alas-basica']
 
-function Jugar({ children = 'Empieza a jugar gratis' }: { children?: string }) {
+const EQUIPO_FINAL = ['casco-alta', 'armadura-alta', 'espada-alta', 'escudo-alta', 'botas-alta', 'alas-alta']
+
+/** El lema en dos tamaños: lo que se busca, enorme; el resto, debajo. */
+const CORTE = LEMA.indexOf(' al ')
+const LEMA_GRANDE = CORTE > 0 ? LEMA.slice(0, CORTE) : LEMA
+const LEMA_RESTO = CORTE > 0 ? LEMA.slice(CORTE + 1) : ''
+
+/**
+ * Las huchas del dato: 4 de cada 11 vacías es un 36,4 %, la misma cifra que
+ * se cuenta al lado. Si cambia el dato, cambia la proporción.
+ */
+const HUCHAS = 11
+const HUCHAS_VACIAS = 4
+
+/** Una flecha a píxel hacia la derecha: dos columnas de grosor, siete de alto. */
+const FLECHA = 'M0 0h2v1h-2zM1 1h2v1h-2zM2 2h2v1h-2zM3 3h2v1h-2zM2 4h2v1h-2zM1 5h2v1h-2zM0 6h2v1h-2z'
+
+/**
+ * El botón de jugar, a píxel. Un `<a>` que recarga (`EnlaceCompleto`): cruza
+ * de la portada a la aplicación, que se monta al CARGAR.
+ */
+function Jugar({ children = 'Jugar gratis' }: { children?: string }) {
   return (
-    <SketchButton href={RUTA_JUGAR} recargar size="lg" rel="nofollow">
+    <EnlaceCompleto href={RUTA_JUGAR} rel="nofollow" className={styles.jugar}>
+      <span className={styles.jugarFlecha} aria-hidden="true">
+        ▶
+      </span>
       {children}
-    </SketchButton>
+    </EnlaceCompleto>
+  )
+}
+
+/**
+ * Tres flechas que se encienden una tras otra hacia el botón: las de la
+ * izquierda apuntan a la derecha y las de la derecha, volteadas, a la
+ * izquierda. El orden del encendido también se invierte, para que las dos
+ * filas avancen hacia el botón.
+ */
+function Flechas({ hacia = 'der' }: { hacia?: 'der' | 'izq' }) {
+  return (
+    <span className={styles.flechas} data-hacia={hacia} aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <svg key={i} viewBox="0 0 5 7" width={15} height={21} shapeRendering="crispEdges" data-flecha={i}>
+          <path d={FLECHA} />
+        </svg>
+      ))}
+    </span>
   )
 }
 
 export function Portada({ mundos }: { mundos: readonly MundoPublicoDto[] }) {
   const r = resumir(mundos)
-  const primerMundo = mundos[0]
 
   return (
     <div className={styles.portada}>
-      {/* ── 1. Qué es ─────────────────────────────────────────────────── */}
-      <section className={styles.heroe} aria-labelledby="titulo-portada">
-        <div className={styles.heroeTexto}>
-          <h1 id="titulo-portada" className={styles.titulo}>
-            {LEMA}
+      {/* ── 1. La pantalla de título ──────────────────────────────────── */}
+      <section className={styles.titulo} aria-labelledby="titulo-portada">
+        <Cielo />
+        <div className={`${styles.ancho} ${styles.tituloCuerpo}`}>
+          <h1 id="titulo-portada" className={styles.h1}>
+            <span className={styles.h1Grande}>{LEMA_GRANDE}</span>{' '}
+            <span className={styles.h1Resto}>{LEMA_RESTO}</span>
           </h1>
-          <p className={styles.entradilla}>
-            Construye una relación sana con la economía mediante un videojuego a píxel gratuito.
-          </p>
-          <p className={styles.cercano}>
-            Lecciones de {r.minutosMin} a {r.minutosMax} minutos, ejemplos de la vida diaria y un héroe que crece
-            contigo. Sin registrarte, sin anuncios y sin pagar nada.
-          </p>
-          <div className={styles.llamadas}>
-            <Jugar />
-            <SketchButton href={RUTA_CURSOS as Route} variant="ghost" size="lg">
-              Ver los cursos
-            </SketchButton>
-          </div>
-        </div>
-        <div className={styles.heroeDibujo}>
-          {/* Dos tamaños y no uno escalado por CSS: a una escala que no es
-              entera, el píxel se emborrona (`EscenarioHeroe`). */}
-          <div className={styles.soloMovil}>
-            <EscenarioHeroe equipo={EQUIPO_PORTADA} escala={3} />
-          </div>
-          <div className={styles.soloAncho}>
-            <EscenarioHeroe equipo={EQUIPO_PORTADA} escala={5} />
+
+          {/* Debajo del título, el héroe a la izquierda y la invitación a la
+              derecha. */}
+          <div className={styles.escenaTitulo}>
+            <div className={styles.tituloDibujo}>
+              {/* Dos tamaños y no uno escalado por CSS: a una escala que no es
+                  entera, el píxel se emborrona (`EscenarioHeroe`). */}
+              <div className={styles.soloMovil}>
+                <EscenarioHeroe equipo={EQUIPO_PORTADA} escala={3} />
+              </div>
+              <div className={styles.soloAncho}>
+                <EscenarioHeroe equipo={EQUIPO_PORTADA} escala={4} />
+              </div>
+            </div>
+            <div className={styles.invitacion}>
+              {/* Lo dice el héroe: un bocadillo de juego de rol, con la cola
+                  hacia él y el ▼ de "sigue" parpadeando. */}
+              <p className={styles.bocadillo}>
+                Aprende, practica, entiende. Nivel a nivel.
+                <span className={styles.sigue} aria-hidden="true">
+                  ▼
+                </span>
+              </p>
+              <div className={styles.llamadas}>
+                <Flechas />
+                <Jugar />
+                <Flechas hacia="izq" />
+              </div>
+              <Link href={RUTA_CURSOS as Route} className={styles.verCursos}>
+                Ver los cursos
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── 2. Por qué ────────────────────────────────────────────────── */}
-      <section className={styles.porque} aria-labelledby="titulo-porque">
+      <section className={styles.seccion} aria-labelledby="titulo-porque">
+        <Cielo semilla={11} cuantas={40} />
         <div className={styles.ancho}>
-          <h2 id="titulo-porque" className={styles.h2}>
-            Nadie nos enseñó a manejar el dinero
-          </h2>
-          <div className={styles.porqueCuerpo}>
-            <figure className={styles.dato}>
-              <p className={styles.cifra}>36,4 %</p>
-              <figcaption>
-                de las personas en España no podría afrontar un gasto imprevisto con sus propios recursos.
-                <cite>INE, Encuesta de Condiciones de Vida 2025</cite>
-              </figcaption>
-            </figure>
-            <div className={styles.porqueTexto}>
-              <p>
-                En el colegio aprendimos ecuaciones, pero no a leer una nómina, a comparar un préstamo o a saber
-                cuánto apartar para cuando se rompe la lavadora. No es culpa tuya, y nunca es tarde.
+          <div className={styles.dato}>
+            <p className={styles.cifra}>36,4 %</p>
+            <div className={styles.datoTexto}>
+              <h2 id="titulo-porque" className={styles.datoTitulo}>
+                Nadie nos enseñó a manejar el dinero
+              </h2>
+              <p className={styles.datoFrase}>
+                Más de un tercio de la gente en España no podría pagar un gasto imprevisto con sus ahorros.
               </p>
-              <p>
-                TeachCash existe para eso: para que entender el dinero deje de dar miedo. Poco a poco, a tu ritmo,
-                jugando y sin que nadie te juzgue.
-              </p>
+              <div className={styles.huchas} aria-hidden="true">
+                {Array.from({ length: HUCHAS }, (_, i) => (
+                  <DibujoPixel
+                    key={i}
+                    sprite={CERDITO}
+                    escala={3}
+                    className={i < HUCHAS_VACIAS ? styles.huchaVacia : styles.hucha}
+                  />
+                ))}
+              </div>
+              <p className={styles.fuente}>INE, Encuesta de Condiciones de Vida 2025</p>
             </div>
           </div>
         </div>
@@ -115,155 +175,99 @@ export function Portada({ mundos }: { mundos: readonly MundoPublicoDto[] }) {
 
       {/* ── 3. Los mundos ─────────────────────────────────────────────── */}
       <section id="mundos" className={styles.seccion} aria-labelledby="titulo-mundos">
+        <Cielo semilla={31} cuantas={70} />
         <div className={styles.ancho}>
-          <h2 id="titulo-mundos" className={styles.h2}>
-            {enLetraMayuscula(r.mundos)} mundos, {r.niveles} niveles
+          <h2 id="titulo-mundos" className={`${styles.h2} ${styles.centrado}`}>
+            Salta de mundo en mundo, empieza por el que quieras
           </h2>
-          <p className={styles.intro}>
-            Cada mundo es un planeta y cada planeta, un tema de la vida real. Están todos abiertos desde el primer
-            día: empieza por el que más te preocupe.
-          </p>
-          <ul className={styles.mundos}>
-            {mundos.map((m) => (
-              <li key={m.id} className={styles.mundo}>
-                <PlanetaPixel decorado={m.decorado} />
-                <h3 className={styles.h3}>
-                  <Link href={rutaCurso(m.id) as Route}>{m.titulo}</Link>
-                </h3>
-                <p className={styles.medida}>{medida(m)}</p>
-                <p>{m.descripcion}</p>
-                <p className={styles.empieza}>
-                  Empieza por: <strong>{m.niveles[0]?.titulo}</strong>
-                </p>
-              </li>
-            ))}
-          </ul>
+          <SaltoMundos mundos={mundos} />
         </div>
       </section>
 
       {/* ── 4. Cómo se juega ──────────────────────────────────────────── */}
-      <section id="como-se-juega" className={styles.seccionSuave} aria-labelledby="titulo-como">
+      <section id="como-se-juega" className={styles.seccion} aria-labelledby="titulo-como">
+        <Cielo semilla={23} cuantas={50} />
         <div className={styles.ancho}>
-          <h2 id="titulo-como" className={styles.h2}>
-            Así se juega un nivel
+          {/* Sin título a la vista (la escena lo cuenta sola), pero la
+              sección sigue teniendo nombre para quien la oye. */}
+          <h2 id="titulo-como" className={styles.oculto}>
+            Cómo se juega: aprende, practica y derrota al jefe
           </h2>
-          <p className={styles.intro}>
-            Cada mundo es un camino que sube nivel a nivel hasta su jefe. Cada nivel te da hasta tres estrellas.
-          </p>
-          <ol className={styles.pasos}>
-            <li className={styles.paso}>
-              <DibujoPixel sprite={LIBRO} escala={5} className={styles.pasoDibujo} />
-              <h3 className={styles.h3}>Lee una lección corta</h3>
-              <p>
-                De {r.minutosMin} a {r.minutosMax} minutos, con ejemplos de Pepito, que se equivoca para que no te
-                equivoques tú. Al final, un minitest de unas pocas preguntas.
-              </p>
-            </li>
-            <li className={styles.paso}>
-              <DibujoPixel sprite={MANDO} escala={5} className={styles.pasoDibujo} />
-              <h3 className={styles.h3}>Practica con casos reales</h3>
-              <p>
-                Calcula una cuota, ordena un presupuesto, empareja conceptos o rellena el hueco. Cada ejercicio se
-                corrige al momento y te explica el porqué.
-              </p>
-            </li>
-            <li className={styles.paso}>
-              <DibujoPixel
-                sprite={MONSTRUO}
-                escala={3}
-                decorado={primerMundo?.decorado}
-                className={styles.pasoDibujo}
-              />
-              <h3 className={styles.h3}>Vence al jefe del mundo</h3>
-              <p>
-                Un monstruo que se alimenta de los malos hábitos: el que te susurra que no mires la cuenta o que
-                pagues «solo veinte euritos al mes». Derrótalo con todo lo que sabes.
-              </p>
-            </li>
-          </ol>
+          <div className={styles.como}>
+            <ol className={styles.pasos}>
+              <li className={styles.paso}>
+                <DibujoPixel sprite={LIBRO} escala={4} className={styles.pasoIcono} />
+                <span>
+                  <strong className={styles.pasoNombre}>Aprende</strong>
+                  Lecciones de {r.minutosMin} a {r.minutosMax} minutos.
+                </span>
+              </li>
+              <li className={styles.paso}>
+                <DibujoPixel sprite={MANDO} escala={4} className={styles.pasoIcono} />
+                <span>
+                  <strong className={styles.pasoNombre}>Practica</strong>
+                  Casos reales, corregidos al momento.
+                </span>
+              </li>
+              <li className={styles.paso}>
+                <DibujoPixel
+                  sprite={MONSTRUO}
+                  escala={2}
+                  decorado={mundos[0]?.decorado}
+                  className={`${styles.pasoIcono} ${escenas.jefeVivo}`}
+                />
+                <span>
+                  <strong className={styles.pasoNombre}>Vence</strong>
+                  Al jefe del mundo, con lo aprendido.
+                </span>
+              </li>
+            </ol>
+            <Batalla mundo={mundos[0]} />
+          </div>
         </div>
       </section>
 
       {/* ── 5. Lo que se gana ─────────────────────────────────────────── */}
       <section className={styles.seccion} aria-labelledby="titulo-probador">
+        <Cielo semilla={41} cuantas={40} />
         <div className={styles.ancho}>
-          <h2 id="titulo-probador" className={styles.h2}>
-            Gana estrellas y equipa a tu héroe
+          <h2 id="titulo-probador" className={`${styles.h2} ${styles.centrado}`}>
+            Gana estrellas y viste a tu héroe
           </h2>
-          <p className={styles.intro}>
-            Las estrellas se ganan aprendiendo, nunca pagando. Con ellas compras casco, escudo, espada o unas alas
-            de oro en la tienda. Pruébaselo aquí: pulsa cada pieza para cambiarla.
-          </p>
           <Probador estrellasPosibles={r.estrellas} />
         </div>
       </section>
 
-      {/* ── 6. El gestor ──────────────────────────────────────────────── */}
-      <section className={styles.seccionSuave} aria-labelledby="titulo-gestor">
-        <div className={`${styles.ancho} ${styles.gestor}`}>
-          <div>
-            <h2 id="titulo-gestor" className={styles.h2}>
-              Y cuando quieras, llévalo a tu dinero
-            </h2>
-            <p className={styles.intro}>
-              Junto al juego tienes un gestor de finanzas personales, sencillo y sin conectar tu banco: tú decides
-              qué apuntas.
-            </p>
-          </div>
-          <ul className={styles.usos}>
-            <li>
-              <DibujoPixel sprite={TARJETITA} escala={4} />
-              <span>
-                <strong>Apunta tus gastos e ingresos</strong> en un momento, también desde el móvil.
-              </span>
-            </li>
-            <li>
-              <DibujoPixel sprite={CERDITO} escala={4} />
-              <span>
-                <strong>Ordénalos por categorías</strong> y descubre adónde se va el dinero cada mes.
-              </span>
-            </li>
-            <li>
-              <DibujoPixel sprite={BARRAS} escala={4} />
-              <span>
-                <strong>Mira tu patrimonio crecer</strong> mes a mes, con gráficos claros.
-              </span>
-            </li>
-            <li>
-              <DibujoPixel sprite={MONEDA} escala={5} />
-              <span>
-                <strong>Ponle un presupuesto a cada categoría</strong> y ve cuánto te queda este mes.
-              </span>
-            </li>
-          </ul>
+      {/* ── 6. La invitación ──────────────────────────────────────────── */}
+      <section className={styles.final} aria-labelledby="titulo-final">
+        <Cielo semilla={53} cuantas={60} />
+        <div className={`${styles.ancho} ${styles.finalCuerpo}`}>
+          <svg
+            className={styles.finalHeroe}
+            viewBox="-24 -12 80 60"
+            width={80 * 3}
+            height={60 * 3}
+            shapeRendering="crispEdges"
+            aria-hidden="true"
+          >
+            <PixelHero pose="celebra" equipo={EQUIPO_FINAL} />
+          </svg>
+          <p className={styles.pulsa} aria-hidden="true">
+            Pulsa start
+          </p>
+          <h2 id="titulo-final" className={styles.h2Final}>
+            {r.primero ? `Tu primera lección dura ${enLetra(r.primero.minutos)} minutos` : 'Tu primera lección te espera'}
+          </h2>
+          <Jugar>Empezar ahora</Jugar>
         </div>
       </section>
 
-      {/* ── 7. Por qué fiarse ─────────────────────────────────────────── */}
-      <section className={styles.veraz} aria-labelledby="titulo-veraz">
-        <div className={`${styles.ancho} ${styles.verazCuerpo}`}>
-          <DibujoPixel sprite={CORAZON} escala={9} className={styles.verazDibujo} />
-          <div>
-            <h2 id="titulo-veraz" className={styles.h2}>
-              Datos de verdad, de aquí
-            </h2>
-            <p>
-              Las cifras y las normas son las de España y salen de fuentes oficiales: el Banco de España, la CNMV,
-              el INE, la Seguridad Social, el Tesoro Público o el BOE. Cada dato lleva su fuente al lado.
-            </p>
-            <p>
-              Es contenido educativo, no asesoramiento financiero: te enseña a decidir, no decide por ti. Y no
-              recomienda ningún banco ni producto.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 8. Preguntas ──────────────────────────────────────────────── */}
+      {/* ── 7. Preguntas ──────────────────────────────────────────────── */}
       <section id="preguntas" className={styles.seccion} aria-labelledby="titulo-preguntas">
+        <Cielo semilla={83} cuantas={40} />
         <div className={`${styles.ancho} ${styles.preguntas}`}>
           <h2 id="titulo-preguntas" className={styles.h2}>
-            Lo que suele preguntarse antes de entrar
+            Preguntas
           </h2>
           <div className={styles.lista}>
             {PREGUNTAS.map((p) => (
@@ -273,27 +277,6 @@ export function Portada({ mundos }: { mundos: readonly MundoPublicoDto[] }) {
               </details>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── 9. La invitación ──────────────────────────────────────────── */}
-      <section className={styles.final} aria-labelledby="titulo-final">
-        <div className={`${styles.ancho} ${styles.finalCuerpo}`}>
-          <div className={styles.estrellas} aria-hidden="true">
-            <DibujoPixel sprite={ESTRELLA} escala={6} />
-            <DibujoPixel sprite={ESTRELLA} escala={8} />
-            <DibujoPixel sprite={ESTRELLA} escala={6} />
-          </div>
-          <h2 id="titulo-final" className={styles.h2}>
-            {r.primero
-              ? `Tu primera lección dura ${enLetra(r.primero.minutos)} minutos`
-              : 'Tu primera lección te espera'}
-          </h2>
-          <p>
-            {r.primero ? `«${r.primero.titulo}». ` : ''}Sin registrarte, sin pagar y desde el móvil. Lo demás va
-            llegando solo.
-          </p>
-          <Jugar>Empezar ahora</Jugar>
         </div>
       </section>
     </div>

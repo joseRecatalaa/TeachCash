@@ -5,8 +5,10 @@
  * lleva un título y una descripción escritos para eso (`seo` en su
  * `mundo.json`).
  *
- * Enseñan la ficha de cada nivel (título, qué es, cuánto dura, de qué trata),
- * nunca su contenido: las lecciones y las preguntas se juegan dentro.
+ * Enseñan solo los títulos de cada nivel (con qué es y cuánto dura), sin
+ * explicarlos: la descripción para Google va en la metadata de la página, y
+ * las lecciones y las preguntas se juegan dentro. Van de noche, como toda la
+ * parte pública (`MarcoPublico`), y los jefes se mueven (`.jefeVivo`).
  */
 
 import Link from 'next/link'
@@ -20,6 +22,7 @@ import { DibujoPixel } from './DibujoPixel'
 import { RUTA_JUGAR } from './MarcoPublico'
 import { PlanetaPixel } from './PlanetaPixel'
 import { QUE_ES, medida, resumir } from './resumen'
+import escenas from './escenas.module.css'
 import styles from './Cursos.module.css'
 
 const ICONO: Record<MundoPublicoDto['niveles'][number]['tipo'], { sprite: Sprite; escala: number }> = {
@@ -27,6 +30,13 @@ const ICONO: Record<MundoPublicoDto['niveles'][number]['tipo'], { sprite: Sprite
   interactivo: { sprite: MANDO, escala: 3 },
   jefe: { sprite: MONSTRUO, escala: 2 },
 }
+
+/**
+ * El título del curso sin "gratis": en la página ya se ve que lo es, y el
+ * título se lee mejor corto. El de Google (la metadata) lo conserva, que es
+ * lo que se busca.
+ */
+const sinGratis = (titulo: string) => titulo.replace(' gratis', '')
 
 /** Adonde entra "Jugar este mundo": su camino dentro del juego. */
 const rutaJugarMundo = (id: string) => `/CaminoHeroe/Mundo?id=${encodeURIComponent(id)}`
@@ -42,14 +52,13 @@ function Niveles({ mundo }: { mundo: MundoPublicoDto }) {
               sprite={icono.sprite}
               escala={icono.escala}
               decorado={mundo.decorado}
-              className={styles.nivelDibujo}
+              className={n.tipo === 'jefe' ? `${styles.nivelDibujo} ${escenas.jefeVivo}` : styles.nivelDibujo}
             />
             <div>
               <h3 className={styles.nivelTitulo}>{n.titulo}</h3>
               <p className={styles.nivelMeta}>
                 {QUE_ES[n.tipo]} · {n.minutos} min
               </p>
-              <p className={styles.nivelTexto}>{n.descripcion}</p>
             </div>
           </li>
         )
@@ -63,11 +72,8 @@ export function IndiceCursos({ mundos }: { mundos: readonly MundoPublicoDto[] })
   return (
     <div className={styles.pagina}>
       <header className={styles.cabecera}>
-        <h1 className={styles.titulo}>Cursos gratis de educación financiera</h1>
-        <p className={styles.entradilla}>
-          {r.niveles} niveles cortos para construir una relación sana con tu dinero: presupuesto, ahorro, inversión
-          y deudas. Se juegan como un videojuego a píxel, gratis y sin registrarte.
-        </p>
+        <h1 className={styles.titulo}>Cursos de educación financiera</h1>
+        <p className={styles.entradilla}>{r.niveles} niveles cortos, gratis y sin registrarte.</p>
         <SketchButton href={RUTA_JUGAR} recargar size="lg" rel="nofollow">
           Empieza a jugar gratis
         </SketchButton>
@@ -79,12 +85,11 @@ export function IndiceCursos({ mundos }: { mundos: readonly MundoPublicoDto[] })
             <PlanetaPixel decorado={m.decorado} />
             <div>
               <h2 id={`mundo-${m.id}`} className={styles.h2}>
-                <Link href={rutaCurso(m.id) as Route}>{m.seo.titulo}</Link>
+                <Link href={rutaCurso(m.id) as Route}>{sinGratis(m.seo.titulo)}</Link>
               </h2>
               <p className={styles.medida}>
                 Mundo {m.titulo} · {medida(m)}
               </p>
-              <p className={styles.descripcion}>{m.seo.descripcion}</p>
             </div>
           </div>
           <Niveles mundo={m} />
@@ -117,8 +122,7 @@ export function CursoMundo({
 
       <header className={`${styles.cabecera} ${styles.cabeceraMundo}`}>
         <div>
-          <h1 className={styles.titulo}>{mundo.seo.titulo}</h1>
-          <p className={styles.entradilla}>{mundo.seo.descripcion}</p>
+          <h1 className={styles.titulo}>{sinGratis(mundo.seo.titulo)}</h1>
           <p className={styles.medida}>
             Mundo {mundo.titulo} · {medida(mundo)} · Gratis
           </p>
@@ -133,9 +137,6 @@ export function CursoMundo({
         <h2 id="titulo-camino" className={styles.h2}>
           El camino, nivel a nivel
         </h2>
-        <p className={styles.descripcion}>
-          {mundo.descripcion} Los niveles se juegan en orden y el último es el jefe del mundo.
-        </p>
         <Niveles mundo={mundo} />
       </section>
 
@@ -148,7 +149,7 @@ export function CursoMundo({
             {otros.map((o) => (
               <li key={o.id}>
                 <PlanetaPixel decorado={o.decorado} escala={1} />
-                <Link href={rutaCurso(o.id) as Route}>{o.seo.titulo}</Link>
+                <Link href={rutaCurso(o.id) as Route}>{sinGratis(o.seo.titulo)}</Link>
               </li>
             ))}
           </ul>

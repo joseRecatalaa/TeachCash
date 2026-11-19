@@ -16,7 +16,7 @@ import { ESCUDO, HUCHA, MONTANA, PALETA_CAMINO, TARJETA, type Sprite } from '../
 import styles from './PlanetaPixel.module.css'
 
 /** El dibujo de cada mundo, el mismo que en el mapa. */
-const DIBUJO: Record<Decorado, Sprite> = {
+export const DIBUJO: Record<Decorado, Sprite> = {
   escudo: ESCUDO,
   hucha: HUCHA,
   montana: MONTANA,

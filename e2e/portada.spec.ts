@@ -3,7 +3,7 @@
  * pruebas.
  *
  * Lo que solo se ve aquí: que `/` sin sesión es la portada (HTML del servidor,
- * sin crear invitado), que "Empieza a jugar gratis" recarga y entra en la
+ * sin crear invitado), que "Jugar gratis" recarga y entra en la
  * aplicación con su invitado, y que después `/` ya es el Cuadro de mando. Si un
  * enlace de la portada fuera un `<Link>`, la aplicación se pintaría sin sesión
  * ni proveedores (`EnlaceCompleto`).
@@ -17,7 +17,8 @@ test('sin sesión, /, se ve la portada; al jugar nace el invitado y / pasa a ser
   // La portada no crea invitado: no está la aplicación ni su pantalla de espera.
   await expect(page.getByText('Preparando tu espacio…')).toHaveCount(0)
 
-  await page.getByRole('link', { name: 'Empieza a jugar gratis' }).click()
+  // `exact`: la cabecera tiene otro "Jugar gratis"; el de la portada lleva el ▶ oculto.
+  await page.locator('main').getByRole('link', { name: 'Jugar gratis', exact: true }).first().click()
   await expect(page).toHaveURL(/\/CaminoHeroe$/)
   await expect(page.getByRole('heading', { name: 'Camino del héroe' })).toBeVisible({ timeout: 30_000 })
 
@@ -28,7 +29,7 @@ test('sin sesión, /, se ve la portada; al jugar nace el invitado y / pasa a ser
 
 test('los cursos son públicos e indexables, y un mundo que no existe es un 404', async ({ page }) => {
   await page.goto('/aprende/ahorro')
-  await expect(page.getByRole('heading', { level: 1, name: 'Curso gratis para aprender a ahorrar' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Curso para aprender a ahorrar' })).toBeVisible()
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'index, follow')
 
   const respuesta = await page.goto('/aprende/no-existe')

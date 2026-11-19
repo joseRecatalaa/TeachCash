@@ -12,7 +12,7 @@
  */
 
 import type { Metadata } from 'next'
-import { TITULO_SITIO } from '@/lib/seo'
+import { NOMBRE_SITIO } from '@/lib/seo'
 import { cuentaDeLaPeticion } from '@/src/application/cuentaDeLaPeticion'
 import { catalogoPublico } from '@/src/infrastructure/heroe/catalogo'
 import { DatosEstructurados } from '@/src/presentation/components/Publico/DatosEstructurados'
@@ -20,9 +20,16 @@ import { esquemaPortada } from '@/src/presentation/components/Publico/esquemas'
 import { Portada } from '@/src/presentation/components/Publico/Portada'
 import { PantallaCuadro } from './PantallaCuadro'
 
-/** La única página de la aplicación que se indexa con su dirección raíz. */
+/**
+ * La única página de la aplicación que se indexa con su dirección raíz.
+ *
+ * El título es SOLO la marca: así se ve en la pestaña, junto a la moneda, y
+ * fue decisión del dueño del producto aunque el título largo posicionaba
+ * mejor. Lo que se busca ("educación financiera") lo llevan el `h1`, la
+ * descripción, los datos estructurados y el título de Open Graph.
+ */
 export const metadata: Metadata = {
-  title: { absolute: TITULO_SITIO },
+  title: { absolute: NOMBRE_SITIO },
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
 }

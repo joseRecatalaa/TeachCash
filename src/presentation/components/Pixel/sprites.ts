@@ -316,6 +316,36 @@ export const DESTELLO: Sprite = {
   filas: ['..z..', '..z..', 'zzZzz', '..z..', '..z..'],
 }
 
+/**
+ * El tajo de la espada: una media luna blanca con el filo dorado, hacia la
+ * derecha. Lo pinta el combate de la portada, encima del jefe, solo durante
+ * el golpe.
+ */
+export const TAJO: Sprite = {
+  x: 0,
+  y: 0,
+  filas: [
+    '..ZZ........',
+    '...ZZz......',
+    '....ZZz.....',
+    '.....ZZz....',
+    '......ZZz...',
+    '.......ZZz..',
+    '.......ZZz..',
+    '........ZZz.',
+    '........ZZz.',
+    '........ZZz.',
+    '........ZZz.',
+    '.......ZZz..',
+    '.......ZZz..',
+    '......ZZz...',
+    '.....ZZz....',
+    '....ZZz.....',
+    '...ZZz......',
+    '..ZZ........',
+  ],
+}
+
 /* ── El mundo ──────────────────────────────────────────────────────────── */
 
 export const NUBE: Sprite = {

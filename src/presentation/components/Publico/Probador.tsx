@@ -1,21 +1,31 @@
 'use client'
 
 /*
- * El probador de la portada: quien aún no juega viste al héroe pieza a pieza y
- * ve cuántas estrellas costaría ese equipo en la tienda. Es lo único de la
- * portada que se toca, y enseña lo que el juego promete con el juego mismo:
- * que lo que aprendes se nota en tu héroe.
+ * El probador de la portada, como la pantalla de inventario de un juego: a la
+ * izquierda el héroe en su isla bajo las estrellas, a la derecha una casilla
+ * por hueco con el dibujo de lo que lleva. Pulsar una casilla sube la pieza de
+ * calidad (nada → cuero → hierro → oro → nada) y el héroe se la estrena con el
+ * gesto y los destellos de la tienda de verdad.
  *
- * No compra nada ni guarda nada: el héroe y los precios son los de la tienda
- * de verdad (`lib/tienda.ts`), pero el estado vive en esta página y se pierde
- * al salir. Sin JavaScript se ve el héroe con su equipo de partida y los
- * botones no hacen nada, que es una portada completa igualmente.
+ * Es lo único de la portada que se toca, y enseña lo que el juego promete con
+ * el juego mismo: que lo que aprendes se nota en tu héroe.
+ *
+ * No compra nada ni guarda nada: el héroe, los dibujos y los precios son los
+ * de la tienda (`lib/tienda.ts`), pero el estado vive en esta página y se
+ * pierde al salir. Sin JavaScript se ve el héroe con su equipo de partida y
+ * las casillas no hacen nada, que es una portada completa igualmente.
+ *
+ * El estreno vuelve a montar la escena (`key`): una pieza que pasa de hierro a
+ * oro es el mismo elemento, y sin montarlo de nuevo su animación no se
+ * repetiría. Con el movimiento reducido no se pide (como en la tienda).
  */
 
 import { useState } from 'react'
 import { CALIDADES, HUECOS, objetoPorId, precioDeEquipo, type Calidad, type Hueco } from '@/lib/tienda'
-import { EscenaHeroe, EstrellaPixel, TIPO_DEL_HUECO } from '../Pixel/HeroeGrande'
-import { SketchButton } from '../ui'
+import { EscenarioHeroe } from '../Pixel/EscenarioHeroe'
+import { EstrellaPixel, ObjetoPixel, TIPO_DEL_HUECO } from '../Pixel/HeroeGrande'
+import { useMovimientoReducido } from '../Pixel/useMovimientoReducido'
+import { Cielo } from './Cielo'
 import styles from './Probador.module.css'
 
 type Equipo = Partial<Record<Hueco, Calidad>>
@@ -51,51 +61,90 @@ function siguiente(actual: Calidad | undefined): Calidad | undefined {
 
 export function Probador({ estrellasPosibles }: { estrellasPosibles: number }) {
   const [equipo, setEquipo] = useState<Equipo>(INICIAL)
+  const [estreno, setEstreno] = useState<string | null>(null)
+  const [vez, setVez] = useState(0)
+  const reducido = useMovimientoReducido()
   const puestos = ids(equipo)
   const precio = precioDeEquipo(puestos)
 
+  const poner = (nuevo: Equipo, recien: string | null) => {
+    setEquipo(nuevo)
+    setEstreno(reducido ? null : recien)
+    setVez((v) => v + 1)
+  }
+
+  const cambiar = (hueco: Hueco) => {
+    const calidad = siguiente(equipo[hueco])
+    poner({ ...equipo, [hueco]: calidad }, calidad ? idDe(hueco, calidad) : null)
+  }
+
   return (
     <div className={styles.probador}>
-      <div className={styles.escena}>
-        <EscenaHeroe equipo={puestos} />
+      <div className={styles.escenario}>
+        <Cielo semilla={97} cuantas={45} />
+        {/* Dos tamaños enteros, como en la cabecera de la portada. */}
+        <div className={styles.soloMovil}>
+          <EscenarioHeroe key={vez} equipo={puestos} estreno={estreno} escala={3} />
+        </div>
+        <div className={styles.soloAncho}>
+          <EscenarioHeroe key={vez} equipo={puestos} estreno={estreno} escala={4} />
+        </div>
       </div>
 
-      <div className={styles.mandos}>
-        <ul className={styles.piezas} aria-label="Equipo del héroe">
+      <div className={styles.inventario}>
+        <ul className={styles.casillas} aria-label="Equipo del héroe">
           {HUECOS.map((hueco) => {
             const calidad = equipo[hueco]
             const objeto = calidad ? objetoPorId(idDe(hueco, calidad)) : undefined
+            // La casilla vacía enseña la silueta de lo que falta.
+            const dibujo = objeto ?? objetoPorId(idDe(hueco, 'basica'))
+            const nivel = calidad ? CALIDADES.indexOf(calidad) + 1 : 0
             return (
               <li key={hueco}>
                 <button
                   type="button"
-                  className={styles.pieza}
+                  className={styles.casilla}
                   data-calidad={calidad ?? 'ninguna'}
-                  onClick={() => setEquipo((e) => ({ ...e, [hueco]: siguiente(e[hueco]) }))}
+                  aria-label={`${NOMBRE_HUECO[hueco]}: ${objeto ? objeto.nombre : 'sin poner'}. Pulsa para cambiarlo.`}
+                  onClick={() => cambiar(hueco)}
                 >
-                  <span className={styles.hueco}>{NOMBRE_HUECO[hueco]}</span>
-                  <span className={styles.material}>{objeto ? objeto.nombre : 'Sin poner'}</span>
+                  {/* Con la calidad en la `key`, el dibujo da un salto al cambiar. */}
+                  <span key={calidad ?? 'nada'} className={objeto ? styles.dibujo : styles.silueta}>
+                    {dibujo && <ObjetoPixel objeto={dibujo} caja={48} />}
+                  </span>
+                  <span className={styles.nombre}>{objeto ? objeto.nombre : NOMBRE_HUECO[hueco]}</span>
+                  <span className={styles.nivel} aria-hidden="true">
+                    {[1, 2, 3].map((n) => (
+                      <span key={n} data-lleno={n <= nivel || undefined} />
+                    ))}
+                  </span>
                 </button>
               </li>
             )
           })}
         </ul>
 
-        <p className={styles.precio} aria-live="polite">
-          <EstrellaPixel tamano={21} />
-          <span>
-            Este equipo cuesta <strong>{precio}</strong> {precio === 1 ? 'estrella' : 'estrellas'}. En el juego
-            hay {estrellasPosibles} por ganar.
-          </span>
-        </p>
-
-        <div className={styles.botones}>
-          <SketchButton variant="secondary" size="sm" onClick={() => setEquipo(TODO_DE_ORO)}>
-            Todo de oro
-          </SketchButton>
-          <SketchButton variant="ghost" size="sm" onClick={() => setEquipo({})}>
-            Quitárselo todo
-          </SketchButton>
+        <div className={styles.pie}>
+          <p className={styles.precio} aria-live="polite">
+            <EstrellaPixel tamano={28} />
+            <span className={styles.cifra}>{precio}</span>
+            <span className={styles.total}>
+              de {estrellasPosibles} estrellas
+              <span className={styles.oculto}> cuesta este equipo en la tienda</span>
+            </span>
+          </p>
+          <div className={styles.botones}>
+            <button
+              type="button"
+              className={styles.boton}
+              onClick={() => poner(TODO_DE_ORO, idDe('alas', 'alta'))}
+            >
+              Todo de oro
+            </button>
+            <button type="button" className={styles.botonSuave} onClick={() => poner({}, null)}>
+              Quitar todo
+            </button>
+          </div>
         </div>
       </div>
     </div>

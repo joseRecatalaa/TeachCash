@@ -111,6 +111,7 @@ describe('sistema de diseño: el color sale de un token', () => {
   const ILUSTRACIONES = new Set([
     'src/presentation/components/Splash/Splash.module.css',
     'src/presentation/components/Pixel/pixel.module.css',
+    'src/presentation/components/Publico/escenas.module.css',
   ])
 
   const modulos = [...ficheros('src', '.module.css'), ...ficheros('app', '.module.css')]

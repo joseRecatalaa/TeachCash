@@ -44,15 +44,16 @@
   gap: 1rem;
 }
 
+/* Los títulos, en una línea y en el oro de la noche (`--sd-accent` dentro de
+   `.noche`). */
 .titulo {
   margin: 0;
-  max-width: 20ch;
   font-family: var(--sd-font-display);
-  font-size: clamp(2.3rem, 5.4vw, 4.2rem);
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.05;
   letter-spacing: -0.03em;
-  text-wrap: balance;
+  color: var(--sd-accent);
 }
 
 .entradilla {
@@ -72,7 +73,7 @@
 }
 
 .h2 a {
-  color: var(--sd-ink);
+  color: var(--sd-accent);
   text-decoration: none;
   background-image: linear-gradient(var(--sd-accent-wash), var(--sd-accent-wash));
   background-repeat: no-repeat;
@@ -81,7 +82,7 @@
 }
 
 .h2 a:hover {
-  color: var(--sd-accent-soft);
+  color: var(--sd-accent-strong);
 }
 
 .medida {
@@ -89,13 +90,6 @@
   font-family: var(--sd-font-display);
   font-weight: 500;
   color: var(--sd-ink-soft);
-}
-
-.descripcion {
-  margin: 0.75rem 0 0;
-  max-width: 62ch;
-  font-size: 1.1rem;
-  line-height: 1.55;
 }
 
 /* ── Un mundo ────────────────────────────────────────────────────────────── */
@@ -159,12 +153,6 @@
   margin: 0.2rem 0 0.4rem;
   font-size: 0.95rem;
   color: var(--sd-ink-soft);
-}
-
-.nivelTexto {
-  margin: 0;
-  max-width: 64ch;
-  line-height: 1.55;
 }
 
 /* ── Migas y otros mundos ────────────────────────────────────────────────── */
