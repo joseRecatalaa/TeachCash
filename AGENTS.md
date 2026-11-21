@@ -71,6 +71,7 @@ nómina, IRPF o la fiscalidad de un fondo.
 | Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO-HEROE.md`**, y las cifras en `docs/investigación-heroe/REVISION-CIFRAS.md` |
 | Tocar auth, sesión, cabeceras, CSP, límites, logs, RLS, dependencias o el CI | **`docs/SECURITY.md`**: las medidas por cada punto de OWASP Top 10 y API Top 10, lo que depende de configuración fuera del repo y los riesgos aceptados |
 | Cambiar la presentación del proyecto (`/presentacion`) o volver a exportarla | **`docs/COMPONENTS.md`**, "La presentación" |
+| Entender cómo está desplegado, cómo se publica un cambio y cómo se comprueba | **`docs/DESPLIEGUE.md`** |
 | Desplegar en producción (Vercel + Supabase) o tocar su configuración | **`docs/plans/PLAN-DESPLIEGUE.md`**: los pasos en orden, las variables de entorno, el panel de Supabase y Turnstile y cómo comprobarlo |
 | Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO-HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
 
@@ -920,7 +921,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     así lleva el diseño del juego y no se queda vieja al cambiar un sprite.
     Pública (`esPaginaPublica`) para abrirla sin cuenta, pero `noindex` y fuera
     de `robots.ts` y del sitemap, y sin el marco público. Los ficheros de
-    entrega (PDF, PPTX con notas y PNG) se generan desde ella
+    entrega (PDF, PPTX y PNG) se generan desde ella
     (`pnpm presentacion:exportar`, `scripts/presentacion-pptx.py`) a
     `docs/presentacion/`. El PPTX son imágenes a propósito: editable, perdería
     el diseño.

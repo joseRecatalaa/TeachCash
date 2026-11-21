@@ -1,7 +1,8 @@
 """
 Monta el PowerPoint de la presentación a partir de lo que exporta
 `scripts/exportar-presentacion.mts`: una diapositiva 16:9 por imagen, a sangre,
-con lo que se dice en cada una en las notas del orador.
+y SIN notas del orador: el PowerPoint es para entregar, y las notas son un
+guion para quien presenta (solo en la web, con la tecla N).
 
 Las diapositivas son imágenes y no cajas de texto editables a propósito: el
 diseño (pixel art, tipografía de recreativa, el cielo) vive en la web, y un
@@ -12,7 +13,6 @@ PowerPoint "editable" lo perdería al primer clic. Se cambia en
     python scripts/presentacion-pptx.py
 """
 
-import json
 from pathlib import Path
 
 from pptx import Presentation
@@ -24,8 +24,6 @@ CARPETA = Path(__file__).resolve().parent.parent / "docs" / "presentacion"
 ANCHO = Emu(12192000)
 ALTO = Emu(6858000)
 
-notas = {n["numero"]: n["notas"] for n in json.loads((CARPETA / "notas.json").read_text(encoding="utf-8"))}
-
 presentacion = Presentation()
 presentacion.slide_width = ANCHO
 presentacion.slide_height = ALTO
@@ -35,7 +33,6 @@ imagenes = sorted((CARPETA / "diapositivas").glob("*.png"))
 for imagen in imagenes:
     diapositiva = presentacion.slides.add_slide(en_blanco)
     diapositiva.shapes.add_picture(str(imagen), 0, 0, width=ANCHO, height=ALTO)
-    diapositiva.notes_slide.notes_text_frame.text = notas.get(int(imagen.stem), "")
 
 salida = CARPETA / "TeachCash-presentacion.pptx"
 presentacion.save(salida)

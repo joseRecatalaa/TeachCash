@@ -201,10 +201,11 @@ Cada cambio tiene un sitio y solo uno:
     ARCHITECTURE.md                   # capas, camino de los datos y de la sesión, añadir una entidad
     STRUCTURE.md                      # esta hoja de ruta
     TESTS.md                          # todo lo de tests y quality gates
+    DESPLIEGUE.md                     # cómo está en producción, cómo se publica y se comprueba
     CONTENIDO-HEROE.md                # cómo se escribe un curso
     investigación-heroe/              # informes por mundo y REVISION-CIFRAS.md
     emails/                           # plantillas de email de Supabase Auth (se pegan en su panel)
-    presentacion/                     # la presentación exportada: PDF, PPTX, PNG y notas (generado)
+    presentacion/                     # la presentación exportada: PDF, PPTX y PNG (generado)
     plans/                            # los planes (históricos) y los prompts de los cursos
   .github/workflows/                  # calidad.yml (CI) y ping-supabase.yml
   .husky/pre-commit                   # ESLint + typecheck en cada commit
