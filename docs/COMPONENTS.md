@@ -124,6 +124,25 @@ sobre SVG, sin JavaScript, y su estado sin animar es una escena entera.
 | `DatosEstructurados` + `esquemas.ts` | El JSON-LD de schema.org de cada página. Solo dicen lo que la página enseña |
 | `preguntas.ts`, `resumen.ts` | Las preguntas frecuentes (página y JSON-LD salen de la misma lista) y las cifras de la portada, sacadas del contenido |
 
+### La presentación (`Presentacion/`)
+
+`/presentacion` es la presentación del proyecto, hecha con las piezas de arriba
+y no con capturas: si cambia un sprite, cambia la diapositiva. Es pública y
+`noindex`, y el layout la monta SIN `MarcoPublico` (cada pantalla ocupa la
+ventana entera).
+
+| Pieza | Para qué |
+|---|---|
+| `Presentacion` | El proyector: pantallas de 1920x1080 escaladas a la ventana, flechas/espacio para moverse, `F` pantalla completa, `N` notas, la diapositiva en el hash (`#7`). Con `?imprimir`, todas seguidas y una por página |
+| `crearDiapositivas` (`diapositivas.tsx`) | Las diecisiete pantallas, con sus notas de orador. Las cifras del juego salen de `resumir`, como en la portada |
+| `qr.ts` | El QR a www.teachcash.es como trazo de píxeles. Si cambia la dirección, se regenera |
+
+Todo va en `px` (es un lienzo de tamaño fijo) y sin un color propio: tinta, oro
+y cielo salen de `.noche`. El cielo es siempre el PRIMER hijo de cada pantalla:
+`.diapo > svg:first-child` lo manda al fondo. Los ficheros de entrega
+(`docs/presentacion/`) se generan con `pnpm presentacion:exportar` contra la app
+en marcha y `python scripts/presentacion-pptx.py`.
+
 ### Piezas de un solo sitio
 
 No son genéricas, pero conviene saber que existen antes de rehacerlas:

@@ -30,6 +30,7 @@ Cada cambio tiene un sitio y solo uno:
 | Cambiar cómo se calcula una estadística del héroe | `lib/estadisticas.ts` |
 | Cambiar la portada pública o las páginas de cursos | `src/presentation/components/Publico/` (y el lema y qué rutas son públicas, en `lib/seo.ts`) |
 | Cambiar cómo sale un mundo en Google | `seo` en su `content/heroe/<mundo>/mundo.json` |
+| Cambiar la presentación del proyecto (las diapositivas) | `src/presentation/components/Presentacion/diapositivas.tsx`; después, `pnpm presentacion:exportar` y `scripts/presentacion-pptx.py` |
 | Cambiar una pregunta frecuente de la portada | `PREGUNTAS` en `Publico/preguntas.ts` (la página y los datos estructurados salen de ahí) |
 
 ## El árbol de ficheros
@@ -41,6 +42,7 @@ Cada cambio tiene un sitio y solo uno:
     PantallaCuadro.tsx                # el Cuadro de mando: patrimonio, héroe, radar y estrellas
     page.module.css                   # su aspecto: cada vista lleva el suyo
     aprende/                          # PÚBLICAS: el índice de cursos y uno por mundo ([mundo])
+    presentacion/                     # PÚBLICA y noindex: la presentación del TFM, sin marco
     robots.ts  sitemap.ts             # lo que leen los buscadores (lib/seo.ts)
     manifest.ts  opengraph-image.tsx  # la app en el móvil y la imagen al compartir
     Patrimonio/                       # Inicio: saldo, mes, gráficos y últimos
@@ -187,6 +189,7 @@ Cada cambio tiene un sitio y solo uno:
     migrations/
     sql/limpieza-invitados.sql        # job de pg_cron, a mano en Supabase
     testing.ts                        # PGlite + stub de `auth` para los tests
+  scripts/                            # exportar la presentación a PDF/PNG y montar su PPTX
   plop-templates/
   plopfile.mjs
   instrumentation.ts                  # valida el entorno al arrancar el servidor
@@ -198,9 +201,11 @@ Cada cambio tiene un sitio y solo uno:
     ARCHITECTURE.md                   # capas, camino de los datos y de la sesión, añadir una entidad
     STRUCTURE.md                      # esta hoja de ruta
     TESTS.md                          # todo lo de tests y quality gates
+    DESPLIEGUE.md                     # cómo está en producción, cómo se publica y se comprueba
     CONTENIDO-HEROE.md                # cómo se escribe un curso
     investigación-heroe/              # informes por mundo y REVISION-CIFRAS.md
     emails/                           # plantillas de email de Supabase Auth (se pegan en su panel)
+    presentacion/                     # la presentación exportada: PDF, PPTX y PNG (generado)
     plans/                            # los planes (históricos) y los prompts de los cursos
   .github/workflows/                  # calidad.yml (CI) y ping-supabase.yml
   .husky/pre-commit                   # ESLint + typecheck en cada commit
