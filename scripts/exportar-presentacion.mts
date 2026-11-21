@@ -5,7 +5,6 @@
  *     a 1920x1080 y con el texto como texto (se puede buscar y copiar).
  *   - `docs/presentacion/diapositivas/NN.png`: cada pantalla como imagen, que
  *     es de lo que tira `scripts/presentacion-pptx.py` para el PowerPoint.
- *   - `docs/presentacion/notas.json`: lo que se dice en cada una.
  *
  * Necesita la aplicación en marcha (por defecto en http://localhost:3100) y lee
  * `?imprimir`, que pinta todas las pantallas seguidas. Se emula el movimiento
@@ -14,7 +13,7 @@
  *   node scripts/exportar-presentacion.mts [url-base]
  */
 
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { chromium } from '@playwright/test'
 
@@ -41,20 +40,11 @@ await pagina.evaluate(() => document.fonts.ready)
 
 const diapositivas = pagina.locator('[data-diapositiva]')
 const total = await diapositivas.count()
-const notas: { numero: number; nombre: string; notas: string }[] = []
 
 for (let i = 0; i < total; i++) {
-  const d = diapositivas.nth(i)
-  const numero = i + 1
-  await d.screenshot({ path: join(IMAGENES, `${String(numero).padStart(2, '0')}.png`) })
-  notas.push({
-    numero,
-    nombre: (await d.getAttribute('aria-label')) ?? '',
-    notas: (await d.getAttribute('data-notas')) ?? '',
-  })
+  await diapositivas.nth(i).screenshot({ path: join(IMAGENES, `${String(i + 1).padStart(2, '0')}.png`) })
 }
 
-await writeFile(join(SALIDA, 'notas.json'), `${JSON.stringify(notas, null, 2)}\n`)
 await pagina.emulateMedia({ media: 'print' })
 await pagina.pdf({
   path: join(SALIDA, 'TeachCash-presentacion.pdf'),

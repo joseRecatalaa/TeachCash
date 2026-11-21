@@ -920,7 +920,7 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     así lleva el diseño del juego y no se queda vieja al cambiar un sprite.
     Pública (`esPaginaPublica`) para abrirla sin cuenta, pero `noindex` y fuera
     de `robots.ts` y del sitemap, y sin el marco público. Los ficheros de
-    entrega (PDF, PPTX con notas y PNG) se generan desde ella
+    entrega (PDF, PPTX y PNG) se generan desde ella
     (`pnpm presentacion:exportar`, `scripts/presentacion-pptx.py`) a
     `docs/presentacion/`. El PPTX son imágenes a propósito: editable, perdería
     el diseño.

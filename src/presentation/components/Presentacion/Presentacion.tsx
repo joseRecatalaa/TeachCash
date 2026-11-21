@@ -131,7 +131,7 @@ export function Presentacion({ diapositivas, imprimir }: { diapositivas: readonl
     return (
       <div className={`${escenas.noche} ${styles.impreso}`}>
         {diapositivas.map((d, i) => (
-          <section key={d.id} className={styles.escenario} aria-label={d.nombre} data-diapositiva={i + 1} data-notas={d.notas}>
+          <section key={d.id} className={styles.escenario} aria-label={d.nombre} data-diapositiva={i + 1}>
             {d.contenido}
             <Marcador actual={i} total={total} />
           </section>
