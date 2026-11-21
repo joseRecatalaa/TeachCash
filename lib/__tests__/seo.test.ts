@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { DESCRIPCION_SITIO, TITULO_SITIO, esPaginaPublica, rutaCurso } from '../seo'
+import { DESCRIPCION_SITIO, RUTA_PRESENTACION, TITULO_SITIO, esPaginaPublica, rutaCurso } from '../seo'
 
 describe('esPaginaPublica', () => {
   test('la portada es pública sin sesión y el Cuadro de mando con ella', () => {
@@ -12,7 +12,11 @@ describe('esPaginaPublica', () => {
     expect(esPaginaPublica(rutaCurso('ahorro'), conSesion)).toBe(true)
   })
 
-  test.each(['/Patrimonio', '/CaminoHeroe', '/Login', '/aprendemos', '/Aprende', ''])(
+  test.each([true, false])('la presentación es pública siempre (con sesión: %s)', (conSesion) => {
+    expect(esPaginaPublica(RUTA_PRESENTACION, conSesion)).toBe(true)
+  })
+
+  test.each(['/presentacion/otra', '/Patrimonio', '/CaminoHeroe', '/Login', '/aprendemos', '/Aprende', ''])(
     '"%s" no es pública',
     (ruta) => expect(esPaginaPublica(ruta, false)).toBe(false),
   )

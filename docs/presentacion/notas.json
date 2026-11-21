@@ -1,0 +1,87 @@
+[
+  {
+    "numero": 1,
+    "nombre": "TeachCash",
+    "notas": "Hola, soy Jose y esto es TeachCash, mi Trabajo Fin de Máster en The Big School. Es educación financiera para cualquiera, pero no en forma de curso aburrido: es un videojuego a píxel. Este de aquí es el héroe. Va a acompañarnos toda la presentación."
+  },
+  {
+    "numero": 2,
+    "nombre": "El problema",
+    "notas": "Empiezo con una pregunta: ¿quién os enseñó a manejar el dinero? A mí, nadie. Y no es solo cosa mía: según el INE, más de un tercio de la gente en España no podría pagar un gasto imprevisto con sus ahorros. Cuatro de cada once huchas, vacías."
+  },
+  {
+    "numero": 3,
+    "nombre": "El elefante en la habitación",
+    "notas": "Y esto tiene una causa. Nadie nos prepara para el mundo real. La falta de educación financiera es el elefante en la habitación: todos lo vemos y nadie lo señala. Los jóvenes no sabemos qué es el TIN, la TAE o el IPC; muchas veces ni entendemos una factura. Son objetos desconocidos del inventario. Y el resultado es este: no tenemos una mentalidad financiera sana para gestionar nuestro patrimonio."
+  },
+  {
+    "numero": 4,
+    "nombre": "La idea",
+    "notas": "Así que la idea es sencilla: si no lo aprendimos en clase, lo aprendemos jugando. Tres palabras lo resumen: interactivo, veraz y lúdico. Y la de veraz no es de adorno: es un requisito."
+  },
+  {
+    "numero": 5,
+    "nombre": "Los mundos",
+    "notas": "El juego tiene 4 mundos, cada uno un planeta: Salud financiera, Ahorro, Inversión, Deuda y crédito. Están todos abiertos desde el principio: empiezas por el que más te preocupe."
+  },
+  {
+    "numero": 6,
+    "nombre": "Qué se aprende",
+    "notas": "Y esto es lo que hay en cada uno. Ahorro, deuda, inversión y salud financiera: lo que de verdad te encuentras en la vida, desde el fondo de emergencia hasta leer la letra pequeña de un préstamo."
+  },
+  {
+    "numero": 7,
+    "nombre": "El camino",
+    "notas": "Dentro de cada mundo hay un camino. Lecciones cortas, de 3 a 4 minutos, con un minitest; prácticas con casos reales; y arriba del todo, el jefe. Sin calculadora: se pregunta por la idea, no por la cuenta."
+  },
+  {
+    "numero": 8,
+    "nombre": "Los jefes",
+    "notas": "Cada mundo acaba con un jefe, un monstruo de su color. Seis preguntas y necesitas un 65 % para tumbarlo. Y si pierdes no pasa nada: lo vuelves a intentar. Aquí equivocarse es gratis, que es justo lo que no pasa con el dinero de verdad."
+  },
+  {
+    "numero": 9,
+    "nombre": "El combate",
+    "notas": "Y así se ve. Cada golpe es una idea que has aprendido: presupuesto, ahorro, interés compuesto. Lo que aprendes es literalmente tu arma. Ganas, y te llevas hasta tres estrellas."
+  },
+  {
+    "numero": 10,
+    "nombre": "La tienda",
+    "notas": "Las estrellas sirven para algo: la tienda. Casco, armadura, guantes, botas, espada, escudo y alas, en cuero, hierro y oro. Hay 108 estrellas en juego y no dan para comprarlo todo, así que toca elegir. Que, pensándolo bien, también es educación financiera. Este probador es de verdad: lo puedo tocar ahora mismo."
+  },
+  {
+    "numero": 11,
+    "nombre": "Tu héroe",
+    "notas": "Todo eso se junta en el Cuadro de mando: tu héroe con su equipo y siete estadísticas. Los cursos suben Vitalidad, Defensa, Ataque y Resistencia. Pero ojo: Riqueza y Constancia solo suben si a tu dinero de verdad le va bien. El juego se cruza con tu vida."
+  },
+  {
+    "numero": 12,
+    "nombre": "Tu dinero de verdad",
+    "notas": "Porque TeachCash no se queda en el juego. Tiene un gestor de patrimonio para aplicarlo con tu dinero: anotas ingresos y gastos en segundos, los ordenas por categorías y ves cómo va tu mes. Estas son las cuentas de Pepito, nuestro personaje de ejemplo."
+  },
+  {
+    "numero": 13,
+    "nombre": "Veraz",
+    "notas": "Y lo que más me importa: aquí no se inventa ni un dato. Cada cifra de los cursos sale de una fuente oficial española y pasa por revisión humana antes de publicarse. Para mí, un dato mal es un bug, igual que un importe mal sumado."
+  },
+  {
+    "numero": 14,
+    "nombre": "Cero excusas",
+    "notas": "Y para que nadie se quede fuera: es gratis, no hace falta registrarse, una lección dura 3 minutos y si te gusta, creas la cuenta y no pierdes nada de lo que llevas."
+  },
+  {
+    "numero": 15,
+    "nombre": "Bajo el capó",
+    "notas": "Para el tribunal, un vistazo a lo de dentro. Next 16 con Server Actions, Supabase con Postgres y Auth, Drizzle, Refine y Mantine. Y las cosas de las que estoy más orgulloso: está en producción en teachcash.es con dominio y emails propios; hay tests unitarios, de integración y E2E, y un CI que no deja entrar nada a develop sin pasar, con despliegue automático en Vercel; pasé una auditoría de seguridad contra OWASP, y todo el pixel art es propio, sin una sola imagen."
+  },
+  {
+    "numero": 16,
+    "nombre": "Lo que viene",
+    "notas": "El Trabajo de Final de Máster se acaba aquí, pero el proyecto no. Voy a seguir con él: más mundos y más jefes, más funcionalidades y, sobre todo, formar una comunidad alrededor de TeachCash."
+  },
+  {
+    "numero": 17,
+    "nombre": "Continue?",
+    "notas": "Y acabo como acaban los juegos: ¿continuar? TeachCash está en producción en www.teachcash.es. Escanead el QR, entrad sin registraros y probad la primera lección. Vuestro héroe os está esperando. ¡Gracias!"
+  }
+]

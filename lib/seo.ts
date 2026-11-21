@@ -51,12 +51,21 @@ export const RUTA_CURSOS = '/aprende'
 export const rutaCurso = (mundo: string) => `${RUTA_CURSOS}/${mundo}`
 
 /**
+ * La presentación del proyecto (el TFM): pantallas de 1920x1080 hechas con los
+ * mismos sprites que el juego. Pública para que se pueda enlazar sin sesión,
+ * pero `noindex`: no es una página para buscar, es una charla.
+ */
+export const RUTA_PRESENTACION = '/presentacion'
+
+/**
  * Si una ruta se pinta como página pública.
  *
  * La portada (`/`) solo lo es SIN sesión: con ella, `/` es el Cuadro de mando.
- * Los cursos lo son siempre, porque su dirección es la misma para todos.
+ * Los cursos lo son siempre, porque su dirección es la misma para todos, y la
+ * presentación también: el tribunal la abre sin cuenta.
  */
 export function esPaginaPublica(ruta: string, conSesion: boolean): boolean {
   if (ruta === '/') return !conSesion
+  if (ruta === RUTA_PRESENTACION) return true
   return ruta === RUTA_CURSOS || ruta.startsWith(`${RUTA_CURSOS}/`)
 }

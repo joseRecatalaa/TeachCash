@@ -70,6 +70,7 @@ nómina, IRPF o la fiscalidad de un fondo.
 | Escribir o arreglar un test | **`docs/TESTS.md`**: cómo está montado, qué cubre cada fichero y qué no merece test |
 | Escribir o revisar un curso del Camino del héroe | **`docs/CONTENIDO-HEROE.md`**, y las cifras en `docs/investigación-heroe/REVISION-CIFRAS.md` |
 | Tocar auth, sesión, cabeceras, CSP, límites, logs, RLS, dependencias o el CI | **`docs/SECURITY.md`**: las medidas por cada punto de OWASP Top 10 y API Top 10, lo que depende de configuración fuera del repo y los riesgos aceptados |
+| Cambiar la presentación del proyecto (`/presentacion`) o volver a exportarla | **`docs/COMPONENTS.md`**, "La presentación" |
 | Desplegar en producción (Vercel + Supabase) o tocar su configuración | **`docs/plans/PLAN-DESPLIEGUE.md`**: los pasos en orden, las variables de entorno, el panel de Supabase y Turnstile y cómo comprobarlo |
 | Entender por qué algo se planificó así | **`docs/plans/`**: los planes (`PLAN-V1.md`, `PLAN-SUPABASE.md`, `CAMINO-HEROE.md`) y los prompts con los que se escribieron los cursos. Son históricos: lo vigente está aquí y en los documentos de arriba |
 
@@ -128,6 +129,7 @@ pnpm test:e2e:ui          # lo mismo, con la interfaz de Playwright
 pnpm test:e2e:visual      # regresión visual de Inicio (opt-in, solo local)
 pnpm generate:crud        # scaffolding de una entidad nueva (Plop)
 pnpm heroe:validar        # valida el contenido del Camino del héroe (content/heroe/)
+pnpm presentacion:exportar # PDF/PNG de /presentacion en docs/presentacion (app en marcha, por defecto en el 3100)
 pnpm db:generate          # genera la migración a partir de db/schema.ts
 pnpm db:migrate           # aplica las migraciones en Supabase (lee .env.local)
 pnpm db:migrate:e2e       # lo mismo en el proyecto de los E2E (lee .env.e2e)
@@ -913,6 +915,15 @@ En `.claude/skills/`. Se activan solas por contexto, pero conviene saber que exi
     combate contra un jefe, el probador como inventario. Todo lo público
     (portada, cursos, marco) va en el espacio en los dos temas: `.noche`
     redefine los `--sd-*` (ver "Páginas públicas" en `docs/COMPONENTS.md`).
+  - **La presentación del TFM es una ruta de la app** (`/presentacion`), hecha
+    con los mismos componentes de pixel art y no en un programa de diapositivas:
+    así lleva el diseño del juego y no se queda vieja al cambiar un sprite.
+    Pública (`esPaginaPublica`) para abrirla sin cuenta, pero `noindex` y fuera
+    de `robots.ts` y del sitemap, y sin el marco público. Los ficheros de
+    entrega (PDF, PPTX con notas y PNG) se generan desde ella
+    (`pnpm presentacion:exportar`, `scripts/presentacion-pptx.py`) a
+    `docs/presentacion/`. El PPTX son imágenes a propósito: editable, perdería
+    el diseño.
   - **El título de la pestaña de `/` es solo "TeachCash"**, por decisión del
     producto aunque el largo posicionaba mejor. Lo que se busca lo llevan el
     `h1`, la descripción, el JSON-LD y Open Graph (`TITULO_SITIO`); los cursos
