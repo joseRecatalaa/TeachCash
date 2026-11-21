@@ -2,7 +2,7 @@
 
 **Educación financiera para cualquiera, jugando.** TeachCash enseña a manejar el
 dinero con forma de videojuego a píxel: mundos que recorrer, niveles cortos que
-se juegan en el móvil en dos o tres minutos, jefes que derrotar y un héroe que
+se juegan en dos o tres minutos, jefes que derrotar y un héroe que
 se equipa con lo que ganas aprendiendo. Y, al lado, un gestor de finanzas
 personales para poner en práctica lo aprendido con tu propio dinero.
 
