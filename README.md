@@ -10,6 +10,7 @@ Gratis, sin registrarte y en tres minutos por nivel.
 [**▶ Jugar ahora en www.teachcash.es**](https://www.teachcash.es)
 &nbsp;·&nbsp; [**Presentación**](#-presentación-y-vídeo)
 &nbsp;·&nbsp; [**Vídeo**](#-presentación-y-vídeo)
+&nbsp;·&nbsp; [**Stack de IA**](#-el-stack-de-ia-cómo-se-ha-construido-teachcash)
 
 <br>
 
@@ -39,17 +40,18 @@ respecto.**
 ## 💡 La idea
 
 Si no lo aprendimos en clase, lo aprendemos jugando. TeachCash se apoya en tres
-palabras, y ninguna es de adorno:
+palabras, y ninguna está de adorno.
 
-- 🎮 **Interactivo.** Aquí no se lee un PDF eterno: se practica. Cada lección
-  acaba con un minitest y cada error trae su explicación, que es lo que de verdad
-  enseña.
-- 📚 **Veraz.** Las cifras y las normas son las de España y salen de fuentes
-  oficiales: Banco de España, CNMV, INE, Seguridad Social, Tesoro Público y BOE.
-  Ningún dato se publica sin revisión humana. Para mí, **un dato mal es un bug**,
-  igual que un importe mal sumado.
-- ⭐ **Lúdico.** Mundos, jefes, estrellas, una tienda y un héroe que es solo tuyo.
-  Aprender tiene que apetecer tanto como jugar el siguiente nivel.
+🎮 **Interactivo.** Aquí no se lee un PDF eterno: se practica. Cada lección acaba
+con un minitest y cada error trae su explicación, que es lo que de verdad enseña.
+
+📚 **Veraz.** Las cifras y las normas son las de España y salen de fuentes
+oficiales: Banco de España, CNMV, INE, Seguridad Social, Tesoro Público y BOE.
+Cada dato lleva su fuente y pasa una revisión. Para mí, **un dato mal es un bug**,
+igual que un importe mal sumado.
+
+⭐ **Lúdico.** Mundos, jefes, estrellas, una tienda y un héroe que es solo tuyo.
+Aprender tiene que apetecer tanto como jugar el siguiente nivel.
 
 > Es contenido educativo, no asesoramiento financiero, y la aplicación lo
 > recuerda en todo el módulo.
@@ -72,15 +74,14 @@ desde el principio: empiezas por el que más te preocupe.
 | ⛰️ **Inversión** | Riesgo y diversificación, fondos indexados, el efecto de las comisiones y cómo cazar un chiringuito |
 | 💳 **Deuda y crédito** | Lo que cuesta de verdad un préstamo, las tarjetas revolving, la hipoteca y cómo salir de una deuda |
 
-Dentro de cada mundo hay un **camino de nueve niveles** que se recorre en orden:
-
-- 📖 **Lección**: tres o cuatro minutos de lectura con un minitest al final.
-- 🎮 **Práctica**: casos reales (los de Pepito, el personaje de todos los
-  ejemplos), corregidos al momento. Elegir una opción, verdadero o falso, ordenar
-  pasos, emparejar conceptos, rellenar el hueco…
-- 👾 **Jefe**: el examen final del mundo, contra un monstruo de su color. Seis
-  preguntas y un 65 % para tumbarlo. Si pierdes, lo vuelves a intentar: aquí
-  equivocarse es gratis, que es justo lo que no pasa con el dinero de verdad.
+Dentro de cada mundo hay un **camino de nueve niveles** que se recorre en orden.
+Las 📖 **lecciones** son tres o cuatro minutos de lectura con un minitest al
+final. Las 🎮 **prácticas** son casos reales, los de Pepito, el personaje de
+todos los ejemplos, corregidos al momento: elegir una opción, verdadero o falso,
+ordenar pasos, emparejar conceptos o rellenar el hueco. Y arriba del todo espera
+el 👾 **jefe**, el examen final del mundo, un monstruo de su color: seis preguntas
+y un 65 % para tumbarlo. Si pierdes, lo vuelves a intentar. Aquí equivocarse es
+gratis, que es justo lo que no pasa con el dinero de verdad.
 
 Sin calculadora: se pregunta por la idea, no por la cuenta.
 
@@ -115,17 +116,14 @@ va bien**: el juego se cruza con tu vida.
 ### 4. Gestión de patrimonio: a tu dinero de verdad
 
 TeachCash no se queda en el juego. El segundo módulo sirve para llevar tus
-finanzas reales:
-
-- **Inicio**: tu patrimonio, cómo va el mes frente al anterior, la evolución del
-  saldo, en qué se va el dinero y los últimos movimientos. Con flechas para
-  recorrer los meses.
-- **Movimientos**: anotar un gasto o un ingreso en dos segundos, con categoría y
-  fecha. Se filtran por periodo, categoría y texto, y se exportan a Excel.
-- **Categorías**: de gasto o de ingreso, con su emoji y su color, que las
-  identifican en la tabla y en los gráficos.
-- **Planificación**: cada categoría de gasto, con lo gastado este mes frente a su
-  presupuesto.
+finanzas reales. En **Inicio** ves tu patrimonio, cómo va el mes frente al
+anterior, la evolución del saldo, en qué se te va el dinero y los últimos
+movimientos, con flechas para recorrer los meses. En **Movimientos** anotas un
+gasto o un ingreso en dos segundos, con su categoría y su fecha, y los filtras
+por periodo, categoría o texto, o te los llevas a Excel. Las **Categorías**,
+de gasto o de ingreso, tienen su emoji y su color, que las identifican en la
+tabla y en los gráficos. Y **Planificación** pone cada categoría de gasto frente
+a su presupuesto del mes.
 
 Hay una sola cuenta y una sola moneda: el patrimonio es la cifra con la que
 empiezas más la suma de tus movimientos.
@@ -134,13 +132,11 @@ empiezas más la suma de tus movimientos.
 
 ### 5. Sin excusas para empezar
 
-- **0 €**: es gratis.
-- **0 registros**: entras y juegas. Recibes una sesión de invitado al momento
-  (con un CAPTCHA invisible de Cloudflare Turnstile) que dura 4 días.
-- **Tus datos, contigo**: si te gusta, creas una cuenta con email y contraseña y
-  conservas todo lo que llevas.
-- **Tu privacidad**: cada persona ve solo lo suyo y puede borrar su cuenta, con
-  todo lo que contiene, desde la propia aplicación.
+Es **gratis** y **no hace falta registrarse**: entras y juegas, con una sesión de
+invitado que nace al momento (protegida con un CAPTCHA invisible de Cloudflare
+Turnstile) y dura 4 días. Si te gusta, creas una cuenta con email y contraseña y
+conservas todo lo que llevas. Cada persona ve solo lo suyo y puede borrar su
+cuenta, con todo lo que contiene, desde la propia aplicación.
 
 ---
 
@@ -159,22 +155,26 @@ sirve para conservar los datos más allá de los 4 días del invitado.
 | | |
 |---|---|
 | **Aplicación en producción** | **[www.teachcash.es](https://www.teachcash.es)** |
-| **Hosting** | Vercel: cada merge a `main` se despliega solo |
+| **Hosting** | Vercel, en París: cada merge a `main` se despliega solo |
 | **Base de datos y auth** | Supabase (Postgres en la región eu-west-3, París) |
+| **Anti-bots** | Cloudflare Turnstile, invisible |
 | **Emails** | Resend, desde `no-reply@teachcash.es` |
 | **Dominio** | `teachcash.es` (la raíz y `teachcash.vercel.app` redirigen a `www`) |
 
-El paso a paso del despliegue, con las variables de entorno y la configuración de
-cada panel, está en [`docs/plans/PLAN-DESPLIEGUE.md`](docs/plans/PLAN-DESPLIEGUE.md).
+Cómo está montado, cómo llega un cambio a producción, qué variables usa, cómo
+se comprueba que funciona y cómo se vuelve atrás está en
+**[`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md)**. El paso a paso con el que se
+montó, panel por panel, en
+[`docs/plans/PLAN-DESPLIEGUE.md`](docs/plans/PLAN-DESPLIEGUE.md).
 
 ## 🎬 Presentación y vídeo
 
-- **Presentación (web, con animaciones)**: [www.teachcash.es/presentacion](https://www.teachcash.es/presentacion).
-  Está hecha con las mismas piezas del juego, no con capturas. Se maneja con las
-  flechas, **F** pone la pantalla completa y **N** enseña las notas.
-- **[Presentación en Google Slides](https://docs.google.com/presentation/d/1fgsaO5C3leoC9E_JZaVcdHqoboAiZN6i/edit?usp=sharing)**
-- **Vídeo explicativo**: _enlace pendiente_
-- **Repositorio**: [github.com/joseRecatalaa/TeachCash](https://github.com/joseRecatalaa/TeachCash)
+| | |
+|---|---|
+| **Presentación en la web** | [www.teachcash.es/presentacion](https://www.teachcash.es/presentacion): hecha con las mismas piezas del juego, con sus animaciones. Se pasa con las flechas y **F** la pone a pantalla completa |
+| **Presentación en Google Slides** | [Abrir la presentación](https://docs.google.com/presentation/d/1fgsaO5C3leoC9E_JZaVcdHqoboAiZN6i/edit?usp=sharing) |
+| **Vídeo explicativo** | _enlace pendiente_ |
+| **Repositorio** | [github.com/joseRecatalaa/TeachCash](https://github.com/joseRecatalaa/TeachCash) |
 
 ---
 
@@ -203,22 +203,23 @@ cada panel, está en [`docs/plans/PLAN-DESPLIEGUE.md`](docs/plans/PLAN-DESPLIEGU
 
 ## 🛡️ Lo que hay debajo (y de lo que estoy orgulloso)
 
-- **Más de 1.500 tests** en 87 ficheros: unitarios, de integración contra un
-  Postgres de verdad (PGlite, en proceso) y tests de componentes. Además, los flujos
-  clave cubiertos de punta a punta con **Playwright** contra un Supabase de
-  pruebas.
-- **Un CI que vigila cada merge** a `develop`: tipos, lint, tests con umbrales de
-  cobertura por fichero, la suite entera en otro huso horario, build y
-  `pnpm audit`. Nada entra sin pasar.
-- **Auditoría de seguridad** contra OWASP Top 10 y OWASP API Top 10: CSP con
-  nonce, cookies `httpOnly`, RLS de solo lectura en todas las tablas, límites de
-  peticiones y cuotas por usuario. Todo documentado en
-  [`docs/SECURITY.md`](docs/SECURITY.md).
-- **El dinero, siempre en céntimos enteros**, nunca un decimal. Así
-  `0,1 + 0,2` da `0,3`.
-- **Clean Architecture en cuatro capas**, con las fronteras vigiladas por ESLint.
-- **Pixel art 100 % propio**, sin un solo fichero de imagen: sigue el modo oscuro
-  y no toca la CSP.
+**Más de 1.500 tests** en 87 ficheros: unitarios, de integración contra un
+Postgres de verdad (PGlite, dentro del propio proceso) y de componentes, más los
+flujos clave probados de punta a punta con **Playwright** contra un Supabase de
+pruebas. Y **un CI que vigila cada merge** a `develop` (tipos, lint, tests con
+umbrales de cobertura por fichero, la suite entera en otro huso horario, build y
+`pnpm audit`): nada entra sin pasar.
+
+La aplicación ha pasado una **auditoría de seguridad** contra OWASP Top 10 y
+OWASP API Top 10: CSP con nonce, cookies `httpOnly`, RLS de solo lectura en todas
+las tablas, límites de peticiones y cuotas por usuario. Está todo contado en
+[`docs/SECURITY.md`](docs/SECURITY.md).
+
+Y por dentro hay manías que se notan por fuera: **el dinero va siempre en
+céntimos enteros**, nunca en decimales, para que `0,1 + 0,2` dé `0,3`; la
+arquitectura va en **cuatro capas** con las fronteras vigiladas por ESLint; y
+el **pixel art es 100 % propio**, dibujado en código sin un solo fichero de
+imagen, así que sigue el modo oscuro y no toca la CSP.
 
 ---
 
@@ -226,14 +227,11 @@ cada panel, está en [`docs/plans/PLAN-DESPLIEGUE.md`](docs/plans/PLAN-DESPLIEGU
 
 ### Requisitos
 
-- **Node.js 20.9 o superior** (lo exige Next.js 16).
-- **pnpm 10** (`npm install -g pnpm`). Usa siempre `pnpm`: con `npm` o `yarn` se
-  corrompe el lockfile.
-- Un proyecto de **Supabase** (el plan gratuito vale).
-- Un widget de **Cloudflare Turnstile** en modo invisible (también gratis).
-
-Qué configurar en cada panel está explicado en
-[`docs/plans/PLAN-SUPABASE.md`](docs/plans/PLAN-SUPABASE.md).
+Necesitas **Node.js 20.9 o superior** (lo exige Next.js 16) y **pnpm 10**
+(`npm install -g pnpm`). Usa siempre `pnpm`: con `npm` o `yarn` se corrompe el
+lockfile. Además, un proyecto de **Supabase** y un widget de **Cloudflare
+Turnstile** en modo invisible; los dos tienen plan gratuito. Qué configurar en
+cada panel está explicado en [`docs/plans/PLAN-SUPABASE.md`](docs/plans/PLAN-SUPABASE.md).
 
 ### Pasos
 
@@ -312,6 +310,8 @@ TeachCash/
 ├── scripts/                 # Exportar la presentación a PDF, PNG y PPTX
 ├── docs/                    # Toda la documentación técnica (ver abajo)
 │   └── presentacion/        #   la presentación exportada (PDF, PPTX, PNG)
+├── .claude/skills/          # Las skills del agente de IA (ver el stack de IA)
+├── AGENTS.md                # El contrato con el agente: reglas, trampas y decisiones
 └── proxy.ts                 # Refresca la sesión y pone la CSP en cada petición
 ```
 
@@ -322,23 +322,76 @@ El mapa completo, fichero a fichero, está en [`docs/STRUCTURE.md`](docs/STRUCTU
 | Documento | De qué va |
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Las reglas duras del proyecto, las trampas y todas las decisiones tomadas |
+| [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) | Cómo está desplegado, cómo se publica un cambio y cómo se comprueba |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Las capas, cómo viajan los datos y la sesión |
 | [`docs/COMPONENTS.md`](docs/COMPONENTS.md) | El sistema de diseño y los componentes reutilizables |
 | [`docs/STRUCTURE.md`](docs/STRUCTURE.md) | Dónde va cada cosa |
 | [`docs/TESTS.md`](docs/TESTS.md) | Cómo está montada cada suite de tests y qué cubre |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Las medidas de seguridad, punto por punto de OWASP |
 | [`docs/CONTENIDO-HEROE.md`](docs/CONTENIDO-HEROE.md) | Cómo se escribe un curso |
-| [`docs/plans/`](docs/plans/) | Los planes con los que se construyó, incluido el despliegue |
+| [`docs/plans/`](docs/plans/) | Los planes con los que se construyó, el despliegue y los prompts de los cursos |
+
+---
+
+## 🤖 El stack de IA: cómo se ha construido TeachCash
+
+TeachCash es un Trabajo de Final de Máster de **desarrollo con inteligencia
+artificial**, y se nota en cómo está hecho. La IA no ha sido un autocompletado:
+ha sido una compañera de equipo que planifica, programa, prueba, audita y
+documenta. Pero con una regla que lo ordena todo: **la IA propone y el
+repositorio decide.** Nada entra porque el agente diga que funciona; entra
+porque pasa los tests, el CI y una revisión.
+
+### Las herramientas
+
+| Pieza | Herramienta | Qué hace en TeachCash |
+|---|---|---|
+| Agente de desarrollo | **Claude Code** (Anthropic), dentro de VS Code | Lee el código, planifica, programa, ejecuta los tests, revisa y abre las pull requests. De la idea al commit |
+| El contrato con el agente | **`CLAUDE.md` + `AGENTS.md`** | Se cargan en cada sesión: las siete reglas duras que, rotas, dan bugs de dinero; las trampas que fallan en silencio, y cada decisión tomada con su porqué. Lo largo vive en `docs/`, partido por tarea, para no gastar contexto |
+| Conocimiento experto | **7 skills propias** en `.claude/skills/` | Escritas para este proyecto: `money-and-currency`, `finance-data-model`, `server-action-safety`, `nextjs-app-conventions`, `testing-finance`, `finance-charts` y `bank-import-es`. El agente las carga solo cuando la tarea las pide |
+| Criterio visual | **Skills de diseño**: `taste-skill`, `web-design-guidelines`, `awesome-design`, `apple-design` y `dataviz` | Dirección de arte, accesibilidad y gráficos. La paleta de colores de los gráficos se validó con el script de `dataviz`, no a ojo |
+| Seguridad | **Skill de auditoría de seguridad** | La auditoría contra OWASP Top 10 y API Top 10 que dejó `docs/SECURITY.md` |
+| Producción, sin riesgo | **MCP de Supabase**, en solo lectura y limitado al proyecto | El agente comprueba en la base real las políticas RLS, las migraciones, el job de limpieza y los avisos de seguridad, sin poder cambiar nada |
+| Investigación | **Gemini Deep Research** | Un informe por mundo, con fuentes oficiales españolas (BOE, Banco de España, CNMV, Agencia Tributaria) |
+| Trabajo en paralelo | **Subagentes** de Claude Code | Investigar un mundo, revisar las cifras de otro o auditar el código a la vez, cada uno con su contexto limpio |
+| Contenido | **Claude** + el esquema Zod de los cursos | Convierte cada informe en los JSON de los niveles, que `pnpm heroe:validar` comprueba antes de entrar |
+
+### Cómo se trabaja con ella
+
+**Primero el plan, luego el código.** Cada bloque grande empezó con un plan
+escrito junto al agente (están en [`docs/plans/`](docs/plans/), con los prompts
+de los cursos incluidos) y se hizo por fases, cada una revisada antes del
+commit.
+
+**Un bug se arregla escribiendo primero el test que lo reproduce** y viéndolo en
+rojo. Así la IA no puede "arreglar" algo que nadie ha demostrado que estuviera
+roto.
+
+**La documentación cambia en el mismo commit que el código.** `AGENTS.md` es la
+memoria del proyecto: cuando se toma una decisión que no es obvia, se apunta con
+su porqué, y la siguiente sesión empieza sabiéndola en vez de deshacerla.
+
+### Las redes de seguridad
+
+Una IA escribe rápido y se equivoca con mucha seguridad. Por eso el proyecto
+está montado para que sus errores no lleguen lejos: más de 1.500 tests, algunos
+**basados en propiedades** con fast-check (miles de casos aleatorios contra las
+reglas del dinero); un **CI** que no deja mezclar nada en rojo; **ESLint** que
+impide saltarse las capas de la arquitectura; **Husky** en cada commit; y, para
+el contenido, **trazabilidad**: cada dato de cada curso tiene su fuente oficial
+en el `FUENTES.md` de su mundo, y la lista de lo comprobado, con su norma y su
+estado, está en [`REVISION-CIFRAS.md`](docs/investigación-heroe/REVISION-CIFRAS.md).
+
+El resultado es un proyecto que una sola persona ha podido llevar a producción
+con el rigor de un equipo, que es justo lo que este máster quería demostrar.
 
 ---
 
 ## 🗺️ Lo que viene
 
 El Trabajo de Final de Máster se acaba. **El proyecto, no.** Voy a seguir con él:
-
-- 👾 **Más mundos, más jefes.**
-- 🎮 **Más funcionalidades.**
-- ❤️ **Formar una comunidad** alrededor de TeachCash.
+👾 más mundos y más jefes, 🎮 más funcionalidades y, sobre todo, ❤️ formar una
+comunidad alrededor de TeachCash.
 
 <div align="center">
 
