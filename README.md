@@ -152,6 +152,8 @@ sirve para conservar los datos más allá de los 4 días del invitado.
 
 ## 🌍 Despliegue
 
+> 📄 **La información del despliegue está en [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).**
+
 | | |
 |---|---|
 | **Aplicación en producción** | **[www.teachcash.es](https://www.teachcash.es)** |
@@ -161,10 +163,9 @@ sirve para conservar los datos más allá de los 4 días del invitado.
 | **Emails** | Resend, desde `no-reply@teachcash.es` |
 | **Dominio** | `teachcash.es` (la raíz y `teachcash.vercel.app` redirigen a `www`) |
 
-Cómo está montado, cómo llega un cambio a producción, qué variables usa, cómo
-se comprueba que funciona y cómo se vuelve atrás está en
-**[`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md)**. El paso a paso con el que se
-montó, panel por panel, en
+Ahí se cuenta cómo está montado, cómo llega un cambio a producción, qué
+variables usa, cómo se comprueba que funciona y cómo se vuelve atrás. El paso a
+paso con el que se montó, panel por panel, está en
 [`docs/plans/PLAN-DESPLIEGUE.md`](docs/plans/PLAN-DESPLIEGUE.md).
 
 ## 🎬 Presentación y vídeo
