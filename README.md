@@ -10,6 +10,7 @@ Gratis, sin registrarte y en tres minutos por nivel.
 [**▶ Jugar ahora en www.teachcash.es**](https://www.teachcash.es)
 &nbsp;·&nbsp; [**Presentación**](#-presentación-y-vídeo)
 &nbsp;·&nbsp; [**Vídeo**](#-presentación-y-vídeo)
+&nbsp;·&nbsp; [**Stack tecnológico**](#-el-stack-tecnológico)
 &nbsp;·&nbsp; [**Stack de IA**](#-el-stack-de-ia-cómo-se-ha-construido-teachcash)
 
 <br>
@@ -179,51 +180,6 @@ paso con el que se montó, panel por panel, está en
 
 ---
 
-## 🧰 Stack tecnológico
-
-| Pieza | Elección | Para qué |
-|---|---|---|
-| Framework | **Next.js 16** (App Router, Turbopack) | Rutas, renderizado en servidor y Server Actions |
-| Interfaz | **React 19** + **TypeScript 5** en modo `strict` | Tipado de punta a punta |
-| Datos en el cliente | **Refine.dev 5** + **React Query 5** | CRUD declarativo sobre un DataProvider propio |
-| Componentes | **Mantine 9** + `mantine-datatable` | Formularios, tablas y modales, con un tema dibujado a mano |
-| Estilos | **CSS Modules** + tokens `--sd-*` | Un sistema de diseño propio, con modo claro y oscuro |
-| Tipografía | Fredoka, Nunito, Geist Mono y Press Start 2P | Titulares, texto, dinero (cifras de ancho fijo) y el mundo de píxel |
-| Base de datos | **Postgres en Supabase** + **Drizzle ORM** | Consultas tipadas, migraciones y RLS |
-| Transporte | **Server Actions** | Sin API REST: menos superficie y la sesión se comprueba en un solo sitio |
-| Validación | **Zod 4** | Todo lo que llega del cliente se valida en el servidor |
-| Autenticación | **Supabase Auth** (`@supabase/ssr`) | Invitados anónimos y cuentas con email, cookies `httpOnly` |
-| Anti-bots | **Cloudflare Turnstile** (invisible) | Al crear el invitado |
-| Gráficos | **Recharts 3** | Evolución del saldo, gasto por categoría, ingresos frente a gastos |
-| Exportación | **xlsx** (SheetJS) | Movimientos a Excel, con carga diferida |
-| Pixel art | **SVG propio** | Héroe, equipo, mundos y jefes dibujados en código: ni una sola imagen |
-| Tests | **Vitest** + fast-check + **PGlite**, Testing Library, **Playwright** | Unitarios, de integración contra un Postgres real y E2E |
-| Calidad | **GitHub Actions** + Husky + lint-staged | CI en cada PR y comprobaciones en cada commit |
-| Despliegue | **Vercel** | Producción en `www.teachcash.es` |
-| Paquetes | **pnpm 10** | |
-
-## 🛡️ Lo que hay debajo (y de lo que estoy orgulloso)
-
-**Más de 1.500 tests** en 87 ficheros: unitarios, de integración contra un
-Postgres de verdad (PGlite, dentro del propio proceso) y de componentes, más los
-flujos clave probados de punta a punta con **Playwright** contra un Supabase de
-pruebas. Y **un CI que vigila cada merge** a `develop` (tipos, lint, tests con
-umbrales de cobertura por fichero, la suite entera en otro huso horario, build y
-`pnpm audit`): nada entra sin pasar.
-
-La aplicación ha pasado una **auditoría de seguridad** contra OWASP Top 10 y
-OWASP API Top 10: CSP con nonce, cookies `httpOnly`, RLS de solo lectura en todas
-las tablas, límites de peticiones y cuotas por usuario. Está todo contado en
-[`docs/SECURITY.md`](docs/SECURITY.md).
-
-Y por dentro hay manías que se notan por fuera: **el dinero va siempre en
-céntimos enteros**, nunca en decimales, para que `0,1 + 0,2` dé `0,3`; la
-arquitectura va en **cuatro capas** con las fronteras vigiladas por ESLint; y
-el **pixel art es 100 % propio**, dibujado en código sin un solo fichero de
-imagen, así que sigue el modo oscuro y no toca la CSP.
-
----
-
 ## 🚀 Instalación y ejecución en local
 
 ### Requisitos
@@ -331,6 +287,108 @@ El mapa completo, fichero a fichero, está en [`docs/STRUCTURE.md`](docs/STRUCTU
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Las medidas de seguridad, punto por punto de OWASP |
 | [`docs/CONTENIDO-HEROE.md`](docs/CONTENIDO-HEROE.md) | Cómo se escribe un curso |
 | [`docs/plans/`](docs/plans/) | Los planes con los que se construyó, el despliegue y los prompts de los cursos |
+
+---
+
+## 🧰 El stack tecnológico
+
+TeachCash parece un juego, y por dentro es una aplicación de dinero hecha como
+se hacen las de verdad. Cada pieza del stack está elegida por una razón, y esa
+razón está escrita en [`AGENTS.md`](AGENTS.md). Aquí va entera, de la pantalla a
+la base de datos.
+
+### TeachCash en números
+
+| | |
+|---|---|
+| 🧪 **1.545 tests** en 87 ficheros | Unitarios, de integración contra un Postgres real, de componentes y basados en propiedades, más E2E con Playwright |
+| ✅ **0 avisos** en `pnpm audit` | Ni en producción ni en desarrollo. Lo que no tenía versión arreglada, se parchea en el repo |
+| 🎯 **100 % de cobertura** en el núcleo | Dinero, fechas, formato, rutas, CSP y la corrección del héroe, con umbrales que el CI exige fichero a fichero |
+| 🛡️ **OWASP Top 10 y API Top 10** | Auditoría de seguridad completa, punto por punto, en [`docs/SECURITY.md`](docs/SECURITY.md) |
+| 🖼️ **0 imágenes** | Héroe, equipo, planetas, jefes y hasta el QR de la presentación están dibujados en código |
+| 🌍 **4 mundos, 36 niveles, 108 estrellas** | Contenido en JSON, validado con Zod en cada PR |
+| 💸 **0 €** de infraestructura | Todo en planes gratuitos. Lo único que se paga es el dominio |
+
+### La arquitectura de un vistazo
+
+```
+ Navegador
+   │  React 19 · Refine · Mantine · CSS Modules · pixel art en SVG
+   ▼
+ Server Actions ───────────── la frontera: sesión verificada y Zod en todo lo que entra
+   │
+   ▼
+ Repositorios ─────────────── el único sitio que valida, autoriza y escribe
+   │                          (filtro por usuario dentro de cada consulta)
+   ▼
+ Drizzle ORM ──► Postgres en Supabase (RLS de solo lectura, pg_cron)
+```
+
+Es **Clean Architecture en cuatro capas** (`types`, `infrastructure`,
+`application` y `presentation`), y no es decoración: **ESLint impide** que una
+capa importe de la que no debe. Las garantías viven en el servidor; lo que
+comprueba un formulario es solo cortesía para ahorrar un viaje.
+
+### 🎨 Interfaz
+
+| Pieza | Por qué |
+|---|---|
+| **Next.js 16** (App Router, Turbopack) | Rutas, renderizado en servidor para las páginas públicas y Server Actions como transporte. Con `proxy.ts`, la nueva forma de Next 16 para el middleware |
+| **React 19** + **TypeScript 5** en `strict` | Tipos de punta a punta, del esquema de la base a la pantalla |
+| **Refine.dev 5** + **React Query 5** | CRUD declarativo: formularios y tablas se **declaran** en un fichero sin JSX y un formulario genérico los pinta. Una entidad nueva sale con `pnpm generate:crud` (Plop) |
+| **Mantine 9** + `mantine-datatable` | Formularios, tablas y modales accesibles, con el tema dibujado a mano por encima |
+| **CSS Modules** + tokens `--sd-*` | Un sistema de diseño propio (trazo de rotulador, sombra dura, esquinas asimétricas) con modo claro y oscuro en un solo bloque de tokens. Sin Tailwind, a propósito |
+| **Fredoka, Nunito, Geist Mono y Press Start 2P** | Titulares, texto corrido, el dinero (cifras de ancho fijo, para compararlas en columna) y el mundo de píxel |
+| **Recharts 3** | Evolución del saldo, gasto por categoría e ingresos frente a gastos, con una paleta validada con un script de contraste, no elegida a ojo |
+| **SVG propio** para todo el pixel art | Sprites escritos como texto, pintados a escala entera para que se vean nítidos, animados con CSS y respetando `prefers-reduced-motion` |
+| **xlsx** (SheetJS) | Movimientos a Excel, cargado solo al pulsar el botón |
+
+### ⚙️ Servidor y datos
+
+| Pieza | Por qué |
+|---|---|
+| **Server Actions** en vez de API REST | Menos superficie de ataque, ningún salto de red de más y la sesión se comprueba en un único sitio |
+| **Postgres en Supabase** | Una base relacional de verdad para datos de dinero, en París, con RLS y `pg_cron` |
+| **Drizzle ORM** + `postgres` | Consultas tipadas y migraciones versionadas, por el *Transaction pooler* de Supabase |
+| **Zod 4** | Todo lo que llega del cliente se valida en el servidor: ids, filtros, páginas, importes y respuestas de los cursos |
+| **El dinero en céntimos enteros** | Nunca un decimal: `0,1 + 0,2` da `0,3`. Con reparto de restos sin descuadres y formato `es-ES` solo al pintar |
+| **Fechas civiles** (`AAAA-MM-DD`) | Un gasto no cambia de mes según la zona horaria de quien mira. Lo vigila una suite que corre en Kiritimati, la zona más adelantada del planeta |
+| **Saldos derivados** | El patrimonio se calcula siempre desde los movimientos: no hay un saldo guardado que pueda mentir |
+| **Corrección en el servidor** | Las respuestas de los niveles se corrigen en el servidor: las estrellas valen lo que dicen |
+
+### 🔐 Seguridad
+
+| Pieza | Por qué |
+|---|---|
+| **Supabase Auth** (`@supabase/ssr`) | Invitados anónimos y cuentas con email, con el JWT verificado (ES256) y la sesión comprobada en la base en cada acción |
+| **Cookies `httpOnly`** | Ningún JavaScript puede leer la sesión |
+| **CSP con nonce** | Un script inyectado no se ejecuta |
+| **RLS de solo lectura** + `REVOKE` | La API pública de Supabase no sirve para leer lo ajeno ni para escribir nada |
+| **Cloudflare Turnstile** | CAPTCHA invisible: los bots no crean invitados ni prueban contraseñas |
+| **Límites y cuotas** | Por usuario, por IP y por cuenta, más un freno general si la base se acerca a su límite |
+
+### 🧪 Calidad
+
+| Pieza | Por qué |
+|---|---|
+| **Vitest** + **PGlite** | Los tests corren contra un **Postgres de verdad**, en WebAssembly y dentro del propio proceso, con las migraciones reales. Rápidos y sin tocar Supabase |
+| **fast-check** | Tests basados en propiedades: miles de casos aleatorios contra las reglas del dinero |
+| **Testing Library** | Componentes y hooks probados como los usa una persona |
+| **Playwright** | Los flujos clave de punta a punta, contra un Supabase de pruebas |
+| **ESLint** (con sonarjs) | Calidad, complejidad y las fronteras entre capas |
+| **Husky** + lint-staged | ESLint y tipos en cada commit |
+| **GitHub Actions** | CI en cada PR: tipos, lint, cobertura, la suite en otro huso horario, build y auditoría de dependencias. Acciones fijadas por SHA |
+| **Dependabot** | Dependencias al día cada mes, agrupadas y con su CI |
+
+### 🚀 Infraestructura
+
+| Pieza | Por qué |
+|---|---|
+| **Vercel** | Despliegue automático de `main`, en París junto a la base |
+| **Supabase** | Base de datos y autenticación gestionadas |
+| **Resend** | Emails propios desde `no-reply@teachcash.es` |
+| **DonDominio** | El dominio `teachcash.es` |
+| **pnpm 10** | Instalaciones reproducibles con el lockfile congelado |
 
 ---
 
