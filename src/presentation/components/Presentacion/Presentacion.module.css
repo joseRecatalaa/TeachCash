@@ -1,0 +1,1410 @@
+/*
+ * La presentación: pantallas de 1920x1080 en píxeles fijos, escaladas enteras
+ * por el proyector (`--escala`). Por eso aquí todo va en `px` y no en `rem`:
+ * se diseña para un lienzo de tamaño conocido, como una diapositiva.
+ *
+ * Va de noche, como todo lo público (`escenas.noche` redefine los `--sd-*`),
+ * y no declara un solo color propio: tinta, oro y cielo salen de la noche.
+ * Los dibujos traen su paleta de `Pixel/`.
+ *
+ * Todo lo que se mueve tiene un estado quieto que ya es una escena entera: el
+ * bloque de `prefers-reduced-motion` de `globals.css` lo deja ahí, y el PDF se
+ * exporta así.
+ */
+
+/* ── El proyector ──────────────────────────────────────────────────────── */
+
+.proyector {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--px-noche);
+}
+
+/*
+ * Centrada por su centro, no por la rejilla: una caja de 1920 px en una
+ * ventana más estrecha desborda, la rejilla la alinea al principio y, al
+ * encogerla con `scale` (que encoge hacia su centro), quedaba corrida abajo a
+ * la derecha y cortada. Así primero se lleva su centro al de la ventana y
+ * luego se encoge sin moverse de ahí.
+ */
+.proyector .escenario {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+}
+
+.escenario {
+  --escala: 1;
+  position: relative;
+  flex: none;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--px-noche);
+  color: var(--px-noche-tinta);
+  font-family: var(--sd-font-body);
+  scale: var(--escala);
+}
+
+.entra {
+  position: absolute;
+  inset: 0;
+  animation: diapo-entra 260ms steps(4, end) both;
+}
+
+/* Entra a saltos, como un juego que cambia de pantalla: no un fundido de
+   oficina. */
+@keyframes diapo-entra {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+  }
+}
+
+/* Para imprimir: todas, una por página, sin escalar. La última sin salto, o
+   el PDF acaba en una página en blanco. */
+.impreso .escenario:not(:last-child) {
+  break-after: page;
+}
+
+@page {
+  size: 1920px 1080px;
+  margin: 0;
+}
+
+.mandos {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity var(--sd-dur) ease;
+}
+
+.proyector:hover .mandos,
+.mandos:focus-within {
+  opacity: 1;
+}
+
+.mandos button {
+  width: 44px;
+  height: 44px;
+  font-family: var(--sd-font-pixel);
+  font-size: 14px;
+  color: var(--px-noche-boton-tinta);
+  cursor: pointer;
+  background: var(--px-noche-oro);
+  border: 3px solid var(--px-noche-boton-tinta);
+  box-shadow: 0 4px 0 0 var(--px-noche-oro-sombra);
+}
+
+.mandos button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.notas {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 72px;
+  max-width: 900px;
+  margin-inline: auto;
+  padding: 16px 20px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--px-noche-tinta);
+  background: var(--px-noche-alta);
+  border: 3px solid var(--px-noche-oro);
+}
+
+.notas strong {
+  font-family: var(--sd-font-pixel);
+  font-size: 12px;
+  color: var(--px-noche-oro);
+}
+
+.notas p {
+  margin: 8px 0 0;
+}
+
+/* ── El marcador de abajo ──────────────────────────────────────────────── */
+
+.hud {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  bottom: 36px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  font-family: var(--sd-font-pixel);
+  font-size: 16px;
+  color: var(--sd-ink-muted);
+  pointer-events: none;
+}
+
+.hudMarca {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hudBarra {
+  display: flex;
+  gap: 6px;
+}
+
+.hudBarra span {
+  width: 22px;
+  height: 12px;
+  background: var(--px-noche-alta);
+  border: 2px solid var(--sd-ink-muted);
+}
+
+.hudBarra span[data-hecho] {
+  background: var(--px-noche-oro);
+  border-color: var(--px-noche-oro-sombra);
+}
+
+.hudNivel {
+  justify-self: end;
+}
+
+/* ── La pantalla y sus textos ──────────────────────────────────────────── */
+
+.diapo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 88px 120px 120px;
+}
+
+.centro {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* El cielo (siempre el primer hijo) va por debajo de todo lo demás. Con
+   `isolation`, el `z-index` negativo se queda dentro de la pantalla y no se
+   va detrás de su fondo. */
+.diapo {
+  isolation: isolate;
+}
+
+.diapo > svg:first-child {
+  z-index: -1;
+}
+
+.etiqueta {
+  margin: 0 0 28px;
+  font-family: var(--sd-font-pixel);
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  color: var(--px-noche-oro);
+}
+
+.etiqueta::before {
+  content: '▶ ';
+}
+
+/* El titular: el rótulo de recreativa de la portada, con su relieve dorado. */
+.titular {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--px-noche-tinta);
+  text-shadow:
+    0 4px 0 var(--px-noche-oro),
+    0 8px 0 var(--px-noche-oro-sombra),
+    0 12px 0 var(--px-noche-relieve);
+}
+
+.titularMedio {
+  font-size: 46px;
+}
+
+.frase {
+  margin: 36px 0 0;
+  font-family: var(--sd-font-display);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--sd-ink-soft);
+}
+
+.texto {
+  margin: 24px 0 0;
+  font-size: 30px;
+  line-height: 1.45;
+  color: var(--sd-ink-soft);
+}
+
+.oro {
+  color: var(--px-noche-oro);
+}
+
+.fuente {
+  margin: 20px 0 0;
+  font-size: 20px;
+  color: var(--sd-ink-muted);
+}
+
+/* Dos columnas: el texto y el dibujo. */
+.dos {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  align-items: center;
+}
+
+.dosAncha {
+  grid-template-columns: 5fr 7fr;
+}
+
+.dibujo {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── 1. Título ─────────────────────────────────────────────────────────── */
+
+.marca {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 150px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--px-noche-tinta);
+  text-shadow:
+    0 8px 0 var(--px-noche-oro),
+    0 16px 0 var(--px-noche-oro-sombra),
+    0 24px 0 var(--px-noche-relieve);
+}
+
+.lema {
+  margin: 56px 0 0;
+  font-family: var(--sd-font-display);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--px-noche-oro);
+}
+
+.tituloEscena {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+  margin-top: 28px;
+}
+
+/* El bocadillo de juego de rol, con la cola hacia el héroe. */
+.bocadillo {
+  position: relative;
+  max-width: 600px;
+  margin: 0;
+  padding: 28px 32px 36px;
+  font-family: var(--sd-font-display);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--px-noche-tinta);
+  background: var(--px-noche-alta);
+  border: 4px solid var(--px-noche-tinta);
+  box-shadow: 0 8px 0 0 var(--sd-shadow-color);
+}
+
+.bocadillo::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  background: var(--px-noche-tinta);
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  translate: 0 -50%;
+}
+
+.sigue {
+  position: absolute;
+  right: 16px;
+  bottom: 8px;
+  font-size: 18px;
+  color: var(--px-noche-oro);
+  animation: diapo-parpadeo 1s steps(1, end) infinite;
+}
+
+.pulsa {
+  margin: 28px 0 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 24px;
+  color: var(--px-noche-oro);
+  animation: diapo-parpadeo 1.2s steps(1, end) infinite;
+}
+
+@keyframes diapo-parpadeo {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Los créditos, como en la pantalla de título de un juego: una línea abajo y
+   centrada, no una placa que compita con la marca. Letras blancas con un
+   contorno de tinta a píxel, como un rótulo de recreativa. */
+.autor {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  margin: 0;
+  padding: 12px 24px;
+  font-family: var(--sd-font-pixel);
+  font-size: 16px;
+  white-space: nowrap;
+  color: var(--px-noche-tinta);
+  text-shadow:
+    2px 0 0 var(--px-noche-boton-tinta),
+    -2px 0 0 var(--px-noche-boton-tinta),
+    0 2px 0 var(--px-noche-boton-tinta),
+    0 -2px 0 var(--px-noche-boton-tinta),
+    2px 2px 0 var(--px-noche-boton-tinta),
+    -2px 2px 0 var(--px-noche-boton-tinta),
+    2px -2px 0 var(--px-noche-boton-tinta),
+    -2px -2px 0 var(--px-noche-boton-tinta);
+  translate: -50% 0;
+}
+
+.autorNombre {
+  font-size: 18px;
+}
+
+/* ── 2. El problema ────────────────────────────────────────────────────── */
+
+
+.huchas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.huchaVacia {
+  filter: grayscale(1) brightness(0.55);
+  opacity: 0.6;
+}
+
+
+/* El titular que tiene que ir en UNA línea: más pequeño y sin cortes. Press
+   Start mide 1em por letra, así que a 44px caben 38 en el ancho útil. */
+.titularLinea {
+  font-size: 44px;
+  white-space: nowrap;
+}
+
+/* El dato en un solo panel tenue: la cifra dentro de la frase (un poco más
+   grande, no un cartel aparte), las huchas debajo y el héroe al lado. */
+.datoMarco {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.datoPanel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 64px;
+  align-items: end;
+  width: 100%;
+  padding: 52px 64px 44px;
+  background: var(--sd-surface-muted);
+  border: 3px solid var(--sd-accent-wash);
+  box-shadow: 0 10px 0 0 var(--sd-shadow-color);
+}
+
+.datoFrase {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--px-noche-tinta);
+}
+
+.datoCifra {
+  font-family: var(--sd-font-pixel);
+  font-size: 46px;
+  font-weight: 400;
+  color: var(--px-noche-oro);
+  text-shadow:
+    0 4px 0 var(--px-noche-oro-sombra),
+    0 7px 0 var(--px-noche-relieve);
+}
+
+.datoHeroe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Un bocadillo pequeño con la cola hacia abajo, hacia el héroe. */
+.bocadilloAbajo {
+  position: relative;
+  margin: 0;
+  padding: 14px 18px;
+  font-family: var(--sd-font-pixel);
+  font-size: 18px;
+  white-space: nowrap;
+  color: var(--px-noche-tinta);
+  background: var(--px-noche-alta);
+  border: 3px solid var(--px-noche-tinta);
+}
+
+.bocadilloAbajo::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -16px;
+  width: 16px;
+  height: 14px;
+  background: var(--px-noche-tinta);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  translate: -50% 0;
+}
+
+/* ── El elefante en la habitación ──────────────────────────────────────── */
+
+/* La habitación: el elefante en el centro, de pie en el suelo, y las dudas
+   flotando alrededor (tres a cada lado, por `nth-child`). */
+.habitacion {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  width: 1360px;
+  margin: 16px auto 0;
+  padding-bottom: 24px;
+}
+
+.suelo {
+  position: absolute;
+  left: 360px;
+  right: 360px;
+  bottom: 18px;
+  height: 8px;
+  background: var(--sd-shadow-color);
+  opacity: 0.7;
+}
+
+.elefante {
+  position: relative;
+  z-index: 1;
+  animation: diapo-respira 1.6s steps(1, end) infinite;
+}
+
+@keyframes diapo-respira {
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+.elefanteContorno {
+  fill: var(--sd-shadow-color);
+}
+
+.elefanteCuerpo {
+  fill: var(--sd-ink-muted);
+}
+
+.elefanteSombra {
+  fill: var(--px-luna-luz);
+}
+
+.elefanteLuz {
+  fill: var(--sd-ink-soft);
+}
+
+.elefanteOreja {
+  fill: var(--sd-ink-muted);
+}
+
+.elefanteColmillo {
+  fill: var(--px-noche-tinta);
+}
+
+.duda {
+  position: absolute;
+  padding: 12px 18px;
+  font-family: var(--sd-font-pixel);
+  font-size: 24px;
+  color: var(--px-noche-tinta);
+  background: var(--px-noche-alta);
+  border: 3px dashed var(--sd-ink-muted);
+  animation: diapo-flota 2.4s steps(2, end) infinite;
+}
+
+.dudaQue {
+  color: var(--px-noche-oro);
+}
+
+/* Tres a la izquierda y tres a la derecha, a alturas distintas, y cada una
+   flotando a destiempo. */
+.duda:nth-child(1) { left: 160px; top: 70px; }
+.duda:nth-child(2) { left: 60px; top: 200px; animation-delay: 600ms; }
+.duda:nth-child(3) { left: 180px; top: 330px; animation-delay: 1200ms; }
+.duda:nth-child(4) { right: 170px; top: 60px; animation-delay: 300ms; }
+.duda:nth-child(5) { right: 40px; top: 195px; animation-delay: 900ms; }
+.duda:nth-child(6) { right: 60px; top: 325px; animation-delay: 1500ms; }
+
+@keyframes diapo-flota {
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+/* El remate: lo que hay que llevarse de esta pantalla. En la letra de píxel,
+   como el titular, para que no haya un salto de tipografía en la frase clave. */
+.remate {
+  max-width: 1560px;
+  margin: 12px auto 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 25px;
+  line-height: 1.75;
+  color: var(--px-noche-tinta);
+}
+
+/* ── 3. La idea: tres cartas ───────────────────────────────────────────── */
+
+.cartas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-top: 64px;
+}
+
+.carta {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 36px 36px 40px;
+  text-align: left;
+  background: var(--px-noche-alta);
+  border: 4px solid var(--sd-stroke-color);
+  box-shadow: 0 10px 0 0 var(--sd-shadow-color);
+  animation: diapo-sube 500ms steps(5, end) both;
+}
+
+.carta:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.carta:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes diapo-sube {
+  from {
+    opacity: 0;
+    translate: 0 40px;
+  }
+}
+
+.cartaIcono {
+  display: flex;
+  align-items: flex-end;
+  height: 84px;
+}
+
+.cartaTitulo {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 26px;
+  color: var(--px-noche-oro);
+}
+
+.cartaTexto {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.4;
+  color: var(--sd-ink-soft);
+}
+
+/* El héroe que cruza la pantalla corriendo. Quieto, espera a la izquierda. */
+.pista {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 96px;
+  height: 140px;
+  pointer-events: none;
+}
+
+.corredor {
+  position: absolute;
+  left: 120px;
+  bottom: 0;
+  animation: diapo-cruza 7s linear infinite;
+}
+
+@keyframes diapo-cruza {
+  from {
+    left: -160px;
+  }
+  to {
+    left: 2000px;
+  }
+}
+
+/* ── 4. Mundos ─────────────────────────────────────────────────────────── */
+
+.salto {
+  width: 1240px;
+  margin: 24px auto 0;
+}
+
+/* `SaltoMundos` limita su ancho para la portada; aquí manda la pantalla. */
+.salto > div {
+  max-width: none;
+}
+
+.contadores {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.contador {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 16px 28px;
+  font-family: var(--sd-font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--sd-ink-soft);
+  background: var(--px-noche-alta);
+  border: 3px solid var(--sd-stroke-color);
+}
+
+.contador strong {
+  font-family: var(--sd-font-pixel);
+  font-size: 40px;
+  font-weight: 400;
+  color: var(--px-noche-oro);
+}
+
+/* ── 5. Los cuatro planetas ────────────────────────────────────────────── */
+
+.planetas {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  align-content: center;
+  align-items: start;
+}
+
+.planeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.planetaNombre {
+  margin: 8px 0 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--px-noche-tinta);
+}
+
+.planetaTexto {
+  margin: 0;
+  font-size: 23px;
+  line-height: 1.4;
+  color: var(--sd-ink-soft);
+}
+
+.planetaMedida {
+  margin: 0;
+  font-family: var(--sd-font-mono);
+  font-size: 20px;
+  color: var(--px-noche-oro);
+}
+
+/* ── 6. El camino ──────────────────────────────────────────────────────── */
+
+.camino {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.leyenda {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-top: 8px;
+}
+
+.leyendaItem {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 24px;
+  background: var(--px-noche-alta);
+  border: 3px solid var(--sd-stroke-color);
+}
+
+.leyendaItem strong {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--sd-font-pixel);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--px-noche-oro);
+}
+
+.leyendaItem span {
+  font-size: 23px;
+  line-height: 1.35;
+  color: var(--sd-ink-soft);
+}
+
+/* ── 7. Los jefes ──────────────────────────────────────────────────────── */
+
+.jefes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  align-items: end;
+  margin-top: 56px;
+}
+
+.jefe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+/* Cada jefe respira a destiempo: cuatro iguales a la vez parecen un GIF. */
+.jefe:nth-child(2) svg {
+  animation-delay: 400ms;
+}
+
+.jefe:nth-child(3) svg {
+  animation-delay: 800ms;
+}
+
+.jefe:nth-child(4) svg {
+  animation-delay: 1200ms;
+}
+
+.jefeSuelo {
+  width: 200px;
+  height: 12px;
+  margin-top: -16px;
+  background: var(--sd-shadow-color);
+  opacity: 0.6;
+}
+
+.jefeNombre {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--px-noche-tinta);
+}
+
+.jefeMundo {
+  margin: 0;
+  font-size: 22px;
+  color: var(--sd-ink-muted);
+}
+
+.reglas {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 56px;
+}
+
+/* En fila y centrado en vertical: el ∞ no está en la letra de píxel, sale de
+   otra con otra línea base y, en línea con el texto, se quedaba subido. */
+.regla {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 28px;
+  font-family: var(--sd-font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--px-noche-tinta);
+  background: var(--px-noche-alta);
+  border: 3px solid var(--px-noche-oro);
+}
+
+.regla strong {
+  font-family: var(--sd-font-pixel);
+  font-weight: 400;
+  color: var(--px-noche-oro);
+}
+
+.infinito {
+  fill: var(--px-noche-oro);
+}
+
+/* ── 8. El combate ─────────────────────────────────────────────────────── */
+
+.combate {
+  width: 100%;
+}
+
+/* La `figure` de la portada trae su margen de página. */
+.combate figure {
+  margin: 0;
+}
+
+/* ── 9. La tienda ──────────────────────────────────────────────────────── */
+
+.tienda {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 640px 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.calidades {
+  display: flex;
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.calidad {
+  padding: 10px 18px;
+  font-family: var(--sd-font-pixel);
+  font-size: 16px;
+  color: var(--px-noche-boton-tinta);
+  border: 3px solid var(--px-noche-boton-tinta);
+}
+
+.calidad[data-calidad='basica'] {
+  background: var(--px-calidad-basica);
+}
+
+.calidad[data-calidad='media'] {
+  background: var(--px-calidad-media);
+}
+
+.calidad[data-calidad='alta'] {
+  background: var(--px-calidad-alta);
+}
+
+.pista2 {
+  margin: 28px 0 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--sd-ink-muted);
+  animation: diapo-parpadeo 1.4s steps(1, end) infinite;
+}
+
+/* ── 10. El héroe y sus estadísticas ───────────────────────────────────── */
+
+.stats {
+  display: grid;
+  gap: 14px;
+  margin-top: 36px;
+}
+
+.stat {
+  display: grid;
+  grid-template-columns: 92px 1fr 64px;
+  align-items: center;
+  gap: 20px;
+}
+
+.statClave {
+  font-family: var(--sd-font-pixel);
+  font-size: 22px;
+  color: var(--px-noche-oro);
+}
+
+.statBarra {
+  display: flex;
+  gap: 4px;
+}
+
+.statBarra span {
+  flex: 1;
+  height: 24px;
+  background: var(--px-noche-alta);
+  border: 2px solid var(--sd-ink-muted);
+}
+
+.statBarra span[data-lleno] {
+  background: var(--px-noche-oro);
+  border-color: var(--px-noche-oro-sombra);
+}
+
+/* Riqueza y Constancia: lo que sube con tu dinero de verdad. */
+.stat[data-real] .statBarra span[data-lleno] {
+  background: var(--income);
+  border-color: var(--sd-stroke-color);
+}
+
+.stat[data-real] .statClave {
+  color: var(--income);
+}
+
+.statValor {
+  font-family: var(--sd-font-mono);
+  font-size: 24px;
+  text-align: right;
+  color: var(--sd-ink-soft);
+}
+
+.statNombre {
+  font-size: 18px;
+  color: var(--sd-ink-muted);
+}
+
+/* ── 11. El dinero de verdad ───────────────────────────────────────────── */
+
+.panel {
+  display: grid;
+  gap: 24px;
+  padding: 36px;
+  background: var(--sd-surface);
+  border: 4px solid var(--sd-stroke-color);
+  border-radius: var(--sd-radius-doodle);
+  box-shadow: 0 10px 0 0 var(--sd-shadow-color);
+}
+
+.panelEtiqueta {
+  margin: 0;
+  font-family: var(--sd-font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--sd-ink-muted);
+}
+
+.panelCifra {
+  margin: 4px 0 0;
+  font-family: var(--sd-font-mono);
+  font-size: 72px;
+  font-weight: 600;
+  color: var(--sd-ink);
+}
+
+.panelSube {
+  font-family: var(--sd-font-mono);
+  font-size: 24px;
+  color: var(--income);
+}
+
+.barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  height: 160px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--sd-stroke-color);
+}
+
+.mes {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100%;
+}
+
+.mes span {
+  flex: 1;
+  border: 2px solid var(--sd-stroke-color);
+}
+
+.mes span[data-tipo='ingreso'] {
+  background: var(--income);
+}
+
+.mes span[data-tipo='gasto'] {
+  background: var(--expense);
+}
+
+/* La altura de cada barra es un dato, pero va en una clase: la regla de "ni un
+   `style` suelto" no tiene excepciones. Diez escalones bastan para un dibujo. */
+.mes span[data-alto='4'] { height: 40%; }
+.mes span[data-alto='5'] { height: 50%; }
+.mes span[data-alto='6'] { height: 60%; }
+.mes span[data-alto='7'] { height: 70%; }
+.mes span[data-alto='8'] { height: 80%; }
+.mes span[data-alto='9'] { height: 90%; }
+.mes span[data-alto='10'] { height: 100%; }
+
+.movimientos {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.movimientos li {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-size: 24px;
+  color: var(--sd-ink-soft);
+  border-bottom: 2px dashed var(--sd-ink-muted);
+}
+
+.movimientos li:last-child {
+  border-bottom: 0;
+}
+
+.importe {
+  font-family: var(--sd-font-mono);
+}
+
+.importe[data-signo='mas'] {
+  color: var(--income);
+}
+
+.importe[data-signo='menos'] {
+  color: var(--expense);
+}
+
+.lista {
+  display: grid;
+  gap: 20px;
+  margin: 40px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 30px;
+  color: var(--sd-ink-soft);
+}
+
+.lista li::before {
+  content: '';
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background: var(--px-noche-oro);
+  box-shadow: 4px 4px 0 0 var(--px-noche-oro-sombra);
+}
+
+/* ── 12. Veraz ─────────────────────────────────────────────────────────── */
+
+.fuentes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.fuentes span {
+  padding: 12px 22px;
+  font-family: var(--sd-font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--px-noche-tinta);
+  background: var(--px-noche-alta);
+  border: 3px solid var(--sd-stroke-color);
+}
+
+.aviso {
+  margin: 40px 0 0;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--sd-ink-muted);
+}
+
+.sello {
+  display: grid;
+  justify-items: center;
+  gap: 28px;
+  padding: 56px 48px;
+  text-align: center;
+  background: var(--px-noche-alta);
+  border: 4px solid var(--px-noche-oro);
+  box-shadow: 0 12px 0 0 var(--px-noche-oro-sombra);
+}
+
+.selloTexto {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 30px;
+  line-height: 1.6;
+  color: var(--px-noche-tinta);
+}
+
+/* ── 13. Cero excusas ──────────────────────────────────────────────────── */
+
+.excusas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-top: 64px;
+}
+
+.excusa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 36px 28px;
+  background: var(--px-noche-alta);
+  border: 4px solid var(--sd-stroke-color);
+  box-shadow: 0 10px 0 0 var(--sd-shadow-color);
+  animation: diapo-sube 500ms steps(5, end) both;
+}
+
+.excusa:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.excusa:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.excusa:nth-child(4) {
+  animation-delay: 360ms;
+}
+
+.excusaGrande {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 27px;
+  white-space: nowrap;
+  line-height: 1.3;
+  color: var(--px-noche-oro);
+}
+
+.excusaTexto {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.4;
+  color: var(--sd-ink-soft);
+}
+
+/* ── 14. Bajo el capó ──────────────────────────────────────────────────── */
+
+.inventario {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+  margin-top: 40px;
+}
+
+.pieza {
+  display: grid;
+  gap: 8px;
+  padding: 20px 20px 22px;
+  background: var(--px-noche-alta);
+  border: 3px solid var(--sd-stroke-color);
+}
+
+.piezaNombre {
+  font-family: var(--sd-font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--px-noche-tinta);
+}
+
+.piezaPara {
+  font-size: 19px;
+  line-height: 1.35;
+  color: var(--sd-ink-muted);
+}
+
+.logros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 36px;
+}
+
+.logro {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+  font-size: 22px;
+  line-height: 1.3;
+  color: var(--px-noche-tinta);
+  border: 3px solid var(--px-noche-oro);
+  background: var(--sd-accent-wash-faint);
+}
+
+/* La estrella no encoge cuando el texto ocupa dos líneas. */
+.logro > svg {
+  flex: none;
+}
+
+.logro strong {
+  display: block;
+  font-family: var(--sd-font-pixel);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--px-noche-oro);
+}
+
+/* ── 15. Lo que viene ──────────────────────────────────────────────────── */
+
+.proximos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-top: 72px;
+}
+
+/* Tres próximos niveles, como casillas aún por desbloquear: borde a trazos y
+   el dibujo grande encima del nombre. */
+.proximo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 32px 44px;
+  font-family: var(--sd-font-pixel);
+  font-size: 24px;
+  line-height: 1.5;
+  color: var(--px-noche-tinta);
+  background: var(--sd-surface-sunken);
+  border: 4px dashed var(--sd-ink-muted);
+  animation: diapo-sube 500ms steps(5, end) both;
+}
+
+.proximo:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.proximo:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+/* Todos los dibujos en una caja del mismo alto: así los nombres quedan a la
+   misma altura aunque cada dibujo mida distinto. */
+.proximoIcono {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 110px;
+}
+
+/* ── 16. Continue? ─────────────────────────────────────────────────────── */
+
+.continua {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 110px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--px-noche-tinta);
+  text-shadow:
+    0 8px 0 var(--px-noche-oro),
+    0 16px 0 var(--px-noche-oro-sombra),
+    0 24px 0 var(--px-noche-relieve);
+}
+
+.cuenta {
+  position: relative;
+  display: inline-block;
+  width: 1.2em;
+  margin-left: 0.3em;
+  color: var(--px-noche-oro);
+  text-align: left;
+}
+
+/* La cuenta atrás: diez cifras en el mismo sitio, cada una enciende su
+   segundo. Quieta, se queda en el 9. */
+.cuenta span {
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  animation: diapo-cifra 10s steps(1, end) infinite;
+}
+
+.cuenta span:first-child {
+  position: static;
+  opacity: 1;
+}
+
+@keyframes diapo-cifra {
+  0%,
+  9.99% {
+    opacity: 1;
+  }
+  10%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cuenta span:nth-child(2) { animation-delay: 1s; }
+.cuenta span:nth-child(3) { animation-delay: 2s; }
+.cuenta span:nth-child(4) { animation-delay: 3s; }
+.cuenta span:nth-child(5) { animation-delay: 4s; }
+.cuenta span:nth-child(6) { animation-delay: 5s; }
+.cuenta span:nth-child(7) { animation-delay: 6s; }
+.cuenta span:nth-child(8) { animation-delay: 7s; }
+.cuenta span:nth-child(9) { animation-delay: 8s; }
+.cuenta span:nth-child(10) { animation-delay: 9s; }
+
+.final {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 72px;
+  align-items: center;
+  margin-top: 72px;
+}
+
+.qr {
+  padding: 20px;
+  background: var(--px-noche-tinta);
+  border: 4px solid var(--px-noche-oro);
+  box-shadow: 0 10px 0 0 var(--px-noche-oro-sombra);
+}
+
+.qr path {
+  fill: var(--px-noche);
+}
+
+.url {
+  margin: 0;
+  font-family: var(--sd-font-pixel);
+  font-size: 50px;
+  line-height: 1.3;
+  color: var(--px-noche-oro);
+}
+
+.gracias {
+  margin: 28px 0 0;
+  font-family: var(--sd-font-display);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--px-noche-tinta);
+}

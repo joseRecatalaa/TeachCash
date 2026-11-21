@@ -24,6 +24,7 @@ import {
   CABECERA_RUTA,
   DESCRIPCION_SITIO,
   NOMBRE_SITIO,
+  RUTA_PRESENTACION,
   TITULO_SITIO,
   URL_SITIO,
   esPaginaPublica,
@@ -113,7 +114,11 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   // al CARGAR: una navegación con `<Link>` no vuelve a pasar por el layout, y
   // por eso los enlaces que cruzan entre lo público y la aplicación son `<a>`.
   const conSesion = cuentaInicial.tipo !== 'ninguna'
-  const publica = esPaginaPublica(cabeceras.get(CABECERA_RUTA) ?? '', conSesion)
+  const ruta = cabeceras.get(CABECERA_RUTA) ?? ''
+  const publica = esPaginaPublica(ruta, conSesion)
+  // La presentación es pública pero va SIN el marco: cada pantalla ocupa la
+  // ventana entera, como una diapositiva, y la cabecera de la web estorbaría.
+  const sinMarco = ruta === RUTA_PRESENTACION
 
   return (
     // `mantineHtmlProps` añade `suppressHydrationWarning`: el script de tema
@@ -149,11 +154,13 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body>
-        {publica ? (
+        {sinMarco && children}
+        {!sinMarco && publica && (
           <MarcoPublico conSesion={conSesion}>
             {children}
           </MarcoPublico>
-        ) : (
+        )}
+        {!publica && (
           <>
             {/* Va FUERA de `Providers` y antes que nada: no necesita Refine ni el
                 tema de Mantine —se pinta con los tokens del sistema— y así puede
