@@ -21,7 +21,7 @@ día hay que repetir el despliegue en otro proyecto, ese es el documento a segui
 | **Anti-bots** | Cloudflare Turnstile, en modo invisible |
 | **Emails** | Resend por SMTP, desde `no-reply@teachcash.es` |
 | **Dominio** | `teachcash.es`, registrado en DonDominio |
-| **Rama de producción** | `main`: cada merge se despliega solo |
+| **Rama de producción** | `main`, y cada merge se despliega solo |
 | **Coste** | Solo el dominio (unos 8 € el primer año). Todo lo demás, en planes gratuitos |
 
 ## Cómo está montado
@@ -39,7 +39,7 @@ Navegador ─https─►  Vercel · Next.js 16                        │
    └──── pide el token ──► Cloudflare Turnstile┘ (Supabase lo comprueba)
 ```
 
-**Vercel** ejecuta la aplicación de Next.js. Supabase no podría: sus Edge
+**Vercel** ejecuta la aplicación de Next.js. Supabase no podría, porque sus Edge
 Functions son Deno y no ejecutan un servidor de Next. Las funciones corren en
 París, al lado de la base, para que cada consulta no pague un viaje largo.
 
@@ -50,7 +50,7 @@ pooler* (con `prepare: false`), y usa `supabase-js` solo para Auth.
 **Cloudflare Turnstile** da el token anti-bots en el navegador al crear un
 invitado, entrar o registrarse, y es Supabase quien lo comprueba. **Resend**
 envía los emails de Supabase Auth (confirmar la cuenta, recuperar la contraseña)
-desde el dominio propio: sin un SMTP propio, Supabase solo envía 2 emails por
+desde el dominio propio. Sin un SMTP propio, Supabase solo envía 2 emails por
 hora y solo a los miembros del equipo del proyecto.
 
 **DonDominio** tiene el dominio y sus DNS. `teachcash.es` y
@@ -76,7 +76,7 @@ Para publicar, se abre una pull request de `develop` a `main` y se mezcla con un
 demás ramas no se construyen nunca (lo impide un *Ignored Build Step*), porque
 un *preview* se conectaría a la base de producción.
 
-Además, cada commit pasa en local por **Husky**: ESLint sobre lo que entra y el
+Además, cada commit pasa en local por **Husky**, con ESLint sobre lo que entra y el
 chequeo de tipos.
 
 > **Si el cambio trae una migración**, se aplica en Supabase **antes** de
@@ -86,8 +86,8 @@ chequeo de tipos.
 
 ### Volver atrás
 
-Si un despliegue sale mal: Vercel → Deployments → el despliegue anterior →
-**Instant Rollback**. Es inmediato. Las migraciones no se deshacen solas: si
+Si un despliegue sale mal, se vuelve atrás en Vercel → Deployments → el despliegue anterior →
+**Instant Rollback**. Es inmediato. Las migraciones no se deshacen solas, así que si
 hace falta, se escribe una nueva que revierta.
 
 ## Variables de entorno en producción
@@ -99,9 +99,9 @@ Están en Vercel → Settings → Environment Variables, todas con ámbito
 |---|---|
 | `DATABASE_URL` | Conexión a Postgres por el *Transaction pooler* (puerto 6543). Marcada como *Sensitive* |
 | `NEXT_PUBLIC_SUPABASE_URL` | La URL del proyecto de Supabase, sin `/rest/v1` |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | La clave pública de Supabase. Es pública por diseño: lo que protege los datos es RLS |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | La clave pública de Supabase. Es pública por diseño, porque lo que protege los datos es RLS |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | La clave pública del widget de Turnstile |
-| `APP_URL` | `https://www.teachcash.es`. Obligatoria: sin ella el servidor no arranca, y es el origen de los enlaces de los emails |
+| `APP_URL` | `https://www.teachcash.es`. Obligatoria, porque sin ella el servidor no arranca, y es el origen de los enlaces de los emails |
 
 **Lo que no está en Vercel, a propósito:** `DATABASE_URL_MIGRATIONS`, porque
 las migraciones se lanzan desde el equipo de desarrollo y no desde el servidor;
@@ -117,14 +117,14 @@ falta una o está mal, el servidor no arranca y el error dice cuál.
 El esquema evoluciona con **migraciones de Drizzle** (`db/migrations/`), que se
 aplican con `pnpm db:migrate`.
 
-Todas las tablas tienen **RLS de solo lectura**: la API REST de Supabase, que
+Todas las tablas tienen **RLS de solo lectura**. La API REST de Supabase, que
 cualquiera puede llamar con la clave pública, solo deja leer lo propio y no
 tiene permisos de escritura (`REVOKE`). La aplicación escribe con su propio rol
 y filtra por el `userId` de la sesión dentro de cada consulta.
 
 Un job de **`pg_cron`** (`db/sql/limpieza-invitados.sql`) borra cada hora los
 invitados de más de 4 días, con todos sus datos. Y un **freno por tamaño**
-protege el plan gratuito: por encima de 400 MB (el límite es 500), la aplicación
+protege el plan gratuito, y por encima de 400 MB (el límite es 500), la aplicación
 deja de crear invitados, movimientos y categorías, pero se puede seguir leyendo,
 editando y borrando.
 
@@ -137,7 +137,7 @@ Todo va por **HTTPS** con HSTS, y cada petición lleva una **Content Security
 Policy con nonce** (la pone `proxy.ts`), el resto de cabeceras de seguridad y
 ninguna `x-powered-by`. Las **cookies de sesión** son `httpOnly` y `secure`.
 
-El **CAPTCHA es obligatorio** en Supabase Auth: sin un token válido de
+El **CAPTCHA es obligatorio** en Supabase Auth, y sin un token válido de
 Turnstile no se crea un invitado ni se prueba una contraseña. Hay **límites de
 peticiones** por usuario, por IP y por cuenta, y funcionan porque Vercel escribe
 la IP real del visitante y no deja falsificarla. Las **Redirect URLs** de
@@ -159,8 +159,8 @@ curl -s -X POST "https://<proyecto>.supabase.co/rest/v1/categories" \
   -H "apikey: <publishable key>" -H "Content-Type: application/json" -d '{"name":"x"}'
 ```
 
-Y en el navegador, en una ventana privada: abrir www.teachcash.es, pulsar
-**Jugar gratis** y comprobar que nace el invitado y se puede jugar un nivel o
+Y en el navegador, en una ventana privada, se abre www.teachcash.es, se pulsa
+**Jugar gratis** y se comprueba que nace el invitado y se puede jugar un nivel o
 anotar un movimiento.
 
 ## Mantenimiento
@@ -171,23 +171,23 @@ anotar un movimiento.
 | Dependencias | Cada mes | PRs de Dependabot a `develop`, con el CI y `pnpm audit` en verde |
 | Tamaño de la base | Cada semana | Supabase → Reports → Database |
 | Renovar el dominio | Antes del 18-11-2027, cada año | DonDominio, renovación manual |
-| Plantillas de email | Al cambiar una en `docs/emails/` | Pegarla de nuevo en Supabase: no lee el repo |
+| Plantillas de email | Al cambiar una en `docs/emails/` | Pegarla de nuevo en Supabase, que no lee el repo |
 
 ## Límites conocidos
 
 Son los de los planes gratuitos, suficientes para un proyecto que empieza.
-**Resend envía 100 emails al día**: pasado el tope, quien se registre ese día no
+**Resend envía 100 emails al día**, y pasado el tope, quien se registre ese día no
 recibe la confirmación. **Los límites de peticiones se cuentan en memoria por
 instancia**, así que con mucho tráfico cada instancia de Vercel lleva su propia
 cuenta (la salida sería un almacén común, como Redis). Los **logs** se guardan
 poco tiempo y no hay alertas automáticas. Y **Vercel Hobby es para uso no
-comercial**: si TeachCash tuviera ingresos, habría que pasar al plan Pro.
+comercial**, así que si TeachCash tuviera ingresos, habría que pasar al plan Pro.
 
 ## Desplegar una copia propia
 
-En resumen (el detalle, en [`plans/PLAN-DESPLIEGUE.md`](plans/PLAN-DESPLIEGUE.md)):
+En resumen, y con el detalle en [`plans/PLAN-DESPLIEGUE.md`](plans/PLAN-DESPLIEGUE.md).
 
-Primero, un proyecto en **Supabase**: se aplican las migraciones
+Primero, un proyecto en **Supabase**, donde se aplican las migraciones
 (`pnpm db:migrate`), se activa `pg_cron` y se crea el job de limpieza de
 invitados. En su Auth se activan los usuarios anónimos y el CAPTCHA con
 Turnstile, y se ponen la Site URL y la Redirect URL exacta de `/auth/confirm`.
